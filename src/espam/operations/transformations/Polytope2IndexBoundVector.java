@@ -1,0 +1,177 @@
+/*******************************************************************\
+
+The ESPAM Software Tool 
+Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
+All rights reserved.
+
+The use and distribution terms for this software are covered by the 
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+which can be found in the file LICENSE at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by 
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+
+\*******************************************************************/
+
+package espam.operations.transformations;
+
+import java.util.Iterator;
+import java.util.Vector;
+import java.util.List;
+
+import espam.datamodel.domain.Polytope;
+
+import espam.utils.polylib.PolyLib;
+import espam.utils.polylib.Polyhedron;
+import espam.utils.symbolic.expression.Expression;
+import espam.utils.symbolic.expression.LinTerm;
+import espam.utils.symbolic.expression.MaximumTerm;
+import espam.utils.symbolic.expression.MinimumTerm;
+import espam.utils.symbolic.matrix.SignedMatrix;
+import espam.utils.util.Convert;
+
+//////////////////////////////////////////////////////////////////////////
+//// Polytope2IndexBoundVector
+
+/**
+ *  This class gets the vector of expressions of lower and upper bounds of indexes of a polytope
+ *
+ * @author  Ying Tao
+ * @version  $Id: Polytope2IndexBoundVector.java,v 1.1 2006/06/14 15:51:42
+ *
+ */
+
+public class Polytope2IndexBoundVector {
+
+
+    public static Vector<Expression> getExpression(Polytope polytope) {
+
+        Vector upperBound = new Vector();
+        Vector lowerBound = new Vector();
+        String index = "";
+        Vector <Expression> vectorBounds = new Vector <Expression>();
+
+	if ( polytope.getIndexVector().getIterationVector().size() != 0 ) {
+
+            // Get the contraints from the domain
+           SignedMatrix A = polytope.getConstraints();
+
+           Vector paramVec = new Vector();
+           paramVec.addAll( polytope.getIndexVector().getIterationVector() );
+           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+
+           int nPars = polytope.getIndexVector().getParameterVector().size();
+//            try {
+                // Sort the constraints by level. level 1 is the most out loop index
+                Polyhedron D = PolyLib.getInstance().Constraints2Polyhedron(A);
+                Polyhedron U = PolyLib.getInstance().UniversePolyhedron(nPars);
+                Polyhedron S = PolyLib.getInstance().PolyhedronScan(D, U);
+                /*
+                 *  Let dim(i) be the dimension of the the index
+                 *  vector. Construct ForStatements for every level 1, 2, ...,
+                 *  dim(i). For the constraints at level dim(i)+1, ...,
+                 *  dim(i) + dim(c) if statements are to be constructed.
+                 */
+                Iterator i = S.domains();
+                SignedMatrix M;
+                int sign;
+                boolean isNonEmpty;
+
+                for (int level = 1; level <= polytope.getIndexVector().getIterationVector().size(); level++) {
+
+                    index = paramVec.get(level - 1).toString();
+                    M = PolyLib.getInstance().Polyhedron2Constraints((Polyhedron) i.next());
+                    //Vector v = MatrixLib.toLinearExpression(M, paramVec);
+                    List<Expression> v = Convert.toLinearExpression(M, paramVec);
+
+                    // v is a vector of linear expressions containing constraint
+                    Iterator j = v.iterator();
+                    int ctr = 0;
+
+                    while (j.hasNext()) {
+
+                        Expression exp = (Expression) j.next();
+                        int row = ctr++;
+
+                        long coefficient = M.getElement(row, level);
+                        if (coefficient < 0) {
+                            sign = 1;
+                            exp.addVariable(-(int) coefficient, 1, index);
+
+                            //still I have to devide all the terms with the coefficient
+                            exp.setDenominator(-(int) coefficient);
+
+                            upperBound.add(exp);
+
+                            if (exp.getEqualityType() == Expression.EQU) {
+                               lowerBound.add(exp);
+                            }
+                        } else if (coefficient > 0) {
+                            sign = -1;
+                            exp.addVariable(-(int) coefficient, 1, index);
+                            exp.negate();
+                            exp.setDenominator((int) coefficient);
+
+                            lowerBound.add(exp);
+                            if (exp.getEqualityType() == Expression.EQU) {
+                               upperBound.add(exp);
+                            }
+                        } else {
+                        }
+                    }
+
+                    Expression finalUpperBound;
+                    Expression finalLowerBound;
+                    Expression one;
+                    Expression two;
+                    LinTerm term;
+                    if (upperBound.size() > 1) {
+                        one = (Expression) upperBound.get(0);
+                        for (int tc = 1; tc < upperBound.size(); tc++) {
+                            two = (Expression) upperBound.get(tc);
+                            term = new MinimumTerm(one, two);
+                            one = new Expression();
+                            one.add(term);
+                        }
+                        finalUpperBound = one;
+                    } else {
+                        finalUpperBound = (Expression) upperBound.get(0);
+                    }
+                    if (lowerBound.size() > 1) {
+                       one = (Expression) lowerBound.get(0);
+                       for (int tc = 1; tc < lowerBound.size(); tc++) {
+                           two = (Expression) lowerBound.get(tc);
+                           term = new MaximumTerm(one, two);
+                           one = new Expression();
+                           one.add(term);
+                       }
+                       finalLowerBound = one;
+                    } else {
+                       finalLowerBound = (Expression) lowerBound.get(0);
+                    }
+                    
+                    finalLowerBound.simplify();
+                    finalUpperBound.simplify();
+                    
+                    vectorBounds.add(finalLowerBound);
+                    vectorBounds.add(finalUpperBound);
+                    
+                    
+                    upperBound.clear();
+                    lowerBound.clear();
+                    
+                }
+
+//            } catch (Exception e) {
+//                e.printStackTrace(System.out);
+//                throw new CodeGenerationException(" Polytope2ForStatement " +
+//                        "Exception: " + e.getMessage());
+//            }
+        }
+        return vectorBounds;
+    }
+
+
+}

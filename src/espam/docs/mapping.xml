@@ -1,0 +1,25 @@
+<mapping name="myMapping">
+
+   <processor name="PPC_1">
+       <process name="P_1" />
+       <process name="P_3" />
+   </processor>
+
+   <processor name="MB_1">
+       <process name="P_2" />
+   </processor>
+
+   <memory name="VB_1">
+       <fifo name="F_1" />
+       <fifo name="F_2" />
+       <fifo name="F_3" />
+   </memory>
+
+   <memory name="VB_2">
+       <fifo name="F_4" />
+   </memory>
+
+
+</mapping>
+
+

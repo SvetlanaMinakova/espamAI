@@ -1,0 +1,22 @@
+##############################################################################
+##
+## ***************************************************************************
+## **                                                                       **
+## ** Copyright (c) 1995-2005 Xilinx, Inc.  All rights reserved.            **
+## **                                                                       **
+## ** You may copy and modify these files for your own internal use solely  **
+## ** with Xilinx programmable logic devices and Xilinx EDK system or       **
+## ** create IP modules solely for Xilinx programmable logic devices and    **
+## ** Xilinx EDK system. No rights are granted to distribute any files      **
+## ** unless they are distributed in Xilinx programmable logic devices.     **
+## **                                                                       **
+## ***************************************************************************
+##
+##############################################################################
+## Filename:          D:\Research_Project\pcores\zbt_test_new_opb\pcores\host_design_ctrl_v1_00_a\data\host_design_ctrl_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Fri Aug 26 11:08:16 2005 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib host_design_ctrl_v1_00_a host_design_ctrl_core vhdl
+lib host_design_ctrl_v1_00_a host_design_ctrl vhdl

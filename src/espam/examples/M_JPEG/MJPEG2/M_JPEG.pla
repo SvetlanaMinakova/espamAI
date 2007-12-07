@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE platform PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+
+<platform name="myPlatform">
+
+   <processor name="PPC_1" type="PPC" data_memory="4096" program_memory="2048">
+   </processor>
+
+   <processor name="HWN" type="CompaanHWNode">
+   </processor>
+
+   <processor name="MB_1" type="MB" data_memory="4096" program_memory="2048">
+   </processor>
+
+
+ </platform>
+
+

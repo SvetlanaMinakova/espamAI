@@ -1,0 +1,210 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE platform PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<platform name="myPlatform">
+
+   <processor name="PPC_1" type="PPC">
+      <port name="IO_1" type="PLBPort" />
+   </processor>
+
+   <processor name="PPC_2" type="PPC">
+      <port name="IO_1" type="PLBPort" />
+      <port name="IO_2" type="PLBPort" />
+   </processor>
+
+   <processor name="MB_1" type="MB">
+      <port name="IO_1" type="LMBPort" />
+      <port name="IO_2" type="LMBPort" />
+   </processor>
+
+   <processor name="R2Y" type="CompaanHWNode">
+      <port name="IN_1" type="FifoReadPort"/>
+      <port name="OUT_1" type="FifoWritePort"/>
+   </processor>
+
+   <processor name="DCT" type="CompaanHWNode">
+      <port name="IN_1" type="FifoReadPort"/>
+      <port name="IN_2" type="FifoReadPort"/>
+      <port name="IN_3" type="FifoReadPort"/>
+      <port name="OUT_1" type="FifoWritePort"/>
+   </processor>
+
+   <processor name="QNT" type="CompaanHWNode">
+      <port name="IN_1" type="FifoReadPort"/>
+      <port name="IN_2" type="FifoReadPort"/>
+      <port name="OUT_1" type="FifoWritePort"/>
+   </processor>
+
+   <network name="CS_1" type="CrossbarSwitch">
+      <port name="IO_1" type="FifoReadPort"/>
+      <port name="IO_2" type="FifoReadPort"/>
+      <port name="IO_3" type="FifoReadPort"/>
+      <port name="IO_4" type="FifoReadPort"/>
+      <port name="O_5" type="FifoReadPort"/>
+      <port name="O_6" type="FifoReadPort"/>
+      <port name="O_7" type="FifoReadPort"/>
+      <port name="O_8" type="FifoReadPort"/>
+      <port name="I_9" type="FifoReadPort"/>
+   </network>
+
+   <memory name="VB_1" type="MultiFifo" datawidth="32" size="2048">
+      <port name="IO_1" type="PLBPort" />
+      <port name="IO_2" type="FifoReadPort"/>
+      <vfifo name="FIFO_0" size="512" />
+      <vfifo name="FIFO_1" size="1024" />
+      <vfifo name="FIFO_2" size="128" />
+   </memory>
+
+   <memory name="VB_2" type="MultiFifo" datawidth="32" size="256">
+      <port name="IO_1" type="LMBPort" />
+      <port name="IO_2" type="FifoReadPort"/>
+      <vfifo name="FIFO_0" size="256" />
+   </memory>
+
+   <memory name="VB_3" type="MultiFifo" datawidth="32" size="256">
+      <port name="IO_1" type="PLBPort" />
+      <port name="IO_2" type="FifoReadPort"/>
+      <vfifo name="FIFO_0" size="256" />
+   </memory>
+
+   <memory name="BRAM_1" type="BRAM" datawidth="32" size="2048">
+      <port name="IO_1" type="LMBPort" />
+      <port name="IO_2" type="LMBPort"/>
+   </memory>
+
+   <memory name="BRAM_2" type="BRAM" datawidth="32" size="2048">
+      <port name="IO_1" type="PLBPort" />
+   </memory>
+
+   <memory name="BRAM_3" type="BRAM" datawidth="32" size="2048">
+      <port name="IO_1" type="PLBPort" />
+   </memory>
+
+   <memory name="ZBT_1" type="ZBT" datawidth="32" size="2048">
+      <port name="IO_1" type="PLBPort" />
+   </memory>
+
+   <memory name="FIFO_1" type="Fifo" datawidth="32" size="512">
+      <port name="IN_1" type="FifoWritePort" />
+      <port name="OUT_1" type="FifoReadPort" />
+   </memory>
+
+   <memory name="FIFO_2" type="Fifo" datawidth="32" size="512">
+      <port name="IN_1" type="FifoWritePort" />
+      <port name="OUT_1" type="FifoReadPort" />
+   </memory>
+
+   <memory name="FIFO_3" type="Fifo" datawidth="32" size="512">
+      <port name="IN_1" type="FifoWritePort" />
+      <port name="OUT_1" type="FifoReadPort" />
+   </memory>
+
+   <memory name="FIFO_4" type="Fifo" datawidth="32" size="512">
+      <port name="IN_1" type="FifoWritePort" />
+      <port name="OUT_1" type="FifoReadPort" />
+   </memory>
+
+   <link name="BUS_PPC1">
+      <resource name="PPC_1" port="IO_1" />
+      <resource name="BRAM_2" port="IO_1" />
+      <resource name="VB_1" port="IO_1" />
+      <resource name="FIFO_1" port="IN_1" />
+   </link>
+
+   <link name="BUS_PPC2">
+      <resource name="PPC_2" port="IO_1" />
+      <resource name="BRAM_3" port="IO_1" />
+      <resource name="VB_3" port="IO_1" />
+   </link>
+
+   <link name="PM_PPC2">
+      <resource name="PPC_2" port="IO_2" />
+      <resource name="ZBT_1" port="IO_1" />
+   </link>
+
+   <link name="BUS_2">
+      <resource name="VB_1" port="IO_2" />
+      <resource name="CS_1" port="IO_1" />
+   </link>
+
+   <link name="DM_MB1">
+      <resource name="MB_1" port="IO_1" />
+      <resource name="BRAM_1" port="IO_1" />
+      <resource name="VB_2" port="IO_1" />
+   </link>
+
+   <link name="PM_MB1">
+      <resource name="MB_1" port="IO_2" />
+      <resource name="BRAM_1" port="IO_2" />
+   </link>
+
+   <link name="BUS_4">
+      <resource name="VB_2" port="IO_2" />
+      <resource name="CS_1" port="IO_2" />
+   </link>
+
+   <link name="BUS_5">
+      <resource name="VB_3" port="IO_2" />
+      <resource name="CS_1" port="IO_3" />
+   </link>
+
+
+   <link name="BUS_6">
+      <resource name="FIFO_1" port="OUT_1" />
+      <resource name="CS_1" port="IO_4" />
+   </link>
+
+   <link name="BUS_7">
+      <resource name="CS_1" port="O_5" />
+      <resource name="R2Y" port="IN_1" />
+   </link>
+
+   <link name="BUS_8">
+      <resource name="CS_1" port="O_6" />
+      <resource name="DCT" port="IN_1" />
+   </link>
+
+   <link name="BUS_9">
+      <resource name="CS_1" port="O_7" />
+      <resource name="DCT" port="IN_2" />
+   </link>
+
+   <link name="BUS_10">
+      <resource name="CS_1" port="O_8" />
+      <resource name="QNT" port="IN_2" />
+   </link>
+
+   <link name="BUS_11">
+      <resource name="CS_1" port="I_9" />
+      <resource name="FIFO_4" port="OUT_1" />
+   </link>
+
+   <link name="BUS_12">
+      <resource name="R2Y" port="OUT_1" />
+      <resource name="FIFO_2" port="IN_1" />
+   </link>
+
+   <link name="BUS_13">
+      <resource name="DCT" port="IN_3" />
+      <resource name="FIFO_2" port="OUT_1" />
+   </link>
+
+
+    <link name="BUS_14">
+      <resource name="DCT" port="OUT_1" />
+      <resource name="FIFO_3" port="IN_1" />
+   </link>
+
+   <link name="BUS_15">
+      <resource name="QNT" port="IN_1" />
+      <resource name="FIFO_3" port="OUT_1" />
+   </link>
+
+   <link name="BUS_16">
+      <resource name="QNT" port="OUT_1" />
+      <resource name="FIFO_4" port="IN_1" />
+   </link>
+
+</platform>
+
+

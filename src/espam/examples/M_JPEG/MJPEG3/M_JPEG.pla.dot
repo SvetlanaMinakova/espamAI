@@ -1,0 +1,33 @@
+digraph myPlatform {
+
+  ratio = auto;
+  rankdir = LR;
+  ranksep = 0.3;
+  nodesep = 0.2;
+  center = true;
+
+  node [ fontsize=12, height=0.4, width=0.4, style=filled, color="0.650 0.200 1.000" ]
+  edge [ fontsize=10, arrowhead=none, style=bold]
+
+  "PPC_1" [ label="PPC_1", color=tan ];
+  "MB_2" [ label="MB_2", color=burlywood3 ];
+  "MB_1" [ label="MB_1", color=burlywood3 ];
+  "CS_1" [ label="CS_1", regular=true, color=lightgoldenrod ];
+  { rank=source; "ZBT_PPC_1" [ label="ZBT_PPC_1 \n6144 Bytes", shape=box, regular=true, color=aliceblue ]; }
+  "VB_PPC_1" [ label="VB_PPC_1 \n10 FIFOs", shape=box, width=0.7, color=beige ];
+  { rank=source; "Bram_MB_2" [ label="Bram_MB_2 \n6144 Bytes", shape=box, regular=true, color=mintcream ]; }
+  "VB_MB_2" [ label="VB_MB_2 \n2 FIFOs", shape=box, width=0.7, color=beige ];
+  { rank=source; "Bram_MB_1" [ label="Bram_MB_1 \n6144 Bytes", shape=box, regular=true, color=mintcream ]; }
+  "VB_MB_1" [ label="VB_MB_1 \n1 FIFOs", shape=box, width=0.7, color=beige ];
+
+  "PPC_1" -> "ZBT_PPC_1" [ label="BUS_1", color=firebrick ];
+  "PPC_1" -> "VB_PPC_1" [ label="BUS_1", color=firebrick ];
+  "MB_2" -> "Bram_MB_2" [ label="BUS_3", color=firebrick ];
+  "MB_2" -> "VB_MB_2" [ label="BUS_3", color=firebrick ];
+  "MB_1" -> "Bram_MB_1" [ label="BUS_2", color=firebrick ];
+  "MB_1" -> "VB_MB_1" [ label="BUS_2", color=firebrick ];
+  "CS_1" -> "VB_PPC_1" [ label="BUS_VB_PPC_1", color=khaki3 ];
+  "CS_1" -> "VB_MB_2" [ label="BUS_VB_MB_2", color=khaki3 ];
+  "CS_1" -> "VB_MB_1" [ label="BUS_VB_MB_1", color=khaki3 ];
+
+}

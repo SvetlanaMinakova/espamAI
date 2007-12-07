@@ -1,0 +1,662 @@
+##########################################################
+#                                                        #
+#   ADM-XRCII REV1 CONSTRAINTS FILE                      #
+#                                                        #
+#   project: zbt                                         #
+#                                                        #
+##########################################################
+
+##########################################################
+#                                                        #
+#   CLOCK PINS FOR Local Bus and SSRAM's                 #
+#                                                        #
+##########################################################
+NET "lclk"       LOC = "AG18";
+NET "mclk"       LOC = "AF18";
+NET "ramclko(0)" LOC = "AE10";  # Banks 0, 1, 2 output
+NET "ramclko(0)" FAST;
+NET "ramclko(1)" LOC = "AG29";  # Banks 3, 4, 5 output
+NET "ramclko(1)" FAST;
+NET "ramclki(0)" LOC = "AG17";  # Banks 0, 1, 2 feedback
+NET "ramclki(1)" LOC = "AF17";  # Banks 3, 4, 5 feedback
+
+##########################################################
+#                                                        #
+#   SSRAM bank 0 pins                                    #
+#                                                        #
+##########################################################
+NET "ra0(19)" LOC = "AF4";
+NET "ra0(18)" LOC = "AF5";
+NET "ra0(17)" LOC = "AB7";
+NET "ra0(16)" LOC = "AB8";
+NET "ra0(15)" LOC = "AE6";
+NET "ra0(14)" LOC = "AF3";
+NET "ra0(13)" LOC = "AG4";
+NET "ra0(12)" LOC = "AC8";
+NET "ra0(11)" LOC = "AD8";
+NET "ra0(10)" LOC = "AG3";
+NET "ra0(9)"  LOC = "AC7";
+NET "ra0(8)"  LOC = "AD6";
+NET "ra0(7)"  LOC = "AC9";
+NET "ra0(6)"  LOC = "AC10";
+NET "ra0(5)"  LOC = "AD9";
+NET "ra0(4)"  LOC = "AE2";
+NET "ra0(3)"  LOC = "AJ5";
+NET "ra0(2)"  LOC = "AE5";
+NET "ra0(1)"  LOC = "AB10";
+NET "ra0(0)"  LOC = "AB9";
+NET "rd0(31)" LOC = "AF2";
+NET "rd0(30)" LOC = "AH1";
+NET "rd0(29)" LOC = "AJ1";
+NET "rd0(28)" LOC = "AK1";
+NET "rd0(27)" LOC = "AL2";
+NET "rd0(26)" LOC = "AD10";
+NET "rd0(25)" LOC = "AF10";
+NET "rd0(24)" LOC = "AG9";
+NET "rd0(23)" LOC = "AE4";
+NET "rd0(22)" LOC = "AD5";
+NET "rd0(21)" LOC = "AD4";
+NET "rd0(20)" LOC = "AC3";
+NET "rd0(19)" LOC = "AF6";
+NET "rd0(18)" LOC = "AG6";
+NET "rd0(17)" LOC = "AG7";
+NET "rd0(16)" LOC = "AE11";
+NET "rd0(15)" LOC = "AG2"; 
+NET "rd0(14)" LOC = "AH2"; 
+NET "rd0(13)" LOC = "AJ2"; 
+NET "rd0(12)" LOC = "AK2"; 
+NET "rd0(11)" LOC = "AL1"; 
+NET "rd0(10)" LOC = "AE9"; 
+NET "rd0(9)"  LOC = "AF9"; 
+NET "rd0(8)"  LOC = "AF1"; 
+NET "rd0(7)"  LOC = "AF11"; 
+NET "rd0(6)"  LOC = "AD3"; 
+NET "rd0(5)"  LOC = "AC6"; 
+NET "rd0(4)"  LOC = "AC4"; 
+NET "rd0(3)"  LOC = "AE7"; 
+NET "rd0(2)"  LOC = "AE8"; 
+NET "rd0(1)"  LOC = "AF7"; 
+NET "rd0(0)"  LOC = "AF8"; 
+NET "rc0(8)"  LOC = "AH3";  # CKE
+NET "rc0(7)"  LOC = "AG5";  # OE   (L)
+NET "rc0(6)"  LOC = "AH5";  # ADV  (L)
+NET "rc0(5)"  LOC = "AD7";  # CE   (L)
+NET "rc0(4)"  LOC = "AH6";  # R/W
+NET "rc0(3)"  LOC = "AK4";  # BWE3 (L)
+NET "rc0(2)"  LOC = "V10";  # BWE2 (L)
+NET "rc0(1)"  LOC = "AJ4";  # BWE1 (L)
+NET "rc0(0)"  LOC = "AJ3";  # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   SSRAM bank 1 pins                                    #
+#                                                        #
+##########################################################
+NET "ra1(19)" LOC = "U6";
+NET "ra1(18)" LOC = "V6";
+NET "ra1(17)" LOC  ="P9";
+NET "ra1(16)" LOC = "P10";
+NET "ra1(15)" LOC = "T8";
+NET "ra1(14)" LOC = "V4";
+NET "ra1(13)" LOC = "V5";
+NET "ra1(12)" LOC = "R10";
+NET "ra1(11)" LOC = "U7";
+NET "ra1(10)" LOC = "W5";
+NET "ra1(9)"  LOC = "M1";
+NET "ra1(8)"  LOC = "V7";
+NET "ra1(7)"  LOC = "L2";
+NET "ra1(6)"  LOC = "U8";
+NET "ra1(5)"  LOC = "L1";
+NET "ra1(4)"  LOC = "M2";
+NET "ra1(3)"  LOC = "AD1";
+NET "ra1(2)"  LOC = "AD2";
+NET "ra1(1)"  LOC = "U9";
+NET "ra1(0)"  LOC = "T7";
+NET "rd1(31)" LOC = "N2";
+NET "rd1(30)" LOC = "P2";
+NET "rd1(29)" LOC = "T2";
+NET "rd1(28)" LOC = "U1";
+NET "rd1(27)" LOC = "V2";
+NET "rd1(26)" LOC = "AA1";
+NET "rd1(25)" LOC = "AB1";
+NET "rd1(24)" LOC = "AC1";
+NET "rd1(23)" LOC = "P3";
+NET "rd1(22)" LOC = "P5";
+NET "rd1(21)" LOC = "T3";
+NET "rd1(20)" LOC = "T6";
+NET "rd1(19)" LOC = "W7";
+NET "rd1(18)" LOC = "Y10";
+NET "rd1(17)" LOC = "AA8";
+NET "rd1(16)" LOC = "N3";
+NET "rd1(15)" LOC = "K7"; 
+NET "rd1(14)" LOC = "R1"; 
+NET "rd1(13)" LOC = "U2"; 
+NET "rd1(12)" LOC = "U3"; 
+NET "rd1(11)" LOC = "V1"; 
+NET "rd1(10)" LOC = "W3"; 
+NET "rd1(9)"  LOC = "AA2"; 
+NET "rd1(8)"  LOC = "AB2"; 
+NET "rd1(7)"  LOC = "N5"; 
+NET "rd1(6)"  LOC = "P4"; 
+NET "rd1(5)"  LOC = "R3"; 
+NET "rd1(4)"  LOC = "AC2"; 
+NET "rd1(3)"  LOC = "W10"; 
+NET "rd1(2)"  LOC = "Y9"; 
+NET "rd1(1)"  LOC = "AA10"; 
+NET "rd1(0)"  LOC = "AA9"; 
+NET "rc1(8)"  LOC = "AA6";  # CKE
+NET "rc1(7)"  LOC = "W6";   # OE   (L)
+NET "rc1(6)"  LOC = "AA4";  # ADV  (L)
+NET "rc1(5)"  LOC = "AB4";  # CE   (L)
+NET "rc1(4)"  LOC = "Y3";   # R/W
+NET "rc1(3)"  LOC = "Y7";   # BWE3 (L)
+NET "rc1(2)"  LOC = "AB5";  # BWE2 (L)
+NET "rc1(1)"  LOC = "Y6";   # BWE1 (L)
+NET "rc1(0)"  LOC = "AB6";  # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   SSRAM bank 2 pins                                    #
+#                                                        #
+##########################################################
+NET "ra2(19)" LOC = "P6";
+NET "ra2(18)" LOC = "L8";
+NET "ra2(17)" LOC  ="H5";
+NET "ra2(16)" LOC = "H4";
+NET "ra2(15)" LOC = "H3";
+NET "ra2(14)" LOC = "K6";
+NET "ra2(13)" LOC = "N6";
+NET "ra2(12)" LOC = "D3";
+NET "ra2(11)" LOC = "G5";
+NET "ra2(10)" LOC = "N7";
+NET "ra2(9)"  LOC = "E4";
+NET "ra2(8)"  LOC = "E3";
+NET "ra2(7)"  LOC = "F3";
+NET "ra2(6)"  LOC = "G6";
+NET "ra2(5)"  LOC = "D1";
+NET "ra2(4)"  LOC = "G3";
+NET "ra2(3)"  LOC = "P8";
+NET "ra2(2)"  LOC = "R9";
+NET "ra2(1)"  LOC = "F5";
+NET "ra2(0)"  LOC = "F4";
+NET "rd2(31)" LOC = "F2";
+NET "rd2(30)" LOC = "G2";
+NET "rd2(29)" LOC = "H2";
+NET "rd2(28)" LOC = "J1";
+NET "rd2(27)" LOC = "K9";
+NET "rd2(26)" LOC = "L10";
+NET "rd2(25)" LOC = "M10";
+NET "rd2(24)" LOC = "M8";
+NET "rd2(23)" LOC = "M3";
+NET "rd2(22)" LOC = "N4";
+NET "rd2(21)" LOC = "H6";
+NET "rd2(20)" LOC = "J7";
+NET "rd2(19)" LOC = "J5";
+NET "rd2(18)" LOC = "K5";
+NET "rd2(17)" LOC = "L3";
+NET "rd2(16)" LOC = "M4";
+NET "rd2(15)" LOC = "F1"; 
+NET "rd2(14)" LOC = "G1"; 
+NET "rd2(13)" LOC = "J2"; 
+NET "rd2(12)" LOC = "K2"; 
+NET "rd2(11)" LOC = "J9"; 
+NET "rd2(10)" LOC = "K8"; 
+NET "rd2(9)"  LOC = "L9"; 
+NET "rd2(8)"  LOC = "M9"; 
+NET "rd2(7)"  LOC = "R4"; 
+NET "rd2(6)"  LOC = "H7"; 
+NET "rd2(5)"  LOC = "J8"; 
+NET "rd2(4)"  LOC = "J6"; 
+NET "rd2(3)"  LOC = "J3"; 
+NET "rd2(2)"  LOC = "K4"; 
+NET "rd2(1)"  LOC = "L6"; 
+NET "rd2(0)"  LOC = "L5"; 
+NET "rc2(8)"  LOC = "M7";   # CKE
+NET "rc2(7)"  LOC = "L7";   # OE   (L)
+NET "rc2(6)"  LOC = "M6";   # ADV  (L)
+NET "rc2(5)"  LOC = "E1";   # CE   (L)
+NET "rc2(4)"  LOC = "N8";   # R/W
+NET "rc2(3)"  LOC = "N10";  # BWE3 (L)
+NET "rc2(2)"  LOC = "J4";   # BWE2 (L)
+NET "rc2(1)"  LOC = "N9";   # BWE1 (L)
+NET "rc2(0)"  LOC = "R8";   # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   SSRAM bank 3 pins                                    #
+#                                                        #
+##########################################################
+NET "ra3(19)" LOC = "AE27";
+NET "ra3(18)" LOC = "AF29";
+NET "ra3(17)" LOC  ="AE33";
+NET "ra3(16)" LOC = "AD33";
+NET "ra3(15)" LOC = "AF34";
+NET "ra3(14)" LOC = "AF28";
+NET "ra3(13)" LOC = "AD26";
+NET "ra3(12)" LOC = "AA25";
+NET "ra3(11)" LOC = "AC25";
+NET "ra3(10)" LOC = "AE26";
+NET "ra3(9)"  LOC = "AB25";
+NET "ra3(8)"  LOC = "AD25";
+NET "ra3(7)"  LOC = "AF27";
+NET "ra3(6)"  LOC = "AA27";
+NET "ra3(5)"  LOC = "AF33";
+NET "ra3(4)"  LOC = "Y25"; 
+NET "ra3(3)"  LOC = "AK31";
+NET "ra3(2)"  LOC = "AK32";
+NET "ra3(1)"  LOC = "AE28";
+NET "ra3(0)"  LOC = "AC33";
+NET "rd3(31)" LOC = "AD30";
+NET "rd3(30)" LOC = "AE31";
+NET "rd3(29)" LOC = "AF32";
+NET "rd3(28)" LOC = "AF30";
+NET "rd3(27)" LOC = "AG32";
+NET "rd3(26)" LOC = "AG30";
+NET "rd3(25)" LOC = "AG28";
+NET "rd3(24)" LOC = "AJ32";
+NET "rd3(23)" LOC = "AB28";
+NET "rd3(22)" LOC = "AC29";
+NET "rd3(21)" LOC = "AD28";
+NET "rd3(20)" LOC = "AE29";
+NET "rd3(19)" LOC = "AH34";
+NET "rd3(18)" LOC = "AJ34";
+NET "rd3(17)" LOC = "AK34";
+NET "rd3(16)" LOC = "AL34";
+NET "rd3(15)" LOC = "AD32"; 
+NET "rd3(14)" LOC = "AD29"; 
+NET "rd3(13)" LOC = "AE30"; 
+NET "rd3(12)" LOC = "AF31"; 
+NET "rd3(11)" LOC = "AG31"; 
+NET "rd3(10)" LOC = "AH32"; 
+NET "rd3(9)"  LOC = "AH29"; 
+NET "rd3(8)"  LOC = "AJ31"; 
+NET "rd3(7)"  LOC = "AL33"; 
+NET "rd3(6)"  LOC = "AB27"; 
+NET "rd3(5)"  LOC = "AC28"; 
+NET "rd3(4)"  LOC = "AD27"; 
+NET "rd3(3)"  LOC = "AG33"; 
+NET "rd3(2)"  LOC = "AH33"; 
+NET "rd3(1)"  LOC = "AJ33"; 
+NET "rd3(0)"  LOC = "AK33"; 
+NET "rc3(8)"  LOC = "AE25";  # CKE
+NET "rc3(7)"  LOC = "AC27";  # OE   (L)
+NET "rc3(6)"  LOC = "AC26";  # ADV  (L)
+NET "rc3(5)"  LOC = "AF26";  # CE   (L)
+NET "rc3(4)"  LOC = "AB26";  # R/W
+NET "rc3(3)"  LOC = "AG26";  # BWE3 (L)
+NET "rc3(2)"  LOC = "AF25";  # BWE2 (L)
+NET "rc3(1)"  LOC = "AL32";  # BWE1 (L)
+NET "rc3(0)"  LOC = "AE24";  # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   SSRAM bank 4 pins                                    #
+#                                                        #
+##########################################################
+NET "ra4(19)" LOC = "AA26";
+NET "ra4(18)" LOC = "AC32";
+NET "ra4(17)" LOC  ="M34";
+NET "ra4(16)" LOC = "L34";
+NET "ra4(15)" LOC = "N33";
+NET "ra4(14)" LOC = "Y27";
+NET "ra4(13)" LOC = "P26";
+NET "ra4(12)" LOC = "P25";
+NET "ra4(11)" LOC = "R27";
+NET "ra4(10)" LOC = "T27";
+NET "ra4(9)"  LOC = "R28";
+NET "ra4(8)"  LOC = "Y28";
+NET "ra4(7)"  LOC = "P32";
+NET "ra4(6)"  LOC = "N30";
+NET "ra4(5)"  LOC = "N32";
+NET "ra4(4)"  LOC = "N31";
+NET "ra4(3)"  LOC = "Y31";
+NET "ra4(2)"  LOC = "AA30";
+NET "ra4(1)"  LOC = "T28";
+NET "ra4(0)"  LOC = "R25";
+NET "rd4(31)" LOC = "P31";
+NET "rd4(30)" LOC = "R29";
+NET "rd4(29)" LOC = "P33";
+NET "rd4(28)" LOC = "U29";
+NET "rd4(27)" LOC = "V30";
+NET "rd4(26)" LOC = "V28";
+NET "rd4(25)" LOC = "W31";
+NET "rd4(24)" LOC = "W32";
+NET "rd4(23)" LOC = "U28";
+NET "rd4(22)" LOC = "R26";
+NET "rd4(21)" LOC = "U26";
+NET "rd4(20)" LOC = "V26";
+NET "rd4(19)" LOC = "U34";
+NET "rd4(18)" LOC = "V34";
+NET "rd4(17)" LOC = "AA33";
+NET "rd4(16)" LOC = "AC34";
+NET "rd4(15)" LOC = "P30"; 
+NET "rd4(14)" LOC = "T29"; 
+NET "rd4(13)" LOC = "T30"; 
+NET "rd4(12)" LOC = "U31"; 
+NET "rd4(11)" LOC = "U30"; 
+NET "rd4(10)" LOC = "V31"; 
+NET "rd4(9)"  LOC = "W28"; 
+NET "rd4(8)"  LOC = "W30"; 
+NET "rd4(7)"  LOC = "AD34"; 
+NET "rd4(6)"  LOC = "U27"; 
+NET "rd4(5)"  LOC = "V27"; 
+NET "rd4(4)"  LOC = "Y26"; 
+NET "rd4(3)"  LOC = "U33"; 
+NET "rd4(2)"  LOC = "V32"; 
+NET "rd4(1)"  LOC = "V33"; 
+NET "rd4(0)"  LOC = "AB33"; 
+NET "rc4(8)"  LOC = "AC31";  # CKE
+NET "rc4(7)"  LOC = "AB29";  # OE   (L)
+NET "rc4(6)"  LOC = "AD31";  # ADV  (L)
+NET "rc4(5)"  LOC = "AA29";  # CE   (L)
+NET "rc4(4)"  LOC = "AB30";  # R/W
+NET "rc4(3)"  LOC = "Y29";   # BWE3 (L)
+NET "rc4(2)"  LOC = "AB31";  # BWE2 (L)
+NET "rc4(1)"  LOC = "AA31";  # BWE1 (L)
+NET "rc4(0)"  LOC = "AB32";  # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   SSRAM bank 5 pins                                    #
+#                                                        #
+##########################################################
+NET "ra5(19)" LOC = "N25";
+NET "ra5(18)" LOC = "M26";
+NET "ra5(17)" LOC  ="K24";
+NET "ra5(16)" LOC = "J27";
+NET "ra5(15)" LOC = "J26";
+NET "ra5(14)" LOC = "M25";
+NET "ra5(13)" LOC = "L25";
+NET "ra5(12)" LOC = "K28";
+NET "ra5(11)" LOC = "K27";
+NET "ra5(10)" LOC = "E31";
+NET "ra5(9)"  LOC = "K29";
+NET "ra5(8)"  LOC = "K26";
+NET "ra5(7)"  LOC = "L26";
+NET "ra5(6)"  LOC = "M28";
+NET "ra5(5)"  LOC = "M33";
+NET "ra5(4)"  LOC = "M27";
+NET "ra5(3)"  LOC = "L29";
+NET "ra5(2)"  LOC = "N29";
+NET "ra5(1)"  LOC = "L27";
+NET "ra5(0)"  LOC = "L28";
+NET "rd5(31)" LOC = "H28";
+NET "rd5(30)" LOC = "F31";
+NET "rd5(29)" LOC = "G29";
+NET "rd5(28)" LOC = "G32";
+NET "rd5(27)" LOC = "H31";
+NET "rd5(26)" LOC = "H30";
+NET "rd5(25)" LOC = "J32";
+NET "rd5(24)" LOC = "K31";
+NET "rd5(23)" LOC = "G33";
+NET "rd5(22)" LOC = "H33";
+NET "rd5(21)" LOC = "J34";
+NET "rd5(20)" LOC = "N28";
+NET "rd5(19)" LOC = "J28";
+NET "rd5(18)" LOC = "D34";
+NET "rd5(17)" LOC = "E34";
+NET "rd5(16)" LOC = "F34";
+NET "rd5(15)" LOC = "F30"; 
+NET "rd5(14)" LOC = "F32"; 
+NET "rd5(13)" LOC = "G30"; 
+NET "rd5(12)" LOC = "H29"; 
+NET "rd5(11)" LOC = "H32"; 
+NET "rd5(10)" LOC = "J31"; 
+NET "rd5(9)"  LOC = "J30"; 
+NET "rd5(8)"  LOC = "K30"; 
+NET "rd5(7)"  LOC = "G34";
+NET "rd5(6)"  LOC = "J33"; 
+NET "rd5(5)"  LOC = "K33"; 
+NET "rd5(4)"  LOC = "L33"; 
+NET "rd5(3)"  LOC = "J29"; 
+NET "rd5(2)"  LOC = "D32"; 
+NET "rd5(1)"  LOC = "E32"; 
+NET "rd5(0)"  LOC = "F33"; 
+NET "rc5(8)"  LOC = "L31";  # CKE
+NET "rc5(7)"  LOC = "P29";  # OE   (L)
+NET "rc5(6)"  LOC = "N26";  # ADV(L)
+NET "rc5(5)"  LOC = "M29";  # CE   (L)
+NET "rc5(4)"  LOC = "N27";  # R/W
+NET "rc5(3)"  LOC = "L32";  # BWE3 (L)
+NET "rc5(2)"  LOC = "M32";  # BWE2 (L)
+NET "rc5(1)"  LOC = "P27";  # BWE1 (L)
+NET "rc5(0)"  LOC = "M31";  # BWE0 (L)
+
+##########################################################
+#                                                        #
+#   Local bus address, data and control pins             #
+#   Connected to PLX9080                                 #
+#                                                        #
+##########################################################
+NET "ld(31)"     LOC="AF15";
+NET "ld(30)"     LOC="AF14";
+NET "ld(29)"     LOC="AL12";
+NET "ld(28)"     LOC="AL13";
+NET "ld(27)"     LOC="AJ14";
+NET "ld(26)"     LOC="AJ13";
+NET "ld(25)"     LOC="AE15";
+NET "ld(24)"     LOC="AE14";
+NET "ld(23)"     LOC="AN11";
+NET "ld(22)"     LOC="AN12";
+NET "ld(21)"     LOC="AG12";
+NET "ld(20)"     LOC="AM11";
+NET "ld(19)"     LOC="AG14";
+NET "ld(18)"     LOC="AG13";
+NET "ld(17)"     LOC="AK11";
+NET "ld(16)"     LOC="AF13";
+NET "ld(15)"     LOC="AM7";
+NET "ld(14)"     LOC="AJ11";
+NET "ld(13)"     LOC="AP7";
+NET "ld(12)"     LOC="AM8";
+NET "ld(11)"     LOC="AN7";
+NET "ld(10)"     LOC="AH12";
+NET "ld(9)"      LOC="AN8";
+NET "ld(8)"      LOC="AM9";
+NET "ld(7)"      LOC="AP9";
+NET "ld(6)"      LOC="AL8";
+NET "ld(5)"      LOC="AL9";
+NET "ld(4)"      LOC="AL10";
+NET "ld(3)"      LOC="AJ9";
+NET "ld(2)"      LOC="AF12";
+NET "ld(1)"      LOC="AL11";
+NET "ld(0)"      LOC="AP11";
+
+#NET "la(31)"     LOC="AD19";
+#NET "la(30)"     LOC="AD18";
+#NET "la(29)"     LOC="AK21";
+#NET "la(28)"     LOC="AK22";
+#NET "la(27)"     LOC="AM20";
+#NET "la(26)"     LOC="AM19";
+#NET "la(25)"     LOC="AH18";
+#NET "la(24)"     LOC="AH19";
+NET "la(23)"     LOC="AJ18";
+NET "la(22)"     LOC="AJ19";
+NET "la(21)"     LOC="AL19";
+NET "la(20)"     LOC="AL18";
+NET "la(19)"     LOC="AM17";
+NET "la(18)"     LOC="AM16";
+NET "la(17)"     LOC="AM14";
+NET "la(16)"     LOC="AM15";
+NET "la(15)"     LOC="AJ16";
+NET "la(14)"     LOC="AJ17";
+NET "la(13)"     LOC="AL17";
+NET "la(12)"     LOC="AL16";
+NET "la(11)"     LOC="AK13";
+NET "la(10)"     LOC="AK14";
+NET "la(9)"      LOC="AD17";
+NET "la(8)"      LOC="AD16";
+NET "la(7)"      LOC="AP13";
+NET "la(6)"      LOC="AP14";
+NET "la(5)"      LOC="AN13";
+NET "la(4)"      LOC="AN14";
+NET "la(3)"      LOC="AG16";
+NET "la(2)"      LOC="AG15";
+
+NET "lbe_l(3)"   LOC="AG11";
+NET "lbe_l(2)"   LOC="AP12";
+NET "lbe_l(1)"   LOC="AN4";
+NET "lbe_l(0)"   LOC="AN3";
+
+NET "lads_l"     LOC="AM6";
+NET "lblast_l"   LOC="AP6";
+NET "lbterm_l"   LOC="AP5";
+NET "lreseto_l"  LOC="AP4";
+NET "lreadyi_l"   LOC="AN5";
+NET "lwrite"     LOC="AN6";
+
+##########################################################
+#                                                        #
+#   Local bus arbitration pins                           #
+#   Connected to CPLD NOT PLX9656                        #
+#                                                        #
+##########################################################
+NET "fholda"     LOC="AE12";
+
+##########################################################
+#                                                        #
+#   Recommended pin performance attributes               #
+#                                                        #
+##########################################################
+NET "ld(*"       FAST;
+NET "la(*"       FAST;
+NET "ra0(*"      FAST;
+NET "rc0(*"      FAST;
+NET "rd0(*"      FAST;
+NET "ra1(*"      FAST;
+NET "rc1(*"      FAST;
+NET "rd1(*"      FAST;
+NET "ra3(*"      FAST;
+NET "rc3(*"      FAST;
+NET "rd3(*"      FAST;
+NET "ra4(*"      FAST;
+NET "rc4(*"      FAST;
+NET "rd4(*"      FAST;
+NET "ra5(*"      FAST;
+NET "rc5(*"      FAST;
+NET "rd5(*"      FAST;
+NET "lreadyi_l"  FAST;
+NET "lbterm_l"   FAST;
+
+##########################################################
+#                                                        #
+#   Timing specifications                                #
+#                                                        #
+#   All delays in ns                                     #
+#                                                        #
+#   Local bus clock: 50MHz max                           #
+#                                                        #
+##########################################################
+#                                                        #
+# Minimum local bus clock period             = 16.67ns   #
+# Desired local bus clock period             = 20.0ns    #
+# tVALID (all PLX9656 synchronous outputs)   = 9.0ns     #
+# tSETUP (all PLX9656 synchronous inputs)    = 4.5ns     #
+#                                                        #
+# Add 1.0ns slack:                                       #
+# tVALID' (all PLX9656 synchronous outputs)  = 10.0ns    #
+# tSETUP' (all PLX9656 synchronous inputs)   = 5.5ns     #
+#                                                        #
+# So:                                                    #
+# tVALID  (all FPGA synchronous outputs)     = 14.5ns    #
+# tSETUP  (all FPGA synchronous outputs)     = 10.0ns    #
+#                                                        #
+##########################################################
+
+NET "U1?clocks0?clk0" 	 TNM_NET="FFS:LCLK_FFS";
+NET "mclk"               TNM_NET="FFS:MCLK_FFS";
+
+TIMEGRP LCLK_PAD        = "pads(lclk)";
+TIMEGRP MCLK_PAD        = "pads(mclk)";
+TIMEGRP LD_PADS         = "pads(ld(*))";
+TIMEGRP LA_PADS         = "pads(la(*))";
+TIMEGRP LADS_PAD        = "pads(lads_l)";
+TIMEGRP LWRITE_PAD      = "pads(lwrite)";
+TIMEGRP LBLAST_PAD      = "pads(lblast_l)";
+TIMEGRP LBTERM_PAD      = "pads(lbterm_l)";
+TIMEGRP LREADY_PAD      = "pads(lreadyi_l)";
+TIMEGRP FHOLDA_PAD      = "pads(fholda)";
+TIMEGRP RA0_PADS        = "pads(ra0(*))";
+TIMEGRP RC0_PADS        = "pads(rc0(*))";
+TIMEGRP RD0_PADS        = "pads(rd0(*))";
+TIMEGRP RA1_PADS        = "pads(ra1(*))";
+TIMEGRP RC1_PADS        = "pads(rc1(*))";
+TIMEGRP RD1_PADS        = "pads(rd1(*))";
+TIMEGRP RA2_PADS        = "pads(ra2(*))";
+TIMEGRP RC2_PADS        = "pads(rc2(*))";
+TIMEGRP RD2_PADS        = "pads(rd2(*))";
+TIMEGRP RA3_PADS        = "pads(ra3(*))";
+TIMEGRP RC3_PADS        = "pads(rc3(*))";
+TIMEGRP RD3_PADS        = "pads(rd3(*))";
+TIMEGRP RA4_PADS        = "pads(ra4(*))";
+TIMEGRP RC4_PADS        = "pads(rc4(*))";
+TIMEGRP RD4_PADS        = "pads(rd4(*))";
+TIMEGRP RA5_PADS        = "pads(ra5(*))";
+TIMEGRP RC5_PADS        = "pads(rc5(*))";
+TIMEGRP RD5_PADS        = "pads(rd5(*))";
+
+TIMEGRP LCTL_PADS       = LADS_PAD:
+                          LWRITE_PAD:
+                          LBLAST_PAD:
+                          LBTERM_PAD:
+                          LREADY_PAD:
+                          FHOLDA_PAD;
+
+TIMEGRP RAM_PADS        = RA0_PADS:
+                          RC0_PADS:
+                          RD0_PADS:
+                          RA1_PADS:
+                          RC1_PADS:
+                          RD1_PADS:
+                          RA2_PADS:
+                          RC2_PADS:
+                          RD2_PADS:
+                          RA3_PADS:
+                          RC3_PADS:
+                          RD3_PADS:
+                          RA4_PADS:
+                          RC4_PADS:
+                          RD4_PADS:
+                          RA5_PADS:
+                          RC5_PADS:
+                          RD5_PADS;
+
+# Clock distribution & reset
+
+TIMESPEC TS_LCLK_DIST_FFS          = FROM LCLK_PAD TO LCLK_FFS    = 3.0ns;
+TIMESPEC TS_MCLK_DIST_FFS          = FROM MCLK_PAD TO MCLK_FFS    = 5.0ns;
+
+# Internal timing
+
+TIMESPEC TS_LCLK_FFS_FFS           = FROM LCLK_FFS TO LCLK_FFS    = 20.0ns;
+TIMESPEC TS_MCLK_FFS_FFS           = FROM MCLK_FFS TO MCLK_FFS    = 30.0ns;
+
+# FPGA clock-to-output to PLX9656
+TIMESPEC TS_LCLK_FFS_TO_LD_PADS    = FROM LCLK_FFS TO LD_PADS     = 14.5ns;
+TIMESPEC TS_LCLK_FFS_TO_LCTL_PADS  = FROM LCLK_FFS TO LCTL_PADS   = 14.5ns;
+
+# FPGA setup from PLX9656
+TIMESPEC TS_LD_PADS_TO_LCLK_FFS    = FROM LD_PADS TO LCLK_FFS     = 10.0ns;
+TIMESPEC TS_LA_PADS_TO_LCLK_FFS    = FROM LA_PADS TO LCLK_FFS     = 10.0ns;
+TIMESPEC TS_LCTL_PADS_TO_LCLK_FFS  = FROM LCTL_PADS TO LCLK_FFS   = 10.0ns;
+
+# FPGA clock-to-output to SSRAMs
+TIMESPEC TS_LCLK_FFS_TO_RAM_PADS   = FROM LCLK_FFS TO RAM_PADS    = 7.0ns;
+
+# FPGA setup from SSRAMs
+TIMESPEC TS_RAM_PADS_TO_LCLK_FFS   = FROM RAM_PADS TO LCLK_FFS    = 9.0ns;
+
+# FPGA DCM
+##########################################################
+#                                                        #
+#   Constrain DCMs to correct quadrants. Required for    #
+#   Virtex-II ES devices. These constraints will work    #
+#   for a 2V3000 through to a 2v8000 device.             #
+#                                                        #
+#   Use of the wildcard character ? avoids problems due  #
+#   to differences in the hierarchy separator used by    #
+#   various synthesis tools.                             #
+#                                                        #
+##########################################################
+INST "U1?clocks0?dll_lclk" LOC="DCM_X2Y0"; # for AG18, bottom left
+INST "U1?clocks0?dll0"     LOC="DCM_X3Y0"; # for AG17, bottom right
+INST "U1?clocks0?dll1"     LOC="DCM_X4Y0"; # for AF17, bottom right

@@ -1,0 +1,43 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE platform PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+
+<platform name="myPlatform">
+
+   <processor name="PPC_1" type="PPC" data_memory="4096" program_memory="2048">
+      <port name="IO_1" />
+   </processor>
+
+   <processor name="MB_2" type="MB" data_memory="4096" program_memory="2048">
+      <port name="IO_1" />
+   </processor>
+
+   <processor name="MB_1" type="MB" data_memory="4096" program_memory="2048">
+      <port name="IO_1" type="LMBPort" />
+   </processor>
+
+   <network name="CS_1" type="CrossbarSwitch">
+      <port name="IO_1" type="FifoReadPort"/>
+      <port name="IO_2" />
+      <port name="IO_3" />
+   </network>
+
+
+   <link name="BUS_1">
+      <resource name="PPC_1" port="IO_1" />
+      <resource name="CS_1" port="IO_2" />
+   </link>
+
+   <link name="BUS_3">
+      <resource name="MB_2" port="IO_1" />
+      <resource name="CS_1" port="IO_1" />
+   </link>
+
+   <link name="BUS_2">
+      <resource name="MB_1" port="IO_1" />
+      <resource name="CS_1" port="IO_3" />
+   </link>
+
+ </platform>
+
+

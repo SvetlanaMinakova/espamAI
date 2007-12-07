@@ -1,0 +1,53 @@
+#!/bin/sh
+# Shell script that starts up espam/compaan scripts
+# Author: Christopher Hylands
+# Author: Bart Kienhuis
+# Author: Todor Stefanov
+# copyright: Leiden University (LIACS) 2005
+# Version: $Id: cpinvoke.in,v 1.1 2007/12/07 22:09:13 stefanov Exp $
+
+ESPAM_DEFAULT=@prefix@
+# Check that ESPAM is set, and that we can find the proper sources
+if [ -z "$ESPAM" ]; then
+    if [ -d "$ESPAM_DEFAULT" ]; then
+        ESPAM="$ESPAM_DEFAULT"
+        export ESPAM
+    fi
+    if [ ! -d "$ESPAM" ]; then
+        echo "$0: Could not find '$ESPAM'.  Perhaps your ESPAM"
+        echo " variable is not set properly?"
+    fi
+fi
+
+ESPAMSRC=$ESPAM/src
+ESPAMCLASSES="$ESPAMSRC@CLASSPATHSEPARATOR@"
+
+if [ -z ${CLASSPATH:=""} ] ; then
+        CLASSPATH="$ESPAMCLASSES@CLASSPATHSEPARATOR@."
+else
+        CLASSPATH="$ESPAMCLASSES@CLASSPATHSEPARATOR@.@CLASSPATHSEPARATOR@${CLASSPATH}"
+fi
+export CLASSPATH
+
+if [ -z ${@LDPATH@:=""} ] ; then
+        @LDPATH@="@LIBPATH@"
+else
+        @LDPATH@="@LIBPATH@@CLASSPATHSEPARATOR@${@LDPATH@}"
+fi
+export @LDPATH@
+
+JAVAHOME=@JAVA_HOME@
+
+# Keep these alphabetical
+case "`basename $0`" in
+    espam)
+	startup=espam.main.Main
+	;;
+esac
+
+str="$JAVAHOME/jre/bin/java -ea -Dptolemy.ptII.dir=${PTII} $startup ${1+"$@"}"
+
+#echo $str
+exec $str
+
+

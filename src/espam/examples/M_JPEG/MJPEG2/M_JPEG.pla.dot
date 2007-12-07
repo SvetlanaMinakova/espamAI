@@ -1,0 +1,81 @@
+digraph myPlatform {
+
+  ratio = auto;
+  rankdir = LR;
+  ranksep = 0.3;
+  nodesep = 0.2;
+  center = true;
+
+  node [ fontsize=12, height=0.4, width=0.4, style=filled, color="0.650 0.200 1.000" ]
+  edge [ fontsize=10, arrowhead=none, style=bold]
+
+  "PPC_1" [ label="PPC_1", color=tan ];
+  "MB_1" [ label="MB_1", color=burlywood3 ];
+
+  subgraph cluster0 {
+    "HWN_1" [ label="HWN_1", color=lightseagreen ];
+    label= "Compaan PN";
+    color=blue;
+  }
+
+
+  subgraph cluster0 {
+    "HWN_2" [ label="HWN_2", color=lightseagreen ];
+    label= "Compaan PN";
+    color=blue;
+  }
+
+  { rank=source; "ZBT_PPC_1" [ label="ZBT_PPC_1 \n6144 Bytes", shape=box, regular=true, color=aliceblue ]; }
+  { rank=source; "Bram_MB_1" [ label="Bram_MB_1 \n6144 Bytes", shape=box, regular=true, color=mintcream ]; }
+  "FIFO_PPC_1_Out_1" [ label="FIFO_PPC_1_Out_1 \n512 Bytes", shape=box, color=beige ];
+
+  subgraph cluster0 {
+    "FIFO_HWN_1_Out_1" [ label="FIFO_HWN_1_Out_1 \n512 Bytes", shape=box, color=beige ];
+  }
+
+  "FIFO_PPC_1_Out_2" [ label="FIFO_PPC_1_Out_2 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_3" [ label="FIFO_PPC_1_Out_3 \n512 Bytes", shape=box, color=beige ];
+
+  subgraph cluster0 {
+    "FIFO_HWN_2_Out_2" [ label="FIFO_HWN_2_Out_2 \n512 Bytes", shape=box, color=beige ];
+  }
+
+  "FIFO_PPC_1_Out_4" [ label="FIFO_PPC_1_Out_4 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_5" [ label="FIFO_PPC_1_Out_5 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_6" [ label="FIFO_PPC_1_Out_6 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_7" [ label="FIFO_PPC_1_Out_7 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_8" [ label="FIFO_PPC_1_Out_8 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_9" [ label="FIFO_PPC_1_Out_9 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_PPC_1_Out_10" [ label="FIFO_PPC_1_Out_10 \n512 Bytes", shape=box, color=beige ];
+  "FIFO_MB_1_Out_1" [ label="FIFO_MB_1_Out_1 \n512 Bytes", shape=box, color=beige ];
+
+  "PPC_1" -> "ZBT_PPC_1" [ label="BUS_PPC_1", color=firebrick ];
+  "MB_1" -> "Bram_MB_1" [ label="BUS_MB_1", color=firebrick ];
+  "PPC_1" -> "FIFO_PPC_1_Out_1" [ label="BUS_PPC_1_Out_1", color=yellowgreen ];
+  "HWN_1" -> "FIFO_PPC_1_Out_1" [ label="BUS_FIFO_PPC_1_Out_1", color=khaki3 ];
+  "HWN_1" -> "FIFO_HWN_1_Out_1" [ label="BUS_HWN_1_Out_1", color=yellowgreen ];
+  "HWN_2" -> "FIFO_HWN_1_Out_1" [ label="BUS_FIFO_HWN_1_Out_1", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_2" [ label="BUS_PPC_1_Out_2", color=yellowgreen ];
+  "HWN_2" -> "FIFO_PPC_1_Out_2" [ label="BUS_FIFO_PPC_1_Out_2", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_3" [ label="BUS_PPC_1_Out_3", color=yellowgreen ];
+  "HWN_2" -> "FIFO_PPC_1_Out_3" [ label="BUS_FIFO_PPC_1_Out_3", color=khaki3 ];
+  "HWN_2" -> "FIFO_HWN_2_Out_2" [ label="BUS_HWN_2_Out_2", color=yellowgreen ];
+  "MB_1" -> "FIFO_HWN_2_Out_2" [ label="BUS_FIFO_HWN_2_Out_2", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_4" [ label="BUS_PPC_1_Out_4", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_4" [ label="BUS_FIFO_PPC_1_Out_4", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_5" [ label="BUS_PPC_1_Out_5", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_5" [ label="BUS_FIFO_PPC_1_Out_5", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_6" [ label="BUS_PPC_1_Out_6", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_6" [ label="BUS_FIFO_PPC_1_Out_6", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_7" [ label="BUS_PPC_1_Out_7", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_7" [ label="BUS_FIFO_PPC_1_Out_7", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_8" [ label="BUS_PPC_1_Out_8", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_8" [ label="BUS_FIFO_PPC_1_Out_8", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_9" [ label="BUS_PPC_1_Out_9", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_9" [ label="BUS_FIFO_PPC_1_Out_9", color=khaki3 ];
+  "PPC_1" -> "FIFO_PPC_1_Out_10" [ label="BUS_PPC_1_Out_10", color=yellowgreen ];
+  "MB_1" -> "FIFO_PPC_1_Out_10" [ label="BUS_FIFO_PPC_1_Out_10", color=khaki3 ];
+  "MB_1" -> "FIFO_MB_1_Out_1" [ label="BUS_MB_1_Out_1", color=yellowgreen ];
+  "MB_1" -> "FIFO_MB_1_Out_1" [ label="BUS_FIFO_MB_1_Out_1", color=khaki3 ];
+
+}

@@ -1,0 +1,125 @@
+dnl	This file is an input file used by the GNU "autoconf" program to
+dnl	generate the file "configure", which is run to configure the
+dnl	Makefile in this directory.
+
+# Version: $Id: configure.in,v 1.1 2007/12/07 22:06:42 stefanov Exp $
+#
+
+
+dnl Autoconfigure for DIVA
+AC_INIT(./config/cpinvoke.in)
+
+if test $prefix = "NONE"; then
+	AC_MSG_WARN([No prefix is given, Will assume that ESPAM will run from directory "/usr/local". Use "--prefix=path" to change this path])
+else
+	AC_MSG_WARN([ESPAM will run from directory '$prefix'])
+fi
+
+if test ! -d  $prefix; then
+	AC_MSG_WARN([Prefix path doesn't exist. Please check path supplied with  "--prefix=path" option])
+fi
+
+dnl Check the JAVA STUFF
+AC_CHECKING(" -------- JAVA Stuff --------- ")
+#--------------------------------------------------------------------
+#	See if there was a command-line option for where Java is;  if
+#	not, check to see if the JAVA_HOME environment variable is set;
+#       if it is not, look for javac on the path.
+#--------------------------------------------------------------------
+
+AC_ARG_WITH(java, [  --with-java=DIR         Location of JDK installation],
+    JAVA_HOME=$withval)
+
+if test -d "$JAVA_HOME"; then
+    AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
+else
+    AC_MSG_RESULT([$JAVA_HOME doesn't exist, searching...])
+fi
+
+if test ! -d "$JAVA_HOME"; then
+	AC_MSG_ERROR([Java installation not found, please specify --with-java])
+else
+     	AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
+fi
+
+dnl Check for other stuff
+AC_CHECKING(" -------- OTHER Stuff --------- ")
+#--------------------------------------------------------------------
+#	Figure out which separator to use for CLASSPATH
+#	So much for write once, run everywhere.
+#--------------------------------------------------------------------
+AC_MSG_CHECKING([for CLASSPATH separator])
+case "`uname -s`" in
+    CYGWIN_NT-*) CLASSPATHSEPARATOR=";";
+		OPT_QUOTE="\"";;
+    CYGWIN32/NT) CLASSPATHSEPARATOR=";";
+		OPT_QUOTE="\"";;
+    *) CLASSPATHSEPARATOR=":";
+		OPT_QUOTE="";;
+esac
+
+dnl Checks for libraries.
+dnl We use shared libraries when possible. In that case we
+dnl use the shared_lib function, otherwise the library
+dnl function from fucntions_default.mk. In case of the
+dnl shared libraries we fill in specifics for the platforms
+
+case "`uname -s`" in
+    *Linux*)
+        LDPATH="LD_LIBRARY_PATH";;
+    *SunOS*)
+        LDPATH="LD_LIBRARY_PATH";;
+    *)
+        LDPATH="PATH";;
+esac
+
+dnl fix to get configure work smoother on CYGWIN systems
+case "`uname -s`" in
+	# On a CYGWIN system, the path for the CLASSPATH and PATH
+	# needs to be different to work correctly. The classpath
+	# needs to start from the windows root (e.g. "c:/"), while the
+	# path used to load an DLL should have as root the rootof
+	# cyginw (e.g. /home).
+    CYGWIN_NT-*)
+	CYGWINPREFIX=`echo $prefix | sed "s/.cygwin/g/" | sed "s/://" | sed "s/.g//"`
+        AC_MSG_RESULT([Cygwin adjusted prefix for loading DLL:'$CYGWINPREFIX'])
+	LIBPATH=$CYGWINPREFIX/lib;; #On Win/NT statically linked
+    *) LIBPATH=$prefix/lib;; #On LINUX/UNIX dynamically linked
+esac
+
+AC_MSG_CHECKING([for library path])
+AC_MSG_RESULT(['$LIBPATH'])
+
+
+AC_MSG_RESULT([Classpath separator  = '$CLASSPATHSEPARATOR'])
+AC_MSG_RESULT([Java Home            = '$JAVA_HOME'])
+AC_MSG_RESULT([Library Path         = '$LDPATH'])
+AC_MSG_RESULT([Library Content      = '$LIBPATH'])
+
+
+#---- Keep these substitutions alphabetical, with a description ----#
+
+# Separator in CLASSPATH,  For Unix, this should be :, for Cygwin use ;
+AC_SUBST(CLASSPATHSEPARATOR)
+
+# Location of the JDK
+AC_SUBST(JAVA_HOME)
+
+AC_SUBST(LIBPATH)
+
+# From where to get the library files
+AC_SUBST(LDPATH)
+
+# Files we substitute in
+#AC_OUTPUT(vars.mk)
+
+# Files we substitute in
+AC_OUTPUT(./config/cpinvoke ./config/vars.mk )
+chmod -R 755 ./bin
+cp ./config/cpinvoke ./bin
+cp ./config/vars.mk ./src
+chmod 755 ./bin/cpinvoke
+
+cd ./bin
+rm -rf espam
+ln -s cpinvoke espam

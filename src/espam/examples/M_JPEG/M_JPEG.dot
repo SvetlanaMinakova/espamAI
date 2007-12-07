@@ -1,0 +1,29 @@
+digraph M_JPEG {
+ratio = auto
+rankdir = LR
+ranksep = 0.3
+nodesep = 0.2
+center = 1
+node [fontsize=12,height=0.25,width=0.4, style=filled, color="0.650 0.200 1.000" ]
+edge [fontsize=10 ]
+ND_1 [label = "ND_1\nDefaultTables|"];
+ND_2 [label = "ND_2\nVideoInInit|"];
+ND_3 [label = "ND_3\nVideoInMain|"];
+ND_4 [label = "ND_4\nDCT|"];
+ND_5 [label = "ND_5\nQ|"];
+ND_6 [label = "ND_6\nVLE|"];
+ND_7 [label = "ND_7\nVideoOut|"];
+ND_3 -> ND_4 [label = "ED_1" color= "0.650 0.700 0.700"];
+ND_4 -> ND_5 [label = "ED_2" color= "0.650 0.700 0.700"];
+ND_1 -> ND_5 [label = "ED_3" color= "0.002 0.999 0.999"];
+ND_1 -> ND_5 [label = "ED_4" color= "0.002 0.999 0.999"];
+ND_5 -> ND_6 [label = "ED_5" color= "0.650 0.700 0.700"];
+ND_1 -> ND_6 [label = "ED_6" color= "0.002 0.999 0.999"];
+ND_1 -> ND_6 [label = "ED_7" color= "0.002 0.999 0.999"];
+ND_1 -> ND_6 [label = "ED_8" color= "0.002 0.999 0.999"];
+ND_1 -> ND_6 [label = "ED_9" color= "0.002 0.999 0.999"];
+ND_2 -> ND_7 [label = "ED_10" color= "0.002 0.999 0.999"];
+ND_1 -> ND_7 [label = "ED_11" color= "0.002 0.999 0.999"];
+ND_1 -> ND_7 [label = "ED_12" color= "0.002 0.999 0.999"];
+ND_6 -> ND_7 [label = "ED_13" color= "0.650 0.700 0.700"];
+}

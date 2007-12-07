@@ -1,0 +1,15 @@
+################################################################################
+##
+## Copyright (c) 1995-2002 Xilinx, Inc.  All rights reserved.
+##
+## Xilinx, Inc.
+##
+## opb_zbt_controller.pao
+##
+## Peripheral Analyze Order
+##
+################################################################################
+
+lib common_v1_00_a pselect
+lib opb_zbt_controller_v1_00_a opb_zbt_controller_core
+lib opb_zbt_controller_v1_00_a opb_zbt_controller

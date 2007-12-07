@@ -1,0 +1,2 @@
+lib proc_common_v1_00_c pselect
+lib clock_cycle_counter_v1_00_a clock_cycle_counter

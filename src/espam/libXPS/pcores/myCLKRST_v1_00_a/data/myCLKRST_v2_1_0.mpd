@@ -1,0 +1,44 @@
+###################################################################
+##
+## Name     : clocks_reset
+## Desc     : Microprocessor Peripheral Description
+##
+###################################################################
+
+BEGIN myclkrst
+
+## Peripheral Options
+OPTION IPTYPE = PERIPHERAL
+OPTION IMP_NETLIST = TRUE
+OPTION HDL = VHDL
+OPTION CORE_STATE = ACTIVE
+OPTION IP_GROUP = USER
+OPTION ARCH_SUPPORT = virtex2p
+
+
+## Bus Interfaces
+
+
+## Generics for VHDL or Parameters for Verilog
+PARAMETER num_clock = 2, DT = integer, MIN_SIZE = 0x2
+
+
+## Ports
+PORT lreset_l = "", DIR = I
+PORT lclk = "", DIR = I, IOB_STATE = BUF
+PORT mclk = "", DIR = I, IOB_STATE = BUF
+PORT mgt_clk = "", DIR = I, IOB_STATE = BUF
+PORT mgt_clkb = "", DIR = I, IOB_STATE = BUF
+PORT ctrl = "", DIR = I, VEC = [63:0]
+PORT rst_power_on = "", DIR = O, 
+PORT rst_ppc1 = "", DIR = O,
+PORT rst_ppc2 = "", DIR = O,
+PORT rst_design = "", DIR = O,  
+PORT mclk_gen = "", DIR = O
+PORT lclk_gen = "", DIR = O
+PORT mgt_clk_gen = "", DIR = O		
+PORT clk_gen = "", DIR = O, VEC = [(num_clock - 1):0]    
+PORT clk_fb = "", DIR = I, VEC = [(num_clock - 1):0], IOB_STATE=BUF 
+PORT locked = "",DIR = O, VEC = [31:0]  
+
+END

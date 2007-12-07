@@ -1,0 +1,416 @@
+/* Input file to JJTree and JavaCC to generate HiPars Parser */
+
+options {
+    LOOKAHEAD=1;
+    //DEBUG_PARSER = true;
+    //DEBUG_TOKEN_MANAGER = true;
+    MULTI = true;
+    STATIC = false;
+    NODE_USES_PARSER = true;
+}
+
+PARSER_BEGIN(ExpressionParser)
+
+/*******************************************************************\
+
+This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+All rights reserved.
+
+The use and distribution terms for this software are covered by the 
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+which can be found in the file LICENSE at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by 
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+
+\*******************************************************************/
+
+package espam.parser.expression;
+
+import espam.utils.symbolic.expression.*; 
+
+import java.util.ArrayList;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.io.ByteArrayInputStream;
+
+/**
+@author Bart Kienhuis 
+@version $Id: ExpressionParser.jjt,v 1.1 2007/12/07 22:06:54 stefanov Exp $
+*/
+
+public class ExpressionParser {
+
+    public ExpressionParser() {
+	this( new ByteArrayInputStream("a hack!!".getBytes()) );
+	_byteStream = null;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         public methods                    ////
+
+    public Expression getExpression( String expression ) 
+            throws ParseException {
+        Expression linearExpression = null;
+        // Make a byte stream from the string
+        _byteStream = new ByteArrayInputStream(expression.getBytes());
+        // Re initialize the parser
+        this.ReInit( _byteStream );
+        linearExpression = this.complexExpression();
+        return linearExpression;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+
+    // Private //
+    private ByteArrayInputStream _byteStream;
+}
+
+PARSER_END(ExpressionParser)
+
+/* COMMENTS */
+
+/** 
+ * MatParser elements
+ */
+TOKEN [IGNORE_CASE] :
+{
+    <ELSE:          "else">
+  | <END:           "end">
+  | <FOR:           "for">
+  | <IF:            "if">
+  | <DIV:           "div">
+  | <MOD:           "mod">
+  | <FLOOR:         "floor">
+  | <CEIL:          "ceil">
+  | <EQUAL:         "equal">
+  | <MIN:           "min">
+  | <MAX:           "max">
+  | <IPD:           "ipd">
+  | <OPD:           "opd">
+  | <DEFFUNCTION:   "%function">
+  | <DEFPARAMETER:  "%parameter">
+}
+
+<DEFAULT>
+TOKEN :
+{
+    <EXP: "**">
+  | <MUL: "*">
+  | <FRACTION: "/">
+  | <ADD: "+">
+  | <SUB: "-">
+  | <CONCAT: "&">
+  | <EQ:  "=">
+  | <NEQ: "!=">
+  | <GE:  ">=">
+  | <LE:  "<=">
+  | <GT:  ">">
+  | <LO:  "<">
+  | <LEFTBRACKET: "[">
+  | <RIGHTBRACKET: "]">
+  | <SEMICOLON: ";">
+  | <COLON: ":">
+  | <MATLABBEGIN:   "%matlab"> : IN_MATLAB_COMMENT
+}
+
+
+<DEFAULT>
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"%%" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+<IN_MATLAB_COMMENT>
+TOKEN :
+{
+  <MATLAB_COMMENT: "%end" > : DEFAULT
+}
+ 
+<IN_MATLAB_COMMENT>
+MORE :
+{
+  < ~[] >
+}
+
+
+
+<DEFAULT>
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL> (["l","L"])?
+      | <HEX_LITERAL> (["l","L"])?
+      | <OCTAL_LITERAL> (["l","L"])?
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+}
+
+<DEFAULT>
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|
+  < #DIGIT: ["0"-"9"] >
+}
+
+Expression complexExpression() : {
+    int signValue;
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+    LinTerm trm;
+}  
+{
+    [ sign() ] termOrOperator()
+	( LOOKAHEAD(2) linearOperator() termOrOperator() )*
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    signValue = 1;
+	    ArrayList termList = new ArrayList();
+	    for (int i=0;i<numberOfChildern;i++) {
+		node = (SimpleNode) jjtThis.jjtGetChild(i);
+		nodeName = node.toString();
+		// System.out.println(" -- Node: " + nodeName);
+		if (nodeName == "sign" ) { 
+		    signValue = ((ASTsign) node).getValue(); 
+		}
+		if (nodeName == "linearOperator" ) {
+		    signValue = ((ASTlinearOperator) node).getValue(); 
+		}
+		if (nodeName == "termOrOperator" ) {
+		    trm = ((ASTtermOrOperator) node).getTerm();
+		    trm.setSign( signValue );
+		    termList.add( trm );
+		}
+	    }
+            return new Expression( termList );
+	}
+}
+
+void simpleExpression() :{ 
+    int signValue;
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+    LinTerm trm;
+}
+{
+    [ sign() ] term()
+	( LOOKAHEAD(2) linearOperator() term() )*
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    signValue = 1;
+	    ArrayList termList = new ArrayList();
+	    for (int i=0;i<numberOfChildern;i++) {
+		node = (SimpleNode) jjtThis.jjtGetChild(i);
+		nodeName = node.toString();
+		if (nodeName == "sign" ) { 
+		    signValue = ((ASTsign) node).getValue(); 
+		}
+		if (nodeName == "linearOperator" ) {
+		    signValue = ((ASTlinearOperator) node).getValue(); 
+		}
+		if (nodeName == "term" ) {
+		    trm = ((ASTterm) node).getTerm();
+		    trm.setSign( signValue );
+		    termList.add( trm );
+		}
+	    }
+	    jjtThis.setLinearExp( termList ); 
+	}
+}
+
+void sign() : { }
+{
+      "+"      { jjtThis.setValue(  1 ); }
+    | "-"      { jjtThis.setValue( -1 ); }
+}
+
+void linearOperator() : {}
+{
+      <ADD>    { jjtThis.setValue(  1 ); }
+    | <SUB>    { jjtThis.setValue( -1 ); }
+}
+
+
+void termOrOperator() : {} 
+{
+     LOOKAHEAD(3) specialTerm()
+	{
+	    jjtThis.setTerm( ((ASTspecialTerm) jjtThis.jjtGetChild(0)).getTerm() );
+	}
+|
+    term()
+	{
+	    jjtThis.setTerm( ((ASTterm) jjtThis.jjtGetChild(0)).getTerm() );
+	}
+}
+
+void specialTerm() : {
+    int num, den;
+    LinTerm term;
+    int numberOfChildren;
+}
+{
+    fraction() "*" specialOperator()
+	{
+	    numberOfChildren = jjtThis.jjtGetNumChildren();
+	    num = ((ASTfraction) jjtThis.jjtGetChild(0)).getNumerator();
+	    den = ((ASTfraction) jjtThis.jjtGetChild(0)).getDenominator();
+            term = ((ASTspecialOperator) jjtThis.jjtGetChild(1)).getTerm();
+            term.setNumerator( num );
+            term.setDenominator( den );
+    
+	    jjtThis.setTerm( term );
+	}
+|   specialOperator() 
+        {
+            term = ((ASTspecialOperator) jjtThis.jjtGetChild(0)).getTerm();
+            jjtThis.setTerm( term );
+        }
+}
+
+void specialOperator() : {
+    LinTerm term = null;
+    Expression exp = null;
+    Expression exp1 = null;
+    Expression exp2 = null;
+    int div;
+}
+{
+      <DIV>   "(" simpleExpression() "," Integer() ")"
+	  {
+	      exp = ((ASTsimpleExpression) 
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      div = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	      term = new DivTerm(exp,div);
+	      jjtThis.setTerm( term );
+	  }
+    | <MOD>   "(" simpleExpression() "," Integer() ")"
+	{
+	    exp = ((ASTsimpleExpression) 
+                    jjtThis.jjtGetChild(0)).getLinearExp();
+	    div = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	    term = new ModTerm(exp,div);
+	    jjtThis.setTerm( term );
+	}
+    | <FLOOR> "(" simpleExpression() ")"
+	{
+	      exp = ((ASTsimpleExpression) 
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      term = new FloorTerm(exp);
+	      jjtThis.setTerm( term );
+	}
+    | <CEIL>  "(" simpleExpression() ")"
+	{
+	      exp = ((ASTsimpleExpression) 
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      term = new CeilTerm(exp);
+	      jjtThis.setTerm( term );
+	}
+   | <MAX>  "(" simpleExpression() "," simpleExpression() ")"
+	{
+              exp1 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+              exp2 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(1)).getLinearExp();
+	      term = new MaximumTerm(exp1, exp2);
+	      jjtThis.setTerm( term );
+	}
+    | <MIN>  "(" simpleExpression() "," simpleExpression() ")"
+	{
+	      exp1 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+              exp2 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(1)).getLinearExp();
+	      term = new MinimumTerm(exp1, exp2);
+	      jjtThis.setTerm( term );
+	}
+}
+
+void term() : {
+    int num, den;
+    String name;
+    int numberOfChildern;
+}
+{
+    fraction() [ "*" Identifier() ]
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    num = ((ASTfraction) jjtThis.jjtGetChild(0)).getNumerator();
+	    den = ((ASTfraction) jjtThis.jjtGetChild(0)).getDenominator();
+	    name = "";
+	    if ( numberOfChildern == 2 ) {
+		name = ((ASTIdentifier) jjtThis.jjtGetChild(1)).getName();
+	    }
+	    jjtThis.setTerm( new LinTerm(num,den,name) );
+	}
+|
+    Identifier() [ "*" fraction() ]
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    name = ((ASTIdentifier) jjtThis.jjtGetChild(0)).getName();
+	    num = 1;
+	    den = 1;
+	    if ( numberOfChildern == 2 ) {
+		num = ((ASTfraction) jjtThis.jjtGetChild(1)).getNumerator();
+		den = ((ASTfraction) jjtThis.jjtGetChild(1)).getDenominator(); 
+	    }
+	    jjtThis.setTerm( new LinTerm(num,den,name));
+	}
+}
+
+void fraction() : {
+    int num;
+    int den;
+}
+{
+    (
+            Integer() [ "/" Integer() ]
+    )
+	{
+	    int numberOfChildern = jjtThis.jjtGetNumChildren();
+	    if ( numberOfChildern == 1 ) {
+		num = ((ASTInteger) jjtThis.jjtGetChild(0)).getValue();
+		den = 1;
+	    } else {
+		num = ((ASTInteger) jjtThis.jjtGetChild(0)).getValue();
+		den = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	    }
+	    jjtThis.setFraction(num,den);
+	}
+}
+
+void Identifier() : {
+    Token t;
+}
+{
+    t = <IDENTIFIER>  { jjtThis.setName( t.toString() ); }
+}
+
+void Integer() : {
+    Token t;
+}
+{
+    t = <INTEGER_LITERAL> { jjtThis.setValue( t.toString() ); }
+}
+
+

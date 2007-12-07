@@ -1,0 +1,159 @@
+/* Input file to JJTree and JavaCC to generate JMatrix Parser */
+
+PARSER_BEGIN(JMatrixParser)
+
+/*******************************************************************\
+
+This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+All rights reserved.
+
+The use and distribution terms for this software are covered by the 
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+which can be found in the file LICENSE at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by 
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+
+\*******************************************************************/
+
+package espam.parser.matrix;
+
+import espam.utils.symbolic.matrix.JMatrix;
+import espam.utils.symbolic.matrix.SignedMatrix;
+import java.util.Vector;
+import java.io.ByteArrayInputStream;
+
+/**
+
+This class defines a Parser that construct a JMatrix from a
+String. The String describes a Matrix in the way a matrix is written
+in Matlab.
+
+@author Bart Kienhuis
+@version $Id: JMatrixParser.jjt,v 1.1 2007/12/07 22:07:03 stefanov Exp $
+*/
+
+public class JMatrixParser {
+
+
+    public JMatrixParser() {
+	this( new ByteArrayInputStream("a hack!!".getBytes()) );
+	_byteStream = null;
+    }
+    
+    /** Convert a string representing a matrix in Matlab format in an
+        instance of JMatrix.
+        @param matlabString string representing the matrix.
+        @return a Matrix
+    */
+    public static JMatrix getJMatrix( String matlabString ) 
+            throws ParseException {
+        _byteStream = new ByteArrayInputStream(matlabString.getBytes());
+        ReInit(_byteStream);
+	JMatrix m = null;
+        m = matrix();
+	return m;
+    }
+
+    /** Convert a string representing a matrix in Matlab format in an
+        instance of JMatrix.
+        @param matlabString string representing the matrix.
+        @return a Matrix
+    */
+    public static SignedMatrix getSignedMatrix( String matlabString ) 
+            throws ParseException {
+        _byteStream = new ByteArrayInputStream(matlabString.getBytes());
+        ReInit(_byteStream);
+	SignedMatrix m = null;
+        m = new SignedMatrix( matrix() );
+        return m;
+    }
+	
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+
+    // Private //
+    private static ByteArrayInputStream _byteStream;
+
+}
+
+PARSER_END(JMatrixParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+
+<DEFAULT> TOKEN :
+{
+    < NAME     : ( ["a"-"z" , "A"-"Z" , "_"] )+ ( ["a"-"z" , "A"-"Z" , "_" , "'", "0"-"9"] )* >
+ |  < NATURAL  : ( ["0"-"9"] )+ ( ["0"-"9"] )* >
+ |  < SIGN     : ["-","+"] > 
+}
+
+
+SPECIAL_TOKEN :
+{
+  < COMMENT : "//" (~["\n","\r"])* ["\n","\r"] >
+}
+
+
+JMatrix matrix() :
+{
+  JMatrix m;
+  JMatrix row = null;
+}
+{  (
+        "[" [row=row()] 
+        { if(row!=null) {
+            m = (JMatrix) row.clone();
+        } else {
+            m = new JMatrix();
+        }
+        }
+        (";"  row=row()  {m.insertRows(row, m.nbRows());} )* "]"
+       )
+       
+    {  
+        return m;
+    }
+}
+
+JMatrix row() :
+{
+  Vector row = new Vector();
+  JMatrix m;
+  long element;
+}
+{  (   element=element()       {row.add( new Long(element));}
+       ( "," element=element() {row.add( new Long(element));} )*
+   )
+   {	m = new JMatrix(1, row.size() );
+	for (int col=0; col < row.size(); col++) {
+		m.setElement(0, col, (long) ((Long) row.elementAt(col)).longValue() );
+	}
+	return m;
+   }
+}
+
+
+long element() :
+{
+  Token i;
+  Token s;
+  int sign = 1;
+  int value;
+}
+{   (	[s=<SIGN> {if ( (s.image).equals("-") ) sign=-1*sign; }]
+    	i=<NATURAL> {value = sign*(new Integer(i.image)).intValue();}
+    )
+    { return value; }
+}
+ 

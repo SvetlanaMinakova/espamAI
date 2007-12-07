@@ -1,0 +1,619 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE model PUBLIC "-//LIACS//DTD Laura 1//EN"
+"http://www.liacs.nl/~kienhuis/dtd/laura_1.dtd">
+<model name="M_JPEG">
+
+  <parameter name="NumFrames" lb="1" ub="100" value="5"/>
+  <parameter name="VNumBlocks" lb="2" ub="100" value="2"/>
+  <parameter name="HNumBlocks" lb="1" ub="100" value="5"/>
+
+  <entity name="ND_1" type="source">
+    <port name="ND_1OP_1" type="write"></port>
+    <port name="ND_1OP_2" type="write"></port>
+    <port name="ND_1OP_3" type="write"></port>
+    <port name="ND_1OP_4" type="write"></port>
+    <port name="ND_1OP_5" type="write"></port>
+    <port name="ND_1OP_6" type="write"></port>
+    <port name="ND_1OP_7" type="write"></port>
+    <port name="ND_1OP_8" type="write"></port>
+    <assignstatement name="DefaultTables" >
+      <var name="out_0" type="" />
+      <var name="out_1" type="" />
+      <var name="out_2" type="" />
+      <var name="out_3" type="" />
+      <var name="out_4" type="" />
+      <var name="out_5" type="" />
+      <var name="out_6" type="" />
+      <var name="out_7" type="" />
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, -1;
+                          1, -1, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_1OP_1" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_1" port="ND_1OP_2" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_2" port="ND_1OP_3" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_3" port="ND_1OP_4" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_4" port="ND_1OP_5" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_5" port="ND_1OP_6" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_6" port="ND_1OP_7" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+    <opdstatement arg="out_7" port="ND_1OP_8" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_2" type="source">
+    <port name="ND_2OP_1" type="write"></port>
+    <assignstatement name="VideoInInit" >
+      <var name="out_0" type="" />
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, -1;
+                          1, -1, 1, 0, 0, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_2OP_1" >
+      <domain index="k" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_3" type="source">
+    <port name="ND_3OP_1" type="write"></port>
+    <assignstatement name="VideoInMain" >
+      <var name="out_0" type="" />
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, 0, 0, -1;
+                          1, -1, 0, 0, 1, 0, 0, 0;
+                          1, 0, 1, 0, 0, 0, 0, -1;
+                          1, 0, -1, 0, 0, 1, 0, 0;
+                          1, 0, 0, 1, 0, 0, 0, -1;
+                          1, 0, 0, -1, 0, 0, 1, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_3OP_1" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_4" type="transformer">
+    <port name="ND_4IP_1" type="read"></port>
+    <port name="ND_4OP_1" type="write"></port>
+    <ipdstatement arg="in_0" port="ND_4IP_1" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+      <linearization type="fifo">
+        <property name="size" value="null"/>
+      </linearization>
+    </ipdstatement>
+    <assignstatement name="DCT" >
+      <var name="in_0" type="" />
+      <var name="out_0" type="" />
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, 0, 0, -1;
+                          1, -1, 0, 0, 1, 0, 0, 0;
+                          1, 0, 1, 0, 0, 0, 0, -1;
+                          1, 0, -1, 0, 0, 1, 0, 0;
+                          1, 0, 0, 1, 0, 0, 0, -1;
+                          1, 0, 0, -1, 0, 0, 1, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_4OP_1" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_5" type="transformer">
+    <port name="ND_5IP_2" type="read"></port>
+    <port name="ND_5IP_3" type="read"></port>
+    <port name="ND_5IP_4" type="read"></port>
+    <port name="ND_5OP_1" type="write"></port>
+    <ipdstatement arg="in_0" port="ND_5IP_2" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+      <linearization type="fifo">
+        <property name="size" value="null"/>
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_1" port="ND_5IP_3" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_2" port="ND_5IP_4" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <assignstatement name="Q" >
+      <var name="in_0" type="" />
+      <var name="in_1" type="" />
+      <var name="in_2" type="" />
+      <var name="out_0" type="" />
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, 0, 0, -1;
+                          1, -1, 0, 0, 1, 0, 0, 0;
+                          1, 0, 1, 0, 0, 0, 0, -1;
+                          1, 0, -1, 0, 0, 1, 0, 0;
+                          1, 0, 0, 1, 0, 0, 0, -1;
+                          1, 0, 0, -1, 0, 0, 1, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_5OP_1" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_6" type="transformer">
+    <port name="ND_6IP_5" type="read"></port>
+    <port name="ND_6IP_6" type="read"></port>
+    <port name="ND_6IP_7" type="read"></port>
+    <port name="ND_6IP_8" type="read"></port>
+    <port name="ND_6IP_9" type="read"></port>
+    <port name="ND_6OP_1" type="write"></port>
+    <ipdstatement arg="in_0" port="ND_6IP_5" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+      <linearization type="fifo">
+        <property name="size" value="null"/>
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_1" port="ND_6IP_6" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_2" port="ND_6IP_7" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_3" port="ND_6IP_8" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_4" port="ND_6IP_9" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <assignstatement name="VLE" >
+      <var name="in_0" type="" />
+      <var name="in_1" type="" />
+      <var name="in_2" type="" />
+      <var name="in_3" type="" />
+      <var name="in_4" type="" />
+      <var name="out_0" type="" />
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, 0, 0, -1;
+                          1, -1, 0, 0, 1, 0, 0, 0;
+                          1, 0, 1, 0, 0, 0, 0, -1;
+                          1, 0, -1, 0, 0, 1, 0, 0;
+                          1, 0, 0, 1, 0, 0, 0, -1;
+                          1, 0, 0, -1, 0, 0, 1, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+    <opdstatement arg="out_0" port="ND_6OP_1" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </opdstatement>
+  </entity>
+
+  <entity name="ND_7" type="sink">
+    <port name="ND_7IP_10" type="read"></port>
+    <port name="ND_7IP_11" type="read"></port>
+    <port name="ND_7IP_12" type="read"></port>
+    <port name="ND_7IP_13" type="read"></port>
+    <ipdstatement arg="in_0" port="ND_7IP_10" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_1" port="ND_7IP_11" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_2" port="ND_7IP_12" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[0, 1, 0, 0, 0, 0, 0, -1;
+                          0, 0, 1, 0, 0, 0, 0, -1;
+                          0, 0, 0, 1, 0, 0, 0, -1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[0, 0, 0, 0, 0, 0, 1]" />
+      </domain>
+      <linearization type="BroadcastInOrder">
+      </linearization>
+    </ipdstatement>
+    <ipdstatement arg="in_3" port="ND_7IP_13" >
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 0, 0, 0, 0, 0, 0, 1]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+      <linearization type="fifo">
+        <property name="size" value="null"/>
+      </linearization>
+    </ipdstatement>
+    <assignstatement name="VideoOut" >
+      <var name="in_0" type="" />
+      <var name="in_1" type="" />
+      <var name="in_2" type="" />
+      <var name="in_3" type="" />
+      <var name="out_0" type="" />
+      <domain index="k, j, i" control="" parameter="NumFrames, VNumBlocks, HNumBlocks" >
+        <constraint matrix="[1, 1, 0, 0, 0, 0, 0, -1;
+                          1, -1, 0, 0, 1, 0, 0, 0;
+                          1, 0, 1, 0, 0, 0, 0, -1;
+                          1, 0, -1, 0, 0, 1, 0, 0;
+                          1, 0, 0, 1, 0, 0, 0, -1;
+                          1, 0, 0, -1, 0, 0, 1, 0]" />
+        <context matrix="[1, -1, 0, 0, 100;
+                          1, 1, 0, 0, -1;
+                          1, 0, -1, 0, 100;
+                          1, 0, 1, 0, -2;
+                          1, 0, 0, -1, 100;
+                          1, 0, 0, 1, -1]" />
+        <mapping matrix="[1, 0, 0, 0, 0, 0, 0;
+                          0, 1, 0, 0, 0, 0, 0;
+                          0, 0, 1, 0, 0, 0, 0]" />
+      </domain>
+    </assignstatement>
+  </entity>
+
+  <link name="ED_1" to="ND_3OP_1" from="ND_4IP_1">
+    <property name="doc" value="Block_1(k,j,i)" type="TBlocks"/>
+  </link>
+  <link name="ED_2" to="ND_4OP_1" from="ND_5IP_2">
+    <property name="doc" value="Block_2(k,j,i)" type="TBlocks"/>
+  </link>
+  <link name="ED_3" to="ND_1OP_1" from="ND_5IP_3">
+    <property name="doc" value="LuminanceQTable_1(1)" type="TQTables"/>
+  </link>
+  <link name="ED_4" to="ND_1OP_2" from="ND_5IP_4">
+    <property name="doc" value="ChrominanceQTable_1(1)" type="TQTables"/>
+  </link>
+  <link name="ED_5" to="ND_5OP_1" from="ND_6IP_5">
+    <property name="doc" value="Block_3(k,j,i)" type="TBlocks"/>
+  </link>
+  <link name="ED_6" to="ND_1OP_3" from="ND_6IP_6">
+    <property name="doc" value="LuminanceHuffTableDC_1(1)" type="THuffTablesDC"/>
+  </link>
+  <link name="ED_7" to="ND_1OP_4" from="ND_6IP_7">
+    <property name="doc" value="ChrominanceHuffTableDC_1(1)" type="THuffTablesDC"/>
+  </link>
+  <link name="ED_8" to="ND_1OP_5" from="ND_6IP_8">
+    <property name="doc" value="LuminanceHuffTableAC_1(1)" type="THuffTablesAC"/>
+  </link>
+  <link name="ED_9" to="ND_1OP_6" from="ND_6IP_9">
+    <property name="doc" value="ChrominanceHuffTableAC_1(1)" type="THuffTablesAC"/>
+  </link>
+  <link name="ED_10" to="ND_2OP_1" from="ND_7IP_10">
+    <property name="doc" value="HeaderInfo_1(k)" type="THeaderInfo"/>
+  </link>
+  <link name="ED_11" to="ND_1OP_7" from="ND_7IP_11">
+    <property name="doc" value="LuminanceTablesInfo_1(1)" type="TTablesInfo"/>
+  </link>
+  <link name="ED_12" to="ND_1OP_8" from="ND_7IP_12">
+    <property name="doc" value="ChrominanceTablesInfo_1(1)" type="TTablesInfo"/>
+  </link>
+  <link name="ED_13" to="ND_6OP_1" from="ND_7IP_13">
+    <property name="doc" value="Packets_1(k,j,i)" type="TPackets"/>
+  </link>
+</model>

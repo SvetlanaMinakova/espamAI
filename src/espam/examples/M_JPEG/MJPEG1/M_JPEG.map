@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE mapping PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+
+<mapping name="myMapping">
+
+   <processor name="PPC_1">
+       <process name="ND_1" />
+       <process name="ND_2" />
+       <process name="ND_3" />
+   </processor>
+
+   <processor name="HWN">
+       <process name="ND_4" />
+       <process name="ND_5" />
+   </processor>
+
+   <processor name="MB_1">
+       <process name="ND_6" />
+       <process name="ND_7" />
+   </processor>
+
+</mapping>
+
+
