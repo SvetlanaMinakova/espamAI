@@ -46,7 +46,7 @@ public class UserInterface {
      */
     public final String getCopyright() {
         String copyright = "";
-        copyright += "Copyright (c) 2004-2006 Leiden University " + "(LERC group at LIACS)\n";
+        copyright += "Copyright (c) 2004-2008 Leiden University " + "(LERC group at LIACS)\n";
         copyright += "use '--copyright' to get the complete copyright statement\n";
         return copyright;
     }
