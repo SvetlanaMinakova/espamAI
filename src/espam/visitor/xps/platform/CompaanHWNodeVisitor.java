@@ -58,7 +58,7 @@ import espam.utils.symbolic.expression.*;
  * This class is a class for a visitor that is used to generate pcores for Xps tool.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov
- * @version $Id: CompaanHWNodeVisitor.java,v 1.1 2007/12/07 22:07:31 stefanov Exp $
+ * @version $Id: CompaanHWNodeVisitor.java,v 1.2 2008/01/18 11:22:35 nikolov Exp $
  */
 
 public class CompaanHWNodeVisitor extends PlatformVisitor {
@@ -1341,10 +1341,10 @@ public class CompaanHWNodeVisitor extends PlatformVisitor {
 		hdlPS.println("");
 		hdlPS.println("   signal sl_parameters   : std_logic_vector(c_PARAMETERS*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");
-		hdlPS.println("   signal sl_LOW_BND_RD, sl_UP_BND_RD      : std_logic_vector(c_COUNTERS*QUANT-1 downto 0);");
-		hdlPS.println("   signal sl_LOW_BND_WR, sl_UP_BND_WR      : std_logic_vector(c_COUNTERS*QUANT-1 downto 0);");
-		hdlPS.println("   signal sl_ITERATORS_RD, sl_ITERATORS_WR : std_logic_vector(c_COUNTERS*QUANT-1 downto 0);");
-		hdlPS.println("   signal sl_REG_CNTRS_RD, sl_REG_CNTRS_WR : std_logic_vector(c_COUNTERS*QUANT-1 downto 0);");
+		hdlPS.println("   signal sl_LOW_BND_RD, sl_UP_BND_RD      : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
+		hdlPS.println("   signal sl_LOW_BND_WR, sl_UP_BND_WR      : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
+		hdlPS.println("   signal sl_ITERATORS_RD, sl_ITERATORS_WR : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
+		hdlPS.println("   signal sl_REG_CNTRS_RD, sl_REG_CNTRS_WR : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("   signal sl_RST : std_logic;");
 		hdlPS.println("");
