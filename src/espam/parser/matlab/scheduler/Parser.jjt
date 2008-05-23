@@ -1,0 +1,1004 @@
+/* Input file to JJTree and JavaCC to generate Scheduler Parser */
+
+options {
+    LOOKAHEAD=1;
+    //DEBUG_PARSER = true;
+    //DEBUG_TOKEN_MANAGER = true;
+    MULTI = true;
+    STATIC = false;
+    NODE_USES_PARSER = true;
+}
+
+PARSER_BEGIN(Parser)
+
+package espam.parser.matlab.scheduler;
+
+/**
+@author Todor Stefanov
+@version $Id: Parser.jjt,v 1.1 2008/05/23 15:04:17 stefanov Exp $
+*/
+
+import espam.datamodel.parsetree.*;
+import espam.datamodel.parsetree.statement.*;
+import espam.utils.symbolic.expression.*;
+
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.io.InputStream;
+import java.util.Iterator;
+
+public class Parser {
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         public methods                    ////
+
+    public static Statement getParseTree( InputStream fileStream )
+            throws ParseException
+        {
+            Statement x = null;
+            Parser t = new Parser( fileStream );
+            SimpleNode n = t.NLP();
+            x = n.getStatementNode();
+            return x;
+        }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                   ////
+
+    /** Reoder nodes in the parse tree. Depending on the type of the
+        nodes given, either create a line of nodes, or add the nodes
+        to the same parent.
+        @param currentParseNode The node to which a node needs to be
+        added.
+        @param snode The node that needs to be added.
+        @return the node to which subsequently nodes needs to be added.
+    */
+
+    private Statement _reorderNodes( Statement currentStatement,
+				   SimpleNode snode)
+    {
+        // Keep a reference to the currentStatement in case
+        // the snode is a ASTindexStatements node.
+        Statement keep = currentStatement;
+
+	Statement st = snode.getStatementNode();
+        Statement pn = snode.getStatementNode();
+        //System.out.println("Current: " + currentStatement);
+        //System.out.println("Statement: " + st);
+	if ( st instanceof AssignStatement ||
+	     st instanceof IfStatement ||
+	     st instanceof ForStatement ||
+	     st instanceof RootStatement ||
+	     st instanceof ElseStatement ) {
+	    st.setParent( currentStatement );
+	    currentStatement.addChild( st );
+        } else if ( st instanceof NilStatement ) {
+            // Add all children of the Nil Statement to the
+            // currentStatement. Is is need to curcumvent a problem in
+            // listOfIndexStatements
+
+            // System.out.println(" FOUND NIL STATEMENT ");
+            // System.out.println(" Current Statement: " + currentStatement);;
+
+            Iterator i = pn.getChildren();
+            while (i.hasNext() ) {
+                ParserNode ppn = (ParserNode)i.next();
+                ppn.setParent( currentStatement );
+                currentStatement.addChild( ppn );
+            }
+	} else {
+	    st.setParent( currentStatement );
+	    currentStatement.addChild( st );
+	    currentStatement = st;
+	}
+	return currentStatement;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+
+    /** Static Variable Implementing a Singleton */
+    private static int _textualPosition = 0;
+
+}
+
+PARSER_END(Parser)
+
+/* COMMENTS */
+
+/**
+ * MatParser elements
+ */
+TOKEN [IGNORE_CASE] :
+{
+    <ELSE:          "else">
+  | <END:           "end">
+  | <FOR:           "for">
+  | <IF:            "if">
+  | <DIV:           "div">
+  | <MOD:           "mod">
+  | <FLOOR:         "floor">
+  | <CEIL:          "ceil">
+  | <EQUAL:         "equal">
+  | <MIN:           "min">
+  | <MAX:           "max">
+  | <IPD:           "ipd">
+  | <OPD:           "opd">
+  | <DEFFUNCTION:   "%function">
+  | <DEFINITIONTYPE: "%typedef">
+  | <DEFPARAMETER:  "%parameter">
+}
+
+<DEFAULT>
+TOKEN :
+{
+    <EXP: "**">
+  | <MUL: "*">
+  | <FRACTION: "/">
+  | <ADD: "+">
+  | <SUB: "-">
+  | <CONCAT: "&">
+  | <EQ:  "=">
+  | <NEQ: "!=">
+  | <GE:  ">=">
+  | <LE:  "<=">
+  | <GT:  ">">
+  | <LO:  "<">
+  | <LEFTBRACKET: "[">
+  | <RIGHTBRACKET: "]">
+  | <SEMICOLON: ";">
+  | <COLON: ":">
+  | <MATLABBEGIN:   "%matlab"> : IN_MATLAB_COMMENT
+}
+
+
+<DEFAULT>
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+| <"//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"%%" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+| <"/*" (~["*"])* "*" (~["/"] (~["*"])* "*")* "/">
+}
+
+<IN_MATLAB_COMMENT>
+TOKEN :
+{
+  <MATLAB_COMMENT: "%end" > : DEFAULT
+}
+
+<IN_MATLAB_COMMENT>
+MORE :
+{
+  < ~[] >
+}
+
+
+
+<DEFAULT>
+TOKEN : /* LITERALS */
+{
+  < INTEGER_LITERAL:
+        <DECIMAL_LITERAL> (["l","L"])?
+      | <HEX_LITERAL> (["l","L"])?
+      | <OCTAL_LITERAL> (["l","L"])?
+  >
+|
+  < #DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])* >
+|
+  < #HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+|
+  < #OCTAL_LITERAL: "0" (["0"-"7"])* >
+}
+
+<DEFAULT>
+TOKEN : /* IDENTIFIERS */
+{
+  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>)* >
+|
+  < #LETTER: ["_","a"-"z","A"-"Z"] >
+|
+  < #DIGIT: ["0"-"9"] >
+}
+
+SimpleNode NLP() :
+{
+    // System.out.println(" -- NLP -- ");
+    SimpleNode snode;
+}
+{
+    (
+            [ declarations() ]
+            listOfAllStatements()
+        )
+	{
+	    int numberOfChildern = jjtThis.jjtGetNumChildren();
+	    //System.out.println(" -- ROOT STATEMENT: childeren: " + numberOfChildern );
+
+	    Statement rootNode = new RootStatement();
+	    rootNode.setParent( null );
+	    Statement currentStatement = rootNode;
+	    for (int i=0;i<numberOfChildern;i++) {
+		snode = (SimpleNode) jjtThis.jjtGetChild(i);
+		currentStatement = _reorderNodes( currentStatement, snode);
+	    }
+
+    	    jjtThis.setStatementNode( rootNode );
+	    return jjtThis;
+	}
+}
+
+void declarations() #void : {}
+{
+	declaration() ( declaration() )*
+}
+
+void declaration() #void :
+{
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+}
+{
+    parameterStatement()
+        | typeDefinitionStatement()
+        | functionDefinitionStatement()
+}
+
+void matlabStatement() : {
+    Token body = null;
+}
+{
+    <MATLABBEGIN> (body=<MATLAB_COMMENT>)
+        {
+           // Hack to avoid adding nodes to the parse tree.
+	   NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+        }
+}
+
+void typeDefinitionStatement() : {
+}
+{
+    (
+            <DEFINITIONTYPE> Identifier() Identifier()";"
+        )
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+	}
+}
+
+void parameterStatement() :
+{
+}
+{
+    <DEFPARAMETER> Identifier() fraction() fraction() <SEMICOLON>
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+void functionDefinitionStatement() : {
+}
+{
+    (
+            <DEFFUNCTION> Identifier() <SEMICOLON>
+        )
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+void listOfStatements() #void : {}
+{
+	statement() ( LOOKAHEAD(2) statement() )*
+}
+
+void listOfAllStatements() #void : {}
+{
+	allStatement() ( LOOKAHEAD(3) allStatement() )*
+}
+
+
+void statement() #void : {}
+{
+    controlStatement()
+        | functionStatement()
+        | matlabStatement()
+        }
+
+void allStatement() #void : {}
+{
+      listOfIndexStatements()
+    | statement()
+}
+
+void controlStatement() #void : {}
+{
+	ifElseStatement()
+            | forStatement()
+}
+
+void functionStatement() #void : {}
+{
+        assignStatement()
+}
+
+void forStatement () : {
+    // System.out.println(" -- Running a For Statement --");
+    int numberOfChildern;
+    SimpleNode snode;
+    String nodeName;
+    ForStatement forStat = null;
+}
+{
+    (
+     <FOR> Identifier() "=" complexExpression() <COLON> Integer() <COLON> complexExpression() ","
+     [ listOfAllStatements() ]
+     <END>
+     )
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    String id = ((ASTIdentifier) jjtThis.jjtGetChild(0)).getName();
+	    Expression lb = ((ASTcomplexExpression) jjtThis.jjtGetChild(1)).getLinearExp();
+	    int stepSize = ((ASTInteger) jjtThis.jjtGetChild(2)).getValue();
+	    Expression ub = ((ASTcomplexExpression) jjtThis.jjtGetChild(3)).getLinearExp();
+
+	    // We need to change the way the Nodes are organized.
+	    // We do not want equal statements to be childeren of
+	    // this For statement. We want that equal statements
+	    // form a connected link of statements.
+
+	    Statement forNode = new ForStatement( id, lb, ub, stepSize);
+	    Statement currentStatement = forNode;
+	    for (int i=4; i<numberOfChildern; i++) {
+		snode = (SimpleNode) jjtThis.jjtGetChild(i);
+		currentStatement = _reorderNodes( currentStatement, snode);
+	    }
+	    jjtThis.setStatementNode( forNode );
+	}
+}
+
+void ifElseStatement() #void : {
+    // System.out.println(" -- Running IF/ELSE Statement --");
+}
+{
+    (
+     ifStatement()
+     [ elseStatement()]
+     <END>
+     )
+}
+
+void ifStatement () : {
+    int numberOfChildern;
+    String nodeName;
+    SimpleNode snode;
+}
+{
+    (
+     <IF> condition() ","
+     listOfAllStatements()
+     )
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    ASTcondition node = ((ASTcondition) jjtThis.jjtGetChild(0));
+
+	    Expression rhs = node.getRhsLinearExp();
+	    Expression lhs = node.getLhsLinearExp();
+	    int relation  = node.getRelation();
+
+            rhs.negate();
+            Expression condition = lhs;
+            condition.addAll(rhs);
+
+            switch (relation) {
+               case 1:
+                  // EQ ==
+                  throw new Error(" It is not allowed to use If-statement" +
+                        "with an equal or not-equal to formulation." +
+                        "Replace the fault If-Statement with two " +
+                        "If-statements using the a-b >= 0 formulation ");
+               case 2:
+                  // NEQ
+                  throw new Error(" It is not allowed to use If-statement" +
+                        "with an equal or not-equal to formulation." +
+                        "Replace the fault If-Statement with two " +
+                        "If-statements using the a-b >= 0 formulation ");
+               case 3:
+                  // LT <
+                  condition.negate();
+                  condition.addMinusOne();
+                break;
+               case 4:
+                  // LE <=
+                  condition.negate();
+                  break;
+               case 5:
+                  // GT >
+                  condition.addMinusOne();
+                  break;
+               case 6:
+                  // GE >= canonical form, do nothing
+                  break;
+            }
+
+            condition.simplify();
+	    condition.setEqualityType(1);
+
+	    Statement ifNode = new IfStatement(condition, 1);
+	    Statement currentStatement = ifNode;
+	    for (int i=1;i<numberOfChildern;i++) {
+		snode = (SimpleNode) jjtThis.jjtGetChild(i);
+                //System.out.println(" IF STATEMENT: " + ((Statement)snode.getStatementNode()).toString());
+		currentStatement = _reorderNodes( currentStatement, snode);
+	    }
+    	    jjtThis.setStatementNode( ifNode );
+
+	}
+}
+
+void elseStatement() : {
+    // System.out.println(" -- Running the ELSE Statement --");
+}
+{
+    <ELSE> listOfAllStatements()
+	{
+	    int numberOfChildern = jjtThis.jjtGetNumChildren();
+
+	    Statement elseNode = new ElseStatement();
+	    Statement currentStatement = elseNode;
+	    for (int i=0;i<numberOfChildern;i++) {
+		SimpleNode snode = (SimpleNode) jjtThis.jjtGetChild(i);
+		currentStatement = _reorderNodes( currentStatement, snode);
+	    }
+    	    jjtThis.setStatementNode( elseNode );
+
+
+	}
+}
+
+void listOfIndexStatements() :
+{
+}
+{
+    (
+            indexStatements() ( LOOKAHEAD(3) indexStatements())*
+
+            )
+        {
+	    NilStatement nilStat = new NilStatement();
+
+	    int numberOfChildren = jjtThis.jjtGetNumChildren();
+            ParserNode currentNode = nilStat;
+            ParserNode scopeNode = nilStat;
+
+            HashMap hm = new HashMap();
+
+            // Determine count
+            for (int i = 0; i < numberOfChildren; i++) {
+                SimpleNode snode = (SimpleNode) jjtThis.jjtGetChild(i);
+                Statement ppn = snode.getStatementNode();
+                //System.out.println("(listOfIndexStatement [" + i + " ]: "
+                //        + ppn.toString());
+                ControlStatement indexStatement = (ControlStatement) ppn;
+                String name = indexStatement.getName();
+                if ( hm.containsKey( name )) {
+                    Integer count = (Integer)hm.get( name );
+                    int v = count.intValue();
+                    hm.put( name, new Integer( ++v ));
+                } else {
+                    hm.put( name, new Integer( 1 ));
+                }
+            }
+
+            // Show hm;
+            //System.out.println(" HM: " + hm.toString());
+
+            for (int i = 0; i < numberOfChildren; i++) {
+                SimpleNode snode = (SimpleNode) jjtThis.jjtGetChild(i);
+                Statement ppn = snode.getStatementNode();
+                //System.out.println("(listOfIndexStatement [" + i + " ]: "
+                //        + snode.toString());
+
+                if ( ppn.getNumChildren() > 0 ) {
+                    // Contains children
+                    ControlStatement indexStatement = (ControlStatement) ppn;
+                    String name = indexStatement.getName();
+                    Integer count = (Integer)hm.get( name );
+                    int v = count.intValue();
+                    if ( v == 1 ) {
+                        scopeNode.addChild( ppn );
+                        ppn.setParent( scopeNode );
+                        scopeNode = ppn;
+                        currentNode = scopeNode;
+                    } else {
+                        currentNode.addChild( ppn );
+                        ppn.setParent( currentNode );
+                    }
+                } else {
+                    // No children
+                    ControlStatement indexStatement = (ControlStatement) ppn;
+                    String name = indexStatement.getName();
+                    Integer count = (Integer)hm.get( name );
+                    int v = count.intValue();
+                    if ( v == 1 ) {
+                        // Unique index-statement
+                        if ( currentNode == scopeNode ) {
+                            // Unique index-statement is added to a
+                            // unique index statement
+                            scopeNode.addChild( ppn );
+                            ppn.setParent( scopeNode );
+                            scopeNode = ppn;
+                            currentNode = scopeNode;
+                        } else {
+                            // Unique index-statement has to migrate
+                            // to an unique index statement
+                            ParserNode searchNode = currentNode;
+                            while ( searchNode.getParent() != scopeNode ) {
+                                searchNode = searchNode.getParent();
+                            }
+                            // Remove the search node
+                            scopeNode.removeChild( searchNode );
+
+                            // Add scope node
+                            scopeNode.addChild( ppn );
+                            ppn.setParent( scopeNode );
+                            scopeNode = ppn;
+
+                            scopeNode.addChild( searchNode );
+                            searchNode.setParent( scopeNode );
+
+                            //currentNode = scopeNode;
+                        }
+                    } else {
+                        // Appears mode than once...
+                        currentNode.addChild( ppn );
+                        ppn.setParent( currentNode );
+                        currentNode = ppn;
+                    }
+                }
+            }
+
+            //System.out.println(" DUMP:\n " + nilStat.dumpChildren());
+
+            jjtThis.setStatementNode( nilStat );
+
+        }
+}
+
+void indexStatements() :
+{
+}
+{
+    (
+            indexStatement()  ( LOOKAHEAD(3) listOfStatements() )*
+            )
+        {
+            int numberOfChildren = jjtThis.jjtGetNumChildren();
+            SimpleNode node = (SimpleNode)jjtThis.jjtGetChild(0);
+            Statement indexNode = node.getStatementNode();
+	    Statement currentParseNode = indexNode;
+            //System.out.println("(indexStatement 0: "
+            //        + currentParseNode.toString());
+            for (int i = 1; i < numberOfChildren; i++) {
+                SimpleNode snode = (SimpleNode) jjtThis.jjtGetChild(i);
+                //System.out.println("(indexStatement [" + i + " ]: "
+                //        + snode.toString());
+                currentParseNode = _reorderNodes( currentParseNode, snode);
+            }
+            jjtThis.setStatementNode( indexNode );
+        }
+}
+
+void indexStatement() : {
+}
+{
+    (
+     Identifier() "=" complexExpression() <SEMICOLON>
+     )
+	{
+	    String id = ((ASTIdentifier) jjtThis.jjtGetChild(0)).getName();
+	    Expression exp = ((ASTcomplexExpression)
+                    jjtThis.jjtGetChild(1)).getLinearExp();
+	    ControlStatement  indexNode = new ControlStatement( id, exp, 1);
+            //System.out.println(" FOUND INDEX: " + indexNode);
+	    jjtThis.setStatementNode( indexNode );
+
+
+	}
+
+}
+
+void assignStatement() :
+{
+    String name;
+}
+{
+    leftVariableList() "=" Identifier() [ rightVariableList() ]  <SEMICOLON>
+	{
+	    name = ((ASTIdentifier) jjtThis.jjtGetChild(1)).getName();
+	    AssignStatement assignNode = new AssignStatement();
+	    assignNode.setFunctionName(name);
+
+            LhsStatement ls = new LhsStatement();
+            ls.setParent( assignNode );
+            assignNode.addChild( ls );
+
+            RhsStatement rs = new RhsStatement();
+            rs.setParent( assignNode );
+            assignNode.addChild( rs );
+
+	    jjtThis.setStatementNode( assignNode );
+
+	}
+}
+
+void ipdStatement() :
+{
+}
+{
+     "[" Identifier() "]" "=" <IPD> "(" variable() ")" <SEMICOLON>
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+void opdStatement() :
+{
+}
+{
+    "[" variable() "]" "=" <OPD> "(" Identifier() ")" <SEMICOLON>
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+void leftVariableList() : {
+}
+{
+    (
+    "[" [ variable() ( "," variable())* ] "]"
+    )
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+void rightVariableList() : {
+}
+{
+    (
+    "(" [ variable() ( "," variable())* ] ")"
+    )
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+
+void variable() :
+{
+}
+{
+    (
+     Identifier() [ "(" [ simpleExpression() ( "," simpleExpression())* ] ")" ]
+     )
+	{
+           // Hack to avoid adding nodes to the parse tree.
+           NilStatement nilStat = new NilStatement();
+           jjtThis.setStatementNode( nilStat );
+
+	}
+}
+
+
+void condition() : {
+    int relation;
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+    // System.out.println("\n Condition -- ");
+}
+{
+    (
+     complexExpression()
+     relation=relational_operator()
+     complexExpression()
+     )
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    if ( numberOfChildern == 2 ) {
+		Expression lhs =
+                    ((ASTcomplexExpression)
+                            jjtThis.jjtGetChild(0)).getLinearExp();
+		Expression rhs =
+                    ((ASTcomplexExpression)
+                            jjtThis.jjtGetChild(1)).getLinearExp();;
+		jjtThis.setLhsLinearExp( lhs );
+		jjtThis.setRhsLinearExp( rhs );
+		jjtThis.setRelation( relation );
+	    } else {
+		throw new ParseException(" --- CONDITION > 2 Elements ");
+}
+	}
+}
+
+int relational_operator() #void :
+{}
+{
+      <EQ>                { return 1; }
+    | <NEQ>               { return 2; }
+    | <LO>                { return 3; }
+    | <LE>                { return 4; }
+    | <GT>                { return 5; }
+    | <GE>                { return 6; }
+}
+
+void simpleExpression() :{
+    int signValue;
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+    LinTerm trm;
+}
+{
+    [ sign() ] term()
+	( LOOKAHEAD(2) linearOperator() term() )*
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    signValue = 1;
+	    ArrayList termList = new ArrayList();
+	    for (int i=0;i<numberOfChildern;i++) {
+		node = (SimpleNode) jjtThis.jjtGetChild(i);
+		nodeName = node.toString();
+		if (nodeName == "sign" ) {
+		    signValue = ((ASTsign) node).getValue();
+		}
+		if (nodeName == "linearOperator" ) {
+		    signValue = ((ASTlinearOperator) node).getValue();
+		}
+		if (nodeName == "term" ) {
+		    trm = ((ASTterm) node).getTerm();
+		    trm.setSign( signValue );
+		    termList.add( trm );
+		}
+	    }
+	    jjtThis.setLinearExp( termList );
+	}
+}
+
+void complexExpression() : {
+    int signValue;
+    int numberOfChildern;
+    SimpleNode node;
+    String nodeName;
+    LinTerm trm;
+}
+{
+    [ sign() ] termOrOperator()
+	( LOOKAHEAD(2) linearOperator() termOrOperator() )*
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    signValue = 1;
+	    ArrayList termList = new ArrayList();
+	    for (int i=0;i<numberOfChildern;i++) {
+		node = (SimpleNode) jjtThis.jjtGetChild(i);
+		nodeName = node.toString();
+		// System.out.println(" -- Node: " + nodeName);
+		if (nodeName == "sign" ) {
+		    signValue = ((ASTsign) node).getValue();
+		}
+		if (nodeName == "linearOperator" ) {
+		    signValue = ((ASTlinearOperator) node).getValue();
+		}
+		if (nodeName == "termOrOperator" ) {
+		    trm = ((ASTtermOrOperator) node).getTerm();
+		    trm.setSign( signValue );
+		    termList.add( trm );
+		}
+	    }
+	    jjtThis.setLinearExp( termList );
+	}
+}
+
+void sign() : { }
+{
+      "+"      { jjtThis.setValue(  1 ); }
+    | "-"      { jjtThis.setValue( -1 ); }
+}
+
+void linearOperator() : {}
+{
+      <ADD>    { jjtThis.setValue(  1 ); }
+    | <SUB>    { jjtThis.setValue( -1 ); }
+}
+
+
+void termOrOperator() : {}
+{
+     LOOKAHEAD(3) specialTerm()
+	{
+	    jjtThis.setTerm( ((ASTspecialTerm) jjtThis.jjtGetChild(0)).getTerm() );
+	}
+|
+    term()
+	{
+	    jjtThis.setTerm( ((ASTterm) jjtThis.jjtGetChild(0)).getTerm() );
+	}
+}
+
+void specialTerm() : {
+    int num, den;
+    LinTerm term;
+    int numberOfChildren;
+}
+{
+    fraction() "*" specialOperator()
+	{
+	    numberOfChildren = jjtThis.jjtGetNumChildren();
+	    num = ((ASTfraction) jjtThis.jjtGetChild(0)).getNumerator();
+	    den = ((ASTfraction) jjtThis.jjtGetChild(0)).getDenominator();
+            term = ((ASTspecialOperator) jjtThis.jjtGetChild(1)).getTerm();
+            term.setNumerator( num );
+            term.setDenominator( den );
+
+	    jjtThis.setTerm( term );
+	}
+|   specialOperator()
+        {
+            term = ((ASTspecialOperator) jjtThis.jjtGetChild(0)).getTerm();
+            jjtThis.setTerm( term );
+        }
+}
+
+void specialOperator() : {
+    LinTerm term = null;
+    Expression exp = null;
+    Expression exp1 = null;
+    Expression exp2 = null;
+    int div;
+}
+{
+      <DIV>   "(" simpleExpression() "," Integer() ")"
+	  {
+	      exp = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      div = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	      term = new DivTerm(exp,div);
+	      jjtThis.setTerm( term );
+	  }
+    | <MOD>   "(" simpleExpression() "," Integer() ")"
+	{
+	    exp = ((ASTsimpleExpression)
+                    jjtThis.jjtGetChild(0)).getLinearExp();
+	    div = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	    term = new ModTerm(exp,div);
+	    jjtThis.setTerm( term );
+	}
+    | <FLOOR> "(" simpleExpression() ")"
+	{
+	      exp = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      term = new FloorTerm(exp);
+	      jjtThis.setTerm( term );
+	}
+    | <CEIL>  "(" simpleExpression() ")"
+	{
+	      exp = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+	      term = new CeilTerm(exp);
+	      jjtThis.setTerm( term );
+	}
+   | <MAX>  "(" simpleExpression() "," simpleExpression() ")"
+	{
+              exp1 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+              exp2 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(1)).getLinearExp();
+	      term = new MaximumTerm(exp1, exp2);
+	      jjtThis.setTerm( term );
+	}
+    | <MIN>  "(" simpleExpression() "," simpleExpression() ")"
+	{
+	      exp1 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(0)).getLinearExp();
+              exp2 = ((ASTsimpleExpression)
+                      jjtThis.jjtGetChild(1)).getLinearExp();
+	      term = new MinimumTerm(exp1, exp2);
+	      jjtThis.setTerm( term );
+	}
+}
+
+void term() : {
+    int num, den;
+    String name;
+    int numberOfChildern;
+}
+{
+    fraction() [ "*" Identifier() ]
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    num = ((ASTfraction) jjtThis.jjtGetChild(0)).getNumerator();
+	    den = ((ASTfraction) jjtThis.jjtGetChild(0)).getDenominator();
+	    name = "";
+	    if ( numberOfChildern == 2 ) {
+		name = ((ASTIdentifier) jjtThis.jjtGetChild(1)).getName();
+	    }
+	    jjtThis.setTerm( new LinTerm(num,den,name) );
+	}
+|
+    Identifier() [ "*" fraction() ]
+	{
+	    numberOfChildern = jjtThis.jjtGetNumChildren();
+	    name = ((ASTIdentifier) jjtThis.jjtGetChild(0)).getName();
+	    num = 1;
+	    den = 1;
+	    if ( numberOfChildern == 2 ) {
+		num = ((ASTfraction) jjtThis.jjtGetChild(1)).getNumerator();
+		den = ((ASTfraction) jjtThis.jjtGetChild(1)).getDenominator();
+	    }
+	    jjtThis.setTerm( new LinTerm(num,den,name));
+	}
+}
+
+void fraction() : {
+    int num;
+    int den;
+}
+{
+    (
+    Integer() [ "/" Integer() ]
+    )
+	{
+	    int numberOfChildern = jjtThis.jjtGetNumChildren();
+	    if ( numberOfChildern == 1 ) {
+		num = ((ASTInteger) jjtThis.jjtGetChild(0)).getValue();
+		den = 1;
+	    } else {
+		num = ((ASTInteger) jjtThis.jjtGetChild(0)).getValue();
+		den = ((ASTInteger) jjtThis.jjtGetChild(1)).getValue();
+	    }
+	    jjtThis.setFraction(num,den);
+	}
+}
+
+void Identifier() : {
+    Token t;
+}
+{
+    t = <IDENTIFIER>  { jjtThis.setName( t.toString() ); }
+}
+
+void Integer() : {
+    Token t;
+}
+{
+    t = <INTEGER_LITERAL> { jjtThis.setValue( t.toString() ); }
+}
+
+
