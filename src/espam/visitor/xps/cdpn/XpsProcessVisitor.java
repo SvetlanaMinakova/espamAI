@@ -58,7 +58,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsProcessVisitor.java,v 1.1 2007/12/07 22:07:33 stefanov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.2 2008/08/08 10:47:02 stefanov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -532,10 +532,13 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private void _writeOperations() {
         _printStreamFunc.println("#define min(a,b) ((a)<=(b))?(a):(b)");
         _printStreamFunc.println("#define max(a,b) ((a)>=(b))?(a):(b)");
-	    _printStreamFunc.println("");
+	_printStreamFunc.println("");
 
-        _printStreamFunc.println("inline int ddiv(int a, int b){");
-        _printStreamFunc.println("    return (int)(a/b);\n}\n");
+        _printStreamFunc.println("inline int ddiv(int a, int b ){");
+        _printStreamFunc.println("    //return (int)(a/b);");
+        _printStreamFunc.println("    return ( (int) (((a)<0) ? ((a)-(b)+1)/(b) : (a)/(b)) ); ");
+        _printStreamFunc.println("    //return ( (int) (((a)<0)^((b)<0) ? ((a) < 0 ? ((a)-(b)+1)/(b) : ((a)-(b)-1)/(b)) : (a)/(b)) ); ");
+        _printStreamFunc.println("}\n");
 
         _printStreamFunc.println("inline int mod(int a, int b){");
         _printStreamFunc.println("    return mod(a, b);\n}\n");

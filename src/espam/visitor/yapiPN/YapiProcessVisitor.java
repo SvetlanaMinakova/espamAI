@@ -56,7 +56,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: YapiProcessVisitor.java,v 1.1 2007/12/07 22:07:40 stefanov Exp $
+ * @version  $Id: YapiProcessVisitor.java,v 1.2 2008/08/08 10:47:02 stefanov Exp $
  */
 
 public class YapiProcessVisitor extends CDPNVisitor {
@@ -585,7 +585,9 @@ public class YapiProcessVisitor extends CDPNVisitor {
 
         _printStreamFunc.println("inline");
         _printStreamFunc.println("int ddiv( double a, double b ){\n");
-        _printStreamFunc.println("    return (int)(a/b);");
+        _printStreamFunc.println("    //return (int)(a/b);");
+        _printStreamFunc.println("    return ( (int) (((a)<0) ? ((a)-(b)+1)/(b) : (a)/(b)) ); ");
+        _printStreamFunc.println("    //return ( (int) (((a)<0)^((b)<0) ? ((a) < 0 ? ((a)-(b)+1)/(b) : ((a)-(b)-1)/(b)) : (a)/(b)) ); ");
         _printStreamFunc.println("}\n");
 
         _printStreamFunc.println("inline");
