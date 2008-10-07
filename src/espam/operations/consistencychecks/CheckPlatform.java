@@ -107,7 +107,7 @@ public class CheckPlatform {
 				if( _error == 1 ) {
 					er = " ERROR";
 				}
-				System.out.println( " -- Platform specification check failed. " + _error + er + " found. \n ");
+				System.err.println( " -- Platform specification check failed. " + _error + er + " found. \n ");
 				System.exit(0);
 			}
 
@@ -144,7 +144,7 @@ public class CheckPlatform {
 		    // ------------------------------------------
 		    if( platform.getResourceList().size() == 0 ) {
 
-			System.out.println( "ERROR> No processing resources found. \n ");
+			System.err.println( "[Espam]ERROR: No processing resources found. \n ");
 			_error++;
 
 		    } else {
@@ -156,7 +156,7 @@ public class CheckPlatform {
 			if( !(resource instanceof MicroBlaze) && !(resource instanceof PowerPC) &&
 			    !(resource instanceof Crossbar) && !(resource instanceof CompaanHWNode) &&
 			    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) ) {
-			    System.out.println("ERROR> Resource " + resource + " cannot be used in the describtion of the platform. \n ");
+			    System.err.println("[Espam]ERROR: Resource " + resource + " cannot be used in the describtion of the platform. \n ");
 			    _error++;
 			}
 
@@ -191,8 +191,8 @@ public class CheckPlatform {
 		// Check for 0 or 1 Compaan hardware node
 		// --------------------------------------
 		if( _hwn > 1 ) {
-			System.out.println("ERROR> " + _hwn + " Compaan hardware nodes found.");
-			System.out.println("=====> The platform may contain 0 or 1 Compaan hardware nodes \n ");
+			System.err.println("[Espam]ERROR: " + _hwn + " Compaan hardware nodes found.");
+			System.err.println("=====> The platform may contain 0 or 1 Compaan hardware nodes \n ");
 		        _error++;
 		}
 
@@ -200,8 +200,8 @@ public class CheckPlatform {
 		// Check for 0 or 1 crossbar component
 		// -----------------------------------
 		if( _cb > 1 ) {
-			System.out.println("ERROR> " + _cb + " Crossbar components found.");
-			System.out.println("=====> The platform may contain 0 or 1 crossbar components \n ");
+			System.err.println("[Espam]ERROR: " + _cb + " Crossbar components found.");
+			System.err.println("=====> The platform may contain 0 or 1 crossbar components \n ");
 		        _error++;
 		}
 
@@ -210,8 +210,8 @@ public class CheckPlatform {
 		// ---------------------------------------------------
 		if( _cb > 0 ) {
 		    if( platform.getLinkList().size() == 0 ) {
-			System.out.println( "ERROR> No connections found.");
-			System.out.println( "=====> If communication network component is used, links must be specified.\n ");
+			System.err.println( "[Espam]ERROR: No connections found.");
+			System.err.println( "=====> If communication network component is used, links must be specified.\n ");
 			_error++;
 		    }
 		// ---------------------------------------------------
@@ -230,8 +230,8 @@ public class CheckPlatform {
 		// ---------------------------------------------------
 		if( _zmc > 0 ) {
 		    if( platform.getLinkList().size() == 0 ) {
-			System.out.println( "ERROR> No connections found.");
-			System.out.println( "=====> If ZBTCTRL peripheral component is used, links must be specified.\n ");
+			System.err.println( "[Espam]ERROR: No connections found.");
+			System.err.println( "=====> If ZBTCTRL peripheral component is used, links must be specified.\n ");
 			_error++;
 		    }
 		}
@@ -241,8 +241,8 @@ public class CheckPlatform {
 		// ---------------------------------------------------
 		if( _uart > 0 ) {
 			if( platform.getLinkList().size() == 0 ) {
-			System.out.println( "ERROR> No connections found.");
-			System.out.println( "=====> If UART peripheral component is used, links must be specified.\n ");
+			System.err.println( "[Espam]ERROR: No connections found.");
+			System.err.println( "=====> If UART peripheral component is used, links must be specified.\n ");
 			_error++;
 			}
 		}
@@ -261,16 +261,16 @@ public class CheckPlatform {
 		    // If the mapping is empty, there must not be a crossbar specified
 		    // ---------------------------------------------------------------
 		    if( _cb > 0 ) {
-			System.out.println( "ERROR> The mapping is empty." );
-			System.out.println( "=====> Communication network component found. Mapping is required.\n ");
+			System.err.println( "[Espam]ERROR: The mapping is empty." );
+			System.err.println( "=====> Communication network component found. Mapping is required.\n ");
 			_error++;
 		    }
 		    // ---------------------------------------------------------------
 		    // If the mapping is empty, there must not be links specified
 		    // ---------------------------------------------------------------
 		    if( platform.getLinkList().size() > 0 ) {
-			System.out.println( "ERROR> Connections specified.");
-			System.out.println( "=====> Mapping is empty. Links must not be specified.\n ");
+			System.err.println( "[Espam]ERROR: Connections specified.");
+			System.err.println( "=====> Mapping is empty. Links must not be specified.\n ");
 			_error++;
 		    }
 		    // -----------------------------------------------
@@ -280,8 +280,8 @@ public class CheckPlatform {
 			!(_ppc == 1 && _mb  == 0 && _hwn == 0) &&
 			!(_hwn == 1 && _ppc == 0 && _mb  == 0) ) {
 
-			System.out.println( "ERROR> More than one processors are found." );
-			System.out.println( "=====> One-to-one mapping is assumed and only one processing component must be specified. \n ");
+			System.err.println( "[Espam]ERROR: More than one processors are found." );
+			System.err.println( "=====> One-to-one mapping is assumed and only one processing component must be specified. \n ");
 			_error++;
    		    }
 		}
@@ -297,8 +297,8 @@ public class CheckPlatform {
 		        Resource processor = (Resource) j.next();
 
 		        if( processor.getPortList().size() > 0 ) {
-			    System.out.println( "ERROR> Processor ports found." );
-			    System.out.println( "=====> No links are specified and no ports of the processing components must be specified.\n ");
+			    System.err.println( "[Espam]ERROR: Processor ports found." );
+			    System.err.println( "=====> No links are specified and no ports of the processing components must be specified.\n ");
 			    _error++;
 			}
 		    }
@@ -309,7 +309,7 @@ public class CheckPlatform {
 			if( _error == 1 ) {
 				er = " ERROR";
 			}
-			System.out.println( " -- Platform specification check failed. " + _error + er + " found. \n ");
+			System.err.println( " -- Platform specification check failed. " + _error + er + " found. \n ");
 			System.exit(0);
 		}
 	}
@@ -344,8 +344,8 @@ public class CheckPlatform {
 				}
 			}
 			if( equalNames > 1 ) {
-				System.out.println("ERROR> " + curResource + ". Redefinition of name \"" + curResource.getName() + "\". \n ");
-				System.out.println( " -- Platform specification check failed. \n ");
+				System.err.println("[Espam]ERROR: " + curResource + ". Redefinition of name \"" + curResource.getName() + "\". \n ");
+				System.err.println( " -- Platform specification check failed. \n ");
 				System.exit(0);
 			}
 		}
@@ -364,8 +364,8 @@ public class CheckPlatform {
 				}
 			}
 			if( equalNames > 1 ) {
-				System.out.println("ERROR> " + curLink + ". Redefinition of name \"" + curLink.getName() + "\". \n ");
-				System.out.println( " -- Platform specification check failed. \n ");
+				System.err.println("[Espam]ERROR: " + curLink + ". Redefinition of name \"" + curLink.getName() + "\". \n ");
+				System.err.println( " -- Platform specification check failed. \n ");
 				System.exit(0);
 			}
 		}
@@ -393,8 +393,8 @@ public class CheckPlatform {
 				//if( !(port instanceof LMBPort) ) {
 				if( port instanceof PLBPort || port instanceof FifoReadPort || port instanceof FifoWritePort ||
 				    port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type LMBPort or OPBPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type LMBPort or OPBPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -406,8 +406,8 @@ public class CheckPlatform {
 				//if( !(port instanceof PLBPort) ) {
 				if( port instanceof LMBPort || port instanceof FifoReadPort || port instanceof FifoWritePort ||
 				    port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type PLBPort or OPBPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type PLBPort or OPBPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -418,8 +418,8 @@ public class CheckPlatform {
        				Port port = (Port) j.next();
 				//if( !(port instanceof CompaanInPort) && !(port instanceof CompaanOutPort)) {
 				if( port instanceof LMBPort || port instanceof PLBPort || port instanceof OPBPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type CompaanInPort or CompaanOutPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type CompaanInPort or CompaanOutPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -430,8 +430,8 @@ public class CheckPlatform {
        				Port port = (Port) j.next();
 				if( (port instanceof LMBPort) || port instanceof PLBPort || port instanceof FifoWritePort ||
 				     port instanceof CompaanInPort || port instanceof CompaanOutPort || port instanceof OPBPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type FifoReadPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type FifoReadPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -442,8 +442,8 @@ public class CheckPlatform {
        				Port port = (Port) j.next();
 				if( (port instanceof LMBPort) || port instanceof PLBPort || port instanceof FifoWritePort ||
 				     port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type OPBPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type OPBPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -454,8 +454,8 @@ public class CheckPlatform {
        				Port port = (Port) j.next();
 				if( (port instanceof LMBPort) || port instanceof PLBPort || port instanceof FifoWritePort ||
 				     port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.out.println("ERROR> Resource " + resource + " must have ports of type OPBPort.");
-					System.out.println("=====> Found " + port + " \n ");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type OPBPort.");
+					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
 			    }
@@ -483,7 +483,7 @@ public class CheckPlatform {
 			    Port port = (Port) j.next();
 			    Link link = port.getLink();
 			    if( link.getName().equals("") ) {
-			       System.out.println( "ERROR> No set link found in component " + resource + ", " + port + "\n ");
+			       System.err.println( "[Espam]ERROR: No set link found in component " + resource + ", " + port + "\n ");
 			       _error++;
 			    }
 
@@ -509,8 +509,8 @@ public class CheckPlatform {
 			    }
 
 			    if( portLinks.size() > 1 ) {
-				System.out.println("ERROR> Multiple links to a resource port.");
-				System.out.println("=====> " + portLinks  + " point to " +
+				System.err.println("[Espam]ERROR: Multiple links to a resource port.");
+				System.err.println("=====> " + portLinks  + " point to " +
 						port + " of " + resource + " \n ");
 				_error++;
 			    }
@@ -543,15 +543,15 @@ public class CheckPlatform {
 			}
 
 			if( proc > 1 || commun > 1 || hw > 1 ) {
-				System.out.println( "ERROR> Wrong type of connection in " + channel );
+				System.err.println( "[Espam]ERROR: Wrong type of connection in " + channel );
 				if( proc > 1 ) {
-					System.out.println( "=====> " + proc + " processor ports connected point-to-point. " + procList );
+					System.err.println( "=====> " + proc + " processor ports connected point-to-point. " + procList );
 				}
 				if( commun > 1 ) {
-					System.out.println( "=====> " + commun + " crossbar ports connected point-to-point" );
+					System.err.println( "=====> " + commun + " crossbar ports connected point-to-point" );
 				}
 				if( hw > 1 ) {
-					System.out.println( "=====> " + "Direct connection between compaan hardware node ports is not supported yet" );
+					System.err.println( "=====> " + "Direct connection between compaan hardware node ports is not supported yet" );
 				}
 
 				System.out.println();
@@ -560,9 +560,9 @@ public class CheckPlatform {
 
 			// Check for empty or links poitning to one port only
 			if( channel.getPortList().size() < 2 ) {
-				System.out.println( "ERROR> Link " + channel.getName() + " is not a connection. " );
-				System.out.println( "=====> The link points to " + channel.getPortList().size() + " port." );
-				System.out.println();
+				System.err.println( "[Espam]ERROR: Link " + channel.getName() + " is not a connection. " );
+				System.err.println( "=====> The link points to " + channel.getPortList().size() + " port." );
+				System.err.println();
 				_error++;
 			}
 		}

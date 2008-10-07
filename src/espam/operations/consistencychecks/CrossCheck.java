@@ -118,11 +118,11 @@ public class CrossCheck {
               }
 
 	      if (isMatch == false) {
-	         System.out.println(" ERROR> Processor \"" + mProcessor.getName() + "\" in the mapping spec" +
+	         System.err.println("[Espam]ERROR: Processor \"" + mProcessor.getName() + "\" in the mapping spec" +
 		                    " does not have corresponding resourece in the platform spec." );
-	         System.out.println();
-	         System.out.println( " -- Cross-check failed." );
-	         System.out.println();
+	         System.err.println();
+	         System.err.println( " -- Cross-check failed." );
+	         System.err.println();
 	         System.exit(0);
 	      }
 
@@ -165,11 +165,11 @@ public class CrossCheck {
                  }
 
 		 if (isMatch == false) {
-                    System.out.println(" ERROR> Process \"" + mProcess.getName() + "\" in the mapping spec" +
+                    System.err.println("[Espam]ERROR: Process \"" + mProcess.getName() + "\" in the mapping spec" +
                                        " does not have corresponding process in the network spec." );
-                    System.out.println();
-                    System.out.println( " -- Cross-check failed." );
-                    System.out.println();
+                    System.err.println();
+                    System.err.println( " -- Cross-check failed." );
+                    System.err.println();
                     System.exit(0);
 		 }
 
@@ -178,11 +178,11 @@ public class CrossCheck {
            }
 
 	   if( numProcesses != adg.getNodeList().size() ) {
-              System.out.println(" ERROR> The number of processes in the mapping spec" +
+              System.err.println("[Espam]ERROR: The number of processes in the mapping spec" +
                                  " is not equal to the number of processes in the network spec." );
               System.out.println();
-              System.out.println( " -- Cross-check failed." );
-              System.out.println();
+              System.err.println( " -- Cross-check failed." );
+              System.err.println();
               System.exit(0);
 	   }
 

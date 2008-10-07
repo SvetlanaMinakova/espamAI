@@ -97,10 +97,10 @@ public class CheckMapping {
 		    if (isFirst == true) {
 		       isFirst = false;
 		    } else {
-                       System.out.println(" ERROR> Processor \"" + curProcessor.getName() + "\" is specified more than once." );
-                       System.out.println();
-                       System.out.println( " -- Mapping specification check failed." );
-                       System.out.println();
+                       System.err.println("[Espam]ERROR: Processor \"" + curProcessor.getName() + "\" is specified more than once." );
+                       System.err.println();
+                       System.err.println( " -- Mapping specification check failed." );
+                       System.err.println();
                        System.exit(0);
 		    }
                  }
@@ -135,15 +135,15 @@ public class CheckMapping {
 		            isFirst = false;
 		          } else {
 			    if( p.getName().equals(pp.getName()) ) {
-                               System.out.println(" ERROR> Process \"" + curProcess.getName() + "\" is mapped more than once " +
+                               System.err.println("[Espam]ERROR: Process \"" + curProcess.getName() + "\" is mapped more than once " +
 			                       "onto Processor: \"" + p.getName() + "\"." );
 			    } else {
-                               System.out.println(" ERROR> Process \"" + curProcess.getName() + "\" is mapped onto " +
+                               System.err.println("[Espam]ERROR: Process \"" + curProcess.getName() + "\" is mapped onto " +
 			                       "many Processors: \"" + p.getName() + "\" and \"" + pp.getName() + "\"." );
                             }
-                            System.out.println();
-                            System.out.println( " -- Mapping specification check failed." );
-                            System.out.println();
+                            System.err.println();
+                            System.err.println( " -- Mapping specification check failed." );
+                            System.err.println();
                             System.exit(0);
 		          }
                        }
