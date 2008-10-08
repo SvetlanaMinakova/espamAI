@@ -180,7 +180,7 @@ public class CrossCheck {
 	   if( numProcesses != adg.getNodeList().size() ) {
               System.err.println("[Espam]ERROR: The number of processes in the mapping spec" +
                                  " is not equal to the number of processes in the network spec." );
-              System.out.println();
+              System.err.println();
               System.err.println( " -- Cross-check failed." );
               System.err.println();
               System.exit(0);
