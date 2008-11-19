@@ -74,7 +74,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov
- * @version  $Id: MhsVisitor.java,v 1.1 2007/12/07 22:07:32 stefanov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.2 2008/11/19 10:51:20 stefanov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -291,7 +291,7 @@ public class MhsVisitor extends PlatformVisitor {
        int numReadFsl = 0;
        int numWriteFsl = 0;
 	   
-	   while (i.hasNext()) {
+        while (i.hasNext()) {
            Port port = (Port) i.next();
            if ( port instanceof FifoReadPort ) {
         	   Iterator j = x.getMemoryMapList().iterator();
@@ -321,17 +321,23 @@ public class MhsVisitor extends PlatformVisitor {
                }
         	   
            }
-	   }
+	}
 	   
-	   int total = (numReadFsl > numWriteFsl) ? numReadFsl : numWriteFsl;
+        int total = (numReadFsl > numWriteFsl) ? numReadFsl : numWriteFsl;
 	   
-	   _printStream.println(
+        _printStream.println(
 			  " BUS_INTERFACE DLMB = " + dLmbLinkName + "\n" +
-			  " BUS_INTERFACE ILMB = " + iLmbLinkName + "\n" +
-			  " BUS_INTERFACE DOPB = " + opbLinkName + "\n" +
+			  " BUS_INTERFACE ILMB = " + iLmbLinkName );
+        if ( !opbLinkName.equals("") ) {
+             _printStream.println(
+			  " BUS_INTERFACE DOPB = " + opbLinkName );
+        }
+        _printStream.println(
 			  " PARAMETER C_FSL_LINKS = " + total + "\n" +
 			  " PORT CLK = sys_clk_s\n" +
 			  "END\n");
+
+
     }
 /*--------------------------------------- CompaanHWNode -------------------------------------------------------*/
     /**
