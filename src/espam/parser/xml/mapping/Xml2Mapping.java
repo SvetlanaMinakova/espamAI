@@ -35,7 +35,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Mapping.java,v 1.1 2007/12/07 22:07:11 stefanov Exp $
+ * @version  $Id: Xml2Mapping.java,v 1.2 2009/05/12 13:39:43 stefanov Exp $
  */
 
 public class Xml2Mapping {
@@ -83,8 +83,19 @@ public class Xml2Mapping {
 	public Object processProcessor(Attributes attributes) {
 		//System.out.println(" -- Processor -- ");
 		String name = (String) attributes.getValue("name");
-
+		String schedule = (String) attributes.getValue("schedule");
+		
 		MProcessor processor = new MProcessor(name);
+		
+		if ( schedule == null || schedule.equals("static") ) {
+			processor.setSchedule(0);
+		} else if ( schedule.equals("dynamic") ) {
+			processor.setSchedule(1);
+		} else {
+			throw new Error("Unknown Schedule Type: " + schedule);
+		}
+
+		
 
 		return processor;
 	}

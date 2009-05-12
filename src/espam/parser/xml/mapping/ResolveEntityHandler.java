@@ -65,7 +65,7 @@ public class ResolveEntityHandler implements EntityResolver {
 			+ "<!ATTLIST mapping name CDATA #REQUIRED>"
 
 			+ "<!ELEMENT processor (process*)>"
-			+ "<!ATTLIST processor name CDATA #REQUIRED>"
+			+ "<!ATTLIST processor name CDATA #REQUIRED schedule CDATA #IMPLIED>"
 
 			+ "<!ELEMENT process EMPTY>"
 			+ "<!ATTLIST process name CDATA #REQUIRED>";
