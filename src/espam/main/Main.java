@@ -77,7 +77,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.1 2007/12/07 22:06:45 stefanov Exp $
+ * @version $Id: Main.java,v 1.2 2009/05/19 12:29:24 stefanov Exp $
  */
 
 public class Main {
@@ -225,10 +225,10 @@ public class Main {
 				  XpsMemoryMapVisitor memoryMapVisitor = new XpsMemoryMapVisitor();
 				  _mapping.accept(memoryMapVisitor);
 
-				  MhsVisitor mhsVisitor = new MhsVisitor();
+				  MhsVisitor mhsVisitor = new MhsVisitor(_mapping);
 				  _platform.accept(mhsVisitor);
 
-				  MssVisitor mssVisitor = new MssVisitor();
+				  MssVisitor mssVisitor = new MssVisitor(_mapping);
 				  _platform.accept(mssVisitor);
 
 				  CompaanHWNodeVisitor hwNodeVisitor = new CompaanHWNodeVisitor(_mapping);
