@@ -58,7 +58,7 @@ import espam.visitor.PlatformVisitor;
  *  Microprocessor Software Specification for Xps tool.
  *
  * @author  Wei Zhong, Joris Huizer
- * @version  $Id: MssVisitor.java,v 1.2 2009/05/19 12:29:04 stefanov Exp $
+ * @version  $Id: MssVisitor.java,v 1.3 2009/05/20 13:52:33 stefanov Exp $
  */
 
 public class MssVisitor extends PlatformVisitor {
@@ -130,7 +130,7 @@ public class MssVisitor extends PlatformVisitor {
 	   String opbLinkName = "";
 	   Iterator i;
 	   
-	   if ( _mapping.getProcessor(x.getName()).getSchedule() == 1 ) {
+	   if ( _mapping.getProcessor(x.getName()).getScheduleType() == 1 ) {
 		   _printStream.print(
 				"BEGIN OS\n" +
 				" PARAMETER OS_NAME = xilkernel\n" +
@@ -179,7 +179,7 @@ public class MssVisitor extends PlatformVisitor {
 				"END\n" );
 	   
 	
-	if ( _mapping.getProcessor(x.getName()).getSchedule() == 1 ) {
+	if ( _mapping.getProcessor(x.getName()).getScheduleType() == 1 ) {
 		   _printStream.println(
 				"BEGIN DRIVER\n" +
 				" PARAMETER DRIVER_NAME = tmrctr\n" +

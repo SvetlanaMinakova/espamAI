@@ -75,7 +75,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.3 2009/05/19 12:29:04 stefanov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.4 2009/05/20 13:52:33 stefanov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -279,7 +279,7 @@ public class MhsVisitor extends PlatformVisitor {
 		    
 		}
 	
-	if ( _mapping.getProcessor(x.getName()).getSchedule() == 1 ) {
+	if ( _mapping.getProcessor(x.getName()).getScheduleType() == 1 ) {
     	   _printStream.println(
 			"BEGIN opb_timer\n" +
 			" PARAMETER INSTANCE = opb_timer_" + _numTimers + "\n" +
@@ -350,7 +350,7 @@ public class MhsVisitor extends PlatformVisitor {
         _printStream.println(
 			  " PARAMETER C_FSL_LINKS = " + total + "\n" +
 			  " PORT CLK = sys_clk_s");
-	if ( _mapping.getProcessor(x.getName()).getSchedule() == 1 ) {
+	if ( _mapping.getProcessor(x.getName()).getScheduleType() == 1 ) {
 		_printStream.println(
 			  " PORT INTERRUPT = " + x.getName() + "_INTERRUPT");
 
