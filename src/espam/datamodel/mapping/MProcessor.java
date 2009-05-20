@@ -30,7 +30,7 @@ import java.util.Iterator;
  * mapped onto a processor.
  *
  * @author Todor Stefanov
- * @version  $Id: MProcessor.java,v 1.2 2009/05/12 13:38:15 stefanov Exp $
+ * @version  $Id: MProcessor.java,v 1.3 2009/05/20 13:50:55 stefanov Exp $
  */
 
 public class MProcessor implements Cloneable {
@@ -66,7 +66,7 @@ public class MProcessor implements Cloneable {
             MProcessor newObj = (MProcessor) super.clone();
 	    newObj.setName(_name);
             newObj.setProcessList( (Vector) _processList.clone() );
-	    newObj.setSchedule(_schedule);
+	    newObj.setScheduleType(_scheduleType);
             return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -135,8 +135,8 @@ public class MProcessor implements Cloneable {
      *
      * @return  the schedule type
      */
-    public int getSchedule() {
-        return _schedule;
+    public int getScheduleType() {
+        return _scheduleType;
     }
 
     /**
@@ -144,8 +144,8 @@ public class MProcessor implements Cloneable {
      *
      * @param  resource The schedule type
      */
-    public void setSchedule( int schedule) {
-        _schedule = schedule;
+    public void setScheduleType( int scheduleType) {
+        _scheduleType = scheduleType;
     }
     
 
@@ -202,5 +202,5 @@ public class MProcessor implements Cloneable {
      *  0 : static
      *  1 : dynamic (using xilkernel for threading)
      */
-    private int _schedule = 0;
+    private int _scheduleType = 0;
 }
