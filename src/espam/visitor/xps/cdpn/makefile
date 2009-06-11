@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:07:34 stefanov Exp $
+# $Id: makefile,v 1.2 2009/06/11 13:18:14 stefanov Exp $
 #
 
 ROOT  = ../../../..
@@ -10,6 +10,8 @@ SUBPACKAGES =
 JSRCS = \
 	XpsNetworkVisitor.java \
 	XpsProcessVisitor.java \
+	XpsStaticProcessVisitor.java \
+	XpsDynamicXilkernelProcessVisitor.java \
 	XpsStatementVisitor.java \
 	XmpVisitor.java
 

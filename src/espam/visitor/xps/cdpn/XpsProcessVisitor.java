@@ -35,7 +35,6 @@ import espam.datamodel.graph.adg.ADGEdge;
 import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
-import espam.datamodel.pn.cdpn.CDGate;
 
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
@@ -57,8 +56,8 @@ import espam.datamodel.LinearizationType;
 /**
  *  This class ...
  *
- * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsProcessVisitor.java,v 1.3 2009/06/11 09:39:10 stefanov Exp $
+ * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
+ * @version  $Id: XpsProcessVisitor.java,v 1.4 2009/06/11 13:18:14 stefanov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -97,26 +96,33 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#include \"mb_interface.h\"");
             _printStreamFunc.println("#include \"./func_code/" + x.getName() + "_func.h\"");	    
             _printStreamFunc.println("");
-            
+
             _writeChannelTypes();
             _printStreamFunc.println("");
-	        _writeParameter(x);
+	    _writeParameter(x);
 
             Iterator i = x.getProcessList().iterator();
             while( i.hasNext() ) {
 
                 CDProcess process = (CDProcess) i.next();
-                
+
                 MProcessor mProcessor = _mapping.getMProcessor(process);
                 Resource resource = mProcessor.getResource();
                 if (resource instanceof Processor) {
 
                     _printStream = _openFile(process.getName(), process.getName(), "cpp");
-                    xpsProcess( process );
-                	
+		    
+		    if ( mProcessor.getScheduleType() == 1 ) {
+			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+			process.accept(pt);
+		    }
+		    else {
+			XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+			process.accept(pt);
+		    }
                 }
             }
-            
+
             _printStreamFunc.println("");
             _writeOperations();
             _printStreamFunc.println("");
@@ -128,33 +134,6 @@ public class XpsProcessVisitor extends CDPNVisitor {
                     "occured: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    /**
-     *  Create a Xps PN process for this process.
-     *
-     * @param  x Description of the Parameter
-     */
-    public void xpsProcess( CDProcess x ) {
-
-        _writeIncludes( x );
-        _printStream.println("int main (){");
-	    _prefixInc();
-	    
-	    if( _ui.getDebuggerFlag() ) {
-        	
-	    	_printStream.println("");
-		    _printStream.println(_prefix + "int clk_num;");
-		    _printStream.println(_prefix + "*clk_cntr = 0;");
-		    _printStream.println("");
- 		    
- 		}
-
-	    _writeFunctionArguments(x);
-	    _writeMain( x );
-        
-        _prefixDec();
-        _printStream.println("");
     }
 
     /**
@@ -218,274 +197,6 @@ public class XpsProcessVisitor extends CDPNVisitor {
         return printStream;
     }
 
-    /**
-     * @param  x Description of the Parameter
-     */
-    private void _writeFunctionArguments( CDProcess x ) {
-
-	    String funcName = "";
-        String csl = "";
-	    String t = "";
-
-	    _prefixInc();
-        // declare the input arguments of the function
-        _printStream.println(_prefix + "// Input Arguments ");
-
-        Iterator n = x.getAdgNodeList().iterator();
-        while( n.hasNext() ) {
-            ADGNode node = (ADGNode) n.next();
-            ADGFunction function = (ADGFunction) node.getFunction();
-
-	    Iterator j1 = function.getInArgumentList().iterator();
-            while( j1.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j1.next();
-                String funcArgument = arg.getName() + node.getName();
-		String dataType = arg.getDataType();
-
-	        t = "char";
-		if (dataType != null) {
-		   if (!dataType.equals("")) {
-		       t = dataType;
-		   }
-		}
-
-		// Find the gate corresponding to this funcArgumnet
-		Iterator g = x.getGateList().iterator();
-	        while ( g.hasNext() ) {
-		    CDGate  gate = (CDGate) g.next();
-
-		    Iterator p = gate.getAdgPortList().iterator();
-		    while( p.hasNext() ) {
-       	               ADGPort port = (ADGPort) p.next();
-
-		       Iterator bvi = port.getBindVariables().iterator();
-		       while ( bvi.hasNext() ) {
-		           ADGVariable bv = (ADGVariable) bvi.next();
-                           String tmp = bv.getName() + port.getNode().getName();
-		           if( funcArgument.equals( tmp ) ) {
-	                       t = "t" + gate.getChannel().getName();
-	                  }
-		       }
-
-                    }
-		}
-
-                _printStream.println(_prefix + t + " " + funcArgument + ";");
-            }
-        }
-
-        _printStream.println("");
-
-        // declare the output arguments of the function
-        _printStream.println(_prefix + "// Output Arguments ");
-
-	    n = x.getAdgNodeList().iterator();
-        while( n.hasNext() ) {
-            ADGNode node = (ADGNode) n.next();
-            ADGFunction function1 = (ADGFunction) node.getFunction();
-
-            Iterator j2 = function1.getOutArgumentList().iterator();
-            while( j2.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j2.next();
-                String funcArgument = arg.getName() + node.getName();
-		String dataType = arg.getDataType();
-
-	        t = "char";
-		if (dataType != null) {
-		   if (!dataType.equals("")) {
-		       t = dataType;
-		   }
-		}
-
-		// Find the gate corresponding to this funcArgumnet
-		Iterator g = x.getGateList().iterator();
-	        while ( g.hasNext() ) {
-		    CDGate  gate = (CDGate) g.next();
-
-		    Iterator p = gate.getAdgPortList().iterator();
-		    while( p.hasNext() ) {
-       	               ADGPort port = (ADGPort) p.next();
-		       String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
-		       if( funcArgument.equals( tmp ) ) {
-		          t = "t" + gate.getChannel().getName();
-	               }
-                    }
-		}
-
-                _printStream.println(_prefix + t +" " + funcArgument + ";");
-            }
-        }
-
-    	_prefixDec();
-
-        //write func wrapper in aux file
-        n = x.getAdgNodeList().iterator();
-        while( n.hasNext() ) {
-            ADGNode node = (ADGNode) n.next();
-            ADGFunction function1 = (ADGFunction) node.getFunction();
-
-            csl = "";
-            funcName = function1.getName();
-
-	    if(!_relation2.containsKey(funcName) ) {
-	        _printStreamFunc.println("inline");
-                csl += "void  _" + funcName + "( ";
-
-                Iterator j2 = function1.getInArgumentList().iterator();
-                while( j2.hasNext() ) {
-                    ADGVariable arg = (ADGVariable) j2.next();
-                    String funcArgument = arg.getName() + node.getName();
-		    String dataType = arg.getDataType();
-
-	            t = "char";
-		    if (dataType != null) {
-		      if (!dataType.equals("")) {
-		         t = dataType;
-		      }
-		    }
-
-		    Iterator g = x.getGateList().iterator();
-	            while ( g.hasNext() ) {
-		       CDGate  gate = (CDGate) g.next();
-
-		       Iterator p = gate.getAdgPortList().iterator();
-		       while( p.hasNext() ) {
-       	                  ADGPort port = (ADGPort) p.next();
-
-   		           Iterator bvi = port.getBindVariables().iterator();
-		           while ( bvi.hasNext() ) {
-		               ADGVariable bv = (ADGVariable) bvi.next();
-                               String tmp = bv.getName() + port.getNode().getName();
-		               if( funcArgument.equals( tmp ) ) {
-	                           t = "t" + gate.getChannel().getName();
-	                       }
-		           }
-
-                      }
-		   }
-
-		   csl += t + " " + arg.getName() + ", ";
-                }
-
-
-                j2 = function1.getOutArgumentList().iterator();
-                while( j2.hasNext() ) {
-                    ADGVariable arg = (ADGVariable) j2.next();
-                    String funcArgument = arg.getName() + node.getName();
-		    String dataType = arg.getDataType();
-
-	            t = "char";
-		    if (dataType != null) {
-		      if (!dataType.equals("")) {
-		         t = dataType;
-		      }
-		    }
-
-		    Iterator g = x.getGateList().iterator();
-	            while ( g.hasNext() ) {
-		       CDGate  gate = (CDGate) g.next();
-
-		       Iterator p = gate.getAdgPortList().iterator();
-		       while( p.hasNext() ) {
-       	                  ADGPort port = (ADGPort) p.next();
-		          String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
-		          if( funcArgument.equals( tmp ) ) {
-		             t = "t" + gate.getChannel().getName();
-	                  }
-                       }
-		    }
-
-                    csl += t + " *" + arg.getName() + ", ";
-                }
-                _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
-
-		//-------- print the initial function call in the wrapper ------------------------
-                csl = funcName + "( ";
-
-                j2 = function1.getInArgumentList().iterator();
-                while( j2.hasNext() ) {
-                    ADGVariable arg = (ADGVariable) j2.next();
-                    csl += "&" + arg.getName() + ", ";
-                    //csl += arg.getName() + ", ";
-                }
-
-                j2 = function1.getOutArgumentList().iterator();
-                while( j2.hasNext() ) {
-                    ADGVariable arg = (ADGVariable) j2.next();
-                    //csl += "&" + arg.getName() + ", ";
-                    csl += arg.getName() + ", ";
-                }
-
-                _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
-		//-------- END print of the initial function call in the wrapper ------------------------
-
-                _printStreamFunc.println("}");
-		_printStreamFunc.println("");
-            }
-            _relation2.put(funcName, "");
-        }
-        _printStream.println("");
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ////                         private methods                   ////
-
-    /**
-     * @param  x Description of the Parameter
-     */
-    private void _writeIncludes( CDProcess x ) {
-    	
-    	_printStream.println("#include \"xparameters.h\"");
-        _printStream.println("#include \"stdio.h\"");
-        _printStream.println("#include \"stdlib.h\"");
-        _printStream.println("#include \"aux_func.h\"");
-        _printStream.println("#include \"MemoryMap.h\"");
-        _printStream.println("");
- 
-        Iterator n = x.getGateList().iterator();
-        while( n.hasNext() ) {
-            CDGate gate = (CDGate) n.next();
-      	    LinearizationType comModel = 
-    		    ((CDChannel)gate.getChannel()).getCommunicationModel();
-    	    if (comModel != LinearizationType.fifo &&
-    		comModel != LinearizationType.BroadcastInOrder &&
-		comModel != LinearizationType.sticky_fifo &&
-		comModel != LinearizationType.shift_register) {
-                   System.out.println("ERROR: Out of order channels are not supported yet!");
-    	       System.exit(0);
-    	    }
-        }
-        _printStream.println("");
-    }
-
-    /**
-     *  Description of the Method
-     *
-     * @param  x Description of the Parameter
-     */
-    private void _writeMain( CDProcess x) {
-
-    	_prefixInc();
-        // Print the Parse tree
-        XpsStatementVisitor xpsvisitor = new XpsStatementVisitor(_printStream, x, _mapping);
-        xpsvisitor.setPrefix( _prefix );
-        xpsvisitor.setOffset( _offset );
-
-	    ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
-        parserNode.accept(xpsvisitor);
-
-        _printStream.println("");
-        
-        if( _ui.getDebuggerFlag() ) {
-        	
-        	_printStream.println(_prefix + "clk_num = *clk_cntr;");
- 		    
-        }
-        
-        _printStream.println(_prefix + "*FIN_SIGNAL = (volatile long)0x00000001;");
-        _prefixDec();
-        _printStream.println(_prefix + "} // main");
-    }
     
     /**
      *  Description of the Method
@@ -574,7 +285,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private PrintStream _printStreamFunc = null;
 
     private Map _relation2 = new HashMap();
-
+    
     /**
      *  Read/Write fifo api
      */
@@ -613,6 +324,30 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	"        isFull = outPort + 1;\\\n" +
 	"        for (i = 0; i < len; i++) {\\\n" +
 	"            while (*isFull) { };\\\n" +
+	"            *outPort = ((volatile int *) value)[i];\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define readDyn(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isEmpty;\\\n" +
+	"        volatile int *inPort = (volatile int *)pos;\\\n" +
+ 	"        isEmpty = inPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isEmpty) { yield(); };\\\n" +
+	"            ((volatile int *) value)[i] = *inPort;\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define writeDyn(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isFull;\\\n" +
+	"        volatile int *outPort = (volatile int *)pos;\\\n" +
+	"        isFull = outPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isFull) { yield(); };\\\n" +
 	"            *outPort = ((volatile int *) value)[i];\\\n" +
 	"        }\\\n" +
 	"    } while(0)\n" +

@@ -60,7 +60,7 @@ import espam.utils.symbolic.expression.Expression;
 /**
  *  This class ...
  *
- * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov
+ * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
  * @version  $Id: XpsStatementVisitor.java,v 1.11 2002/06/24 15:48:36 stefanov
  *      Exp $
  */
@@ -182,6 +182,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     	Fifo fifo = mFifo.getFifo();
     	
     	if (fifo.getLevelUpResource() instanceof MultiFifo) {
+		// FIXME: write dynamic version if required
     		String funName = "writeMF(";	
 
             _printStream.println("");
@@ -215,7 +216,13 @@ public class XpsStatementVisitor extends StatementVisitor {
             if ( wPort.getResource() instanceof Processor ) {
             	funName = "writeFSL("; 
             }
-            else funName = "write(";	
+            else {
+		    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+			    funName = "writeDyn(";
+		    } else {
+			    funName = "write(";	
+		    }
+	    }
 
             _printStream.println("");
             _printStream.println(_prefix + funName + eName + 
@@ -328,6 +335,7 @@ public class XpsStatementVisitor extends StatementVisitor {
         Iterator i;
 
     	if (fifo.getLevelUpResource() instanceof MultiFifo) {
+	     // FIXME: write dynamic version if required
     	     String funName = "readMF(";
 
             _printStream.println("");
@@ -373,9 +381,14 @@ public class XpsStatementVisitor extends StatementVisitor {
             	funName = "readFSL(";
             }
             else if ( rPort.getResource() instanceof Crossbar ) {
+		// FIXME: write dynamic version if required
             	funName = "readMF(";
             } else {
-            	funName = "read(";
+		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+			funName = "readDyn(";
+		} else {
+			funName = "read(";
+		}
             }
 
             _printStream.println("");
