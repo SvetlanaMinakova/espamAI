@@ -58,7 +58,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsProcessVisitor.java,v 1.2 2008/08/08 10:47:02 stefanov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.3 2009/06/11 09:39:10 stefanov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -521,7 +521,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         while (j.hasNext()) {
             ADGParameter p = (ADGParameter) j.next();
 	        _printStreamFunc.println(_prefix + "#define " + p.getName() + 
-				     " " + p.getLowerBound());
+				     " " + p.getValue());
         }
         _printStreamFunc.println("");
     }
