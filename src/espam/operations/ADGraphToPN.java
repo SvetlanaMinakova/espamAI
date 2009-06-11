@@ -42,8 +42,8 @@ import espam.operations.scheduler.Scheduler;
 /**
  * This class ...
  *
- * @author Hristo Nikolov, Todor Stefanov
- * @version $Id: ADGraphToPN.java,v 1.1 2007/12/07 22:07:43 stefanov Exp $
+ * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
+ * @version $Id: ADGraphToPN.java,v 1.2 2009/06/11 13:11:35 stefanov Exp $
  */
 
 public class ADGraphToPN {
@@ -84,7 +84,7 @@ public class ADGraphToPN {
 
 		_setChannelPN( adgEdgeList, procNet );
 
-		_setSchedule( procNet );
+		_setSchedule( mapping, procNet );
 
 		System.out.println(" -- Conversion [Done]");
 
@@ -357,7 +357,7 @@ public class ADGraphToPN {
 	 * @param proNet
 	 *            Description of the Parameter
 	 */
-	private void _setSchedule(CDProcessNetwork proNet) {
+	private void _setSchedule(Mapping mapping, CDProcessNetwork proNet) {
 
                 // Get a global schedule
 		Scheduler sch = Scheduler.getInstance();
@@ -368,8 +368,19 @@ public class ADGraphToPN {
 		while (i.hasNext()) {
 			CDProcess process = (CDProcess) i.next();
 			Vector nodeList = process.getAdgNodeList();
-			// Add the local schedule to the process
-			process.getSchedule().add( sch.doSchedule(nodeList) );
+			
+			MProcessor processor = mapping.getMProcessor(process);
+			if  ( processor.getScheduleType() == 1 ) {
+				Iterator j = nodeList.iterator();
+				while( j.hasNext() ) {
+					Vector container = new Vector();
+					container.add(j.next());
+					process.getSchedule().add( sch.doSchedule(container) );
+				}
+			} else {
+				// Add the local schedule to the process
+				process.getSchedule().add( sch.doSchedule(nodeList) );
+			}
 		}
 	}
 

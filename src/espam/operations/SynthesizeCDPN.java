@@ -70,7 +70,7 @@ public class SynthesizeCDPN {
 			cdpnModel = ADGraphToPN.getInstance().adgraphToPN(adg, mapping);
 
 			// Add parse trees to the CDPN model
-			CDPNToParseTrees.getInstance().cdpnToParseTrees( cdpnModel );
+			CDPNToParseTrees.getInstance().cdpnToParseTrees( cdpnModel, mapping );
 			
 			// Associate the CDPN model with the Mapping
 			mapping.setCDPN( cdpnModel );

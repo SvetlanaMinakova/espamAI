@@ -30,6 +30,8 @@ import espam.datamodel.graph.adg.ADGInPort;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGOutPort;
 
+import espam.datamodel.mapping.Mapping;
+
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
 
@@ -51,7 +53,7 @@ import espam.operations.codegeneration.Node2ControlStatements;
  *  structred Kahn processes. The Kahn processes is structured in four main
  *  parts..............
  *
- * @author  Todor Stefanov
+ * @author  Todor Stefanov, Joris Huizer
  * @version  $Id: PNToParseTree.java,v 1.15 2002/10/08 14:23:14 kienhuis Exp
  *      $
  */
@@ -75,7 +77,7 @@ public class CDPNToParseTrees {
 	 * @param  pn Description of the Parameter
 	 * @exception  EspamException MyException If such and such occurs
 	 */
-	public void cdpnToParseTrees(CDProcessNetwork pn) throws EspamException {
+	public void cdpnToParseTrees(CDProcessNetwork pn, Mapping mapping) throws EspamException {
 
 		System.out.println(" -- Add ParseTree descriptions to CDPN ...");
 
@@ -88,7 +90,8 @@ public class CDPNToParseTrees {
 
 				_process = (CDProcess) p.next();
                                 _numberOfNodes =_process.getAdgNodeList().size();
-
+				_scheduleType = mapping.getMProcessor(_process).getScheduleType();
+				
 				// For every node in the process create a parse tree.
 				ADGNode node;
 				RootStatement tree;
@@ -99,11 +102,15 @@ public class CDPNToParseTrees {
                                         vectorOfTrees.add( tree );
 					vectorOfNames.add( node.getName() );
 				}
-
-				tree = _scheduleToParseTree( _process.getSchedule() );
-                                _connectParseTrees(tree, vectorOfTrees, vectorOfNames);
-				_process.getSchedule().clear();
-				_process.getSchedule().add( tree );
+				
+				int pos = 0;
+				Iterator i = _process.getSchedule().iterator();
+				while ( i.hasNext() ) {
+					tree = (RootStatement) i.next();
+					_connectParseTrees(tree, vectorOfTrees, vectorOfNames);
+					_process.getSchedule().setElementAt(tree, pos++);
+				}
+				
 			}
 
 			System.out.println(" -- Addition [Done]");
@@ -154,7 +161,7 @@ public class CDPNToParseTrees {
 
 		try {
 
-		        if (_numberOfNodes > 1 ) {
+		        if (_numberOfNodes > 1 && _scheduleType == 0 ) {
                             //   (0) Add the control statements of a ADGNode to the parse tree
  		            Vector ctrlStatements = Node2ControlStatements.convert( node );
                             i = ctrlStatements.iterator();
@@ -383,5 +390,6 @@ public class CDPNToParseTrees {
 
 	private CDProcess _process;
 	private int _numberOfNodes;
+	private int _scheduleType;
 }
 
