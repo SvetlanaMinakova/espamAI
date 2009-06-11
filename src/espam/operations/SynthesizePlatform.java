@@ -66,7 +66,7 @@ public class SynthesizePlatform {
 		try {
                       ElaboratePlatform.getInstance().elaboratePlatform( platform, mapping );
 		      
-		      RefinePlatform.getInstance().refinePlatform( platform );
+		      RefinePlatform.getInstance().refinePlatform( platform, mapping );
 
                       SetPlatformParameters.getInstance().setPlatformParameters( mapping );
 		      

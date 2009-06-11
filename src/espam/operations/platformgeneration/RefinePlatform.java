@@ -56,7 +56,7 @@ public class RefinePlatform {
 	 * @param  platform Description of the Parameter
 	 * @exception  EspamException MyException If such and such occurs
 	 */
-	public void refinePlatform( Platform platform ) throws EspamException {
+	public void refinePlatform( Platform platform, Mapping mapping ) throws EspamException {
 
 		System.out.println(" -- Refinement platform ... ");
 
@@ -74,7 +74,7 @@ public class RefinePlatform {
 		   // Utilizes the Fast Simplex Links (FSL) where it is possible
 		   // ----------------------------------------------------------
 
-		   RefineCommunicationMB.getInstance().refine( platform );
+		   RefineCommunicationMB.getInstance().refine( platform, mapping );
 
 
 		   System.out.println(" -- Refinement [Done]");

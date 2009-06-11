@@ -19,6 +19,7 @@ package espam.operations.platformgeneration.elaborate;
 import java.util.Iterator;
 import java.util.Vector;
 
+import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Link;
@@ -59,7 +60,7 @@ public class RefineCommunicationMB {
 	 * @param  platform Description of the Parameter
 	 * @exception  EspamException MyException If such and such occurs
 	 */
-	public void refine( Platform platform ) {
+	public void refine( Platform platform, Mapping mapping ) {
 
 	    // ---------------------------------------------------------------------------------------------
 	    // The empty fifos controllers are added to this vector in order to be removed from the platform
@@ -70,7 +71,7 @@ public class RefineCommunicationMB {
 	    while( r.hasNext() ) {
 
 		Resource resource = (Resource) r.next();
-		if( resource instanceof MicroBlaze ) {
+		if( resource instanceof MicroBlaze && mapping.getProcessor(resource.getName()).getScheduleType() == 0 ) {
 
 		    // -------------------------------------------------------------------------------------
 		    // Get the fifos controller connected to a processor.
