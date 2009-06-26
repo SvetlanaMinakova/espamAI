@@ -41,7 +41,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.1 2007/12/07 22:07:34 stefanov Exp $
+ * @version  $Id: XmpVisitor.java,v 1.2 2009/06/26 14:37:08 stefanov Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -150,6 +150,11 @@ public class XmpVisitor extends CDPNVisitor {
         	    	_printStream.println("HeapSize:");
         	    	_printStream.println("LinkerScript:");
         	    	_printStream.println("ProgCCFlags:");
+			
+			if (mProcessor.getScheduleType() == 1) {
+				_printStream.println("LFlags: xilkernel");
+			}
+			
     	    	}
     	    }
     	} catch (Exception e) {
