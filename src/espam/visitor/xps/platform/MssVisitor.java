@@ -58,7 +58,7 @@ import espam.visitor.PlatformVisitor;
  *  Microprocessor Software Specification for Xps tool.
  *
  * @author  Wei Zhong, Joris Huizer
- * @version  $Id: MssVisitor.java,v 1.4 2009/06/26 14:37:31 stefanov Exp $
+ * @version  $Id: MssVisitor.java,v 1.5 2009/06/26 15:39:10 stefanov Exp $
  */
 
 public class MssVisitor extends PlatformVisitor {
@@ -139,6 +139,9 @@ public class MssVisitor extends PlatformVisitor {
 				" PARAMETER enhanced_features = true\n" +
 				" PARAMETER systmr_dev = opb_timer_" + _numTimers + "\n" +
 				" PARAMETER config_yield = true\n" +
+				/* Add 2 for main() and thread_main()
+				   Not having these causes hangs
+				*/
 				" PARAMETER max_pthreads = " + (_mapping.getProcessor(x.getName()).getProcessList().size() + 2) + "\n" +
 				" PARAMETER systmr_interval = 500\n" +
 				" PARAMETER pthread_stack_size = 1000\n" +
