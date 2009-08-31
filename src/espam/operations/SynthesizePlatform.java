@@ -23,8 +23,6 @@ import espam.datamodel.platform.Platform;
 
 import espam.datamodel.mapping.Mapping;
 
-import espam.datamodel.pn.cdpn.CDProcessNetwork;
-
 import espam.operations.platformgeneration.ElaboratePlatform;
 import espam.operations.platformgeneration.RefinePlatform;
 import espam.operations.platformparameterset.SetPlatformParameters;
@@ -59,7 +57,7 @@ public class SynthesizePlatform {
 	 * @param  platform Description of the Parameter
 	 * @exception  EspamException MyException If such and such occurs
 	 */
-	public void synthesizePlatform(Platform platform, CDProcessNetwork cdpn, Mapping mapping) throws EspamException {
+	public void synthesizePlatform(Platform platform, Mapping mapping) throws EspamException {
 
 		System.out.println(" - Synthesize platform ");
 

@@ -43,7 +43,7 @@ import espam.operations.scheduler.Scheduler;
  * This class ...
  *
  * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
- * @version $Id: ADGraphToPN.java,v 1.2 2009/06/11 13:11:35 stefanov Exp $
+ * @version $Id: ADGraphToPN.java,v 1.3 2009/08/31 16:36:27 nikolov Exp $
  */
 
 public class ADGraphToPN {
@@ -370,7 +370,7 @@ public class ADGraphToPN {
 			Vector nodeList = process.getAdgNodeList();
 			
 			MProcessor processor = mapping.getMProcessor(process);
-			if  ( processor.getScheduleType() == 1 ) {
+			if( processor != null && processor.getScheduleType() == 1 ) {
 				Iterator j = nodeList.iterator();
 				while( j.hasNext() ) {
 					Vector container = new Vector();

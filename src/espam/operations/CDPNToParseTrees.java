@@ -31,6 +31,7 @@ import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGOutPort;
 
 import espam.datamodel.mapping.Mapping;
+import espam.datamodel.mapping.MProcessor;
 
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
@@ -90,7 +91,13 @@ public class CDPNToParseTrees {
 
 				_process = (CDProcess) p.next();
                                 _numberOfNodes =_process.getAdgNodeList().size();
-				_scheduleType = mapping.getMProcessor(_process).getScheduleType();
+
+				MProcessor processor = mapping.getMProcessor(_process);
+				if( processor != null ) {
+					_scheduleType = processor.getScheduleType();
+				} else {
+					_scheduleType = 0;
+				}
 				
 				// For every node in the process create a parse tree.
 				ADGNode node;

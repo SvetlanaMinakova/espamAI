@@ -574,6 +574,7 @@ public class ElaborateOne2One {
 		MProcessor mProcessor = new MProcessor( resource.getName() );
 		mProcessor.getProcessList().add( mProcess );
 		mProcessor.setResource( resource );
+		mProcessor.setScheduleType( 0 ); // Default value
 
 		mapping.getProcessorList().add( mProcessor );
 	}

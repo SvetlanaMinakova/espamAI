@@ -78,7 +78,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.3 2009/08/31 16:34:48 nikolov Exp $
+ * @version $Id: Main.java,v 1.4 2009/08/31 16:41:02 nikolov Exp $
  */
 
 public class Main {
@@ -245,10 +245,10 @@ public class Main {
 				  System.out.println(" - Generation [Finished]");
 			
 			} else if( _ui.getHdpcFlag() ) {
-				System.out.println(" - Generating System in HDPC format");
-				HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
-				_cdpn.accept(pnVisitor);
-				System.out.println(" - Generation [Finished]");
+				//System.out.println(" - Generating System in HDPC format");
+				//HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
+				//_cdpn.accept(pnVisitor);
+				//System.out.println(" - Generation [Finished]");
 			} else {
 
 			}
