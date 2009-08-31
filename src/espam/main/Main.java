@@ -61,7 +61,7 @@ import espam.visitor.xps.platform.MssVisitor;
 import espam.visitor.xps.platform.CompaanHWNodeVisitor;
 import espam.visitor.xps.platform.FifoCtrlVisitor;
 import espam.visitor.xps.platform.CrossbarVisitor;
-import espam.visitor.hdpc.HdpcNetworkVisitor;
+//import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
 
@@ -78,7 +78,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.4 2009/08/31 16:41:02 nikolov Exp $
+ * @version $Id: Main.java,v 1.5 2009/08/31 16:42:17 nikolov Exp $
  */
 
 public class Main {
