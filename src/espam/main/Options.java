@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.1 2007/12/07 22:06:44 stefanov Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.2 2009/08/31 16:34:48 nikolov Exp $ $Name:  $
  */
 
 public class Options {
@@ -86,6 +86,8 @@ public class Options {
                            _ui.setSchedulerFileName(args[++i]);
                         } else if( arg.equals("--libxps") || arg.equals("-l") ) {
                         	_ui.setXpsLibPath(args[++i]);
+                        } else if( arg.equals("--libhdpc") ) {
+                        	_ui.setHdpcLibPath(args[++i]);
                         } else {
 		           // Unrecognized option.
                            throw new IllegalArgumentException("Unrecognized option: " + arg);
@@ -131,6 +133,8 @@ public class Options {
                _ui.setYmlFlag();
             } else if( arg.equals("--xps") || arg.equals("-X") ) {
                 _ui.setXpsFlag();
+            } else if( arg.equals("--hdpc") ) {
+                _ui.setHdpcFlag();
             } else if( arg.equals("--size") || arg.equals("-S") ) {
                _ui.setSizeFlag();
             } else if( arg.equals("--decompose") ) {
@@ -186,6 +190,7 @@ public class Options {
                          { "--yapi      ", "-Y" },
                          { "--yml      ", "-M" },
                          { "--xps      ", "-X" },
+			 { "--hdpc     ", "none" },
 			 { "--debug     ", "none" },
                          { "--debugger  ", "none" }};
 
@@ -198,7 +203,8 @@ public class Options {
 			{ "--adg      ", "-a", "<FileName>"},
 			{ "--mapping  ", "-m", "<FileName>" },
 			{ "--scheduler", "-s", "<FileName>" },
-			{ "--libxps", "-l", "<LibraryPath>" } };
+			{ "--libxps", "-l", "<LibraryPath>" },
+			{ "--libhdpc", "none", "<LibraryPath>" } };
 
 	/**
 	 * The form of the command line.

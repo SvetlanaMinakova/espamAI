@@ -167,6 +167,25 @@ public class UserInterface {
         _xpsLibPath = xpsLibPath;
     }
 
+    /**
+     * Get the path of the hdpc library file.
+     *
+     * @return The xpsLibPath value
+     */
+    public final String getHdpcLibPath() {
+        return _hdpcLibPath;
+    }
+
+    /**
+     * Set the path of the hdpc library file.
+     *
+     * @param xpsLibPath
+     *            The new xpsLibPath value
+     */
+    public final void setHdpcLibPath(String hdpcLibPath) {
+        _hdpcLibPath = hdpcLibPath;
+    }
+
 
     /**
      * Get the status of the Verbose flag
@@ -268,6 +287,22 @@ public class UserInterface {
 
     public final void setXpsFlag() {
         _xps = true;
+    }
+
+    /**
+     * Get the status of the HDPC flag
+     *
+     * @return The hdpcFlag value
+     */
+    public final boolean getHdpcFlag() {
+        return _hdpc;
+    }
+
+    /**
+     * Sets the HDPC flag
+     */
+    public final void setHdpcFlag() {
+        _hdpc = true;
     }
 
     /**
@@ -443,6 +478,9 @@ public class UserInterface {
     // the path of the xps library file
     private String _xpsLibPath = "";
 
+    // the path of the hdpc library file
+    private String _hdpcLibPath = "";
+
     // the verbose flag
     private boolean _verbose = false;
 
@@ -454,6 +492,9 @@ public class UserInterface {
 
     // the xps flag
     private boolean _xps = false;
+
+    // the hdpc flag
+    private boolean _hdpc = false;
 
     // the size flag
     private boolean _size = false;

@@ -61,6 +61,7 @@ import espam.visitor.xps.platform.MssVisitor;
 import espam.visitor.xps.platform.CompaanHWNodeVisitor;
 import espam.visitor.xps.platform.FifoCtrlVisitor;
 import espam.visitor.xps.platform.CrossbarVisitor;
+import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
 
@@ -77,7 +78,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.2 2009/05/19 12:29:24 stefanov Exp $
+ * @version $Id: Main.java,v 1.3 2009/08/31 16:34:48 nikolov Exp $
  */
 
 public class Main {
@@ -188,8 +189,9 @@ public class Main {
 			// Synthesize process network from input specifications
 			_cdpn = SynthesizeCDPN.getInstance().synthesizeCDPN( _adg, _mapping );
 
-			// Synthesize platform from input specifications
-			SynthesizePlatform.getInstance().synthesizePlatform( _platform, _cdpn, _mapping );
+			// Synthesize platform from input specifications;
+			// Generates the mapping in case of empty input mapping specification
+			SynthesizePlatform.getInstance().synthesizePlatform( _platform, _mapping );
 
 			if( _ui.getYapiFlag() ) {
 				System.out.println(" - Generating CDPN in Yapi format");
@@ -241,6 +243,12 @@ public class Main {
 				  _platform.accept(crossbarVisitor);
 
 				  System.out.println(" - Generation [Finished]");
+			
+			} else if( _ui.getHdpcFlag() ) {
+				System.out.println(" - Generating System in HDPC format");
+				HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
+				_cdpn.accept(pnVisitor);
+				System.out.println(" - Generation [Finished]");
 			} else {
 
 			}
