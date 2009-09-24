@@ -35,6 +35,7 @@ import espam.datamodel.mapping.Mapping;
 import espam.datamodel.parsetree.ParserNode;
 
 import espam.operations.ConsistencyCheck;
+import espam.operations.ADGraphAnalysis;
 import espam.operations.SynthesizeCDPN;
 import espam.operations.SynthesizePlatform;
 import espam.operations.scheduler.Scheduler;
@@ -61,6 +62,8 @@ import espam.visitor.xps.platform.MssVisitor;
 import espam.visitor.xps.platform.CompaanHWNodeVisitor;
 import espam.visitor.xps.platform.FifoCtrlVisitor;
 import espam.visitor.xps.platform.CrossbarVisitor;
+import espam.visitor.ise.CompaanHWNodeIseVisitor;
+import espam.visitor.ise.IseNetworkVisitor;
 //import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
@@ -78,7 +81,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.5 2009/08/31 16:42:17 nikolov Exp $
+ * @version $Id: Main.java,v 1.6 2009/09/24 12:46:19 sven Exp $
  */
 
 public class Main {
@@ -185,7 +188,13 @@ public class Main {
 
 			// Check for consistency the platform, process network, and mapping specs
 			ConsistencyCheck.getInstance().consistencyCheck( _platform, _adg, _mapping );
-
+  /*    
+      // [svhaastr] Perform ADG Analysis
+      System.out.println(" - Analyzing ADG");
+      ADGraphAnalysis adgAnalyzer = new ADGraphAnalysis();
+      _adg.accept(adgAnalyzer);
+      System.out.println(" - Analysis of ADG finished\n");
+*/
 			// Synthesize process network from input specifications
 			_cdpn = SynthesizeCDPN.getInstance().synthesizeCDPN( _adg, _mapping );
 
@@ -243,7 +252,18 @@ public class Main {
 				  _platform.accept(crossbarVisitor);
 
 				  System.out.println(" - Generation [Finished]");
-			
+			} else if (_ui.getIseFlag()) {
+          System.out.println(" - Generating System in Xilinx ISE format");
+
+          IseNetworkVisitor iseNetworkVisitor = new IseNetworkVisitor(_mapping);
+          _platform.accept(iseNetworkVisitor);
+
+          // Use a separate visitor to obtain HDL for the HWnodes; this is to make sure we don't get duplicate eval_logic units
+          // etc.
+				  CompaanHWNodeIseVisitor hwNodeVisitor = new CompaanHWNodeIseVisitor(_mapping);
+				  _platform.accept(hwNodeVisitor);
+
+				  System.out.println(" - Generation [Finished]");
 			} else if( _ui.getHdpcFlag() ) {
 				//System.out.println(" - Generating System in HDPC format");
 				//HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );

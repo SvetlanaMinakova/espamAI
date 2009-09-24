@@ -290,6 +290,23 @@ public class UserInterface {
     }
 
     /**
+     * Get the status of the ISE flag
+     *
+     * @return The iseFlag value
+     */
+    public final boolean getIseFlag() {
+        return _ise;
+    }
+
+    /**
+     * Sets the ISE flag
+     */
+
+    public final void setIseFlag() {
+        _ise = true;
+    }
+
+    /**
      * Get the status of the HDPC flag
      *
      * @return The hdpcFlag value
@@ -492,6 +509,9 @@ public class UserInterface {
 
     // the xps flag
     private boolean _xps = false;
+
+    // the ise flag
+    private boolean _ise = false;
 
     // the hdpc flag
     private boolean _hdpc = false;
