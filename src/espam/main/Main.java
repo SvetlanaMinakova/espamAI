@@ -35,7 +35,6 @@ import espam.datamodel.mapping.Mapping;
 import espam.datamodel.parsetree.ParserNode;
 
 import espam.operations.ConsistencyCheck;
-import espam.operations.ADGraphAnalysis;
 import espam.operations.SynthesizeCDPN;
 import espam.operations.SynthesizePlatform;
 import espam.operations.scheduler.Scheduler;
@@ -81,7 +80,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.7 2009/09/25 08:31:00 sven Exp $
+ * @version $Id: Main.java,v 1.8 2009/09/25 08:32:01 sven Exp $
  */
 
 public class Main {
