@@ -81,7 +81,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.6 2009/09/24 12:46:19 sven Exp $
+ * @version $Id: Main.java,v 1.7 2009/09/25 08:31:00 sven Exp $
  */
 
 public class Main {
@@ -188,13 +188,7 @@ public class Main {
 
 			// Check for consistency the platform, process network, and mapping specs
 			ConsistencyCheck.getInstance().consistencyCheck( _platform, _adg, _mapping );
-  /*    
-      // [svhaastr] Perform ADG Analysis
-      System.out.println(" - Analyzing ADG");
-      ADGraphAnalysis adgAnalyzer = new ADGraphAnalysis();
-      _adg.accept(adgAnalyzer);
-      System.out.println(" - Analysis of ADG finished\n");
-*/
+
 			// Synthesize process network from input specifications
 			_cdpn = SynthesizeCDPN.getInstance().synthesizeCDPN( _adg, _mapping );
 
