@@ -307,6 +307,23 @@ public class UserInterface {
     }
 
     /**
+     * Get the status of the IP-XACT flag
+     *
+     * @return The ipxactFlag value
+     */
+    public final boolean getIpxactFlag() {
+        return _ipxact;
+    }
+
+    /**
+     * Sets the IP-XACT flag
+     */
+
+    public final void setIpxactFlag() {
+        _ipxact = true;
+    }
+
+    /**
      * Get the status of the HDPC flag
      *
      * @return The hdpcFlag value
@@ -512,6 +529,9 @@ public class UserInterface {
 
     // the ise flag
     private boolean _ise = false;
+
+    // the IP-XACT flag
+    private boolean _ipxact = false;
 
     // the hdpc flag
     private boolean _hdpc = false;

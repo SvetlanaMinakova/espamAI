@@ -63,6 +63,7 @@ import espam.visitor.xps.platform.FifoCtrlVisitor;
 import espam.visitor.xps.platform.CrossbarVisitor;
 import espam.visitor.ise.CompaanHWNodeIseVisitor;
 import espam.visitor.ise.IseNetworkVisitor;
+import espam.visitor.ipxact.platform.IpxactDwarvVisitor;
 //import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
@@ -80,7 +81,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.8 2009/09/25 08:32:01 sven Exp $
+ * @version $Id: Main.java,v 1.9 2009/09/25 15:23:34 sven Exp $
  */
 
 public class Main {
@@ -255,6 +256,13 @@ public class Main {
           // etc.
 				  CompaanHWNodeIseVisitor hwNodeVisitor = new CompaanHWNodeIseVisitor(_mapping);
 				  _platform.accept(hwNodeVisitor);
+
+				  System.out.println(" - Generation [Finished]");
+			} else if (_ui.getIpxactFlag()) {
+          System.out.println(" - Generating System in IP-XACT format");
+
+          IpxactDwarvVisitor ipxactDwarvVisitor = new IpxactDwarvVisitor(_mapping);
+          _platform.accept(ipxactDwarvVisitor);
 
 				  System.out.println(" - Generation [Finished]");
 			} else if( _ui.getHdpcFlag() ) {

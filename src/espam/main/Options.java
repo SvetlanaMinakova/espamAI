@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.3 2009/09/24 12:46:19 sven Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.4 2009/09/25 15:23:34 sven Exp $ $Name:  $
  */
 
 public class Options {
@@ -135,6 +135,8 @@ public class Options {
                 _ui.setXpsFlag();
             } else if( arg.equals("--ise") || arg.equals("-I") ) {
                 _ui.setIseFlag();
+            } else if( arg.equals("--ipxact") ) {
+                _ui.setIpxactFlag();
             } else if( arg.equals("--hdpc") ) {
                 _ui.setHdpcFlag();
             } else if( arg.equals("--size") || arg.equals("-S") ) {
@@ -193,6 +195,7 @@ public class Options {
                          { "--yml      ", "-M" },
                          { "--xps      ", "-X" },
                          { "--ise      ", "-I" },
+                         { "--ipxact   ", "none" },
 			 { "--hdpc     ", "none" },
 			 { "--debug     ", "none" },
                          { "--debugger  ", "none" }};

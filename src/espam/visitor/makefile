@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.2 2009/09/24 12:46:19 sven Exp $
+# $Id: makefile,v 1.3 2009/09/25 15:23:34 sven Exp $
 #
 
 ROOT  = ../..
@@ -9,6 +9,7 @@ SUBPACKAGES = \
 	xml \
 	xps \
 	ise \
+	ipxact \
 	yapiPN \
 	ymlPN \
 	expression
