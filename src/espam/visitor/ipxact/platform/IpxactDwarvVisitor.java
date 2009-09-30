@@ -65,7 +65,7 @@ import espam.utils.symbolic.expression.*;
  * This class was developed as part of the SoftSoC project.
  *
  * @author Sven van Haastregt
- * @version $Id: IpxactDwarvVisitor.java,v 1.1 2009/09/25 15:23:34 sven Exp $
+ * @version $Id: IpxactDwarvVisitor.java,v 1.2 2009/09/30 14:13:09 sven Exp $
  */
 
 public class IpxactDwarvVisitor extends PlatformVisitor {
@@ -176,7 +176,7 @@ public class IpxactDwarvVisitor extends PlatformVisitor {
     _ipxactWriter.writeStartElement("fileSet");
     _ipxactWriter.writeElement("name", "fs-cSource");
     _ipxactWriter.writeStartElement("file", "spirit:fileId=\"f-cSource\"");
-    _ipxactWriter.writeElement("name", _adgNode.getFunction().getName());
+    _ipxactWriter.writeElement("name", _adgNode.getFunction().getName() + ".c");
     _ipxactWriter.writeElement("fileType", "cSource");
     _ipxactWriter.writeEndElement();
     _ipxactWriter.writeStartElement("function");
@@ -226,8 +226,37 @@ public class IpxactDwarvVisitor extends PlatformVisitor {
     _ipxactWriter.writeElement("name", "hds1.h");
     _ipxactWriter.writeElement("fileType", "cSource");
     _ipxactWriter.writeElement("isIncludeFile", "true");
-    //TODO
     _ipxactWriter.writeEndElement();
+
+    // send_command function
+    _ipxactWriter.writeStartElement("function");
+    _ipxactWriter.writeElement("entryPoint", "send_command");
+    _ipxactWriter.writeElement("fileRef", "f-hds1_h");
+    _ipxactWriter.writeElement("returnType", "void");
+    _ipxactWriter.writeStartElement("argument", "spirit:dataType=\"int\"");
+    _ipxactWriter.writeElement("name", "command");
+    _ipxactWriter.writeElement("value", "0");
+    _ipxactWriter.writeEndElement();
+    _ipxactWriter.writeEndElement();
+    
+    // send_data function
+    _ipxactWriter.writeStartElement("function");
+    _ipxactWriter.writeElement("entryPoint", "send_data");
+    _ipxactWriter.writeElement("fileRef", "f-hds1_h");
+    _ipxactWriter.writeElement("returnType", "void");
+    _ipxactWriter.writeStartElement("argument", "spirit:dataType=\"int\"");
+    _ipxactWriter.writeElement("name", "data");
+    _ipxactWriter.writeElement("value", "0");
+    _ipxactWriter.writeEndElement();
+    _ipxactWriter.writeEndElement();
+
+    // read_obus function
+    _ipxactWriter.writeStartElement("function");
+    _ipxactWriter.writeElement("entryPoint", "read_obus");
+    _ipxactWriter.writeElement("fileRef", "f-hds1_h");
+    _ipxactWriter.writeElement("returnType", "int");
+    _ipxactWriter.writeEndElement();
+
     _ipxactWriter.writeEndElement(); // fileSet
 
     _ipxactWriter.writeStartElement("fileSet");
