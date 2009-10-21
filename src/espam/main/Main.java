@@ -64,7 +64,7 @@ import espam.visitor.xps.platform.CrossbarVisitor;
 import espam.visitor.ise.CompaanHWNodeIseVisitor;
 import espam.visitor.ise.IseNetworkVisitor;
 import espam.visitor.ipxact.platform.IpxactDwarvVisitor;
-//import espam.visitor.hdpc.HdpcNetworkVisitor;
+import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
 
@@ -81,7 +81,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.9 2009/09/25 15:23:34 sven Exp $
+ * @version $Id: Main.java,v 1.10 2009/10/21 10:30:35 nikolov Exp $
  */
 
 public class Main {
@@ -266,10 +266,10 @@ public class Main {
 
 				  System.out.println(" - Generation [Finished]");
 			} else if( _ui.getHdpcFlag() ) {
-				//System.out.println(" - Generating System in HDPC format");
-				//HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
-				//_cdpn.accept(pnVisitor);
-				//System.out.println(" - Generation [Finished]");
+				System.out.println(" - Generating System in HDPC format");
+				HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
+				_cdpn.accept(pnVisitor);
+				System.out.println(" - Generation [Finished]");
 			} else {
 
 			}

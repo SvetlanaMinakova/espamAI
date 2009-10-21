@@ -14,12 +14,22 @@ You must not remove this notice, or any other, from this software.
 
 \*******************************************************************/
 
-package espam.visitor.xps.cdpn;
+package espam.visitor.hdpc;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Vector;
+
+import espam.datamodel.EspamException;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
@@ -33,55 +43,45 @@ import espam.datamodel.parsetree.statement.VariableStatement;
 import espam.datamodel.parsetree.statement.LhsStatement;
 import espam.datamodel.parsetree.statement.RhsStatement;
 
+import espam.main.UserInterface;
+
+import espam.visitor.StatementVisitor;
+import espam.visitor.expression.CExpressionVisitor;
+
 import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.pn.cdpn.CDGate;
 
-import espam.datamodel.mapping.Mapping;
-import espam.datamodel.mapping.MFifo;
-
-import espam.datamodel.platform.memories.Fifo;
-import espam.datamodel.platform.memories.MultiFifo;
-import espam.datamodel.platform.communication.Crossbar;
-import espam.datamodel.platform.Port;
-import espam.datamodel.platform.Link;
-import espam.datamodel.platform.processors.Processor;
-import espam.datamodel.platform.ports.FifoWritePort;
-import espam.datamodel.platform.ports.FifoReadPort;
-
-import espam.visitor.StatementVisitor;
-
-import espam.visitor.expression.CExpressionVisitor;
 import espam.utils.symbolic.expression.Expression;
 
 //////////////////////////////////////////////////////////////////////////
-//// XpsStatementVisitor
+//// HdpcStatementVisitor
 
 /**
  *  This class ...
  *
- * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.11 2002/06/24 15:48:36 stefanov
+ * @author  Todor Stefanov, Hristo Nikolov
+ * @version  $Id: HdpcStatementVisitor.java,v 1.11 2002/06/24 15:48:36 sjain
  *      Exp $
  */
 
-public class XpsStatementVisitor extends StatementVisitor {
+public class HdpcStatementVisitor extends StatementVisitor {
 
     /**
-     *  Constructor for the XpsStatementVisitor object
+     *  Constructor for the HdpcStatementVisitor object
      *
      * @param  printStream Description of the Parameter
      * @param  name Description of the Parameter
      */
-    public XpsStatementVisitor(PrintStream printStream, CDProcess process, Mapping mapping) {
+    public HdpcStatementVisitor(PrintStream printStream, CDProcess process) {
         super();
-        _mapping = mapping;
         _printStream = printStream;
         _process = process;
         _cExpVisitor = new CExpressionVisitor();
     }
 
-    ///////////////////////////////////////////////////////////////////
+
+   ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
     /**
@@ -110,8 +110,8 @@ public class XpsStatementVisitor extends StatementVisitor {
               lb.accept( _cExpVisitor ) + "); " + x.getIterator() + " <= " +
               " floor1(" + ub.accept( _cExpVisitor ) + "); " + x.getIterator() +
               " += " + x.getStepSize() + " ) {");
-                
-        _prefixInc();
+
+	_prefixInc();
         _visitChildren(x);
         _prefixDec();
 
@@ -125,7 +125,7 @@ public class XpsStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(IfStatement x) {
 
-    String str = "";
+        String str = "";
 	int sign = x.getSign();
 	Expression expression = x.getCondition();
 
@@ -141,7 +141,7 @@ public class XpsStatementVisitor extends StatementVisitor {
         _printStream.println(_prefix + "if( " +
                     expression.accept( _cExpVisitor ) + str + "0 ) {");
 
-	    _prefixInc();
+	_prefixInc();
         _visitChildren(x);
         _prefixDec();
         _printStream.println(_prefix + "}");
@@ -162,75 +162,30 @@ public class XpsStatementVisitor extends StatementVisitor {
     }
 
     /**
-     *  Print an opd statement in the correct format for c++.
+     *  Print an ipd statement in the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
     public void visitStatement(OpdStatement x) {
+
     	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
-    	
-    	String t = cdChannel.getName();
-    	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
+        String syncType = "LOCK_FREE";
+	// Check whether a channel is a 'self-loop' in order to use lighter communication primitive
+	if( cdChannel.getFromGate().getProcess().getName().equals( cdChannel.getToGate().getProcess().getName() ) ) {
+		syncType = "SYNC_FREE";
+	}
 
-    	String eName = x.getNodeName() + "_" + 
-    	               x.getGateName() + "_" + t;
-    	
-    	MFifo mFifo = _mapping.getMFifo(cdChannel);
-    	Fifo fifo = mFifo.getFifo();
-    	
-    	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-		// FIXME: write dynamic version if required
-    		String funName = "writeMF(";	
-
-            _printStream.println("");
-            _printStream.println(_prefix + funName + eName + 
-        			 ", " + "&" + x.getArgumentName() +
-        			 x.getNodeName() + ", " + s + ");");
-
-        	_printStream.println("");
-    	} else {
-    		Iterator i;
-            i = fifo.getPortList().iterator();
-            Port wPort = null;
-            while (i.hasNext()) {
-                Port port = (Port) i.next();
-                if ( port instanceof FifoWritePort ) {
-                   wPort = port;
-                }
-            }
-            
-            Link link = wPort.getLink();
-        	
-            i = link.getPortList().iterator();
-            while (i.hasNext()) {
-                Port port = (Port) i.next();
-                if ( !(port.getResource() instanceof Fifo) ) {
-                   wPort = port;
-                }
-            }
-        	
-            String funName;
-            if ( wPort.getResource() instanceof Processor ) {
-            	funName = "writeFSL("; 
-            }
-            else {
-		    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
-			    funName = "writeDyn(";
-		    } else {
-			    funName = "write(";	
-		    }
-	    }
-
-            _printStream.println("");
-            _printStream.println(_prefix + funName + eName + 
-        			 ", " + "&" + x.getArgumentName() +
-        			 x.getNodeName() + ", " + s + ");");
-
-        	_printStream.println("");
-    	}
+	StringBuffer tmpStr = new StringBuffer(x.getGateName());
+	tmpStr.delete(0,3);
+	String port = tmpStr.toString();
+        int intPort = Integer.parseInt(port);
+	intPort--;
+        _printStream.println("");
+        _printStream.println(_prefix + "proc.writeToPort<" + syncType + ">( " +
+	        intPort + ", " + x.getArgumentName() + x.getNodeName() + " );");
     }
 
     /**
@@ -238,15 +193,15 @@ public class XpsStatementVisitor extends StatementVisitor {
      *
      * @param  x Description of the Parameter
      */
-      public void visitStatement(AssignStatement x) {
+    public void visitStatement(AssignStatement x) {
         Statement statement = null;
        	LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
        	RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
 
 	if ( !x.getFunctionName().equals("") ) {
 
-	     _printStream.println("");
-             _printStream.print(_prefix + "_" + x.getFunctionName() + "(");
+	    _printStream.println("");
+            _printStream.print(_prefix + "_" + x.getFunctionName() + "(");
 
             Iterator i = rhsStatement.getChildren();
             while( i.hasNext() ) {
@@ -272,8 +227,9 @@ public class XpsStatementVisitor extends StatementVisitor {
                    _printStream.print(var.getVariableName() + x.getNodeName());
                }
            }
-           _printStream.print(");");
-           _printStream.println("");
+           _printStream.println(") ;");
+           _printStream.println(_prefix + "proc.inc_execution_cntr();");
+	   _printStream.println("");
 
 	} else {
 
@@ -283,12 +239,10 @@ public class XpsStatementVisitor extends StatementVisitor {
              _printStream.println("");
              _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
 	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
-             _printStream.println("");
-
+	     _printStream.println("");
 	}
 
     }
-
 
     /**
      *  Print a Control statement in the correct format for c++.
@@ -317,99 +271,47 @@ public class XpsStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(FifoMemoryStatement x) {
 
-       	String gateName = x.getGateName();
+	String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
+
+    	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
+        String syncType = "LOCK_FREE";
+	// Check whether a channel is a 'self-loop' in order to use lighter communication primitive
+	if( cdChannel.getFromGate().getProcess().getName().equals( cdChannel.getToGate().getProcess().getName() ) ) {
+		syncType = "SYNC_FREE";
+	}
 
-    	String t = cdChannel.getName();
-    	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
+	StringBuffer tmpStr = new StringBuffer(x.getGateName());
+	tmpStr.delete(0,3);
+	String port = tmpStr.toString();
+        int intPort = Integer.parseInt(port);
+	intPort--;
 
-    	String eName = x.getNodeName() + "_" +
-    	               x.getGateName() + "_" + t;
+        _printStream.println(_prefix + "proc.readFromPort<" + syncType + ">( " +
+                intPort + ", " + tmp + x.getNodeName() + " );");
+		
+        Iterator i = x.getArgumentList().iterator();
+	if (i.hasNext()) {
+            ADGVariable var = (ADGVariable) i.next();
+	}
+	while (i.hasNext()) {
+             ADGVariable var = (ADGVariable) i.next();
+            _printStream.println(_prefix + var.getName() + x.getNodeName() +" = " 
+	                                            + tmp + x.getNodeName() + ";");
+	}
 
-    	MFifo mFifo = _mapping.getMFifo(cdChannel);
-    	Fifo fifo = mFifo.getFifo();
-
-	String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
-        Iterator i;
-
-    	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-	     // FIXME: write dynamic version if required
-    	     String funName = "readMF(";
-
-            _printStream.println("");
-
-            _printStream.println(_prefix + funName + eName +
-        			 ", " + "&" + tmp +
-        			 x.getNodeName() + ", " + s + ");");
-
-            i = x.getArgumentList().iterator();
-	    if (i.hasNext()) {
-                 ADGVariable var = (ADGVariable) i.next();
-	    }
-	    while (i.hasNext()) {
-                  ADGVariable var = (ADGVariable) i.next();
-                 _printStream.println(_prefix + var.getName() + x.getNodeName() +" = "
-	                                                 + tmp + x.getNodeName() + ";");
-	    }
-
-            _printStream.println("");
-    	} else {
-	
-            i = fifo.getPortList().iterator();
-            Port rPort = null;
-            while (i.hasNext()) {
-                Port port = (Port) i.next();
-                if ( port instanceof FifoReadPort ) {
-                   rPort = port;
-                }
-            }
-
-            Link link = rPort.getLink();
-
-            i = link.getPortList().iterator();
-            while (i.hasNext()) {
-                Port port = (Port) i.next();
-                if ( !(port.getResource() instanceof Fifo) ) {
-                   rPort = port;
-                }
-            }
-
-            String funName;
-            if ( rPort.getResource() instanceof Processor ) {
-            	funName = "readFSL(";
-            }
-            else if ( rPort.getResource() instanceof Crossbar ) {
-		// FIXME: write dynamic version if required
-            	funName = "readMF(";
-            } else {
-		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
-			funName = "readDyn(";
-		} else {
-			funName = "read(";
-		}
-            }
-
-            _printStream.println("");
-
-            _printStream.println(_prefix + funName + eName +
-        			 ", " + "&" + tmp +
-        			 x.getNodeName() + ", " + s + ");");
-
-            i = x.getArgumentList().iterator();
-	    if (i.hasNext()) {
-                 ADGVariable var = (ADGVariable) i.next();
-	    }
-	    while (i.hasNext()) {
-                  ADGVariable var = (ADGVariable) i.next();
-                 _printStream.println(_prefix + var.getName() + x.getNodeName() +" = "
-	                                                 + tmp + x.getNodeName() + ";");
-	    }
-
-            _printStream.println("");
-    	}
+//        _printStream.println("");
+        _prefixInc();
+        _visitChildren(x);
+        _prefixDec();
     }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                  ///
+
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
@@ -417,10 +319,8 @@ public class XpsStatementVisitor extends StatementVisitor {
     /**
      *  The Expressions visitor.
      */
-    private CExpressionVisitor _cExpVisitor = null;
-    
-    private Mapping _mapping = null;
-    
+
     private CDProcess _process = null;
-        
+
+    private CExpressionVisitor _cExpVisitor = null;
 }

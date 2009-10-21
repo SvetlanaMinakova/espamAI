@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.1 2009/06/11 13:18:14 stefanov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.2 2009/10/21 10:30:35 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -245,7 +245,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
                       }
 		   }
 
-		   csl += t + " " + arg.getName() + ", ";
+		   csl += t + " &" + arg.getName() + ", ";
                 }
 
                 j2 = function1.getOutArgumentList().iterator();
@@ -275,7 +275,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
                        }
 		    }
 
-                    csl += t + " *" + arg.getName() + ", ";
+                    csl += t + " &" + arg.getName() + ", ";
                 }
                 _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
 
@@ -292,8 +292,8 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
                 j2 = function1.getOutArgumentList().iterator();
                 while( j2.hasNext() ) {
                     ADGVariable arg = (ADGVariable) j2.next();
-                    //csl += "&" + arg.getName() + ", ";
-                    csl += arg.getName() + ", ";
+                    csl += "&" + arg.getName() + ", ";
+                    //csl += arg.getName() + ", ";
                 }
 
                 _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
