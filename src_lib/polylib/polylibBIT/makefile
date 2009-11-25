@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:09:25 stefanov Exp $
+# $Id: makefile,v 1.2 2009/11/25 11:14:03 mohamed Exp $
 #
 
 ROOT  = ../..
@@ -26,10 +26,13 @@ INCL                    = -I$(PANDAJAVA_DIR)/include/$(OSEXT)/ \
                           -I$(PANDAJAVA_DIR)/include \
 	                  -I$(POLYLIB_INC)
 
-LIB                     = $(POLYLIB_LIB)/libpolylib$(BITS).a
+# Changed to enable compilation on 64-bit machines
+#LIB                     = $(POLYLIB_LIB)/libpolylib$(BITS).a
+LIB                     = -L$(POLYLIB_LIB) -lpolylib$(BITS)
 
 
-EXTRA_FLAGS =
+# Added to enable compilation on 64-bit machines
+EXTRA_FLAGS = -fPIC
 
 
 # =========================== WINDOWS NT =====================

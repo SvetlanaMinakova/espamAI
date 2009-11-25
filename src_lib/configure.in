@@ -1,4 +1,4 @@
-AC_REVISION($Id: configure.in,v 1.1 2007/12/07 22:09:21 stefanov Exp $)
+AC_REVISION($Id: configure.in,v 1.2 2009/11/25 11:14:03 mohamed Exp $)
 
 dnl Autoconfigure for ESPAM_LIBs
 AC_INIT(vars.mk.in)
@@ -77,6 +77,15 @@ case "$target" in
         LDPATH="LD_LIBRARY_PATH";
         LIBTYPE="library" ;;
     i*-*-linux-gnu)  
+	LD="gcc"
+	SHEXT="so" ; 
+	OSEXT="linux"
+	TCLFLAGS=""
+	EXEC_SUFFIX=
+	SHAREDLIB_FLAG="-shared";     
+        LDPATH="LD_LIBRARY_PATH";   
+        LIBTYPE="library" ;;
+    x*-*-linux-gnu)  
 	LD="gcc"
 	SHEXT="so" ; 
 	OSEXT="linux"
