@@ -41,7 +41,7 @@ import espam.visitor.PlatformVisitor;
  *  Crossbar component pcore for Xps tool.
  *
  * @author  Hristo Nikolov, Todor Stefanov
- * @version  $Id: CrossbarVisitor.java,v 1.1 2007/12/07 22:07:27 stefanov Exp $
+ * @version  $Id: CrossbarVisitor.java,v 1.2 2010/02/03 10:11:42 nikolov Exp $
  */
 
 public class CrossbarVisitor extends PlatformVisitor {
@@ -210,6 +210,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("");
 	hdlPS.println("        F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
 	hdlPS.println("        P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+	hdlPS.println("        P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
 	hdlPS.println("        P_request_i : IN t_data;");
 	hdlPS.println("");
 	hdlPS.println("        F_select_o  : OUT t_fifo_sel;");
@@ -230,6 +231,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("    SIGNAL sl_P_rd_data_o : t_data;");
 	hdlPS.println("");
 	hdlPS.println("    SIGNAL sl_P_wr_req_i  : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+	hdlPS.println("    SIGNAL sl_P_req_ackn_o: STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
 	hdlPS.println("    SIGNAL sl_P_request_i : t_data;");
 	hdlPS.println("    SIGNAL sl_F_select_o  : t_fifo_sel;");
 	hdlPS.println("");
@@ -280,6 +282,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("        F_empty_i   => sl_P_empty_i,");
 	hdlPS.println("        P_wr_req_i  => sl_P_wr_req_i,");
 	hdlPS.println("        P_request_i => sl_P_request_i,");
+	hdlPS.println("        P_req_ackn_o => sl_P_req_ackn_o,");
 	hdlPS.println("");
 	hdlPS.println("        F_select_o   => sl_F_select_o,");
 	hdlPS.println("");
@@ -383,6 +386,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("");
 	hdlPS.println("    F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
 	hdlPS.println("    P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+	hdlPS.println("    P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
 	hdlPS.println("    P_request_i : IN t_data;");
 	hdlPS.println("");
 	hdlPS.println("    F_select_o  : OUT t_fifo_sel;");
@@ -450,6 +454,9 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("        sl_req_valid   <= (OTHERS => '0');");
 	hdlPS.println("        sl_cur_req     <= 0;");
 	hdlPS.println("        req_accepted   <= (OTHERS => FALSE);");
+        hdlPS.println("        ----------------------------------");
+        hdlPS.println("        P_req_ackn_o   <= (OTHERS => '0');");
+        hdlPS.println("        ----------------------------------");
 	hdlPS.println("        F_select_o     <= (OTHERS => (OTHERS => '0'));");
 	hdlPS.println("        C_i            <= (OTHERS => (OTHERS => '0'));");
 	hdlPS.println("        C_o            <= (OTHERS => (OTHERS => '0'));");
@@ -478,6 +485,9 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("            sl_req_valid(sl_cur_req) <= '0';");
 	hdlPS.println("            req_accepted(sl_cur_req) <= FALSE;");
 	hdlPS.println("            F_select_o(CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
+        hdlPS.println("            --------------------------------");
+        hdlPS.println("            P_req_ackn_o(sl_cur_req) <= '0';");
+        hdlPS.println("            --------------------------------");
 	hdlPS.println("");
 	hdlPS.println("            IF( sl_cur_req = ports_num-1 ) THEN");
 	hdlPS.println("                sl_cur_req <= 0;");
@@ -499,6 +509,10 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("                F_select_o(CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
 	hdlPS.println("            END IF;");
 	hdlPS.println("");
+        hdlPS.println("            --------------------------------");
+        hdlPS.println("            P_req_ackn_o(sl_cur_req) <= '1';");
+        hdlPS.println("            --------------------------------");
+	hdlPS.println("");
 	hdlPS.println("            req_accepted(sl_cur_req) <= FALSE;");
 	hdlPS.println("            IF( sl_cur_req = ports_num-1 ) THEN");
 	hdlPS.println("                sl_cur_req <= 0;");
@@ -506,7 +520,10 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("                sl_cur_req <= sl_cur_req + 1;");
 	hdlPS.println("            END IF;");
 	hdlPS.println("");
-	hdlPS.println("        ELSE");
+	hdlPS.println("        ELSE -- move to the next port");
+        hdlPS.println("            --------------------------------");
+        hdlPS.println("            P_req_ackn_o(sl_cur_req) <= '1';");
+        hdlPS.println("            --------------------------------");
 	hdlPS.println("");
 	hdlPS.println("            req_accepted(sl_cur_req) <= FALSE;");
 	hdlPS.println("            IF( sl_cur_req = ports_num-1 ) THEN");
@@ -520,6 +537,22 @@ public class CrossbarVisitor extends PlatformVisitor {
 	hdlPS.println("");
 	hdlPS.println("     END IF;");
 	hdlPS.println("  END PROCESS;");
+	hdlPS.println("");
+	hdlPS.println("  -----------------------------------------------------------------------------------------------------");
+	hdlPS.println("  -- Request acknowledge (P_req_ackn_o)");
+	hdlPS.println("  -----------------------------------------------------------------------------------------------------");
+	hdlPS.println("  -- A read request is acknowledged after the first time the controller serves the request.");
+	hdlPS.println("  -- The acknowledge is not related to whether the request has been granted or put back in the queue.");
+	hdlPS.println("  -- The acknowledge is important for the requested microprocessor when OS is used.");
+	hdlPS.println("  -- A processor switches to another process/thread if the the request has been acknowledged but not granted.");
+	hdlPS.println("  -----------------------------------------------------------------------------------------------------");
+	hdlPS.println("  -- The service time of the request is 1 CLK if the CB link is not available. In this case, the request");
+	hdlPS.println("  -- is not granted and P_req_ackn_o is set in the 'else' section.");
+	hdlPS.println("  -- If the link is available, another clk period is needed to check the status of the corresponding FIFO.");
+	hdlPS.println("  -- Before that, it is not known whether the request will be granted or not.");
+	hdlPS.println("  -- If the acknowledge is set always after the 1st clk, this may lead to process/thread switching although");
+	hdlPS.println("  -- the request might be granted at the next clock period.");
+	hdlPS.println("  -------------------------------------------------------------------------------------------------------");
 	hdlPS.println("");
 	hdlPS.println("END ARCHITECTURE imp;");
    }
@@ -575,6 +608,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	   mpdPS.println("PORT VB" + (i+1) + "_EMPTY_IN  = \"VB_EMPTY_IN\",  DIR = O, BUS = " + name);
 	   mpdPS.println("PORT VB" + (i+1) + "_PORT_IN   = \"VB_PORT_IN\",   DIR = O, VEC = [31:0], BUS = " + name);
 	   mpdPS.println("PORT VB" + (i+1) + "_REQ_WR    = \"VB_REQ_WR\",    DIR = I, BUS = " + name);
+	   mpdPS.println("PORT VB" + (i+1) + "_REQ_ACKN  = \"VB_REQ_ACKN\",  DIR = O, BUS = " + name);
 	   mpdPS.println("PORT VB" + (i+1) + "_REQ_DATA  = \"VB_REQ_DATA\",  DIR = I, VEC = [31:0], BUS = " + name);
 	   mpdPS.println("PORT VB" + (i+1) + "_FIFO_SEL  = \"VB_FIFO_SEL\",  DIR = O, VEC = [7:0], BUS = " + name);
 	   mpdPS.println("");
@@ -619,6 +653,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	   hdlPS.println("");
 	   hdlPS.println("    -- Virtual buffer control interface");
 	   hdlPS.println("    VB" + i + "_REQ_WR    : IN STD_LOGIC;");
+	   hdlPS.println("    VB" + i + "_REQ_ACKN  : OUT STD_LOGIC;");
 	   hdlPS.println("    VB" + i + "_REQ_DATA  : IN STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
 	   if( i == _nmbrCBPorts ) {
 	      hdlPS.println("    VB" + i + "_FIFO_SEL  : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) );");
@@ -648,6 +683,7 @@ public class CrossbarVisitor extends PlatformVisitor {
 	   hdlPS.println("    VB" + i + "_PORT_IN   <= sl_P_rd_data_o(" + (i-1) + "); -- port for reading data (the processor reads from the crossbar)");
 	   hdlPS.println("");
 	   hdlPS.println("    sl_P_wr_req_i(" + (i-1) + ") <= VB" + i + "_REQ_WR;");
+	   hdlPS.println("    VB" + i + "_REQ_ACKN <= sl_P_req_ackn_o(" + (i-1) + ");");
 	   hdlPS.println("    sl_P_request_i(" + (i-1) + ") <= VB" + i + "_REQ_DATA;");
 	   hdlPS.println("    VB" + i + "_FIFO_SEL  <= sl_F_select_o(" + (i-1) + ");");
 	}

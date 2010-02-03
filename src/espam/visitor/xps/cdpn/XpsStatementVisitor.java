@@ -182,8 +182,12 @@ public class XpsStatementVisitor extends StatementVisitor {
     	Fifo fifo = mFifo.getFifo();
     	
     	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-		// FIXME: write dynamic version if required
-    		String funName = "writeMF(";	
+    	    String funName = "";	
+	    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+		funName = "writeDynMF(";
+	    } else {
+		funName = "writeMF(";
+  	    }
 
             _printStream.println("");
             _printStream.println(_prefix + funName + eName + 
@@ -335,8 +339,12 @@ public class XpsStatementVisitor extends StatementVisitor {
         Iterator i;
 
     	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-	     // FIXME: write dynamic version if required
-    	     String funName = "readMF(";
+             String funName = "";
+	     if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+		    funName = "readDynMF(";
+	     } else {
+		    funName = "readMF(";	
+	     }
 
             _printStream.println("");
 
@@ -381,8 +389,12 @@ public class XpsStatementVisitor extends StatementVisitor {
             	funName = "readFSL(";
             }
             else if ( rPort.getResource() instanceof Crossbar ) {
-		// FIXME: write dynamic version if required
-            	funName = "readMF(";
+		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+			funName = "readDynMF(";
+		} else {
+			funName = "readMF(";
+		}
+
             } else {
 		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
 			funName = "readDyn(";
