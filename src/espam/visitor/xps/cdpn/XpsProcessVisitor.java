@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.5 2010/02/03 10:11:42 nikolov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.6 2010/02/04 16:15:46 stefanov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -389,7 +389,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
  	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
 	"        for (i = 0; i < n; i++) {\\\n" +
 	"            while (*isEmpty != 2) {\\\n" + 
-	"                if( *Empty == 3 ) {\\\n" + 
+	"                if( *isEmpty == 3 ) {\\\n" + 
 	"                    *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" + 
 	"                    yield();\\\n" + 
         "                    *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
@@ -413,5 +413,4 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	"    } while(0)\n";
 
 }
-
 
