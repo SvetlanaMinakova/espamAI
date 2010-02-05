@@ -75,7 +75,7 @@ begin
 PROCESS (LMB_Clk, LMB_Rst) IS
 BEGIN  
     IF (LMB_Rst = '1') THEN
-        Fin_Out <= '0';
+        FinOut <= '0';
     ELSIF (LMB_Clk'EVENT AND LMB_Clk = '1') THEN
         IF LMB_WriteStrobe = '1' and lmb_select = '1' THEN
            FinOut <= LMB_WriteDBus(C_LMB_DWIDTH-1);
