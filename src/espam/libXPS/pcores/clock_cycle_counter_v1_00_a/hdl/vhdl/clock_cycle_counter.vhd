@@ -64,20 +64,19 @@ PORT (
 END COMPONENT;
 
 -- internal signals
-signal lmb_select      : STD_LOGIC;
-signal lmb_select_1    : STD_LOGIC;
-signal count   	     : STD_LOGIC_VECTOR(0 TO C_LMB_DWIDTH-1);
-signal stop_count      : NATURAL:= 0;
+signal lmb_select : STD_LOGIC;
+signal count      : STD_LOGIC_VECTOR(0 TO C_LMB_DWIDTH-1);
 
 BEGIN  -- architecture imp
 
-    -- Get the result
-    --Sl_DBus <= CONV_STD_LOGIC_VECTOR(count, 32) when LMB_ReadStrobe = '1' and lmb_select_1 = '1'
-    --				               else X"a5a5a5a5";
-    Sl_DBus <= count when LMB_ReadStrobe = '1' and lmb_select_1 = '1'
-    				               else X"a5a5a5a5";
+    ---------------------------------------------------
+    -- Get the counter value
+    ---------------------------------------------------
+    Sl_DBus  <= count;
 
+    ---------------------------------------------------
     -- Counter increment at each rising clock edge
+    ---------------------------------------------------
     Counter : PROCESS (LMB_Clk, LMB_Rst) IS
     BEGIN  
         IF (LMB_Rst = '1') THEN
@@ -91,22 +90,15 @@ BEGIN  -- architecture imp
         END IF;
     END PROCESS Counter;
 
+    ---------------------------------------------------
     -- Handling the LMB bus interface
-    LMB_Select_Handling : PROCESS (LMB_Clk, LMB_Rst) IS
-    BEGIN  -- PROCESS LMB_Select_Handling
-        IF (LMB_Rst = '1') THEN
-            lmb_select_1 <= '0';
-        ELSIF (LMB_Clk'EVENT AND LMB_Clk = '1') THEN
-            lmb_select_1 <= lmb_select;
-        END IF;
-    END PROCESS LMB_Select_Handling;
-
+    ---------------------------------------------------
     Ready_Handling : PROCESS (LMB_Clk, LMB_Rst) IS
-    BEGIN  -- PROCESS Ready_Handling
+    BEGIN  
         IF (LMB_Rst = '1') THEN
-            Sl_Ready <= '0';
+            Sl_Ready  <= '0';
         ELSIF (LMB_Clk'EVENT AND LMB_Clk = '1') THEN
-            Sl_Ready <= LMB_AddrStrobe AND lmb_select;
+            Sl_Ready   <= LMB_AddrStrobe AND lmb_select;
         END IF;
     END PROCESS Ready_Handling;
 
