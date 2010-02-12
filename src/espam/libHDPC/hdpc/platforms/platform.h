@@ -1,4 +1,4 @@
-/* $Id: platform.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: platform.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 

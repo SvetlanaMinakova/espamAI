@@ -1,16 +1,15 @@
-/* $Id: sync_free.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: sync_free.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
-#include <windows.h>
 #include <hdpc/stdafx.h>
 #include <hdpc/debug.hpp>
 #include <hdpc/channels/base.h>
 
 /* a channel implementation for inter-process communication. Since inside a single process everything
  * is single-threaded, no locking mechanisms are needed. */
-namespace hdpc { 
-	namespace channel { 
+namespace hdpc {
+	namespace channel {
 		namespace lock {
 
 			template <> class Lock<SYNC_FREE>: public LockBase {
@@ -29,7 +28,7 @@ namespace hdpc {
 				inline bool isFull() const;
 				inline bool isEmpty() const;
 			private:
-				LONG bufCount;
+				size_t bufCount;
 			};
 
 			Lock<SYNC_FREE>::Lock(size_t len): LockBase(len), bufCount(0) {}

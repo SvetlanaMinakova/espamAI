@@ -1,20 +1,20 @@
-/* $Id: disk.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: disk.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
 #include <hdpc/stdafx.h>
 #include <hdpc/platforms/platform.h>
-#include <tchar.h>
 #include <sstream>
+#include <fstream>
 
 namespace hdpc {
 	namespace platform {
 
 		class Storage: public Platform {
 		public:
-			typedef enum StreamType {STREAM_IN, STREAM_OUT};
+			enum StreamType {STREAM_IN, STREAM_OUT};
 
-			Storage(const TCHAR *filename, StreamType type, size_t bufsize = -1);
+			Storage(const char *filename, StreamType type, size_t bufsize = -1);
 			~Storage();
 			bool init();
 			bool deinit();
@@ -25,33 +25,32 @@ namespace hdpc {
 			inline bool read(const void *src, void *element, size_t size);
 
 		protected:
-			TCHAR *file;
+			std::string file;
 			StreamType mode;
-			FILE *fp;
+			std::fstream fp;
 		};
 
-		Storage::Storage(const TCHAR *filename, StreamType type, size_t bufsize): fp(NULL), mode(type) {
-			file = _tcsdup(filename);
+		Storage::Storage(const char *filename, StreamType type, size_t bufsize): mode(type) {
+			file = filename;
 		}
 
 		Storage::~Storage() {
-			free(file);
-			file = NULL;
 		}
 
 		bool Storage::init() {
-			if (fp != NULL) fclose(fp);
+			if (fp.is_open()) fp.close();
 
 			std::stringstream ss;
 			ss << "fileIO to" << file;
 			if (Platform::get_name() == NULL) Platform::set_name(ss.rdbuf()->str().c_str());
 
-			const TCHAR *m = (mode == Storage::STREAM_IN) ? _T("rb") : _T("wb");
-			return _tfopen_s(&fp, file, m) == 0;
+			fp.open(file.c_str(), std::ios_base::binary | ((mode == Storage::STREAM_IN) ? std::ios_base::in : std::ios_base::out));
+			return fp.good();
 		}
 
 		bool Storage::deinit() {
-			return fclose(fp) == 0;
+			fp.close();
+			return !fp.fail();
 		}
 
 		bool Storage::allocmem(size_t size, void *&buf) {
@@ -66,12 +65,14 @@ namespace hdpc {
 
 		bool Storage::write(void *dst, const void *element, size_t size) {
 			assert(dst == NULL);
-			return fwrite(element, size, 1, fp) == 1;
+			fp.write(static_cast<const char*>(element), size);
+			return !fp.bad();
 		}
 
 		bool Storage::read(const void *src, void *element, size_t size) {
 			assert(src == NULL);
-			return fread(element, size, 1, fp) == 1;
+			fp.read(static_cast<char*>(element), size);
+			return !fp.bad();
 		}
 
 	} /* namespace platform */

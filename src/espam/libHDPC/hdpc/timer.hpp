@@ -1,8 +1,9 @@
-/* $Id: timer.hpp,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: timer.hpp,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
 #include <hdpc/stdafx.h>
+#include <hdpc/timer.h>
 # if defined(WIN32)
 # include <windows.h>
 #else
@@ -12,75 +13,53 @@
 
 namespace hdpc {
 
-	template <bool enabled = true> class Timer;
-	template <int timer_count, bool enabled = true> class ComboTimer;
-	typedef Timer<HDPC_DEBUG_MODE == 1> timer_t;
+	void Timer<false>::start() {
 
-	template <> class Timer<false> {
-	public:
-		inline void start() {}
-		inline void stop() {}
-		inline double busy() const {return 0;}
+	}
 
-		inline void start_timer() {}
-		inline void end_timer() {}
-		inline double elapsed_time() {return 0;}
-		inline double stop_timer() {return 0;}
+	void Timer<false>::stop() {
 
-		static inline void start_timer(uint64_t& time) {}
-		static inline void end_timer(uint64_t& time) {}
-		static inline double elapsed_time(const uint64_t &start, const uint64_t &end) {return 0;}
+	}
 
-		static inline uint64_t get_overhead() {return 0;}
-	};
+	double Timer<false>::busy() const {
+		return 0;
+	}
 
-	template <int timer_count> class ComboTimer<timer_count, false> {
-	public:
-		inline void start() {}
-		inline void stop(int index) {}
-		inline double elapsed(int index) const {return 0;}
-		inline size_t count() const {return 0;}
-	};
+	void Timer<false>::start_timer() {
 
-	template <> class Timer<true> {
-	public:
-		Timer(): _busy(0), _start(0), _end(0) {}
-		inline void start();
-		inline void stop();
-		inline double busy() const;
+	}
 
-		inline void start_timer();
-		inline void end_timer();
-		inline double elapsed_time();
-		double stop_timer();
+	void Timer<false>::end_timer() {
 
-		static void start_timer(uint64_t& time);
-		static void end_timer(uint64_t& time);
-		static double elapsed_time(const uint64_t &start, const uint64_t &end);
+	}
 
-		static uint64_t get_overhead();
-	private:
-		uint64_t _start, _end;
-		double _busy;
+	double Timer<false>::elapsed_time() {
+		return 0;
+	}
 
-		static uint64_t overhead;
-		static uint64_t frequency;
-	};
+	double Timer<false>::stop_timer() {
+		return 0;
+	}
 
-	template <int timer_count> class ComboTimer<timer_count, true> {
-	public:
-		ComboTimer();
-		inline void start();
-		inline void stop(int index);
-		inline double elapsed(int index) const;
-		inline size_t count() const;
+	void Timer<false>::start_timer(uint64_t& time) {
 
-	private:
-		Timer<true> t;
-		size_t _count;
-		uint64_t _start;
-		boost::array<double, timer_count> _end;
-	};
+	}
+
+	void Timer<false>::end_timer(uint64_t& time) {
+
+	}
+
+	double Timer<false>::elapsed_time(const uint64_t &start, const uint64_t &end) {
+		return 0;
+	}
+
+	uint64_t Timer<false>::get_overhead() {
+		return 0;
+	}
+
+	Timer<true>::Timer(): _busy(0), _start(0), _end(0) {
+
+	}
 
 	void Timer<true>::start() {
 		start_timer(_start);
@@ -180,6 +159,26 @@ namespace hdpc {
 
 	uint64_t Timer<true>::overhead  = 0;
 	uint64_t Timer<true>::frequency = 0;
+
+	template <int timer_count>
+	void ComboTimer<timer_count, false>::start() {
+
+	}
+
+	template <int timer_count>
+	void ComboTimer<timer_count, false>::stop(int index) {
+
+	}
+
+	template <int timer_count>
+	double ComboTimer<timer_count, false>::elapsed(int index) const {
+		return 0;
+	}
+
+	template <int timer_count>
+	size_t ComboTimer<timer_count, false>::count() const {
+		return 0;
+	}
 
 	template <int timer_count>
 	ComboTimer<timer_count, true>::ComboTimer(): _start(0), _count(0) {

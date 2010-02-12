@@ -56,7 +56,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: HdpcProcessVisitor.java,v 1.1 2009/10/21 10:30:35 nikolov Exp $
+ * @version  $Id: HdpcProcessVisitor.java,v 1.2 2010/02/12 14:43:06 nikolov Exp $
  */
 
 public class HdpcProcessVisitor extends CDPNVisitor {
@@ -88,7 +88,7 @@ public class HdpcProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("");
 
 	// define cpu core numbers
-	    _printStreamFunc.println("// CORES=0 means that the OS decides to which core to map a thread at runtime");
+/*	    _printStreamFunc.println("// CORES=0 means that the OS decides to which core to map a thread at runtime");
 	    _printStreamFunc.println("#define CORES 0x0");
 	    _printStreamFunc.println("#define CORE1 0x1");
 	    _printStreamFunc.println("#define CORE2 0x2");
@@ -98,6 +98,17 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 	    _printStreamFunc.println("#define CORE6 0x20");
 	    _printStreamFunc.println("#define CORE7 0x40");
 	    _printStreamFunc.println("#define CORE8 0x80");
+*/
+	    _printStreamFunc.println("// CPU_CORES<>() means that the OS decides to which core to map a thread at runtime");
+	    _printStreamFunc.println("#define CORES hdpc::CPU_CORES<>()");
+	    _printStreamFunc.println("#define CORE1 hdpc::CPU_CORES<1>()");
+	    _printStreamFunc.println("#define CORE2 hdpc::CPU_CORES<2>()");
+	    _printStreamFunc.println("#define CORE3 hdpc::CPU_CORES<3>()");
+	    _printStreamFunc.println("#define CORE4 hdpc::CPU_CORES<4>()");
+	    _printStreamFunc.println("#define CORE5 hdpc::CPU_CORES<5>()");
+	    _printStreamFunc.println("#define CORE6 hdpc::CPU_CORES<6>()");
+	    _printStreamFunc.println("#define CORE7 hdpc::CPU_CORES<7>()");
+	    _printStreamFunc.println("#define CORE8 hdpc::CPU_CORES<8>()");
 	    _printStreamFunc.println("");
 
 	// some defines

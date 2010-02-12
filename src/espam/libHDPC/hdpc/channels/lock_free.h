@@ -1,4 +1,4 @@
-/* $Id: lock_free.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: lock_free.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
@@ -47,12 +47,12 @@ namespace hdpc {
 					writeIndexLocal = writeBuffIndex;
 					if (readBuffIndex != writeIndexLocal) return; 
 
-					SwitchToThread();
+					boost::this_thread::yield();
 				}
 			}
 
 			void Lock<LOCK_FREE>::wait_read_ptr(const index_t& readIndex) {
-				/* The 'while' check for full staus is not like in wait_read.
+				/* The 'while' check for full status is not like in wait_read.
 				 * readBuffIndex is updated by the release_read() function and in case of 
 				 * multiple writes without release -> wrong FIFO synchronization 
 				 * Therefore, explicit check using readFlag and readIndex (instead of readBuffIndex) is required */
@@ -60,7 +60,7 @@ namespace hdpc {
 					writeIndexLocal = writeBuffIndex;
 					if ((readFlag | readIndex) != writeIndexLocal) return; 
 
-					SwitchToThread();
+					boost::this_thread::yield();
 				}
 			}
 
@@ -81,12 +81,12 @@ namespace hdpc {
 					readIndexLocal = readBuffIndex;
 					if ((writeBuffIndex ^ readIndexLocal) != FULL_FLAG) return;
 
-					SwitchToThread();
+					boost::this_thread::yield();
 				}
 			}
 
 			void Lock<LOCK_FREE>::wait_write_ptr(const index_t& writeIndex) {
-				/* The 'while' check for full staus is not like in wait_write.
+				/* The 'while' check for full status is not like in wait_write.
 				 * writeBuffIndex is updated by the release_write() function and in case of 
 				 * multiple writes without release -> wrong FIFO synchronization 
 				 * Therefore, explicit check using writeFlag and writeIndex (instead of writeBuffIndex) is required */
@@ -94,7 +94,7 @@ namespace hdpc {
 					readIndexLocal = readBuffIndex;
 					if (((writeFlag | writeIndex) ^ readIndexLocal) != FULL_FLAG) return; 
 					
-					SwitchToThread();
+					boost::this_thread::yield();
 				}
 			}
 

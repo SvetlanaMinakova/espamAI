@@ -1,8 +1,10 @@
-/* $Id: spin_wait.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: spin_wait.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
-#include <windows.h>
+/* http://www.hpl.hp.com/research/linux/atomic_ops/index.php4 */
+#include <atomic_ops.h>
+
 #include <hdpc/stdafx.h>
 #include <hdpc/debug.hpp>
 #include <hdpc/channels/base.h>
@@ -28,7 +30,7 @@ namespace hdpc {
 				inline bool isFull() const;
 				inline bool isEmpty() const;
 			private:
-				volatile LONG bufCount;
+				volatile AO_t bufCount;
 			};
 
 			Lock<SPIN>::Lock(size_t len): LockBase(len), bufCount(0) {}
@@ -38,7 +40,7 @@ namespace hdpc {
 			}
 
 			void Lock<SPIN>::wait_read() {
-				while (isEmpty()) SwitchToThread();
+				while (isEmpty()) boost::this_thread::yield();
 			}
 
 			void Lock<SPIN>::wait_read_ptr(const index_t&) {
@@ -46,11 +48,11 @@ namespace hdpc {
 			}
 
 			void Lock<SPIN>::release_read(const index_t&) {
-				InterlockedDecrement(&bufCount);
+				AO_fetch_and_sub1_full(&bufCount);
 			}
 
 			void Lock<SPIN>::wait_write() {
-				while (isFull()) SwitchToThread();
+				while (isFull()) boost::this_thread::yield();
 			}
 
 			void Lock<SPIN>::wait_write_ptr(const index_t&) {
@@ -58,7 +60,7 @@ namespace hdpc {
 			}
 
 			void Lock<SPIN>::release_write(const index_t&) {
-				InterlockedIncrement(&bufCount);
+				AO_fetch_and_add1_full(&bufCount);
 			}
 
 			bool Lock<SPIN>::isFull() const {

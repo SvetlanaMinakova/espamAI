@@ -1,8 +1,13 @@
-/* $Id: semaphore_wait.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: semaphore_wait.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
+#if defined(_WIN32)
 #include <windows.h>
+#else
+#include <boost/interprocess/sync/interprocess_semaphore.hpp>
+#endif /* _WIN32 */
+
 #include <hdpc/stdafx.h>
 #include <hdpc/debug.hpp>
 #include <hdpc/channels/base.h>
@@ -11,6 +16,10 @@
 namespace hdpc {
 	namespace channel {
 		namespace lock {
+
+		#if !defined(_WIN32)
+			typedef boost::interprocess::interprocess_semaphore HANDLE;
+		#endif /* !_WIN32 */
 
 			template<> class Lock<SEMAPHORE>: public LockBase {
 			public:
@@ -26,12 +35,13 @@ namespace hdpc {
 				inline void wait_write_ptr(const index_t&);
 				inline void release_write(const index_t&);
 			private:
-				static inline void wait(HANDLE &h);
-				static inline void release(HANDLE &h);
+				static inline void wait(HANDLE &);
+				static inline void release(HANDLE &);
 
 				HANDLE empty, full;
 			};
 
+		#if defined(_WIN32)
 			Lock<SEMAPHORE>::Lock(size_t len): LockBase(len) {
 				empty = CreateSemaphore(NULL, len, len, NULL);
 				full  = CreateSemaphore(NULL, 0,   len, NULL);
@@ -42,9 +52,22 @@ namespace hdpc {
 				CloseHandle(empty);
 			};
 
-			void Lock<SEMAPHORE>::finish() {
+			bool Lock<SEMAPHORE>::finish() {
 				return WaitForSingleObject(full, 0) != WAIT_OBJECT_0;
 			};
+		#else
+			Lock<SEMAPHORE>::Lock(size_t len)
+				: LockBase(len)
+				, empty(len)
+				, full(0)
+			{}
+
+			Lock<SEMAPHORE>::~Lock() {};
+
+			bool Lock<SEMAPHORE>::finish() {
+				return !full.try_wait();
+			};
+		#endif /* _WIN32 */
 
 			void Lock<SEMAPHORE>::wait_read() {
 				wait(full);
@@ -70,6 +93,7 @@ namespace hdpc {
 				release(full);
 			}
 
+		#if defined(_WIN32)
 			void Lock<SEMAPHORE>::wait(HANDLE &h) {
 				DWORD res = WaitForSingleObject(h, INFINITE);
 				if (HDPC_DEBUG_MODE && res == WAIT_FAILED) debug::error("WaitForSingleObject failed");
@@ -79,6 +103,15 @@ namespace hdpc {
 				BOOL res = ReleaseSemaphore(h, 1, NULL);
 				if (HDPC_DEBUG_MODE && !res) debug::error("ReleaseSemaphore failed");
 			}
+		#else
+			void Lock<SEMAPHORE>::wait(HANDLE &semaphore) {
+				semaphore.wait();
+			}
+
+			void Lock<SEMAPHORE>::release(HANDLE &semaphore) {
+				semaphore.post();
+			}
+		#endif /* _WIN32 */
 
 		} /* namespace lock */
 	} /* namespace channel */

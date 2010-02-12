@@ -105,20 +105,20 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
 	_printStream.println("//#define HDPC_DEBUG"); 
 	_printStream.println(""); 
 	_printStream.println("// include main hdpc header file"); 
-	_printStream.println("#include \"../hdpc/process.hpp\"");
-	_printStream.println("#include \"../hdpc/timer.hpp\"");
+	_printStream.println("#include <hdpc/process.hpp>");
+	_printStream.println("#include <hdpc/timer.hpp>");
 	_printStream.println(""); 
 	_printStream.println("// include all needed platforms (cpu, disk, cuda, fpga, etc.)"); 
-	_printStream.println("#include \"../hdpc/platforms/cpu.h\"");
-	_printStream.println("//#include \"../hdpc/platforms/cuda.h\"");
-	_printStream.println("//#include \"../hdpc/platforms/disk.h\"");
+	_printStream.println("#include <hdpc/platforms/cpu.h>");
+	_printStream.println("//#include <hdpc/platforms/cuda.h>");
+	_printStream.println("//#include <hdpc/platforms/disk.h>");
 	_printStream.println(""); 
 	_printStream.println("// include all needed types of channel locking (lock_free, spin, signal, spin_acquire, etc.)"); 
-	_printStream.println("#include \"../hdpc/channels/lock_free.h\" ");
-	_printStream.println("#include \"../hdpc/channels/sync_free.h\" ");
-	_printStream.println("//#include \"../hdpc/channels/spin_wait.h\" ");
-	_printStream.println("//#include \"../hdpc/channels/signal_wait.h\" ");
-	_printStream.println("//#include \"../hdpc/channels/spin_acquire_wait.h\" ");
+	_printStream.println("#include <hdpc/channels/lock_free.h> ");
+	_printStream.println("#include <hdpc/channels/sync_free.h> ");
+	_printStream.println("//#include <hdpc/channels/spin_wait.h> ");
+	_printStream.println("//#include <hdpc/channels/signal_wait.h> ");
+	_printStream.println("//#include <hdpc/channels/spin_acquire_wait.h> ");
 	_printStream.println(""); 
 	_printStream.println("#include \"aux_func.h\"");
         _printStream.println("");
@@ -148,7 +148,7 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
 	_printStream.println("int main() {");
 	_printStream.println("");
 
-	_printStream.println(_prefix + "hdpc::timer_t t;");
+	_printStream.println(_prefix + "hdpc::Timer<> t;");
 	_printStream.println(_prefix + "t.start_timer();");
 	_printStream.println("");
 
@@ -210,7 +210,8 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
 // Start the threads
 	_printStream.println("// run");
 	Vector processList = x.getProcessList();
-	_printStream.println(_prefix + "HANDLE h[" + processList.size() + "];");
+//	_printStream.println(_prefix + "HANDLE h[" + processList.size() + "];");
+	_printStream.println(_prefix + "boost::thread_group tg;");
         _printStream.println("");
 
         i = x.getProcessList().iterator();
@@ -225,12 +226,14 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
         while( i.hasNext() ) {
             process = (CDProcess) i.next();
 	    _printStream.println(_prefix + 
-		"h[" + h +  "] = p_" + process.getName() + ".start( CORES, cpu" + ++h + ", " + process.getName() + " );");
-        }
+//		"h[" + h +  "] = p_" + process.getName() + ".start( CORES, cpu" + ++h + ", " + process.getName() + " );");
+                "tg.add_thread(p_" + process.getName() + ".start(CORES, cpu" + ++h + ", " + process.getName() + "));");
+            }
 	
 	_printStream.println("");
 	_printStream.println("// wait to finish");
-	_printStream.println(_prefix + "WaitForMultipleObjects( lengthof(h), h, true, INFINITE );");
+//	_printStream.println(_prefix + "WaitForMultipleObjects( lengthof(h), h, true, INFINITE );");
+	_printStream.println(_prefix + "tg.join_all();");
 	_printStream.println("");
 	_printStream.println(_prefix + "t.end_timer();");
 	_printStream.println(_prefix + "printf(\"\\nTime Elapsed: %.3f\\n\", t.elapsed_time());");
@@ -244,6 +247,7 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
         x.accept( pt );
 
         _writeVCProjectFile();
+        _writeMakefile(x);
     }
 
     /**
@@ -544,25 +548,29 @@ cf.println("<VisualStudioProject");
 			cf.println("\t\t\t>");
 		cf.println("\t\t</Filter>");
 		cf.println("\t\t<Filter Name=\"HDPC\" >");
-//			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\array.h\"> </File>");
 			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\debug.hpp\"> </File>");
 			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\process.hpp\"> </File>");
-			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\stdafx.h\"> </File>");
+			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\core_stuff.hpp\"> </File>");
 			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\timer.hpp\"> </File>");
+			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\timer.h\"> </File>");
+			cf.println("\t\t\t<File RelativePath=\".\\hdpc\\stdafx.h\"> </File>");
 			cf.println("\t\t\t<Filter Name=\"platforms\">");
 				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\platforms\\platform.h\"> </File>");
 				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\platforms\\disk.h\"> </File>");
 				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\platforms\\cuda.h\"> </File>");
 				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\platforms\\cpu.h\"> </File>");
 			cf.println("\t\t\t</Filter>");
-			cf.println("\t\t\t<Filter Name=\"channel\">");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\base.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\channel.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\lock_free.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\sync_free.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\semaphore_wait.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\spin_wait.h\"> </File>");
-				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channel\\spin_acquire_wait.h\"> </File>");
+			cf.println("\t\t\t<Filter Name=\"channels\">");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\base.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\channel.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\lock_free.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\sync_free.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\semaphore_wait.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\spin_wait.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\acquire_wait.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\acquire_spin_wait.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\acquire_semaphore_wait.h\"> </File>");
+				cf.println("\t\t\t\t<File RelativePath=\".\\hdpc\\channels\\acquire_lock_free.h\"> </File>");
 			cf.println("\t\t\t</Filter>");
 		cf.println("\t\t</Filter>");
 	cf.println("\t</Files>");
@@ -576,8 +584,6 @@ cf.println("</VisualStudioProject>");
             System.out.println("Please supply your own file");
         }
     }
-
-
 
 
     /**
@@ -664,6 +670,68 @@ cf.println("</VisualStudioProject>");
             System.out.println(" Security Issue: " + e.getMessage());
         }
 
+        return printStream;
+    }
+
+
+    private void _writeMakefile( CDProcessNetwork x) {
+        try {
+            PrintStream cf = _openMakefile();
+
+            cf.println("# File automatically generated by ESPAM");
+            cf.println("");
+            cf.println("# Notes: 1) Add the BOOST path to LD_LIBRARY_PATH. For example:");
+            cf.println("#           setenv LD_LIBRARY_PATH  ${LD_LIBRARY_PATH}:/local/BOOST/installed>/lib");
+            cf.println("#        2) Change the path below (BOOST_DIR) to point where BOOST is installed");
+            cf.println("#        3) Add additional .cpp files (if any)");
+            cf.println("");
+
+            cf.println("BOOST_DIR = /local/BOOST/installed");
+            cf.println("");
+            cf.println("FILE_NAME = " + x.getName() );
+            cf.println("");
+            cf.println("exe:"); 
+            cf.println("	g++ ./src/${FILE_NAME}_KPN.cpp ./src/${FILE_NAME}_func.cpp -I. -I${BOOST_DIR}/include -L${BOOST_DIR}/lib -lboost_thread -o run_${FILE_NAME}");
+            cf.println("");
+            cf.println("clean:"); 
+            cf.println("	rm -rf ./run_${FILE_NAME}");
+            cf.println("");
+        }
+        catch( Exception e ) {
+            System.out.println("Error: " + e.getMessage());
+            System.out.println("Cannt create the makefile");
+            System.out.println("Please supply your own file");
+        }
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @return  Description of the Return Value
+     * @exception  FileNotFoundException Description of the Exception
+     */
+    private static PrintStream _openMakefile() 
+             throws FileNotFoundException {
+
+        PrintStream printStream = null;
+        UserInterface ui = UserInterface.getInstance();
+        String fullFileName = "";
+        if( ui.getOutputFileName() == "" ) {
+            fullFileName =
+                    ui.getBasePath() + "/" +
+                    ui.getFileName() + "_hdpc/makefile";
+        } else {
+            fullFileName =
+                    ui.getBasePath() + "/" +
+                    ui.getOutputFileName() + "_hdpc/makefile";
+        }
+
+        System.out.println(" -- OPEN FILE: " + fullFileName);
+
+        OutputStream file = null;
+        file = new FileOutputStream( fullFileName );
+        printStream = new PrintStream( file );
         return printStream;
     }
 

@@ -1,4 +1,4 @@
-/* $Id: stdafx.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: stdafx.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
@@ -6,7 +6,10 @@
 #pragma warning(disable: 4996)
 #include <boost/array.hpp>
 #pragma warning(default: 4996)
-#include <boost/cstdint.hpp> 
+#include <boost/cstdint.hpp>
+#if !defined(__CUDACC__)
+#include <boost/thread.hpp>
+#endif /* !__CUDACC__ */
 
 #define lengthof(x) (sizeof(x)/sizeof(x[0]))
 #define endof(x) (&x[lengthof(x)])
@@ -26,3 +29,8 @@ BOOST_STATIC_ASSERT(sizeof(uint64_t) == 8);
 #else
 #define HDPC_DEBUG_MODE 0
 #endif /* HDCP_DEBUG */
+
+#if !defined(_WIN32)
+	#define vsnprintf_s(str, length, size, format, ap) vsnprintf(str, size, format, ap)
+	#define _strdup strdup
+#endif /* !_WIN32 */

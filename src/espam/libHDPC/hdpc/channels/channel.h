@@ -1,4 +1,4 @@
-/* $Id: channel.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: channel.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
@@ -10,7 +10,7 @@ namespace hdpc {
 
 		template <typename token_t, lock::lock_t lock_t> class Channel: public ChannelBase {
 		public:
-			BOOST_STATIC_ASSERT(__is_base_of(LockBase, lock::Lock<lock_t>));
+			//BOOST_STATIC_ASSERT(__is_base_of(LockBase, lock::Lock<lock_t>));
 
 			Channel(size_t length);
 			~Channel();

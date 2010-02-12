@@ -1,4 +1,4 @@
-/* $Id: base.h,v 1.1 2009/10/21 10:30:35 nikolov Exp $ */
+/* $Id: base.h,v 1.2 2010/02/12 14:46:28 nikolov Exp $ */
 /* $license$ */
 #pragma once
 
@@ -12,7 +12,7 @@ namespace hdpc {
 
 		/* forward decleration of lock types */
 		namespace lock {
-			typedef enum lock_t {LOCK_FREE, SEMAPHORE, SPIN, SPIN_ACQUIRE, SYNC_FREE};
+			enum lock_t {LOCK_FREE, SEMAPHORE, SPIN, SYNC_FREE, ACQUIRE_LOCK_FREE, ACQUIRE_SEMAPHORE, ACQUIRE_SPIN, ACQUIRE_SYNC_FREE};
 			template <lock_t type> class Lock;
 		};
 
@@ -42,7 +42,7 @@ namespace hdpc {
 			LockBase(size_t len);
 
 			/* BEGIN: functions lock types HAVE to implement */
-			inline void finish();
+			inline bool finish();
 			inline void wait_read();
 			inline void wait_read_ptr(const index_t&);
 			inline void release_read(const index_t&);
@@ -71,11 +71,14 @@ namespace hdpc {
 
 		const char* ChannelBase::lock() const {
 			switch (lock_type) {
-				case lock::LOCK_FREE:    return "LOCK_FREE";
-				case lock::SEMAPHORE:    return "SEMAPHORE";
-				case lock::SPIN:         return "SPIN";
-				case lock::SPIN_ACQUIRE: return "SPIN_ACQUIRE";
-				case lock::SYNC_FREE:    return "SYNC_FREE";
+				case lock::LOCK_FREE:            return "LOCK_FREE";
+				case lock::SEMAPHORE:            return "SEMAPHORE";
+				case lock::SPIN:                 return "SPIN";
+				case lock::SYNC_FREE:            return "SYNC_FREE";
+				case lock::ACQUIRE_LOCK_FREE:    return "LOCK_FREE Acquire";
+				case lock::ACQUIRE_SEMAPHORE:    return "SEMAPHORE Acquire";
+				case lock::ACQUIRE_SPIN:         return "SPIN Acquire";
+				case lock::ACQUIRE_SYNC_FREE:    return "SYNC_FREE Acquire";
 			}
 			return "";
 		}
