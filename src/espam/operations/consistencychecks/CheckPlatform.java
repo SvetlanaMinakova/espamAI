@@ -42,6 +42,10 @@ import espam.datamodel.platform.memories.MultiFifo;
 import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.peripherals.ZBTMemoryController;
 import espam.datamodel.platform.peripherals.Uart;
+import espam.datamodel.platform.host_interfaces.ADMXRCII;
+import espam.datamodel.platform.host_interfaces.ADMXPL;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML505;
 
 import espam.operations.ConsistencyCheck;
 
@@ -102,6 +106,11 @@ public class CheckPlatform {
 			// ---------------------------------------------------------------------------------------------
 		        _checkLinks( platform );
 
+			// ---------------------------------------------------------------------------------------------
+			// Target FPGA board specific check
+			// ---------------------------------------------------------------------------------------------
+		        _checkBoard( platform );
+
 			if( _error > 0 ) {
 				String er = " ERRORS";
 				if( _error == 1 ) {
@@ -155,7 +164,9 @@ public class CheckPlatform {
 			Resource resource = (Resource) i.next();
 			if( !(resource instanceof MicroBlaze) && !(resource instanceof PowerPC) &&
 			    !(resource instanceof Crossbar) && !(resource instanceof CompaanHWNode) &&
-			    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) ) {
+			    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) && 
+			    !(resource instanceof ADMXRCII) && !(resource instanceof ADMXPL) &&
+			    !(resource instanceof XUPV5LX110T) && !(resource instanceof ML505) ) {
 			    System.err.println("[Espam]ERROR: Resource " + resource + " cannot be used in the describtion of the platform. \n ");
 			    _error++;
 			}
@@ -171,16 +182,22 @@ public class CheckPlatform {
 
 			} else if( resource instanceof Crossbar ) {
 			    _cb++; // count the number of Crossbars in the platform
-			    
+			
 			} else if( resource instanceof ZBTMemoryController ) {
 			    _zmc++; // count the number of ZBTMemoryController in the platform
+
 			} else if( resource instanceof Uart ) {
-				_uart++; // count the number of Uart in the platform
+			    _uart++; // count the number of Uart in the platform
+
+			} else if( resource instanceof ADMXRCII || resource instanceof ADMXPL ||
+			           resource instanceof XUPV5LX110T || resource instanceof ML505 ) {
+
+			    _hostInterface++; // count the number of host interfaces
 			}
 		    }
 		}
 		
-        // ------------------------------------------------------------------------------------------------
+        	// ------------------------------------------------------------------------------------------------
 		// If no crossbar component is found in the platform specification, 'one-to-one' mapping of channels is assumed
 		// ------------------------------------------------------------------------------------------------
 		if( _cb == 0 ) {
@@ -225,7 +242,7 @@ public class CheckPlatform {
 		//    }
 		}
 		
-        // ---------------------------------------------------
+        	// ---------------------------------------------------
 		// Error if there is a ZBTMemoryController but there are no links
 		// ---------------------------------------------------
 		if( _zmc > 0 ) {
@@ -236,7 +253,7 @@ public class CheckPlatform {
 		    }
 		}
 		    
-        // ---------------------------------------------------
+        	// ---------------------------------------------------
 		// Error if there is a Uart but there are no links
 		// ---------------------------------------------------
 		if( _uart > 0 ) {
@@ -247,6 +264,15 @@ public class CheckPlatform {
 			}
 		}
 		
+		// -----------------------------------
+		// Check for 0 or 1 interfaces
+		// -----------------------------------
+		if( _hostInterface > 1 ) {
+			System.err.println("[Espam]ERROR: " + _hostInterface + " host interfaces found.");
+			System.err.println("=====> The platform may contain 0 or 1 host interface \n ");
+		        _error++;
+		}
+
 		// --------------------------------------------------------------------------------------------------
 		// If platform is supposed to be generated without an application mapped on it, this check is skipped
 		// --------------------------------------------------------------------------------------------------
@@ -391,9 +417,9 @@ public class CheckPlatform {
 			    while( j.hasNext() ) {
        				Port port = (Port) j.next();
 				//if( !(port instanceof LMBPort) ) {
-				if( port instanceof PLBPort || port instanceof FifoReadPort || port instanceof FifoWritePort ||
+				if( port instanceof FifoReadPort  || port instanceof FifoWritePort ||
 				    port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type LMBPort or OPBPort.");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type LMBPort, PLBPort, or OPBPort.");
 					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
@@ -440,9 +466,9 @@ public class CheckPlatform {
 			    Iterator j = resource.getPortList().iterator();
 			    while( j.hasNext() ) {
        				Port port = (Port) j.next();
-				if( (port instanceof LMBPort) || port instanceof PLBPort || port instanceof FifoWritePort ||
+				if( (port instanceof LMBPort) || port instanceof FifoWritePort ||
 				     port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
-					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type OPBPort.");
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type PLBPort or OPBPort.");
 					System.err.println("=====> Found " + port + " \n ");
 					_error++;
 				}
@@ -459,6 +485,19 @@ public class CheckPlatform {
 					_error++;
 				}
 			    }
+			} else if ( resource instanceof XUPV5LX110T ) {
+				
+			    Iterator j = resource.getPortList().iterator();
+			    while( j.hasNext() ) {
+       				Port port = (Port) j.next();
+				if( !(port instanceof PLBPort) ) {
+					System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type PLBPort.");
+					System.err.println("=====> Found " + port + " \n ");
+					_error++;
+				}
+			    }
+			} else if ( resource instanceof ADMXRCII || resource instanceof ADMXPL || resource instanceof ML505 ) {
+			    System.out.println("[Espam] WARNING: Checking port types of " + resource + " is skipped.");
 			}
 		}
 	}
@@ -568,6 +607,54 @@ public class CheckPlatform {
 		}
 	}
 	
+	/**
+	 *  Target FPGA board specific check
+	 *
+	 * @param  platform Description of the Parameter
+	 */
+	private void _checkBoard( Platform platform ) {
+
+		Iterator i = platform.getResourceList().iterator();
+		while( i.hasNext() ) {
+
+			Resource resource = (Resource) i.next();
+
+			if( resource instanceof ADMXRCII ) {
+
+			    if( _uart > 1 ) {
+				System.err.println("[Espam] ERROR: The target board ADM-XRC-II supports only one UART.");
+				System.err.println("=====> Found " + _uart + " UART components in the platform specification. \n ");
+				_error++;
+			    }
+			    if( _zmc > 6 ) {
+				System.err.println("[Espam] ERROR: The target board ADM-XRC-II has 6 static RAM off-chip memory banks.");
+				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+				_error++;
+			    }
+			} else if( resource instanceof ADMXPL  ) {
+			    if( _ppc > 2 ) {
+				System.err.println("[Espam] ERROR: The target board ADM-XPL has only 2 PowerPC processors.");
+				System.err.println("=====> Found " + _ppc + " PowerPC processors in the platform specification. \n ");
+				_error++;
+			    }
+			} else if( resource instanceof XUPV5LX110T ) {
+			    if( _zmc > 6 ) {
+				System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
+				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+				_error++;
+			    }
+// check the number of processors requiring off-chip memory (host interface port size > 0)
+// The MPMC controller has 8 ports, one is reserved for interface with the host.
+			} else if( resource instanceof ML505 ) {
+			    if( _zmc > 6 ) {
+				System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
+				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+				_error++;
+			    }
+			}
+		}
+	}
+
 
 	///////////////////////////////////////////////////////////////////
 	////                         private variables                 ////
@@ -585,6 +672,7 @@ public class CheckPlatform {
 	private static int _hwn=0; // The number of Compaan hardware nodes in the platform (must be 0 or 1)
 	private static int _zmc=0;  // The number of ZBTMemoryController in the platform
 	private static int _uart=0;  // The number of Uart in the platform
+	private static int _hostInterface=0;  // The number of host interfaces
 
 }
 

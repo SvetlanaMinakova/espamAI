@@ -885,10 +885,13 @@ public class ElaborateMany2OneCrossbar {
 		Port processorSide;
 		Port memorySide;
 
-		if( processorPort instanceof PLBPort ) {
-		    processorSide = new PLBPort("IO_1");
-		    memorySide = new PLBPort("IO_2");
-		} else if( processorPort instanceof LMBPort ) {
+//		if( resource instanceof PowerPC && processorPort instanceof PLBPort ) {
+
+//		if( processorPort instanceof PLBPort ) {
+//		    processorSide = new PLBPort("IO_1");
+//		    memorySide = new PLBPort("IO_2");
+//		} else if( processorPort instanceof LMBPort ) {	
+	        if( processorPort instanceof LMBPort ) {
 		    processorSide = new LMBPort("IO_1");
 		    memorySide = new LMBPort("IO_2");
 		} else {  // Fifo (crossbar read controller) to be added
@@ -943,9 +946,9 @@ public class ElaborateMany2OneCrossbar {
 	}
 	
        /****************************************************************************************************************
-	*  Find the port to be connected to the crossbar. In platform specification it can be of type "PLBPort", "LMBPort"
+	*  Find the port to be connected to the crossbar. In platform specification it can be of type "LMBPort"
 	*  or the general "Port". 
-	*  OPBPort cannot be connected to a crossbar, so we check not to return OPBPort
+	*  OPBPort and PLBPort cannot be connected to a crossbar, so we check not to return OPBPort or PLBPort
 	*
 	* @param  platform Description of the Parameter
 	****************************************************************************************************************/
@@ -955,7 +958,7 @@ public class ElaborateMany2OneCrossbar {
 		while( i.hasNext() ) {
 
 		   Port port = (Port) i.next();
-		   if( !(port instanceof OPBPort) ) {
+		   if( !(port instanceof OPBPort) && !(port instanceof PLBPort) ) {
 		      return port;
 		   }
 		}

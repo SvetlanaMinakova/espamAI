@@ -61,7 +61,7 @@ public class ResolveEntityHandler implements EntityResolver {
 	*/
 
 	public static String ESPAM_DTD_1 =
-	                  "<!ELEMENT platform (subplatform*,processor*,peripheral*,network*,memory*,link*)>"
+	                  "<!ELEMENT platform (subplatform*,processor*,peripheral*,network*,memory*,host_interface*,link*)>"
 			+ "<!ATTLIST platform name CDATA #REQUIRED>"
 
 			+ "<!ELEMENT subplatform EMPTY>"
@@ -79,12 +79,15 @@ public class ResolveEntityHandler implements EntityResolver {
 			+ "<!ELEMENT memory (port*,vfifo*)>"
 			+ "<!ATTLIST memory name CDATA #REQUIRED type CDATA #IMPLIED datawidth CDATA #IMPLIED size CDATA #IMPLIED>"
 
+			+ "<!ELEMENT host_interface (port*)>"
+			+ "<!ATTLIST host_interface name CDATA #REQUIRED type (ADM-XRC-II | ADM-XPL | XUPV5-LX110T | ML505 | empty) \"empty\">"
+
 			+ "<!ELEMENT link (resource*)>"
 			+ "<!ATTLIST link name CDATA #REQUIRED>"
 
 			+ "<!ELEMENT port EMPTY>"
 			//+ "<!ATTLIST port name CDATA #REQUIRED type CDATA #IMPLIED>"
-			+ "<!ATTLIST port name CDATA #REQUIRED type (PLBPort | OPBPort | LMBPort | FifoReadPort | FifoWritePort | CompaanInPort | CompaanOutPort | empty) \"empty\">"
+			+ "<!ATTLIST port name CDATA #REQUIRED type (PLBPort | OPBPort | LMBPort | FifoReadPort | FifoWritePort | CompaanInPort | CompaanOutPort | empty) \"empty\" size CDATA #IMPLIED>"
 
 			+ "<!ELEMENT vfifo EMPTY>"
 			+ "<!ATTLIST vfifo name CDATA #REQUIRED size CDATA #IMPLIED>"

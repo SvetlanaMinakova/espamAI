@@ -635,10 +635,13 @@ public class ElaborateMany2One {
 		Port processorSide;
 		Port memorySide;
 
-		if( processorPort instanceof PLBPort ) {
-		    processorSide = new PLBPort("IO_1");
-		    memorySide = new PLBPort("IO_2");
-		} else if( processorPort instanceof LMBPort ) {
+//		if( (resource instanceof PowerPC && processorPort instanceof PLBPort ) {
+
+//		if( processorPort instanceof PLBPort ) {
+//		    processorSide = new PLBPort("IO_1");
+//		    memorySide = new PLBPort("IO_2");
+//		} else if( processorPort instanceof LMBPort ) {
+		if( processorPort instanceof LMBPort ) {
 		    processorSide = new LMBPort("IO_1");
 		    memorySide = new LMBPort("IO_2");
 		} else {  // Fifo (crossbar read controller) to be added
@@ -710,6 +713,7 @@ public class ElaborateMany2One {
 		    Port processorDPort = new Port("");
 	            Port controllerPort = new Port("");
 	            Port opbPort        = new Port("");
+	            Port plbPort        = new Port(""); // of a MicroBlaze
 
 		    if( resource instanceof MicroBlaze ) {
 
@@ -726,7 +730,32 @@ public class ElaborateMany2One {
 	            Iterator p = resource.getPortList().iterator();
 	            while( p.hasNext() ) {
 			Port port = (Port) p.next();
+//*
+			if( (resource instanceof PowerPC && port instanceof IPLBPort) || port instanceof ILMBPort ) {
 
+			    processorIPort = port;
+
+			} else if( (resource instanceof PowerPC && port instanceof DPLBPort) || port instanceof DLMBPort ) {
+
+			    processorDPort = port;
+
+			} else if( port instanceof FifoWritePort ) {
+
+			    ctrlPorts.add( port );
+
+			} else if( port instanceof FifoReadPort ) {
+
+			    ctrlPorts.add( port );
+
+			} else if( port instanceof OPBPort ) {
+
+			    opbPort = port;
+
+			} else if( port instanceof PLBPort && resource instanceof MicroBlaze ) {
+
+			    plbPort = port;
+			}
+/*/
 			if( port instanceof IPLBPort || port instanceof ILMBPort ) {
 
 			    processorIPort = port;
@@ -747,6 +776,7 @@ public class ElaborateMany2One {
 
 			    opbPort = port;
 			}
+//*/
 	            }
 
 		    // -----------------------------------------------------------------
@@ -758,7 +788,12 @@ public class ElaborateMany2One {
 			resource.getPortList().clear();
 			resource.getPortList().add( processorIPort );
 			resource.getPortList().add( processorDPort );
-			resource.getPortList().add( opbPort );
+			if( !opbPort.getName().equals("") ) {
+			     resource.getPortList().add( opbPort );
+			}
+			if( !plbPort.getName().equals("") ) {
+			     resource.getPortList().add( plbPort );
+			}
 
 			// create the fifo controller
 			FifosController ctrl = new FifosController("CTRL_" + resource.getName() + "_FIFOs");

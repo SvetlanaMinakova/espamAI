@@ -46,7 +46,7 @@ import espam.datamodel.EspamException;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: XmlPlatformParser.java,v 1.1 2007/12/07 22:07:06 stefanov Exp $
+ * @version  $Id: XmlPlatformParser.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
  */
 
 public class XmlPlatformParser implements ContentHandler {
@@ -236,6 +236,8 @@ public class XmlPlatformParser implements ContentHandler {
 			val = _xml2Platform.processNetwork(attributes);
 		} else if( elementName.equals("memory") ) {
 			val = _xml2Platform.processMemory(attributes);
+		} else if( elementName.equals("host_interface") ) {
+			val = _xml2Platform.processHostInterface(attributes);
 		} else if( elementName.equals("link") ) {
 			val = _xml2Platform.processLink(attributes);
 		} else if( elementName.equals("port") ) {
@@ -299,6 +301,8 @@ public class XmlPlatformParser implements ContentHandler {
 			_xml2Platform.processNetwork(_stack);
 		} else if( elementName.equals("memory") ) {
 			_xml2Platform.processMemory(_stack);
+		} else if( elementName.equals("host_interface") ) {
+			_xml2Platform.processHostInterface(_stack);
 		} else if( elementName.equals("link") ) {
 			_xml2Platform.processLink(_stack);
 		} else if( elementName.equals("port") ) {

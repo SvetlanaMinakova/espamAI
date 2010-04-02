@@ -45,6 +45,7 @@ PORT LMB_BE = LMB_BE, DIR = I, VEC = [0:((C_LMB_DWIDTH/8)-1)], BUS = SLMB
 PORT Sl_DBus = Sl_DBus, DIR = O, VEC = [0:(C_LMB_DWIDTH-1)], BUS = SLMB
 PORT Sl_Ready = Sl_Ready, DIR = O, BUS = SLMB
 
+PORT ENABLE = "", DIR = I
 PORT FinOut = "", DIR = O
 
 END

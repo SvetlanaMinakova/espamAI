@@ -27,7 +27,7 @@ import java.util.Vector;
  *
  *
  * @author Todor Stefanov
- * @version  $Id: Port.java,v 1.1 2007/12/07 22:09:03 stefanov Exp $
+ * @version  $Id: Port.java,v 1.2 2010/04/02 12:21:24 nikolov Exp $
  */
 
 public class Port implements Cloneable {
@@ -61,6 +61,7 @@ public class Port implements Cloneable {
 	    newObj.setName(_name);
 	    newObj.setResource( (Resource) _resource.clone() );
 	    newObj.setLink( (Link) _link.clone() );
+	    newObj.setMemSize(_memSize);
             return( newObj );
         }
         catch( CloneNotSupportedException e ) {
@@ -124,6 +125,24 @@ public class Port implements Cloneable {
     }
 
     /**
+     *  Get the memory size this port can address.
+     *
+     * @return  the size
+     */
+    public int getMemSize() {
+        return _memSize;
+    }
+
+    /**
+     *  Set the memory size this port can address.
+     *
+     * @param  size The new memory size
+     */
+    public void setMemSize(int size) {
+        _memSize = size;
+    }
+
+    /**
      *  Return a description of the port.
      *
      * @return  a description of the port.
@@ -151,4 +170,10 @@ public class Port implements Cloneable {
      *  The Link which the Port connects to.
      */
     private Link _link = null;
+
+    /**
+     *  The size of the memory this port can address.
+     */
+    private int _memSize = 0;
+
 }

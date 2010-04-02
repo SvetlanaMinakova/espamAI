@@ -39,8 +39,13 @@ import espam.datamodel.pn.cdpn.CDGate;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
 
+import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.platform.host_interfaces.ADMXRCII;
+import espam.datamodel.platform.host_interfaces.ADMXPL;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML505;
 
 import espam.datamodel.parsetree.ParserNode;
 
@@ -57,7 +62,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.2 2009/10/21 10:30:35 nikolov Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.3 2010/04/02 12:21:25 nikolov Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -74,6 +79,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	_printStreamFunc = printStreamFunc;
 	_relation2 = relation;
 	_ui = UserInterface.getInstance();
+	_targetBoard = _getBoard( mapping.getPlatform() );
     }
 
     /**
@@ -358,6 +364,12 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	_printStream.println(_prefix + "pthread_t threadID[" + x.getSchedule().size() + "];");
 	_printStream.println(_prefix + "int ret;");
 		
+	if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
+		_printStream.println("");
+		_printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
+		_printStream.println("");
+	}
+
 	if( _ui.getDebuggerFlag() ) {
 		_printStream.println(_prefix + "int clk_num;");
 		_printStream.println(_prefix + "*clk_cntr = 0;");
@@ -399,6 +411,30 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	_printStream.println("");
     }
 
+    /**
+     *  Get the target FPGA board
+     *  @param platform
+     */
+    private String _getBoard( Platform x ) {
+	
+	String board = "";
+        Iterator j = x.getResourceList().iterator();
+    	while (j.hasNext()) {
+            Resource resource = (Resource)j.next();
+            if( resource instanceof ADMXRCII ) {
+               board = "ADM-XRC-II";
+            } else if( resource instanceof ADMXPL ) {
+               board = "ADM-XPL";
+            } else if( resource instanceof XUPV5LX110T ) {
+               board = "XUPV5-LX110T";
+            } else if( resource instanceof ML505 ) {
+               board = "ML505";
+            }
+        }  
+
+	return board;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
 
@@ -420,4 +456,5 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 
     private Map _relation2 = null;
 
+    private String _targetBoard = "";
 }

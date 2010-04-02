@@ -29,6 +29,7 @@ import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.Port;
+import espam.datamodel.platform.ports.PLBPort;
 import espam.datamodel.platform.ports.IPLBPort;
 import espam.datamodel.platform.ports.DPLBPort;
 import espam.datamodel.platform.ports.ILMBPort;
@@ -50,7 +51,7 @@ import espam.datamodel.platform.memories.MultiFifo;
  *
  *
  * @author  Todor Stefanov
- * @version  $Id: SetMemoryMaps.java,v 1.1 2007/12/07 22:07:48 stefanov Exp $
+ * @version  $Id: SetMemoryMaps.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
  *
  */
 public class SetMemoryMaps {
@@ -138,26 +139,28 @@ public class SetMemoryMaps {
 			    dataMemMap.setPeripheralsSegment(   0x0 );
 			    processor.getMemoryMapList().add( dataMemMap );
 
-			} else if( port instanceof DLMBPort || (port instanceof OPBPort && processor instanceof MicroBlaze) ) { // Data memory of a MB processor
-			
-			    MemoryMap dataMemMap = new MemoryMap("DLMB Memory Map");
-			    dataMemMap.setPort( port );
-			    dataMemMap.setDataMemorySegment(    0x0 );
-			    //dataMemMap.setDataMemorySegment(    0x80000000 );
-			    dataMemMap.setFifosReadSegment(     0xc0000000 );
-			    dataMemMap.setFifosWriteSegment(    0xc0800000 );
-			    dataMemMap.setVirtualBufferSegment( 0xe0000000 );
-			    dataMemMap.setPeripheralsSegment(   0xf0000000 );
-			    processor.getMemoryMapList().add( dataMemMap );
+			} else if( processor instanceof MicroBlaze ) {
+				if(port instanceof DLMBPort || port instanceof OPBPort || port instanceof PLBPort) { // Data memory of a MicroBlaze processor
 
-			} else if( port instanceof FifoReadPort || port instanceof FifoWritePort ) { // FSL channels of a MicroBlaze processor
+					MemoryMap dataMemMap = new MemoryMap("DLMB Memory Map");
+					dataMemMap.setPort( port );
+					dataMemMap.setDataMemorySegment(    0x0 );
+					//dataMemMap.setDataMemorySegment(    0x80000000 );
+					dataMemMap.setFifosReadSegment(     0xc0000000 );
+					dataMemMap.setFifosWriteSegment(    0xc0800000 );
+					dataMemMap.setVirtualBufferSegment( 0xe0000000 );
+					dataMemMap.setPeripheralsSegment(   0xf0000000 );
+					processor.getMemoryMapList().add( dataMemMap );
+				
+				} else if( port instanceof FifoReadPort || port instanceof FifoWritePort ) { // FSL channels of a MicroBlaze processor
 
-			    MemoryMap fslMemMap = new MemoryMap("FSL Memory Map");
-			    fslMemMap.setPort( port );
-			    _setFSLPage( fslMemMap );
-			    processor.getMemoryMapList().add( fslMemMap );
+					MemoryMap fslMemMap = new MemoryMap("FSL Memory Map");
+					fslMemMap.setPort( port );
+					_setFSLPage( fslMemMap );
+					processor.getMemoryMapList().add( fslMemMap );
+				}
 			}
-		     }
+		    }
 		}
 	    }
 	}
@@ -408,7 +411,6 @@ public class SetMemoryMaps {
 
 		    Peripheral controller = (Peripheral) resource;
 		    MemoryMap memMap = _getMemoryMap( controller );
-		    //MemoryMap memMap = new MemoryMap("");
 
 		    // Create a page which describes the peripheral connected to this controller (ZBT Memory)
 		    Page page = new Page();
@@ -453,13 +455,12 @@ public class SetMemoryMaps {
 		   if( port1.getResource() instanceof Processor ) {
 
 		       Processor processor = (Processor) port1.getResource();
-
 		       Iterator mm = processor.getMemoryMapList().iterator();
 		       while( mm.hasNext() ) {
 
 		           MemoryMap memMap = (MemoryMap) mm.next();
-			   if( port1.getName().equals( memMap.getPort().getName() ) ) {
 
+			   if( port1.getName().equals( memMap.getPort().getName() ) ) {
                                return memMap;
 			   }
 		       }

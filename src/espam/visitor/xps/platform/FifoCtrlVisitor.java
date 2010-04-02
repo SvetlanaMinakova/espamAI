@@ -38,7 +38,7 @@ import espam.visitor.PlatformVisitor;
  *  Fifo Controller pcore for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: FifoCtrlVisitor.java,v 1.1 2007/12/07 22:07:28 stefanov Exp $
+ * @version  $Id: FifoCtrlVisitor.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
  */
 
 public class FifoCtrlVisitor extends PlatformVisitor {
@@ -239,6 +239,11 @@ public class FifoCtrlVisitor extends PlatformVisitor {
 	hdlPS.println("");
 	}
 
+	hdlPS.println("SIGNAL  sl_rdy_rd    : STD_LOGIC;");
+	hdlPS.println("SIGNAL  sl_address   : STD_LOGIC_VECTOR(0 TO 11);");
+	hdlPS.println("SIGNAL  sl_address_8 : STD_LOGIC;");
+	hdlPS.println("");
+
 	hdlPS.println("BEGIN  -- architecture imp");
 	hdlPS.println("");
 
@@ -274,7 +279,8 @@ public class FifoCtrlVisitor extends PlatformVisitor {
 	hdlPS.println("  -- Handling the FIFO reading interface");
 	if (_maxInPorts > 0) {
 	hdlPS.println("  G_2 : for I in 0 to C_FIFO_READ - 1 generate");
-	hdlPS.println("    sl_rd_en(I) <= '1' when lmb_select = '1' and LMB_ABus(8) = '0' and LMB_ABus(18 to 29) = CONV_STD_LOGIC_VECTOR(2*I, 12) and LMB_ReadStrobe = '1'");
+//	hdlPS.println("    sl_rd_en(I) <= '1' when lmb_select = '1' and LMB_ABus(8) = '0' and LMB_ABus(18 to 29) = CONV_STD_LOGIC_VECTOR(2*I, 12) and LMB_ReadStrobe = '1'");
+	hdlPS.println("    sl_rd_en(I) <= '1' when sl_address_8 = '0' and sl_address = CONV_STD_LOGIC_VECTOR(2*I, 12) and sl_rdy_rd = '1'");
 	hdlPS.println("                       else '0';");
 	hdlPS.println("  end generate;");
 	hdlPS.println("");
@@ -282,9 +288,11 @@ public class FifoCtrlVisitor extends PlatformVisitor {
 
 	hdlPS.println("  readMUX_MB: process (LMB_ABus) is");
 	hdlPS.println("  begin ");
-	hdlPS.println("    if (LMB_ABus(8) = '1') then");
+//	hdlPS.println("    if (LMB_ABus(8) = '1') then");
+	hdlPS.println("    if (sl_address_8 = '1' and sl_rdy_rd = '1') then");
 	if (_maxOutPorts > 0) {
-		hdlPS.println("      case LMB_ABus(18 to 29) is");
+//		hdlPS.println("      case LMB_ABus(18 to 29) is");
+		hdlPS.println("      case sl_address is");
 		for (i = 0; i < _maxOutPorts; i++) {
 		    String s = _digitToStringHex( i*2 + 1, 3);
 		    hdlPS.println("        when X\"" + s + "\" => Sl_DBus(31) <= sl_full(" + i + ");");
@@ -297,7 +305,8 @@ public class FifoCtrlVisitor extends PlatformVisitor {
 	}
 	hdlPS.println("    else");
 	if (_maxInPorts > 0) {
-		hdlPS.println("      case LMB_ABus(18 to 29) is");
+//		hdlPS.println("      case LMB_ABus(18 to 29) is");
+		hdlPS.println("      case sl_address is");
 		for (i = 0; i < _maxInPorts; i++) {
 		    String s = _digitToStringHex( i*2 + 1, 3);
 		    String ss = _digitToStringHex( i*2, 3);
@@ -319,9 +328,18 @@ public class FifoCtrlVisitor extends PlatformVisitor {
 	hdlPS.println("  Ready_Handling : PROCESS (LMB_Clk, LMB_Rst) IS");
 	hdlPS.println("  BEGIN  -- PROCESS Ready_Handling");
 	hdlPS.println("    IF (LMB_Rst = '1') THEN");
+	hdlPS.println("      sl_rdy_rd <= '0';");
 	hdlPS.println("      Sl_Ready <= '0';");
+	hdlPS.println("      sl_address <= (others=>'0');");
+	hdlPS.println("      sl_address_8 <= '0';");
 	hdlPS.println("    ELSIF (LMB_Clk'EVENT AND LMB_Clk = '1') THEN");
-	hdlPS.println("      Sl_Ready <= LMB_AddrStrobe AND lmb_select;");
+	hdlPS.println("      sl_rdy_rd  <= LMB_ReadStrobe AND lmb_select;");
+	hdlPS.println("      Sl_Ready  <= LMB_AddrStrobe AND lmb_select;");
+	hdlPS.println("      IF( LMB_AddrStrobe = '1' ) THEN -- delay the address (needed for reading)");
+	hdlPS.println("      -- 12-bit address, the 2 LSBits are 'byte select'");
+	hdlPS.println("         sl_address <= LMB_ABus(18 to 29);");
+	hdlPS.println("         sl_address_8 <= LMB_ABus(8);");
+	hdlPS.println("      END IF;");
 	hdlPS.println("    END IF;");
 	hdlPS.println("  END PROCESS Ready_Handling;");
 	hdlPS.println("");

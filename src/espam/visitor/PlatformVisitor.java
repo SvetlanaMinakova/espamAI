@@ -60,6 +60,10 @@ import espam.datamodel.platform.controllers.ReadCrossbarController;
 import espam.datamodel.platform.peripherals.Peripheral;
 import espam.datamodel.platform.peripherals.ZBTMemoryController;
 import espam.datamodel.platform.peripherals.Uart;
+import espam.datamodel.platform.host_interfaces.ADMXRCII;
+import espam.datamodel.platform.host_interfaces.ADMXPL;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML505;
 
 import espam.main.UserInterface;
 import espam.datamodel.EspamException;
@@ -72,7 +76,7 @@ import espam.datamodel.EspamException;
  *  Platform description.
  *
  * @author  Hristo Nikolov, Todor Stefanov
- * @version  $Id: PlatformVisitor.java,v 1.1 2007/12/07 22:07:24 stefanov Exp $
+ * @version  $Id: PlatformVisitor.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
  */
 
 public class PlatformVisitor implements Visitor {
@@ -382,6 +386,39 @@ public class PlatformVisitor implements Visitor {
 	 * @param  x A Visitor Object.
 	 */
 	public void visitComponent(Uart x) {
+	}
+
+// Visit the host interface component (board-specific)
+	/**
+	 *  Visit an ADM-XRC-II interface component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ADMXRCII x) {
+	}
+
+	/**
+	 *  Visit an ADM-XPL interface component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ADMXPL x) {
+	}
+
+	/**
+	 *  Visit a XUPV5LX110T interface component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(XUPV5LX110T x) {
+	}
+
+	/**
+	 *  Visit a ML505 interface component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ML505 x) {
 	}
 
 

@@ -361,20 +361,37 @@ public class RefineMemories {
 
 		    Port port = (Port) p.next();
 		    // Get the Data memory side
+
 		    if( type == 0 ) {
-			if( port instanceof DPLBPort || port instanceof DLMBPort ) {
+//*
+			if( (processor instanceof MicroBlaze && port instanceof DLMBPort) ||
+			    (processor instanceof PowerPC    && port instanceof DPLBPort) ) {
 
 			    processorPort = port;
 			    break;
 			}
 		    // Or get the Program memory side
 		    } else {
-			if( port instanceof IPLBPort || port instanceof ILMBPort ) {
+			if( processor instanceof MicroBlaze && port instanceof ILMBPort ||
+			    processor instanceof PowerPC    && port instanceof IPLBPort ) {
 
 			    processorPort = port;
 			    break;
 			}
 		    }
+/*/
+			if( port instanceof DPLBPort || port instanceof DLMBPort ) {
+			    processorPort = port;
+			    break;
+			}
+		    // Or get the Program memory side
+		    } else {
+			if( port instanceof IPLBPort || port instanceof ILMBPort ) {
+			    processorPort = port;
+			    break;
+			}
+		    }
+//*/
 		}
 
 		Link link = processorPort.getLink();

@@ -55,6 +55,10 @@ import espam.datamodel.platform.hwnodecompaan.WriteUnit;
 import espam.datamodel.platform.hwnodecompaan.ExecuteUnit;
 import espam.datamodel.platform.peripherals.ZBTMemoryController;
 import espam.datamodel.platform.peripherals.Uart;
+import espam.datamodel.platform.host_interfaces.ADMXRCII;
+import espam.datamodel.platform.host_interfaces.ADMXPL;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML505;
 import espam.main.UserInterface;
 
 import org.xml.sax.Attributes;
@@ -66,7 +70,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Platform.java,v 1.1 2007/12/07 22:07:07 stefanov Exp $
+ * @version  $Id: Xml2Platform.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
  */
 
 public class Xml2Platform {
@@ -290,6 +294,54 @@ public class Xml2Platform {
 	}
 
 
+
+	/**
+	 *  Process the start of a host_interface tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  a host interface object.
+	 */
+	public Object processHostInterface(Attributes attributes) {
+		//System.out.println(" -- Board -- ");
+		String name = (String) attributes.getValue("name");
+		String type = (String) attributes.getValue("type");
+
+		if( type.equals("ADM-XRC-II") ) {
+			System.out.println(" -- FPGA Board: ADM-XRC-II");
+			ADMXRCII hostInterface = new ADMXRCII(name);
+//			zbtMemoryController.setSize( Integer.valueOf(size).intValue() );
+			return hostInterface;
+		} else if( type.equals("ADM-XPL") ) {
+			System.out.println(" -- FPGA Board: ADM-XPL");
+			ADMXPL hostInterface = new ADMXPL(name);
+			return hostInterface;
+		} else if( type.equals("XUPV5-LX110T") ) {
+			System.out.println(" -- FPGA Board: XUPV5-LX110T");
+			XUPV5LX110T hostInterface = new XUPV5LX110T(name);
+			return hostInterface;
+		} else if( type.equals("ML505") ) {
+			System.out.println(" -- FPGA Board: ML505");
+			ML505 hostInterface = new ML505(name);
+			return hostInterface;
+		} else {
+			throw new Error("Unknown Board Type: " + type);
+		}
+	}
+
+	/**
+	 * Process the end of a host_interface tag in the XML.
+	 *
+	 * @param  stack Description of the Parameter
+	 */
+	public void processHostInterface(Stack stack) {
+		Resource hostInterface = (Resource) stack.pop();
+		Platform platform = (Platform) stack.peek();
+
+		hostInterface.setLevelUpResource(platform);
+                platform.getResourceList().add(hostInterface);
+	}
+
+
 	/**
 	 *  Process the start of a link tag in the XML.
 	 *
@@ -327,6 +379,7 @@ public class Xml2Platform {
 		//System.out.println(" -- Port -- ");
 		String name = (String) attributes.getValue("name");
 		String type = (String) attributes.getValue("type");
+		String size = (String) attributes.getValue("size");
 
 		Port port = null;
 
@@ -350,6 +403,7 @@ public class Xml2Platform {
 			throw new Error("Unknown Port Type: " + type);
 		}
 
+		if( size != null ) port.setMemSize( Integer.valueOf(size).intValue() );
 		return port;
 	}
 
