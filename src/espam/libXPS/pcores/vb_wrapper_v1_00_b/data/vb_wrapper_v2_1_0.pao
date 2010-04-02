@@ -1,0 +1,8 @@
+
+lib vb_wrapper_v1_00_b pack_crossbar
+lib vb_wrapper_v1_00_b ramlib_xil
+lib vb_wrapper_v1_00_b freefifo
+lib vb_wrapper_v1_00_b multi_fifo
+lib vb_wrapper_v1_00_b buffer
+lib vb_wrapper_v1_00_b vb_wrapper
+
