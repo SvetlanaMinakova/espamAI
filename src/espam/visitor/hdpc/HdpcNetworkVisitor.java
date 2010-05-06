@@ -699,7 +699,7 @@ cf.println("</VisualStudioProject>");
         }
         catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
-            System.out.println("Cannt create the makefile");
+            System.out.println("Cannt create the Makefile");
             System.out.println("Please supply your own file");
         }
     }
@@ -720,11 +720,11 @@ cf.println("</VisualStudioProject>");
         if( ui.getOutputFileName() == "" ) {
             fullFileName =
                     ui.getBasePath() + "/" +
-                    ui.getFileName() + "_hdpc/makefile";
+                    ui.getFileName() + "_hdpc/Makefile";
         } else {
             fullFileName =
                     ui.getBasePath() + "/" +
-                    ui.getOutputFileName() + "_hdpc/makefile";
+                    ui.getOutputFileName() + "_hdpc/Makefile";
         }
 
         System.out.println(" -- OPEN FILE: " + fullFileName);
