@@ -614,43 +614,55 @@ public class CheckPlatform {
 	 */
 	private void _checkBoard( Platform platform ) {
 
-		Iterator i = platform.getResourceList().iterator();
-		while( i.hasNext() ) {
+		if( _hostInterface == 0 ) {
+			System.err.println("\n[Espam] WARNING: No target board specified.");
+			System.err.println("=====> Use HOST_IF component to specify a target board in the platform specification.");
+			System.err.println("=====> Supported boards are: ADM-XRC-II, ADM-XPL, XUPV5-LX110T, ML505.");
+			System.err.println("[Espam] WARNING: Espam continues assuming a default target board: ADM-XRC-II.\n");
 
-			Resource resource = (Resource) i.next();
+			ADMXRCII hostInterface = new ADMXRCII("default");
+			hostInterface.setLevelUpResource(platform);
+			platform.getResourceList().add(hostInterface);
+		} else {
 
-			if( resource instanceof ADMXRCII ) {
-
-			    if( _uart > 1 ) {
-				System.err.println("[Espam] ERROR: The target board ADM-XRC-II supports only one UART.");
-				System.err.println("=====> Found " + _uart + " UART components in the platform specification. \n ");
-				_error++;
-			    }
-			    if( _zmc > 6 ) {
-				System.err.println("[Espam] ERROR: The target board ADM-XRC-II has 6 static RAM off-chip memory banks.");
-				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
-				_error++;
-			    }
-			} else if( resource instanceof ADMXPL  ) {
-			    if( _ppc > 2 ) {
-				System.err.println("[Espam] ERROR: The target board ADM-XPL has only 2 PowerPC processors.");
-				System.err.println("=====> Found " + _ppc + " PowerPC processors in the platform specification. \n ");
-				_error++;
-			    }
-			} else if( resource instanceof XUPV5LX110T ) {
-			    if( _zmc > 6 ) {
-				System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
-				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
-				_error++;
-			    }
-// check the number of processors requiring off-chip memory (host interface port size > 0)
-// The MPMC controller has 8 ports, one is reserved for interface with the host.
-			} else if( resource instanceof ML505 ) {
-			    if( _zmc > 6 ) {
-				System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
-				System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
-				_error++;
-			    }
+			Iterator i = platform.getResourceList().iterator();
+			while( i.hasNext() ) {
+	
+				Resource resource = (Resource) i.next();
+	
+				if( resource instanceof ADMXRCII ) {
+	
+				if( _uart > 1 ) {
+					System.err.println("[Espam] ERROR: The target board ADM-XRC-II supports only one UART.");
+					System.err.println("=====> Found " + _uart + " UART components in the platform specification. \n ");
+					_error++;
+				}
+				if( _zmc > 6 ) {
+					System.err.println("[Espam] ERROR: The target board ADM-XRC-II has 6 static RAM off-chip memory banks.");
+					System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+					_error++;
+				}
+				} else if( resource instanceof ADMXPL  ) {
+				if( _ppc > 2 ) {
+					System.err.println("[Espam] ERROR: The target board ADM-XPL has only 2 PowerPC processors.");
+					System.err.println("=====> Found " + _ppc + " PowerPC processors in the platform specification. \n ");
+					_error++;
+				}
+				} else if( resource instanceof XUPV5LX110T ) {
+				if( _zmc > 6 ) {
+					System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
+					System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+					_error++;
+				}
+	// check the number of processors requiring off-chip memory (host interface port size > 0)
+	// The MPMC controller has 8 ports, one is reserved for interface with the host.
+				} else if( resource instanceof ML505 ) {
+				if( _zmc > 6 ) {
+					System.err.println("[Espam] ERROR: The target board XUPV5-LX110T has one static RAM off-chip memory");
+					System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
+					_error++;
+				}
+				}
 			}
 		}
 	}
