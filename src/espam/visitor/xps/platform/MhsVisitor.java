@@ -79,7 +79,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.6 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.7 2010/05/17 15:33:13 nikolov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -345,8 +345,17 @@ public class MhsVisitor extends PlatformVisitor {
  		       " PARAMETER C_BASEADDR = 0xf9000000\n" +
  		       " PARAMETER C_HIGHADDR = 0xf900000f\n" +
  		       " PARAMETER C_AB = 8\n" +
- 		       " BUS_INTERFACE SLMB = " + dLmbLinkName + "\n" +
- 		       " PORT ENABLE = net_enable_MBs\n" +
+ 		       " BUS_INTERFACE SLMB = " + dLmbLinkName);
+
+        if( _targetBoard.equals("ADM-XRC-II") || _targetBoard.equals("ADM-XPL") ) {
+		_printStream.println(
+ 		       " PORT ENABLE = net_vcc");
+	} else {
+		_printStream.println(
+ 		       " PORT ENABLE = net_enable_MBs");
+	}
+
+       _printStream.println(
  		       " PORT FinOut = net_fin_signal_P" + _numFinCtrl + "\n" +
  		       "END\n");
        
