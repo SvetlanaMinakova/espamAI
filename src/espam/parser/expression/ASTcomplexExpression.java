@@ -17,11 +17,13 @@ You must not remove this notice, or any other, from this software.
 
 package espam.parser.expression;
 
+import espam.utils.symbolic.expression.Expression;
+
 /**
  * Description of the Class
  *
  * @author Bart Kienhuis
- * @version $Id: ASTcomplexExpression.java,v 1.1 2007/12/07 22:06:57 stefanov Exp $
+ * @version $Id: ASTcomplexExpression.java,v 1.2 2010/08/13 14:16:13 sven Exp $
  */
 public class ASTcomplexExpression extends SimpleNode {
     /**
@@ -43,5 +45,27 @@ public class ASTcomplexExpression extends SimpleNode {
     public ASTcomplexExpression(ExpressionParser p, int id) {
         super(p, id);
     }
+
+    /**
+     * Gets the linearExp attribute of the ASTcomplexExpression object
+     *
+     * @return The linearExp value
+     */
+    public Expression getExpression() {
+        return _linearExp;
+    }
+
+
+    /**
+     * Sets the linearExp attribute of the ASTcomplexExpression object
+     *
+     * @param aList The new linearExp value
+     */
+    public void setExpression(Expression exp) {
+        _linearExp = exp;
+    }
+
+
+    Expression _linearExp = null;
 
 }

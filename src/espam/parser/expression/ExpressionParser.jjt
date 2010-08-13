@@ -39,7 +39,7 @@ import java.io.ByteArrayInputStream;
 
 /**
 @author Bart Kienhuis 
-@version $Id: ExpressionParser.jjt,v 1.1 2007/12/07 22:06:54 stefanov Exp $
+@version $Id: ExpressionParser.jjt,v 1.2 2010/08/13 14:16:13 sven Exp $
 */
 
 public class ExpressionParser {
@@ -59,7 +59,7 @@ public class ExpressionParser {
         _byteStream = new ByteArrayInputStream(expression.getBytes());
         // Re initialize the parser
         this.ReInit( _byteStream );
-        linearExpression = this.complexExpression();
+        linearExpression = this.start();
         return linearExpression;
     }
 
@@ -171,7 +171,18 @@ TOKEN : /* IDENTIFIERS */
   < #DIGIT: ["0"-"9"] >
 }
 
-Expression complexExpression() : {
+
+Expression start() : {
+}
+{
+  complexExpression() <EOF>
+    {
+      return ((ASTcomplexExpression) jjtThis.jjtGetChild(0)).getExpression();
+    }
+}
+
+
+void complexExpression() : {
     int signValue;
     int numberOfChildern;
     SimpleNode node;
@@ -201,7 +212,7 @@ Expression complexExpression() : {
 		    termList.add( trm );
 		}
 	    }
-            return new Expression( termList );
+            jjtThis.setExpression(new Expression(termList));
 	}
 }
 
