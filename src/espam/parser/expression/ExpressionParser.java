@@ -27,14 +27,14 @@ import java.io.ByteArrayInputStream;
 
 /**
 @author Bart Kienhuis 
-@version $Id: ExpressionParser.java,v 1.2 2010/08/13 14:16:13 sven Exp $
+@version $Id: ExpressionParser.java,v 1.3 2010/08/13 14:29:59 sven Exp $
 */
 
 public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeConstants, ExpressionParserConstants {/*@bgen(jjtree)*/
   protected JJTExpressionParserState jjtree = new JJTExpressionParserState();
     public ExpressionParser() {
-        this( new ByteArrayInputStream("a hack!!".getBytes()) );
-        _byteStream = null;
+      this( new ByteArrayInputStream("a hack!!".getBytes()) );
+      _byteStream = null;
     }
 
     ///////////////////////////////////////////////////////////////////
