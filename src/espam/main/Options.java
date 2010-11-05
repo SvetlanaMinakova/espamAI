@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.4 2009/09/25 15:23:34 sven Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.5 2010/11/05 16:30:17 svhaastr Exp $ $Name:  $
  */
 
 public class Options {
@@ -137,6 +137,10 @@ public class Options {
                 _ui.setIseFlag();
             } else if( arg.equals("--ipxact") ) {
                 _ui.setIpxactFlag();
+            } else if( arg.equals("--systemc") ) {
+                _ui.setScUntimedFlag();
+            } else if( arg.equals("--systemc-timed") ) {
+                _ui.setScTimedFlag();
             } else if( arg.equals("--hdpc") ) {
                 _ui.setHdpcFlag();
             } else if( arg.equals("--size") || arg.equals("-S") ) {
@@ -192,10 +196,12 @@ public class Options {
                          { "--version   ", "-v" },
                          { "--verbose   ", "-V" },
                          { "--yapi      ", "-Y" },
-                         { "--yml      ", "-M" },
-                         { "--xps      ", "-X" },
-                         { "--ise      ", "-I" },
-                         { "--ipxact   ", "none" },
+                         { "--yml       ", "-M" },
+                         { "--xps       ", "-X" },
+                         { "--ise       ", "-I" },
+                         { "--ipxact    ", "none" },
+                         { "--systemc   ", "none" },
+                         { "--systemc-timed", "none" },
 			 { "--hdpc     ", "none" },
 			 { "--debug     ", "none" },
                          { "--debugger  ", "none" }};

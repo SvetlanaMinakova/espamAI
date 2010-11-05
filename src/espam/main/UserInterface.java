@@ -324,6 +324,40 @@ public class UserInterface {
     }
 
     /**
+     * Get the status of the SystemC untimed flag
+     *
+     * @return The scUntimedFlag value
+     */
+    public final boolean getScUntimedFlag() {
+        return _scUntimed;
+    }
+
+    /**
+     * Sets the SystemC untimed flag
+     */
+
+    public final void setScUntimedFlag() {
+        _scUntimed = true;
+    }
+
+    /**
+     * Get the status of the SystemC timed flag
+     *
+     * @return The scTimedFlag value
+     */
+    public final boolean getScTimedFlag() {
+        return _scTimed;
+    }
+
+    /**
+     * Sets the SystemC timed flag
+     */
+
+    public final void setScTimedFlag() {
+        _scTimed = true;
+    }
+
+    /**
      * Get the status of the HDPC flag
      *
      * @return The hdpcFlag value
@@ -532,6 +566,12 @@ public class UserInterface {
 
     // the IP-XACT flag
     private boolean _ipxact = false;
+
+    // the SystemC untimed flag
+    private boolean _scUntimed = false;
+
+    // the SystemC timed flag
+    private boolean _scTimed = false;
 
     // the hdpc flag
     private boolean _hdpc = false;

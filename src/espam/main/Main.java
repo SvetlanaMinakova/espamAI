@@ -64,6 +64,8 @@ import espam.visitor.xps.platform.CrossbarVisitor;
 import espam.visitor.ise.CompaanHWNodeIseVisitor;
 import espam.visitor.ise.IseNetworkVisitor;
 import espam.visitor.ipxact.platform.IpxactDwarvVisitor;
+import espam.visitor.systemc.untimed.ScUntimedNetworkVisitor;
+import espam.visitor.systemc.timed.ScTimedNetworkVisitor;
 import espam.visitor.hdpc.HdpcNetworkVisitor;
 
 import espam.datamodel.EspamException;
@@ -81,7 +83,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.10 2009/10/21 10:30:35 nikolov Exp $
+ * @version $Id: Main.java,v 1.11 2010/11/05 16:30:17 svhaastr Exp $
  */
 
 public class Main {
@@ -263,6 +265,22 @@ public class Main {
 
           IpxactDwarvVisitor ipxactDwarvVisitor = new IpxactDwarvVisitor(_mapping);
           _platform.accept(ipxactDwarvVisitor);
+
+				  System.out.println(" - Generation [Finished]");
+			} else if (_ui.getScUntimedFlag()) {
+          System.out.println(" - Generating untimed SystemC model");
+
+          printStream = _openFile(_cdpn.getName() + "_KPN", "h");
+          ScUntimedNetworkVisitor scUntimedVisitor = new ScUntimedNetworkVisitor(printStream);
+          _cdpn.accept(scUntimedVisitor);
+
+				  System.out.println(" - Generation [Finished]");
+			} else if (_ui.getScTimedFlag()) {
+          System.out.println(" - Generating timed SystemC model");
+
+          printStream = _openFile(_cdpn.getName() + "_KPN", "h");
+          ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(printStream);
+          _cdpn.accept(scTimedVisitor);
 
 				  System.out.println(" - Generation [Finished]");
 			} else if( _ui.getHdpcFlag() ) {
