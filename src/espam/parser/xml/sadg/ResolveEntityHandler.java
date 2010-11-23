@@ -125,7 +125,7 @@ public class ResolveEntityHandler implements EntityResolver {
                  /* ----------End ADG---------- */
 
                 /* ----------Begin AST---------- */
-		+ "<!ELEMENT ast (stmt*,for*)*>"
+		+ "<!ELEMENT ast (stmt*,port*,for*)*>"
 
 		+ "<!ELEMENT for (for*,if*,stmt*,port*)*>"
 		+ "<!ATTLIST for iterator CDATA #REQUIRED  LB CDATA #IMPLIED UB CDATA #IMPLIED stride CDATA #IMPLIED>"
