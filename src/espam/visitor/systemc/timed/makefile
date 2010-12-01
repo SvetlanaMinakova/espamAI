@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2010/11/05 16:23:58 svhaastr Exp $
+# $Id: makefile,v 1.2 2010/12/01 09:47:36 svhaastr Exp $
 #
 
 ROOT  = ../../../..
@@ -8,7 +8,9 @@ SUBPACKAGES =
 
 # Java files in this directory
 JSRCS = \
-	ScTimedNetworkVisitor.java
+	ScTimedNetworkVisitor.java \
+	ScTimedProcessVisitor.java \
+	ScTimedMBStatementVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

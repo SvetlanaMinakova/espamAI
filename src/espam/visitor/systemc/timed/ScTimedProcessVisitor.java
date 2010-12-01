@@ -1,0 +1,599 @@
+/*******************************************************************\
+
+The ESPAM Software Tool 
+Copyright (c) 2004-2010 Leiden University (LERC group at LIACS).
+All rights reserved.
+
+The use and distribution terms for this software are covered by the 
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+which can be found in the file LICENSE at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by 
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+
+\*******************************************************************/
+
+package espam.visitor.systemc.timed;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.Vector;
+
+import espam.datamodel.mapping.Mapping;
+import espam.datamodel.mapping.MProcessor;
+
+import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGFunction;
+import espam.datamodel.graph.adg.ADGNode;
+import espam.datamodel.graph.adg.ADGParameter;
+import espam.datamodel.graph.adg.ADGPort;
+import espam.datamodel.graph.adg.ADGEdge;
+
+import espam.datamodel.pn.cdpn.CDChannel;
+import espam.datamodel.pn.cdpn.CDProcessNetwork;
+import espam.datamodel.pn.cdpn.CDProcess;
+import espam.datamodel.pn.cdpn.CDGate;
+import espam.datamodel.pn.cdpn.CDInGate;
+import espam.datamodel.pn.cdpn.CDOutGate;
+
+import espam.datamodel.platform.Resource;
+import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
+import espam.datamodel.platform.processors.*;
+
+import espam.datamodel.parsetree.ParserNode;
+import espam.datamodel.parsetree.statement.AssignStatement;
+
+import espam.datamodel.EspamException;
+
+import espam.main.UserInterface;
+import espam.datamodel.LinearizationType;
+
+import espam.visitor.CDPNVisitor;
+
+//////////////////////////////////////////////////////////////////////////
+//// SystemC Process Visitor
+
+/**
+ * This class generates a timed SystemC model from a CDPN process.
+ *
+ * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.1 2010/12/01 09:47:36 svhaastr Exp $
+ */
+
+public class ScTimedProcessVisitor extends CDPNVisitor {
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         public methods                     ///
+
+    /**
+     *  Constructor for the ScTimedProcessVisitor object
+     */
+    public ScTimedProcessVisitor(Mapping mapping) {
+      _mapping = mapping;
+    }
+
+    /**
+     * @param  x Description of the Parameter
+     */
+    public void visitComponent( CDProcessNetwork x ) {
+        // Generate the individual processes
+        try {
+
+            _pn = x;
+            _printStreamFunc = _openFile("aux_func", "h");
+            _printStreamFunc.println("#ifndef " + "aux_func_H");
+            _printStreamFunc.println("#define " + "aux_func_H");
+            _printStreamFunc.println("");
+            _printStreamFunc.println("#include <math.h>");
+            _printStreamFunc.println("//#include \"" + x.getName() + "_func.h\"");
+            _printStreamFunc.println("#include \"systemc.h\"");
+            _printStreamFunc.println("");
+
+            _writeChannelTypes();
+            _printStreamFunc.println("");
+
+            Iterator i = x.getProcessList().iterator();
+            while( i.hasNext() ) {
+
+                CDProcess process = (CDProcess) i.next();
+                MProcessor mp = _mapping.getMProcessor(process);
+                Resource r = mp.getResource();
+
+                _printStream = _openFile(process.getName(), "h");
+                if (r instanceof MicroBlaze) {
+                  _scMicroBlazeProcess(process);
+                }
+                else if (r instanceof CompaanHWNode) {
+                  _scHWNProcess(process);
+                  System.err.println("WARNING - CompaanHWNode is not yet supported!");
+                }
+                else {
+                  throw new EspamException("ERROR - Unsupported processor type '" + r.toString() + "'");
+                }
+
+            }
+
+            _printStreamFunc.println("");
+            _writeOperations();
+            _printStreamFunc.println("");
+            _printStreamFunc.println("#endif");
+
+        }
+        catch( Exception e ) {
+            System.out.println(" In SystemC PN Visitor: exception " +
+                    "occured: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                   ////
+
+    /**
+     *  Create a SystemC PN process for this MicroBlaze process.
+     *
+     * @param  x Description of the Parameter
+     */
+    public void _scMicroBlazeProcess( CDProcess x ) {
+        _printStream.println("// File automatically generated by ESPAM");
+        _printStream.println("// Timed SystemC model of process " + x.getName() + " implemented on MicroBlaze");
+        _writeIncludes( x );
+
+        _writeClassDecl( x );
+        _printStream.println("");
+        _writeConstructor( x );
+        _printStream.println("");
+        _writeMainProc( x );
+
+        //_printStream.println(_prefix + "private:");
+        //_writeFunctionArguments( x );
+
+        _prefixDec();
+        _printStream.println("");
+        _printStream.println("#endif");
+    }
+
+
+    /**
+     *  Create a SystemC PN process for HWN process.
+     *
+     * @param  x Description of the Parameter
+     */
+    public void _scHWNProcess( CDProcess x ) {
+        _printStream.println("// File automatically generated by ESPAM");
+        _printStream.println("// Timed SystemC model of process " + x.getName() + " implemented as LAURA hardware node");
+        _writeIncludes( x );
+
+        _writeClassDecl( x );
+        _printStream.println("");
+        _writeConstructor( x );
+        _printStream.println("");
+        //_writeMainProc( x );
+
+        //_printStream.println(_prefix + "private:");
+        //_writeFunctionArguments( x );
+
+        _prefixDec();
+        _printStream.println("");
+        _printStream.println("#endif");
+    }
+
+    /**
+     *  Description of the Method
+     *
+     * @param  fileName Description of the Parameter
+     * @param  extension Description of the Parameter
+     * @return  Description of the Return Value
+     * @exception  FileNotFoundException Description of the Exception
+     */
+    private static PrintStream _openFile( String fileName, String extension )
+            throws FileNotFoundException {
+
+        PrintStream printStream = null;
+        UserInterface ui = UserInterface.getInstance();
+        String fullFileName = "";
+
+        // Create the directory indicated by the '-o' option. Otherwise
+        // select the orignal filename. (REFACTOR)
+        if( ui.getOutputFileName() == "" ) {
+            fullFileName =
+                ui.getBasePath() + "/" +
+                ui.getFileName() + "/" + fileName + "." + extension;
+        } else {
+            fullFileName =
+                ui.getBasePath() + "/" +
+                ui.getOutputFileName() + "/" + fileName + "." + extension;
+        }
+
+        System.out.println(" -- OPEN FILE: " + fullFileName);
+
+        if( fileName.equals("") ) {
+            printStream = new PrintStream( System.out );
+        } else {
+            OutputStream file = null;
+
+            file = new FileOutputStream( fullFileName );
+            printStream = new PrintStream( file );
+        }
+
+        return printStream;
+    }
+
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeConstructor( CDProcess x ) {
+      _printStream.println(_prefix + "// Constructor ");
+      _printStream.println(_prefix + x.getName() + "::" + x.getName() + "(sc_module_name mn, sc_trace_file *tf) {");
+      _prefixInc();
+      _printStream.println(_prefix + "SC_THREAD(main_proc);");
+      _printStream.println(_prefix + "sensitive << clk.pos();");
+      _printStream.println(_prefix + "dont_initialize();");
+      _printStream.println("");
+      _printStream.println(_prefix + "sc_trace(tf, rd, \"" + x.getName() + ".RD\");");
+      _printStream.println(_prefix + "sc_trace(tf, ex, \"" + x.getName() + ".UX\");");
+      _printStream.println(_prefix + "sc_trace(tf, wr, \"" + x.getName() + ".WR\");");
+      _printStream.println("");
+
+      _prefixDec();
+      _printStream.println(_prefix + "}");
+      _printStream.println("");
+    }
+
+
+
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeIncludes( CDProcess x ) {
+
+        _printStream.println("#ifndef " + x.getName() + "_H");
+        _printStream.println("#define " + x.getName() + "_H");
+        _printStream.println("");
+        _printStream.println("#include \"math.h\"");
+        _printStream.println("");
+        _printStream.println("#include \"aux_func.h\"");
+        _printStream.println("#include <iostream>");
+        _printStream.println("");
+
+        Iterator n = x.getGateList().iterator();
+        while( n.hasNext() ) {
+            CDGate gate = (CDGate) n.next();
+            LinearizationType comModel =
+                    ((CDChannel)gate.getChannel()).getCommunicationModel();
+
+            if (comModel != LinearizationType.fifo &&
+                comModel != LinearizationType.BroadcastInOrder &&
+                comModel != LinearizationType.sticky_fifo &&
+                comModel != LinearizationType.shift_register ) {
+               System.out.println("ERROR: Out of order channels are not supported yet!");
+               System.exit(0);
+            }
+        }
+        _printStream.println("");
+    }
+
+
+    /**
+     * Traverses tree p and writes a function latency variable for every AssignStatement.
+     */
+    private void _writeFunctionLatencies(ParserNode p) {
+      if (p instanceof AssignStatement) {
+        AssignStatement s = (AssignStatement) p;
+        if (_functionNames.contains(s.getFunctionName()) == false) {
+          // We insert a _ on purpose, to avoid conflicts with user-defined function names
+          _printStream.println(_prefix + "int lat_" + s.getFunctionName() + " = 10;     // latency of " + s.getFunctionName());
+          _functionNames.add(s.getFunctionName());
+        }
+      }
+      Iterator i = p.getChildren();
+      while (i.hasNext()) {
+        _writeFunctionLatencies((ParserNode) i.next());
+      }
+    }
+
+
+    /**
+     *  Description of the Method
+     *
+     * @param  x Description of the Parameter
+     */
+    private void _writeMainProc( CDProcess x) {
+        _printStream.println(_prefix + "void " + x.getName() + "::main_proc() {");
+        _prefixInc();
+
+        _functionNames = new Vector<String>();
+        _writeFunctionArguments(x);
+        ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
+
+        // We omit the _ on purpose, to avoid conflicts with user-defined function names
+        _printStream.println(_prefix + "int latRead  = 1;     // Latency of FIFO read operation");
+        _writeFunctionLatencies(parserNode);
+        _printStream.println(_prefix + "int latWrite = 1;     // Latency of FIFO write operation");
+        _printStream.println("");
+
+        // Print the Parse tree
+        ScTimedMBStatementVisitor mbvisitor = new ScTimedMBStatementVisitor(_printStream, x.getName());
+        mbvisitor.setPrefix( _prefix );
+        mbvisitor.setOffset( _offset );
+
+        parserNode.accept(mbvisitor);
+
+        _printStream.println("");
+        _printStream.println(_prefix + "return;");
+        _prefixDec();
+        _printStream.println(_prefix + "}");
+        _printStream.println("");
+    }
+
+    /**
+     *  Description of the Method
+     */
+    private void _writeChannelTypes() {
+
+        CDChannel channel;
+        String type;
+
+        Iterator i = _pn.getChannelList().iterator();
+        while( i.hasNext() ) {
+           channel = (CDChannel) i.next();
+           type = ((ADGVariable) ((ADGEdge)channel.getAdgEdgeList().get(0)).getFromPort().getBindVariables().get(0)).getDataType();
+
+           if( !type.equals("") ) {
+               String s = "typedef " + type + " t" + channel.getName()+";";
+               _printStreamFunc.println( s );
+           } else {
+               String s = "typedef char t" + channel.getName()+";";
+               _printStreamFunc.println( s );
+           }
+        }
+    }
+
+    /**
+     *  Description of the Method
+     */
+    private void _writeOperations() {
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("double min( double a, double b ){");
+        _printStreamFunc.println("  if ( a>=b )  {");
+        _printStreamFunc.println("    return b;");
+        _printStreamFunc.println("  } else {");
+        _printStreamFunc.println("    return a;");
+        _printStreamFunc.println("  }");
+        _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("double max( double a, double b ){");
+        _printStreamFunc.println("  if ( a>=b )  {");
+        _printStreamFunc.println("    return a;");
+        _printStreamFunc.println("  } else {");
+        _printStreamFunc.println("    return b;");
+        _printStreamFunc.println("  }");
+        _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("int ddiv( double a, double b ){\n");
+        _printStreamFunc.println("    //return (int)(a/b);");
+        _printStreamFunc.println("    return ( (int) (((a)<0) ? ((a)-(b)+1)/(b) : (a)/(b)) ); ");
+        _printStreamFunc.println("    //return ( (int) (((a)<0)^((b)<0) ? ((a) < 0 ? ((a)-(b)+1)/(b) : ((a)-(b)-1)/(b)) : (a)/(b)) ); ");
+        _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("int mod( double a, double b ){\n");
+        _printStreamFunc.println("    return (int)fmod(a, b);");
+        _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("int ceil1( double a ){\n");
+        _printStreamFunc.println("    return (int) ceil(a);");
+        _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("inline");
+        _printStreamFunc.println("int floor1( double a ){\n");
+        _printStreamFunc.println("    return (int) floor(a);");
+        _printStreamFunc.println("}\n");
+
+    }
+
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeClassDecl( CDProcess x ) {
+        _printStream.println("SC_MODULE(" + x.getName() + ") {");
+        _prefixInc();
+        _printStream.println(_prefix + "public:");
+        _prefixInc();
+        _printStream.println(_prefix + "// Input Gates and controllers");
+
+        // declare the read gates
+        Iterator n = x.getInGates().iterator();
+        while( n.hasNext() ) {
+            CDInGate gate = (CDInGate) n.next();
+            LinearizationType comModel =
+                    ((CDChannel)gate.getChannel()).getCommunicationModel();
+            String s = gate.getName();
+            String t = gate.getChannel().getName();
+
+            _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+
+            if (comModel != LinearizationType.fifo &&
+                comModel != LinearizationType.BroadcastInOrder &&
+                comModel != LinearizationType.sticky_fifo &&
+                comModel != LinearizationType.shift_register) {
+               System.out.println("ERROR: Out of order channels are not supported yet!");
+               System.exit(0);
+            }
+        }
+
+        _printStream.println("");
+
+       _printStream.println(_prefix + "// Output Gates");
+        // declare the write gates
+        n = x.getOutGates().iterator();
+        while( n.hasNext() ) {
+            CDOutGate gate = (CDOutGate) n.next();
+            String s = gate.getName();
+            String t = gate.getChannel().getName();
+
+            _printStream.println(_prefix + "sc_fifo_out<t" + t + "> " + s + ";");
+        }
+
+        _printStream.println("");
+
+        // declare the public parameters
+        _printStream.println(_prefix + "// Parameters");
+
+        Iterator j = _pn.getAdg().getParameterList().iterator();
+        while (j.hasNext()) {
+            ADGParameter p = (ADGParameter) j.next();
+            _printStream.println(_prefix + "int " + p.getName() + ";");
+        }
+
+        _printStream.println("");
+
+        // Declare common signals
+        _printStream.println(_prefix + "// Common signals");
+        _printStream.println(_prefix + "sc_in<bool> clk;");
+        _printStream.println("");
+
+        _printStream.println(_prefix + "// Signals for inspection");
+        _printStream.println(_prefix + "sc_signal<bool> rd;");
+        _printStream.println(_prefix + "sc_signal<bool> ex;");
+        _printStream.println(_prefix + "sc_signal<bool> wr;");
+        _printStream.println("");
+
+        _printStream.println(_prefix + "SC_HAS_PROCESS(" + x.getName() + ");");
+        _printStream.println(_prefix + x.getName() + "(sc_module_name mn, sc_trace_file *tf);");
+        _printStream.println("");
+        _printStream.println(_prefix + "void main_proc();");
+
+        _printStream.println("");
+        _prefixDec();
+        _prefixDec();
+        _printStream.println(_prefix + "};");
+        _printStream.println("");
+    }
+
+
+
+    private void _writeFunctionArguments( CDProcess x ) {
+
+        String funcName = "";
+        String csl = "";
+        String t = "";
+
+        // declare the input arguments of the function
+        _printStream.println(_prefix + "// Input Arguments ");
+
+        Iterator n = x.getAdgNodeList().iterator();
+        while( n.hasNext() ) {
+            ADGNode node = (ADGNode) n.next();
+            ADGFunction function = (ADGFunction) node.getFunction();
+
+            Iterator j1 = function.getInArgumentList().iterator();
+            while( j1.hasNext() ) {
+                ADGVariable arg = (ADGVariable) j1.next();
+                String funcArgument = arg.getName() + node.getName();
+                String dataType = arg.getDataType();
+
+                t = "char";
+                if (dataType != null) {
+                   if (!dataType.equals("")) {
+                       t = dataType;
+                   }
+                }
+
+                // Find the gate corresponding to this funcArgumnet
+                Iterator g = x.getGateList().iterator();
+                while ( g.hasNext() ) {
+                    CDGate  gate = (CDGate) g.next();
+
+                    Iterator p = gate.getAdgPortList().iterator();
+                    while( p.hasNext() ) {
+                       ADGPort port = (ADGPort) p.next();
+
+                       Iterator bvi = port.getBindVariables().iterator();
+                       while ( bvi.hasNext() ) {
+                           ADGVariable bv = (ADGVariable) bvi.next();
+                           String tmp = bv.getName() + port.getNode().getName();
+                           if( funcArgument.equals( tmp ) ) {
+                               t = "t" + gate.getChannel().getName();
+                          }
+                       }
+
+                    }
+                }
+
+                _printStream.println(_prefix + t + " " + funcArgument + ";");
+            }
+        }
+
+        _printStream.println("");
+
+        // declare the output arguments of the function
+        _printStream.println(_prefix + "// Output Arguments ");
+
+        n = x.getAdgNodeList().iterator();
+        while( n.hasNext() ) {
+            ADGNode node = (ADGNode) n.next();
+            ADGFunction function1 = (ADGFunction) node.getFunction();
+
+
+            Iterator j2 = function1.getOutArgumentList().iterator();
+            while( j2.hasNext() ) {
+                ADGVariable arg = (ADGVariable) j2.next();
+                String funcArgument = arg.getName() + node.getName();
+                String dataType = arg.getDataType();
+
+                t = "char";
+                if (dataType != null) {
+                   if (!dataType.equals("")) {
+                       t = dataType;
+                   }
+                }
+
+                // Find the gate corresponding to this funcArgumnet
+                Iterator g = x.getGateList().iterator();
+                while ( g.hasNext() ) {
+                    CDGate  gate = (CDGate) g.next();
+
+                    Iterator p = gate.getAdgPortList().iterator();
+                    while( p.hasNext() ) {
+                       ADGPort port = (ADGPort) p.next();
+                       String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
+                       if( funcArgument.equals( tmp ) ) {
+                          t = "t" + gate.getChannel().getName();
+                       }
+                    }
+                }
+
+                _printStream.println(_prefix + t +" " + funcArgument + ";");
+            }
+        }
+        _printStream.println("");
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                  ///
+
+    private CDProcessNetwork _pn = null;
+
+    private Mapping _mapping = null;
+
+    private PrintStream _printStream = null;
+
+    private PrintStream _printStreamFunc = null;
+
+    private Vector<String> _functionNames = null;  // The function names used in this CDPN
+
+}
