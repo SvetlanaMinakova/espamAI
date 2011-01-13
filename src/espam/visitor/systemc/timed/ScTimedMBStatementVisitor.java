@@ -165,7 +165,7 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         _printStream.println(_prefix + "wr.write(true);");
         _printStream.println(_prefix + x.getGateName() + "->write( " +
                 x.getArgumentName() + x.getNodeName() + ");");
-        _printStream.println(_prefix + "wait(latWrite, SC_NS);");
+        _printStream.println(_prefix + "waitcycles(latWrite);");
         _printStream.println(_prefix + "wr.write(false);");
         _printStream.println("");
     }
@@ -185,7 +185,7 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
              _printStream.println("");
              _printStream.println(_prefix + "// Execute");
              _printStream.println(_prefix + "ex.write(true);");
-             _printStream.println(_prefix + "wait(lat_" + x.getFunctionName() + ", SC_NS);");
+             _printStream.println(_prefix + "waitcycles(lat_" + x.getFunctionName() + ");");
              _printStream.println(_prefix + "ex.write(false);");
              _printStream.print(_prefix + "//_" + x.getFunctionName() + "(");
 
@@ -275,7 +275,7 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
                                                     + tmp + x.getNodeName() + ";");
         }
 
-        _printStream.println(_prefix + "wait(latRead, SC_NS);");
+        _printStream.println(_prefix + "waitcycles(latRead);");
         _printStream.println(_prefix + "rd.write(false);");
         _prefixInc();
         _visitChildren(x);

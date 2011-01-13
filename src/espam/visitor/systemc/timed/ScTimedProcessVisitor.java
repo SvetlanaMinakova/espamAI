@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt
- * @version  $Id: ScTimedProcessVisitor.java,v 1.1 2010/12/01 09:47:36 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.2 2011/01/13 10:56:40 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -102,6 +102,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
                 CDProcess process = (CDProcess) i.next();
                 MProcessor mp = _mapping.getMProcessor(process);
+                if (mp == null) {
+                  // Process not mapped to a resource, apparently platform file was empty
+                  throw new EspamException("ERROR - Process not mapped onto resource; make sure you specify a non-empty platform.");
+                }
                 Resource r = mp.getResource();
 
                 _printStream = _openFile(process.getName(), "h");
@@ -291,8 +295,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
       if (p instanceof AssignStatement) {
         AssignStatement s = (AssignStatement) p;
         if (_functionNames.contains(s.getFunctionName()) == false) {
-          // We insert a _ on purpose, to avoid conflicts with user-defined function names
-          _printStream.println(_prefix + "int lat_" + s.getFunctionName() + " = 10;     // latency of " + s.getFunctionName());
+          // We insert a _ on purpose, to avoid conflicts with user-defined function names like "Read"
+          _printStream.println(_prefix + "const int lat_" + s.getFunctionName() + " = 10;     // latency of " + s.getFunctionName());
           _functionNames.add(s.getFunctionName());
         }
       }
@@ -317,9 +321,12 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
 
         // We omit the _ on purpose, to avoid conflicts with user-defined function names
-        _printStream.println(_prefix + "int latRead  = 1;     // Latency of FIFO read operation");
+        _printStream.println(_prefix + "const int latRead  = 1;     // Latency of FIFO read operation");
         _writeFunctionLatencies(parserNode);
-        _printStream.println(_prefix + "int latWrite = 1;     // Latency of FIFO write operation");
+        _printStream.println(_prefix + "const int latWrite = 1;     // Latency of FIFO write operation");
+        _printStream.println("");
+        _printStream.println(_prefix + "// Initial 1-cycle delay to ensure FIFO is ready");
+        _printStream.println(_prefix + "waitcycles(1);");
         _printStream.println("");
 
         // Print the Parse tree
@@ -402,6 +409,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("int floor1( double a ){\n");
         _printStreamFunc.println("    return (int) floor(a);");
         _printStreamFunc.println("}\n");
+
+        _printStreamFunc.println("#define waitcycles(v) \\");
+        _printStreamFunc.println("  wait((v), SC_NS);");
+        _printStreamFunc.println("");
 
     }
 
@@ -594,6 +605,6 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
     private PrintStream _printStreamFunc = null;
 
-    private Vector<String> _functionNames = null;  // The function names used in this CDPN
+    private Vector<String> _functionNames = null;  // The function names used in this CDProcess
 
 }
