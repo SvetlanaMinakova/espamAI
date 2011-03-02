@@ -84,7 +84,8 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT edge (linearization,mapping)>"
 		+ "<!ATTLIST edge name CDATA #REQUIRED fromPort CDATA #IMPLIED fromNode CDATA #IMPLIED toPort CDATA #IMPLIED toNode CDATA #IMPLIED size CDATA #IMPLIED>"
 
-		+ "<!ELEMENT domain (linearbound*,filterset*)>"
+//		+ "<!ELEMENT domain (linearbound*,filterset*)>"
+		+ "<!ELEMENT domain (linearbound,filterset*)>"
 		+ "<!ATTLIST domain type CDATA #REQUIRED>"
 
 		+ "<!ELEMENT linearbound (constraint+,context*,control*)>"

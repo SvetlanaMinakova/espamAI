@@ -66,7 +66,7 @@ public class CrossCheck {
 	 */
 	public void crossCheck(Platform platform, ADGraph adg, Mapping mapping) throws EspamException {
 
-		System.out.println(" -- Cross-Checking platform, network, and mapping ... ");
+		System.out.println(" -- Cross-Checking platform, adg, and mapping ... ");
                 ConsistencyCheck cc =  ConsistencyCheck.getInstance();
 
 		try {
@@ -84,7 +84,7 @@ public class CrossCheck {
 
 		} catch( Exception e ) {
 			e.printStackTrace();
-			System.out.println("\nCrossChack Exception: " + e.getMessage());
+			System.out.println("\nCrossCheck Exception: " + e.getMessage());
 		}
 	}
 
@@ -119,7 +119,7 @@ public class CrossCheck {
 
 	      if (isMatch == false) {
 	         System.err.println("[Espam]ERROR: Processor \"" + mProcessor.getName() + "\" in the mapping spec" +
-		                    " does not have corresponding resourece in the platform spec." );
+		                    " does not have corresponding resource in the platform spec." );
 	         System.err.println();
 	         System.err.println( " -- Cross-check failed." );
 	         System.err.println();
@@ -157,7 +157,7 @@ public class CrossCheck {
 
                  Iterator k = adg.getNodeList().iterator();
                  while( k.hasNext() ) {
-                    ADGNode node = (ADGNode) k.next();
+                    ADGNode node = (ADGNode) k.next();                   
                     if( mProcess.getName().equals(node.getName()) ) {
 		       mProcess.setNode( node ); 
                        isMatch = true;

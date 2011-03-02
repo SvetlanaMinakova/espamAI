@@ -62,7 +62,7 @@ public class ConsistencyCheck {
 	 */
 	public void consistencyCheck(Platform platform, ADGraph adg, Mapping mapping) throws EspamException {
 
-		System.out.println(" - Check platform, process network, and mapping for consistency");
+		System.out.println(" - Check platform, adg, and mapping for consistency");
 
 		try {
 		        mapping.setPlatform( platform );
