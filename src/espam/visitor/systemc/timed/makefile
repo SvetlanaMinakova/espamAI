@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.2 2010/12/01 09:47:36 svhaastr Exp $
+# $Id: makefile,v 1.3 2011/03/23 17:58:22 tzhai Exp $
 #
 
 ROOT  = ../../../..
@@ -8,6 +8,7 @@ SUBPACKAGES =
 
 # Java files in this directory
 JSRCS = \
+	RuntimeConfig.java \
 	ScTimedNetworkVisitor.java \
 	ScTimedProcessVisitor.java \
 	ScTimedMBStatementVisitor.java
