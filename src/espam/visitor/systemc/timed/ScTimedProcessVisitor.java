@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.4 2011/03/04 09:50:23 tzhai Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.5 2011/03/23 13:11:03 tzhai Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -161,6 +161,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
         //_printStream.println(_prefix + "private:");
         //_writeFunctionArguments( x );
+
+	_printStream.println("");
+        _writeComputPeriod( x );
+
 
         _prefixDec();
         _printStream.println("");
@@ -338,6 +342,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
         _printStream.println("");
         _printStream.println(_prefix + "cout << \"" + x.getName() + " finished at \" << sc_time_stamp() << endl;");
+        _printStream.println(_prefix + "iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
+        _printStream.println(_prefix + "compute_period(sc_time_stamp().to_default_time_units());");
+        _printStream.println("");
         _printStream.println(_prefix + "return;");
         _prefixDec();
         _printStream.println(_prefix + "}");
@@ -423,6 +430,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     private void _writeClassDecl( CDProcess x ) {
         _printStream.println("SC_MODULE(" + x.getName() + ") {");
         _prefixInc();
+        _printStream.println(_prefix + "std::vector<double> iter_finish_time;");
         _printStream.println(_prefix + "public:");
         _prefixInc();
         _printStream.println(_prefix + "// Input Gates and controllers");
@@ -490,6 +498,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "void main_proc();");
 
         _printStream.println("");
+        _prefixDec();
+        _printStream.println(_prefix + "private:");
+        _prefixInc();
+        _printStream.println(_prefix + "void compute_period(const double& finish_time);");
         _prefixDec();
         _prefixDec();
         _printStream.println(_prefix + "};");
@@ -594,6 +606,26 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         }
         _printStream.println("");
     }
+    
+    
+    private void _writeComputPeriod(CDProcess x) {
+      _printStream.println(_prefix + "// use this function only for the sink process");
+      _printStream.println(_prefix + "void " + x.getName() + "::compute_period(const double& finish_time) {");
+      _prefixInc();
+      _printStream.println(_prefix + "if (iter_finish_time.size() == 1) return;");
+      _printStream.println("");	
+      _printStream.println(_prefix + "// to record the finish time of the last iteration  ");
+      
+      _printStream.println(_prefix + "double last_finish_time = *(iter_finish_time.end()-2);");
+      _printStream.println(_prefix + "double period = finish_time - last_finish_time;");
+      _printStream.println(_prefix + "cout << \"period of the PPN is: \" << period << endl;");
+      
+      _prefixDec();
+      _printStream.println(_prefix + "}");
+      _printStream.println("");	
+    }
+       
+    
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///

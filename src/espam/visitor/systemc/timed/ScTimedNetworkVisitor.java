@@ -49,7 +49,7 @@ import espam.datamodel.parsetree.statement.AssignStatement;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.3 2011/03/04 09:48:25 tzhai Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.4 2011/03/23 13:11:03 tzhai Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -130,12 +130,21 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
         if (channel.getAdgEdgeList().size() != 1) {
           System.err.println("Warning: multiple ADG edges per channel not supported!");
         }
-//         int chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
-	// quick hack: first assume that buffer size does not play roll in performance
-	int chSize = 10000;
+        
+        
+        int chSize; 
+        if (RuntimeConfig.IS_DEBUG_MODE){
+	  // we assume sufficient buffer size first
+	  chSize = 65536;
+	  System.err.println("Warning: currently maximum buffer size for all channels!");
+        }else {
+	  // TODO: fsl_fifo has some problems on blocking write
+	  chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
+        }
         ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
         fifoConnects += _prefix + channel.getName() + ".clk(sysClk);\n";
       }
+
 
       ps.println("");
       ps.println(fifoConnects);
@@ -337,7 +346,6 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     private void _getFunctionNames(ParserNode p) {
       if (p instanceof AssignStatement) {
         AssignStatement s = (AssignStatement) p;
-//         System.out.println("debug: " + s.getFunctionName());
         if (_functionNames.contains(s.getFunctionName()) == false) {
           _functionNames.add(s.getFunctionName());
         }
@@ -351,12 +359,12 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     
     /**
      * Open a file for writing workload of all function calls and communication cost.
-     */
-     /**
+     *
+     *
      */
     private void _writeWorkloadHeader() {
         try {
-            // create the makefile
+            // create the workload file
             PrintStream mf = _openFile(_outputDir + "/workload.h");
             
             mf.println("#ifndef " + "workload_H");
@@ -388,7 +396,20 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             System.out.println("Cannot create the workload header");
         }
     }
-
+    
+    
+    /**
+     * TODO: write system warning
+     */
+    private void _writeWarningMsg(String WarningMsg) {
+      try {
+	PrintStream msg_f = _openFile(_outputDir + "/System.warning");
+      }catch( Exception e ) {
+            System.out.println("Error: " + e.getMessage());
+            System.out.println("Cannot create the system.warning");
+        }
+      
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
