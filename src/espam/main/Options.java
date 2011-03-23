@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.5 2010/11/05 16:30:17 svhaastr Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.6 2011/03/23 15:20:37 nikolov Exp $ $Name:  $
  */
 
 public class Options {
@@ -88,6 +88,8 @@ public class Options {
                         	_ui.setXpsLibPath(args[++i]);
                         } else if( arg.equals("--libhdpc") ) {
                         	_ui.setHdpcLibPath(args[++i]);
+                        } else if( arg.equals("--libsystemc") ) {
+                        	_ui.setSystemcLibPath(args[++i]);
                         } else {
 		           // Unrecognized option.
                            throw new IllegalArgumentException("Unrecognized option: " + arg);
@@ -216,7 +218,8 @@ public class Options {
 			{ "--mapping  ", "-m", "<FileName>" },
 			{ "--scheduler", "-s", "<FileName>" },
 			{ "--libxps", "-l", "<LibraryPath>" },
-			{ "--libhdpc", "none", "<LibraryPath>" } };
+			{ "--libhdpc", "none", "<LibraryPath>" },
+			{ "--libsystemc", "none", "<LibraryPath>" } };
 
 	/**
 	 * The form of the command line.

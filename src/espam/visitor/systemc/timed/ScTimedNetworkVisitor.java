@@ -41,6 +41,8 @@ import espam.datamodel.EspamException;
 
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+
+import espam.visitor.xps.Copier;
 //////////////////////////////////////////////////////////////////////////
 ////ScTimedNetworkVisitor
 
@@ -49,7 +51,7 @@ import espam.datamodel.parsetree.statement.AssignStatement;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.4 2011/03/23 13:11:03 tzhai Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.5 2011/03/23 15:20:37 nikolov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -67,7 +69,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
       // select the orignal filename. (REFACTOR)
       UserInterface ui = UserInterface.getInstance();
       if( ui.getOutputFileName() == "" ) {
-        _outputDir = ui.getBasePath() + "/" + ui.getFileName();
+        _outputDir = ui.getBasePath() + "/" + ui.getFileName() + "_systemc";
       }
       else {
         _outputDir = ui.getBasePath() + "/" + ui.getOutputFileName();
@@ -78,6 +80,16 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
           throw new EspamException("could not create directory '" + dir.getPath() + "'.");
         }
       }
+
+      try {
+          File f = new File(ui.getSystemcLibPath());
+          File t = new File(_outputDir);
+          Copier.copy(f, t, 1, true);
+      } catch( Exception e ) {
+		System.out.println(" ESPAM Message: " + e.getMessage());
+		e.printStackTrace(System.out);
+      }
+
     }
 
 

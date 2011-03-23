@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.5 2011/03/23 13:11:03 tzhai Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.6 2011/03/23 15:20:37 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -101,25 +101,30 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             while( i.hasNext() ) {
 
                 CDProcess process = (CDProcess) i.next();
+		_printStream = _openFile(process.getName(), "h");
                 MProcessor mp = _mapping.getMProcessor(process);
                 if (mp == null) {
                   // Process not mapped to a resource, apparently platform file was empty
-                  throw new EspamException("ERROR - Process not mapped onto resource; make sure you specify a non-empty platform.");
-                }
-                Resource r = mp.getResource();
+//                  throw new EspamException("ERROR - Process not mapped onto resource; make sure you specify a non-empty platform.");
 
-                _printStream = _openFile(process.getName(), "h");
-                if (r instanceof MicroBlaze) {
                   _scMicroBlazeProcess(process);
-                }
-                else if (r instanceof CompaanHWNode) {
-                  _scHWNProcess(process);
-                  System.err.println("WARNING - CompaanHWNode is not yet supported!");
-                }
-                else {
-                  throw new EspamException("ERROR - Unsupported processor type '" + r.toString() + "'");
-                }
-
+                
+		} else {
+	
+			Resource r = mp.getResource();
+	
+//			_printStream = _openFile(process.getName(), "h");
+			if (r instanceof MicroBlaze) {
+			_scMicroBlazeProcess(process);
+			}
+			else if (r instanceof CompaanHWNode) {
+			_scHWNProcess(process);
+			System.err.println("WARNING - CompaanHWNode is not yet supported!");
+			}
+			else {
+			throw new EspamException("ERROR - Unsupported processor type '" + r.toString() + "'");
+			}
+		}
             }
 
             _printStreamFunc.println("");
@@ -216,7 +221,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         if( ui.getOutputFileName() == "" ) {
             fullFileName =
                 ui.getBasePath() + "/" +
-                ui.getFileName() + "/" + fileName + "." + extension;
+                ui.getFileName() + "_systemc/" + fileName + "." + extension;
         } else {
             fullFileName =
                 ui.getBasePath() + "/" +

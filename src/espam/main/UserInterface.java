@@ -170,7 +170,7 @@ public class UserInterface {
     /**
      * Get the path of the hdpc library file.
      *
-     * @return The xpsLibPath value
+     * @return The hdpcLibPath value
      */
     public final String getHdpcLibPath() {
         return _hdpcLibPath;
@@ -179,11 +179,30 @@ public class UserInterface {
     /**
      * Set the path of the hdpc library file.
      *
-     * @param xpsLibPath
-     *            The new xpsLibPath value
+     * @param hdpcLibPath
+     *            The new hdpcLibPath value
      */
     public final void setHdpcLibPath(String hdpcLibPath) {
         _hdpcLibPath = hdpcLibPath;
+    }
+
+    /**
+     * Get the path of the systemc library file.
+     *
+     * @return The systemcLibPath value
+     */
+    public final String getSystemcLibPath() {
+        return _systemcLibPath;
+    }
+
+    /**
+     * Set the path of the systemc library file.
+     *
+     * @param systemcLibPath
+     *            The new systemcLibPath value
+     */
+    public final void setSystemcLibPath(String systemcLibPath) {
+        _systemcLibPath = systemcLibPath;
     }
 
 
@@ -548,6 +567,9 @@ public class UserInterface {
 
     // the path of the hdpc library file
     private String _hdpcLibPath = "";
+
+    // the path of the systemc library file
+    private String _systemcLibPath = "";
 
     // the verbose flag
     private boolean _verbose = false;

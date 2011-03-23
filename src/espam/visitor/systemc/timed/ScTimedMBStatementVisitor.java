@@ -301,7 +301,7 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         // Create the directory indicated by the '-o' option. Otherwise
         // select the orignal filename.
         if( ui.getOutputFileName() == "" ) {
-            directory = ui.getBasePath() + "/" + ui.getFileName();
+            directory = ui.getBasePath() + "/" + ui.getFileName() + "_systemc/";
         } else {
             directory = ui.getBasePath() + "/" + ui.getOutputFileName();
         }
