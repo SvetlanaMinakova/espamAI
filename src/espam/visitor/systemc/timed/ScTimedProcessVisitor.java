@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.6 2011/03/23 15:20:37 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.7 2011/03/24 11:10:38 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -101,7 +101,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             while( i.hasNext() ) {
 
                 CDProcess process = (CDProcess) i.next();
-		_printStream = _openFile(process.getName(), "h");
+                _printStream = _openFile(process.getName(), "h");
                 MProcessor mp = _mapping.getMProcessor(process);
                 if (mp == null) {
                   // Process not mapped to a resource, apparently platform file was empty
@@ -109,22 +109,22 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
                   _scMicroBlazeProcess(process);
                 
-		} else {
-	
-			Resource r = mp.getResource();
-	
-//			_printStream = _openFile(process.getName(), "h");
-			if (r instanceof MicroBlaze) {
-			_scMicroBlazeProcess(process);
-			}
-			else if (r instanceof CompaanHWNode) {
-			_scHWNProcess(process);
-			System.err.println("WARNING - CompaanHWNode is not yet supported!");
-			}
-			else {
-			throw new EspamException("ERROR - Unsupported processor type '" + r.toString() + "'");
-			}
-		}
+                } else {
+
+                  Resource r = mp.getResource();
+
+                  //      _printStream = _openFile(process.getName(), "h");
+                  if (r instanceof MicroBlaze) {
+                    _scMicroBlazeProcess(process);
+                  }
+                  else if (r instanceof CompaanHWNode) {
+                    _scHWNProcess(process);
+                    System.err.println("WARNING - CompaanHWNode is not yet supported!");
+                  }
+                  else {
+                    throw new EspamException("ERROR - Unsupported processor type '" + r.toString() + "'");
+                  }
+                }
             }
 
             _printStreamFunc.println("");
@@ -167,7 +167,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         //_printStream.println(_prefix + "private:");
         //_writeFunctionArguments( x );
 
-	_printStream.println("");
+  _printStream.println("");
         _writeComputPeriod( x );
 
 
@@ -252,6 +252,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
       _printStream.println(_prefix + "SC_THREAD(main_proc);");
       _printStream.println(_prefix + "sensitive << clk.pos();");
       _printStream.println(_prefix + "dont_initialize();");
+      _printStream.println("");
+      _printStream.println(_prefix + "finish.initialize(false);");
       _printStream.println("");
       _printStream.println(_prefix + "sc_trace(tf, rd, \"" + x.getName() + ".RD\");");
       _printStream.println(_prefix + "sc_trace(tf, ex, \"" + x.getName() + ".UX\");");
@@ -346,7 +348,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         parserNode.accept(mbvisitor);
 
         _printStream.println("");
+        _printStream.println(_prefix + "finish.write(true);");
         _printStream.println(_prefix + "cout << \"" + x.getName() + " finished at \" << sc_time_stamp() << endl;");
+
         _printStream.println(_prefix + "iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
         _printStream.println(_prefix + "compute_period(sc_time_stamp().to_default_time_units());");
         _printStream.println("");
@@ -489,6 +493,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         // Declare common signals
         _printStream.println(_prefix + "// Common signals");
         _printStream.println(_prefix + "sc_in<bool> clk;");
+        _printStream.println(_prefix + "sc_out<bool> finish;");
         _printStream.println("");
 
         _printStream.println(_prefix + "// Signals for inspection");
@@ -618,7 +623,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
       _printStream.println(_prefix + "void " + x.getName() + "::compute_period(const double& finish_time) {");
       _prefixInc();
       _printStream.println(_prefix + "if (iter_finish_time.size() == 1) return;");
-      _printStream.println("");	
+      _printStream.println(""); 
       _printStream.println(_prefix + "// to record the finish time of the last iteration  ");
       
       _printStream.println(_prefix + "double last_finish_time = *(iter_finish_time.end()-2);");
@@ -627,7 +632,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
       
       _prefixDec();
       _printStream.println(_prefix + "}");
-      _printStream.println("");	
+      _printStream.println(""); 
     }
        
     

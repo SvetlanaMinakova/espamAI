@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.5 2011/03/23 15:20:37 nikolov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.6 2011/03/24 11:10:38 svhaastr Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -86,8 +86,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
           File t = new File(_outputDir);
           Copier.copy(f, t, 1, true);
       } catch( Exception e ) {
-		System.out.println(" ESPAM Message: " + e.getMessage());
-		e.printStackTrace(System.out);
+                System.out.println(" ESPAM Message: " + e.getMessage());
+                e.printStackTrace(System.out);
       }
 
     }
@@ -146,12 +146,12 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
         
         int chSize; 
         if (RuntimeConfig.IS_DEBUG_MODE){
-	  // we assume sufficient buffer size first
-	  chSize = 65536;
-	  System.err.println("Warning: currently maximum buffer size for all channels!");
+          // we assume sufficient buffer size first
+          chSize = 65536;
+          System.err.println("Warning: currently maximum buffer size for all channels!");
         }else {
-	  // TODO: fsl_fifo has some problems on blocking write
-	  chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
+          // TODO: fsl_fifo has some problems on blocking write
+          chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
         }
         ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
         fifoConnects += _prefix + channel.getName() + ".clk(sysClk);\n";
@@ -163,11 +163,15 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
       ps.println("");
       ps.println(_prefix + "// Processes");
 
+      String monitorConnect = "";
       i = _pn.getProcessList().iterator();
       while( i.hasNext() ) {
         CDProcess process = (CDProcess) i.next();
+        ps.println(_prefix + "sc_signal<bool> fin" + process.getName() + ";");
         ps.println(_prefix + process.getName() + " i" + process.getName() + "(\"" + process.getName() + "\", tf);");
         ps.println(_prefix + "i" + process.getName() + ".clk(sysClk);");
+        ps.println(_prefix + "i" + process.getName() + ".finish(fin" + process.getName() + ");");
+        monitorConnect += _prefix + "mon.fin" + process.getName() + "(fin" + process.getName() + ");\n";
 
         // Connect inputs
         Iterator g = process.getInGates().iterator();
@@ -188,6 +192,9 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
       }
 
       ps.println("");
+      ps.println(_prefix + "// Process network monitor");
+      ps.println(_prefix + "Monitor mon(\"Monitor\");");
+      ps.println(monitorConnect);
     }
 
 
@@ -234,7 +241,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/TOOLS/systemc-2.2.0");
+                cf.println("SYSTEMC = $(HOME)/apps/systemc-2.2");
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);
@@ -261,13 +268,46 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             maf.println("#include <fstream>");
             maf.println("#include \"workload.h\"");
             maf.println("#include \"fifo_fsl.h\"");
+            
+            // Generate the #include for each process and also prepare some strings for the monitor
+            String finPorts = "";
+            String sensitivityList = "";
+            String stopCondition = "";
             Iterator i = _pn.getProcessList().iterator();
             while( i.hasNext() ) {
                 CDProcess process = (CDProcess) i.next();
                 maf.println("#include \"" + process.getName() + ".h\"");
+                finPorts += "    sc_in<bool> fin" + process.getName() + ";\n";
+                sensitivityList += " << fin" + process.getName();
+                if (stopCondition != "")
+                  stopCondition += " && ";
+                stopCondition += "fin" + process.getName() + ".read()";
             }
+
             maf.println("");
             maf.println("using namespace std;");
+            maf.println("");
+            maf.println("// Process network monitor");
+            maf.println("SC_MODULE(Monitor) {");
+            maf.println("  public:");
+            maf.println(finPorts);
+            maf.println("    SC_HAS_PROCESS(Monitor);");
+            maf.println("    Monitor(sc_module_name nm);");
+            maf.println("    void main_proc();");
+            maf.println("};");
+            maf.println("");
+            maf.println("// Constructor");
+            maf.println("Monitor::Monitor(sc_module_name nm) {");
+            maf.println("  SC_METHOD(main_proc);");
+            maf.println("  sensitive" + sensitivityList + ";");
+            maf.println("}");
+            maf.println("");
+            maf.println("// Does the actual monitoring");
+            maf.println("void Monitor::main_proc() {");
+            maf.println("  if (" + stopCondition + ")");
+            maf.println("    sc_stop();");
+            maf.println("}");
+            maf.println("");
             maf.println("");
             maf.println("int sc_main(int argc , char *argv[]) {");
             _prefixInc();
@@ -281,8 +321,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
 
             _printNetwork(maf);
 
-            maf.println(_prefix + "sc_start(6000, SC_NS);");
-            maf.println(_prefix + "cerr << \"Warning: hardcoded simulation timeout - process network may not have finished yet.\" << endl;");
+            maf.println(_prefix + "sc_start();");
+            maf.println(_prefix + "cout << \"Process network simulation ended.\" << endl;");
             maf.println("");
             maf.println(_prefix + "sc_close_vcd_trace_file(tf);");
             maf.println("");
@@ -380,29 +420,29 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             PrintStream mf = _openFile(_outputDir + "/workload.h");
             
             mf.println("#ifndef " + "workload_H");
-	    mf.println("#define " + "workload_H");
+            mf.println("#define " + "workload_H");
             
-            // 	// FIFO read/write latency
-	    // Currently we assume that communication cost is constant and equal for all
-	    mf.println("extern const int latRead  = 1;     // Latency of FIFO read operation");
-	    mf.println("extern const int latWrite  = 1;     // Latency of FIFO read operation");
-	    
-	    
-	    // iterate over all processes to write latency of function calls
-	    _functionNames = new Vector<String>();
-	    Iterator i = _pn.getProcessList().iterator();
-	    while( i.hasNext() ) {
-	      CDProcess process = (CDProcess) i.next();
-	      ParserNode parserNode = (ParserNode) process.getSchedule().get(0);
-	      _getFunctionNames(parserNode);
-	    } // end processes
-	    
-	    for(int j=0; j< _functionNames.size();j++){
-	      mf.println("extern const int lat_" + _functionNames.get(j) + " = 1;     // latency of " + _functionNames.get(j));
-	    }
-	    
-	    mf.println("#endif");
-	}
+            //  // FIFO read/write latency
+            // Currently we assume that communication cost is constant and equal for all
+            mf.println("extern const int latRead  = 1;     // Latency of FIFO read operation");
+            mf.println("extern const int latWrite  = 1;     // Latency of FIFO read operation");
+            
+            
+            // iterate over all processes to write latency of function calls
+            _functionNames = new Vector<String>();
+            Iterator i = _pn.getProcessList().iterator();
+            while( i.hasNext() ) {
+              CDProcess process = (CDProcess) i.next();
+              ParserNode parserNode = (ParserNode) process.getSchedule().get(0);
+              _getFunctionNames(parserNode);
+            } // end processes
+            
+            for(int j=0; j< _functionNames.size();j++){
+              mf.println("extern const int lat_" + _functionNames.get(j) + " = 1;     // latency of " + _functionNames.get(j));
+            }
+            
+            mf.println("#endif");
+        }
         catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
             System.out.println("Cannot create the workload header");
@@ -415,7 +455,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
      */
     private void _writeWarningMsg(String WarningMsg) {
       try {
-	PrintStream msg_f = _openFile(_outputDir + "/System.warning");
+        PrintStream msg_f = _openFile(_outputDir + "/System.warning");
       }catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
             System.out.println("Cannot create the system.warning");
