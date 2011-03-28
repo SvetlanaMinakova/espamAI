@@ -23,9 +23,9 @@ package espam.visitor.systemc.timed;
  * 
  *
  * @author  Teddy Zhai
- * @version  $Id: RuntimeConfig.java,v 1.1 2011/03/23 13:11:03 tzhai Exp $
+ * @version  $Id: RuntimeConfig.java,v 1.2 2011/03/28 15:33:12 tzhai Exp $
  */
 
 public class RuntimeConfig {
-  public static boolean IS_DEBUG_MODE = true;
+  public static boolean IS_DEBUG_MODE = false;
 }
