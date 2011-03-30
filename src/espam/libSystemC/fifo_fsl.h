@@ -45,6 +45,7 @@ SC_MODULE(fsl) , public sc_fifo<T> {
     int read_latency;     // Time between read call and return (simulates time to fetch data from buffer)
     int write_latency;    // Time between write call and actual write into buffer; write() returns immediately if not blocking! Multiple writes in subsequent cycles are pipelined.
     int flen;             // Resembling fsl.fifo_length
+    int max_tokens;
 };
 
 
@@ -66,6 +67,7 @@ fsl<T>::~fsl() {
   delete[] read_queue;
   delete[] write_pipeline;
   delete[] write_queue;
+  cout << sc_module::name() << ": Maximum number of tokens simultaneously in FIFO: " << max_tokens << endl;
 }
 
 
@@ -102,6 +104,7 @@ void fsl<T>::init(int size, sc_trace_file *tf) {
   flen = 0;
   exist.write(false);
   full.write(false);
+  max_tokens = 0;
 }
 
 
@@ -188,6 +191,10 @@ void fsl<T>::fsl_process() {
     }
     exist.write(flen != 0);
     full.write(flen == this->m_size);
+
+    // Keep track of maximum number of tokens simultaneously in FIFO (which is the maximum buffersize for self-timed execution)
+    if (flen > max_tokens)
+      max_tokens = flen;
 
     // Handle read
     if (this->read_pending > 0) {
