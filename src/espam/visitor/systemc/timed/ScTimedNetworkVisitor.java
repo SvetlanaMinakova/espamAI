@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.6 2011/03/24 11:10:38 svhaastr Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.7 2011/04/05 09:56:02 svhaastr Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -421,7 +421,19 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             
             mf.println("#ifndef " + "workload_H");
             mf.println("#define " + "workload_H");
+
+            mf.println("");
+            if (_pn.getAdg().getParameterList().size() > 0)
+              mf.println("// Default parameter values");
+            Iterator i = _pn.getAdg().getParameterList().iterator();
+            while( i.hasNext() ) {
+              ADGParameter p = (ADGParameter) i.next();
+              String pname = p.getName();
+              mf.println("#define val" + pname + " " + p.getValue());
+            }
+            mf.println("");
             
+            mf.println("// Latency numbers");
             //  // FIFO read/write latency
             // Currently we assume that communication cost is constant and equal for all
             mf.println("extern const int latRead  = 1;     // Latency of FIFO read operation");
@@ -430,7 +442,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             
             // iterate over all processes to write latency of function calls
             _functionNames = new Vector<String>();
-            Iterator i = _pn.getProcessList().iterator();
+            i = _pn.getProcessList().iterator();
             while( i.hasNext() ) {
               CDProcess process = (CDProcess) i.next();
               ParserNode parserNode = (ParserNode) process.getSchedule().get(0);
