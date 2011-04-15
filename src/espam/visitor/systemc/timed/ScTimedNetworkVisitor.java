@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.7 2011/04/05 09:56:02 svhaastr Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.8 2011/04/15 09:09:06 svhaastr Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -82,9 +82,9 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
       }
 
       try {
-          File f = new File(ui.getSystemcLibPath());
+          File f = new File(ui.getSystemcLibPath() + "/" + "fifo_fsl.h");
           File t = new File(_outputDir);
-          Copier.copy(f, t, 1, true);
+          Copier.copy(f, t, 2, true);
       } catch( Exception e ) {
                 System.out.println(" ESPAM Message: " + e.getMessage());
                 e.printStackTrace(System.out);
