@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.8 2011/04/05 09:56:02 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.9 2011/04/20 08:09:02 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -162,14 +162,19 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println("");
         _writeConstructor( x );
         _printStream.println("");
-        _writeMainProc( x );
 
-        //_printStream.println(_prefix + "private:");
-        //_writeFunctionArguments( x );
+        // Write main
+        _writeMainProcBegin( x );
+        // Print the Parse tree
+        ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
+        ScTimedMBStatementVisitor mbvisitor = new ScTimedMBStatementVisitor(_printStream, x.getName());
+        mbvisitor.setPrefix( _prefix );
+        mbvisitor.setOffset( _offset );
+        parserNode.accept(mbvisitor);
+        _writeMainProcEnd( x );
 
-  _printStream.println("");
+        _printStream.println("");
         _writeComputPeriod( x );
-
 
         _prefixDec();
         _printStream.println("");
@@ -191,10 +196,19 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println("");
         _writeConstructor( x );
         _printStream.println("");
-        //_writeMainProc( x );
+
+        // Write main
+        _writeMainProcBegin( x );
+        ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
+        ScTimedHWNStatementVisitor mbvisitor = new ScTimedHWNStatementVisitor(_printStream, x.getName());
+        // TODO: visit parsetree
+        _writeMainProcEnd( x );
 
         //_printStream.println(_prefix + "private:");
         //_writeFunctionArguments( x );
+
+        _printStream.println("");
+        _writeComputPeriod( x );
 
         _prefixDec();
         _printStream.println("");
@@ -325,17 +339,16 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
 
     /**
-     *  Description of the Method
+     *  Writes the first part of main, up to where the AST should be inserted.
      *
      * @param  x Description of the Parameter
      */
-    private void _writeMainProc( CDProcess x) {
+    private void _writeMainProcBegin( CDProcess x) {
         _printStream.println(_prefix + "void " + x.getName() + "::main_proc() {");
         _prefixInc();
 
         _functionNames = new Vector<String>();
         _writeFunctionArguments(x);
-        ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
 
         // We omit the _ on purpose, to avoid conflicts with user-defined function names
 //         _printStream.println(_prefix + "const int latRead  = 1;     // Latency of FIFO read operation");
@@ -345,14 +358,15 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "// Initial 1-cycle delay to ensure FIFO is ready");
         _printStream.println(_prefix + "waitcycles(1);");
         _printStream.println("");
+    }
 
-        // Print the Parse tree
-        ScTimedMBStatementVisitor mbvisitor = new ScTimedMBStatementVisitor(_printStream, x.getName());
-        mbvisitor.setPrefix( _prefix );
-        mbvisitor.setOffset( _offset );
 
-        parserNode.accept(mbvisitor);
-
+    /**
+     *  Writes the last part of main that comes after the AST dump.
+     *
+     * @param  x Description of the Parameter
+     */
+    private void _writeMainProcEnd( CDProcess x) {
         _printStream.println("");
         _printStream.println(_prefix + "finish.write(true);");
         _printStream.println(_prefix + "cout << \"" + x.getName() + " finished at \" << sc_time_stamp() << endl;");
@@ -365,6 +379,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "}");
         _printStream.println("");
     }
+
 
     /**
      *  Description of the Method

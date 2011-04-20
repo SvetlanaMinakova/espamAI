@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.3 2011/03/23 17:58:22 tzhai Exp $
+# $Id: makefile,v 1.4 2011/04/20 08:09:02 svhaastr Exp $
 #
 
 ROOT  = ../../../..
@@ -11,7 +11,8 @@ JSRCS = \
 	RuntimeConfig.java \
 	ScTimedNetworkVisitor.java \
 	ScTimedProcessVisitor.java \
-	ScTimedMBStatementVisitor.java
+	ScTimedMBStatementVisitor.java \
+	ScTimedHWNStatementVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk
