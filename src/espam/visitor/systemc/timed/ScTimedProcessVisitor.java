@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.9 2011/04/20 08:09:02 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.10 2011/04/26 08:47:22 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -301,20 +301,6 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println("#include <iostream>");
         _printStream.println("");
 
-        Iterator n = x.getGateList().iterator();
-        while( n.hasNext() ) {
-            CDGate gate = (CDGate) n.next();
-            LinearizationType comModel =
-                    ((CDChannel)gate.getChannel()).getCommunicationModel();
-
-            if (comModel != LinearizationType.fifo &&
-                comModel != LinearizationType.BroadcastInOrder &&
-                comModel != LinearizationType.sticky_fifo &&
-                comModel != LinearizationType.shift_register ) {
-               System.out.println("ERROR: Out of order channels are not supported yet!");
-               System.exit(0);
-            }
-        }
         _printStream.println("");
     }
 
@@ -474,14 +460,15 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             String s = gate.getName();
             String t = gate.getChannel().getName();
 
-            _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
-
-            if (comModel != LinearizationType.fifo &&
-                comModel != LinearizationType.BroadcastInOrder &&
-                comModel != LinearizationType.sticky_fifo &&
-                comModel != LinearizationType.shift_register) {
-               System.out.println("ERROR: Out of order channels are not supported yet!");
-               System.exit(0);
+            if (comModel == LinearizationType.fifo &&
+                comModel == LinearizationType.BroadcastInOrder &&
+                comModel == LinearizationType.sticky_fifo &&
+                comModel == LinearizationType.shift_register) {
+              _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+            }
+            else if (comModel == LinearizationType.GenericOutOfOrder) {
+              _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+              System.out.println("WARNING: Out of order channels are not supported yet!");
             }
         }
 
