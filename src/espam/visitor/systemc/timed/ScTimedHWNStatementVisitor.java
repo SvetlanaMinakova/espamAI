@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -57,7 +58,7 @@ import espam.utils.symbolic.expression.Expression;
  * This class generates the main procedure body for HWN processes.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt
- * @version  $Id: ScTimedHWNStatementVisitor.java,v 1.1 2011/04/20 08:09:02 svhaastr Exp $
+ * @version  $Id: ScTimedHWNStatementVisitor.java,v 1.2 2011/04/26 08:58:36 svhaastr Exp $
  */
 
 public class ScTimedHWNStatementVisitor extends StatementVisitor {
@@ -99,14 +100,37 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
         Expression lb = x.getLowerBound();
 
         _printStream.println(_prefix + "for( int "
-              + x.getIterator() + " =  ceil1(" +
-              lb.accept( _cExpVisitor ) + "); " + x.getIterator() + " <= " +
-              " floor1(" + ub.accept( _cExpVisitor ) + " ); " + x.getIterator() +
-              " += " + x.getStepSize() + " ) {");
-
+        	+ x.getIterator() + "read = ceil1("	+ lb.accept(_cExpVisitor) + "), " 
+        	+ x.getIterator() + " = ceil1(" + lb.accept(_cExpVisitor) + "); "
+        	+ x.getIterator() + " <= floor1(" + ub.accept(_cExpVisitor) + "); ) {");        
         _prefixInc();
-        _visitChildren(x);
+
+        // Write
+        _writeOperation( x );
+        
+        // Execute
+        Iterator i = x.getChild(0).getChildren();
+        while( i.hasNext() ) {
+          Statement s = (Statement) i.next();
+          if (s instanceof AssignStatement) {
+        	AssignStatement a = (AssignStatement)s;
+            visitStatement(a);
+            break;
+          }
+        }
+        // Read
+        _readOperation( x );
+        
+        // shift and wait
+        _printStream.println(_prefix + "// shift and wait");
+        _printStream.println(_prefix + "shift_pipeline();");
+        _printStream.println(_prefix + "waitcycles(1);");
+        
         _prefixDec();
+        
+        //_prefixInc();
+        //_visitChildren(x);
+        //_prefixDec();
 
         _printStream.println(_prefix + "} // for " + x.getIterator());
     }
@@ -117,7 +141,7 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(IfStatement x) {
-
+    	
         String str = "";
         int sign = x.getSign();
         Expression expression = x.getCondition();
@@ -159,7 +183,7 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
      *
      * @param  x Description of the Parameter
      */
-    public void visitStatement(OpdStatement x) {
+    public void visitStatement(OpdStatement x) { // todo : write operation
         _printStream.println(_prefix + "wr.write(true);");
         _printStream.println(_prefix + x.getGateName() + "->write( " +
                 x.getArgumentName() + x.getNodeName() + ");");
@@ -173,20 +197,28 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
      *
      * @param  x Description of the Parameter
      */
-    public void visitStatement(AssignStatement x) {
+    public void visitStatement(AssignStatement x) {// Execute
         Statement statement = null;
         LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
         RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
 
         if ( !x.getFunctionName().equals("") ) {
-
              _printStream.println("");
              _printStream.println(_prefix + "// Execute");
-             _printStream.println(_prefix + "ex.write(true);");
-             _printStream.println(_prefix + "waitcycles(lat_" + x.getFunctionName() + ");");
-             _printStream.println(_prefix + "ex.write(false);");
+             _printStream.println(_prefix + "int execute_i;");
+             _printStream.println(_prefix + "for (execute_i = latRead + lat_"
+//            		 + ((ADGNode)(x.getAdgNodeList().get(0))).getFunction().getName()
+            		 + x.getFunctionName()
+            		 + " - 1; execute_i >= latRead; execute_i--)");             
+             _prefixInc();
+             _printStream.println(_prefix + "if (pipeline[execute_i]) // there is something to execute");
+             _prefixInc();
+             _printStream.println(_prefix + "break;");
+             _prefixDec();
+             _prefixDec();
+             _printStream.println(_prefix + "ex.write(execute_i >= latRead);");
+          
              _printStream.print(_prefix + "//_" + x.getFunctionName() + "(");
-
             Iterator i = rhsStatement.getChildren();
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
@@ -196,12 +228,11 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
                      _printStream.print(var.getVariableName() + x.getNodeName());
                  }
             }
-
+            
             // The sequence continues.
            if( lhsStatement.getNumChildren() > 0 && rhsStatement.getNumChildren() > 0) {
                 _printStream.print(", ");
            }
-
            i = lhsStatement.getChildren();
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
@@ -323,6 +354,228 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
         return printStream;
     }
 
+    /**
+     *  Print the write operation in a for statement in the correct format for c++.
+     *
+     * @param  x Description of the Parameter
+     */
+    private void _writeOperation(ForStatement x) {
+        //printType(x);
+    	RootStatement r = (RootStatement) x.getChild(0);
+    	ArrayList<Constraint> write = new ArrayList<Constraint>();
+        String funcName = _organizeWriteInfo(r, write);
+    	
+        _printStream.println(_prefix + "// Write");
+        if (write.isEmpty()) {
+        	_printStream.println(_prefix + "wr.write(false);");
+        }
+        else {        	
+            _printStream.println(_prefix + "if (pipeline[latRead + lat_" + funcName + " + latWrite - 1]) {");
+            _prefixInc();
+            _printStream.println(_prefix + "bool write_done = false;");
+            Iterator<Constraint> ic = write.iterator();
+            while (ic.hasNext()) {
+            	Constraint c = ic.next();
+            	_printStream.println(_prefix + "if (" + c.getConstraintString() + ") {");
+            	_prefixInc();
+            	_printStream.println(_prefix + "if (");
+            	ArrayList<Statement> states = c.getList();
+        		_printStream.println(_prefix + "(" 
+        		    + ((OpdStatement)(states.get(states.size() - 1))).getGateName() + "->num_free() > 0)");
+            	for (int i = states.size() - 2; i >= 0; i--) {
+            		OpdStatement opd = (OpdStatement) states.get(i);
+            		_printStream.println(_prefix + "&& (" + opd.getGateName() + "->num_free() > 0)");
+            	}
+            	_printStream.println(_prefix + ") {");
+            	_prefixInc();
+            	for (int i = states.size() - 1; i >= 0; i--) {
+            		OpdStatement opd = (OpdStatement) states.get(i);
+            		_printStream.println(_prefix + opd.getGateName() + "->write("
+            				+ opd.getArgumentName() + opd.getNodeName() + ");");
+            	}
+            	_printStream.println(_prefix + "write_done = true;");
+            	_prefixDec();
+            	_printStream.println(_prefix + "}");
+            	_prefixDec();
+            	_printStream.println(_prefix + "}");
+            }
+            _printStream.println(_prefix + "if (write_done) {");
+            _prefixInc();
+            _printStream.println(_prefix + "wr.write(true);");
+            _printStream.println(_prefix + x.getIterator() + " += 1;");
+            _prefixDec();
+            _printStream.println(_prefix + "}");
+            _printStream.println(_prefix + "else { //write blocked");
+            _prefixInc();
+            _printStream.println(_prefix + "rd.write(false);");
+            _printStream.println(_prefix + "ex.write(false);");
+            _printStream.println(_prefix + "wr.write(false);");
+            _printStream.println(_prefix + "waitcycles(1);");
+            _printStream.println(_prefix + "continue;");
+            _prefixDec();
+            _printStream.println(_prefix + "}");
+            _prefixDec();
+            _printStream.println(_prefix + "}");
+            _printStream.println(_prefix + "else");
+            _prefixInc();
+            _printStream.println(_prefix + "wr.write(false);");
+            _prefixDec();
+        }
+        
+    	_printStream.println();
+    }
+    
+    private String _organizeWriteInfo(RootStatement r, ArrayList<Constraint> write) {
+    	String funcName = null;
+    	Iterator i = r.getChildren();
+    	while (i.hasNext()) {
+    		Statement s = (Statement) i.next();
+    		if (s instanceof IfStatement) {
+    			IfStatement ifs = (IfStatement) s;
+    			Iterator iifs = ifs.getChildren();
+    			while (iifs.hasNext()) {
+    				Statement child = (Statement)iifs.next();
+    				if (child instanceof OpdStatement) { // write element
+	    				OpdStatement opd = (OpdStatement) child;
+	    				Iterator<Constraint> ic = write.iterator();
+	    				boolean found = false;
+	    				while (ic.hasNext()) {
+	    					Constraint c = ic.next();
+							if (c.getConstraintString().compareTo(ifs.getCondition().toConstraintString()) == 0) {
+								c.getList().add(opd);
+	    						found = true;
+	    						break;
+	    					}
+	    				}
+	    				if (!found) {
+	    					Constraint c = new Constraint();
+	    					c.setConstraintString(ifs.getCondition().toConstraintString());
+	    					c.getList().add(opd);
+	    					write.add(c);
+	    				}
+    				}
+    			}
+   	
+    		}
+    		else if (s instanceof AssignStatement) {
+				funcName = ((AssignStatement)(s)).getFunctionName();
+			}
+    	}
+    	return funcName;
+    }
+    
+    /**
+     *  Print the read operation in a for statement in the correct format for c++.
+     *
+     * @param  x Description of the Parameter
+     */
+    private void _readOperation(ForStatement x) {
+        //printType(x);
+    	RootStatement r = (RootStatement) x.getChild(0);
+    	ArrayList<Constraint> read = new ArrayList<Constraint>();
+        _organizeReadInfo(r, read);
+    	
+        _printStream.println(_prefix + "// Read");
+        _printStream.println(_prefix + "if (" + x.getIterator() + "read <= floor1("
+        	+ x.getUpperBound().accept(_cExpVisitor) + ")) {");
+        _prefixInc();
+        if (read.isEmpty()) {
+        	_printStream.println(_prefix + "rd.write(false);");
+        }
+        else {
+        	
+            _prefixInc();
+            _printStream.println(_prefix + "bool read_done = false;");
+            Iterator<Constraint> ic = read.iterator();
+            while (ic.hasNext()) {
+            	Constraint c = ic.next();
+            	_printStream.println(_prefix + "if (" + c.getConstraintString() + ") {");
+            	_prefixInc();
+            	_printStream.println(_prefix + "if (");
+            	ArrayList<Statement> states = c.getList();
+            	_printStream.println(_prefix + "(" 
+            		    + ((FifoMemoryStatement)(states.get(states.size() - 1))).getGateName() + "->num_available() > 0)");
+            	for (int i = states.size() - 2; i >= 0; i--) {
+            		FifoMemoryStatement fifo = (FifoMemoryStatement) states.get(i);
+            		_printStream.println(_prefix + "&& (" + fifo.getGateName() + "->num_available() > 0)");
+            	}
+            	_printStream.println(_prefix + ") {");
+            	_prefixInc();
+            	for (int i = states.size() - 1; i >= 0; i--) {
+            		FifoMemoryStatement fifo = (FifoMemoryStatement) states.get(i);
+            		_printStream.println(_prefix + fifo.getGateName() + "->read("
+                   	    + ((ADGVariable) fifo.getArgumentList().get(0)).getName()
+            			+ fifo.getNodeName() + ");");
+            	}
+            	_printStream.println(_prefix + "read_done = true;");
+            	_prefixDec();
+            	_printStream.println(_prefix + "}");
+            	_prefixDec();
+            	_printStream.println(_prefix + "}");
+            }
+            
+            _printStream.println(_prefix + "pipeline[0] = read_done;");
+            _printStream.println(_prefix + "rd.write(read_done);");
+            _printStream.println(_prefix + "if (read_done)");
+            _prefixInc();
+            _printStream.println(_prefix + x.getIterator() + "read += 1;");
+            _prefixDec();
+        }
+        _prefixDec();
+        _printStream.println(_prefix + "}");
+        _printStream.println(_prefix + "else");
+        _prefixInc();
+        _printStream.println(_prefix + "rd.write(false);");
+        _prefixDec();        
+    	_printStream.println();
+    }
+    
+    private void _organizeReadInfo(Statement r, ArrayList<Constraint> read) {
+    	Iterator i = r.getChildren();
+    	while (i.hasNext()) {
+    		Statement s = (Statement) i.next();
+    		if (s instanceof IfStatement) {
+    			IfStatement ifs = (IfStatement) s;
+    			Iterator iifs = ifs.getChildren();
+    			while (iifs.hasNext()) {
+    				Statement child = (Statement) iifs.next();
+    				if (child instanceof FifoMemoryStatement) { // read element
+        				FifoMemoryStatement fifo = (FifoMemoryStatement) child;
+        				Iterator<Constraint> ic = read.iterator();
+        				boolean found = false;
+        				while (ic.hasNext()) {
+        					Constraint c = ic.next();
+        					if (c.getConstraintString().compareTo(ifs.getCondition().toConstraintString()) == 0) {
+        						c.getList().add(fifo);
+        						found = true;
+        						break;
+        					}
+        				}
+        				if (!found) {
+        					Constraint c = new Constraint();
+        					c.setConstraintString(ifs.getCondition().toConstraintString());
+        					c.getList().add(fifo);
+        					read.add(c);
+        				}    					
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * print tree of Statement type
+     * @param x
+     */
+    private void printType(Statement x) {
+    	System.err.println(_prefix + x.getType() + "-" + x.getClass());
+    	Iterator i = x.getChildren();
+    	_prefixInc();
+    	while (i.hasNext()) {
+    		printType((Statement) i.next());
+    	}
+    	_prefixDec();
+    }
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
 
@@ -331,3 +584,18 @@ public class ScTimedHWNStatementVisitor extends StatementVisitor {
      */
     private CExpressionVisitor _cExpVisitor = null;
 }
+
+class Constraint {
+	public String getConstraintString() {
+		return _ConstraintString;
+	}
+	public void setConstraintString(String s) {
+		_ConstraintString = s;
+	}
+	public ArrayList<Statement> getList() {
+		return _list;
+	}
+	private String _ConstraintString = null;
+	ArrayList<Statement> _list = new ArrayList<Statement>();
+}
+

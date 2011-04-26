@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.10 2011/04/26 08:47:22 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.11 2011/04/26 08:58:36 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -200,8 +200,12 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         // Write main
         _writeMainProcBegin( x );
         ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
-        ScTimedHWNStatementVisitor mbvisitor = new ScTimedHWNStatementVisitor(_printStream, x.getName());
-        // TODO: visit parsetree
+        ScTimedHWNStatementVisitor hwnvisitor = new ScTimedHWNStatementVisitor(_printStream, x.getName());
+	    //
+        hwnvisitor.setPrefix( _prefix );
+        hwnvisitor.setOffset( _offset );
+        parserNode.accept(hwnvisitor);
+
         _writeMainProcEnd( x );
 
         //_printStream.println(_prefix + "private:");
@@ -209,6 +213,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
         _printStream.println("");
         _writeComputPeriod( x );
+        _writeshift_pipeline( x );//zwdbd added
 
         _prefixDec();
         _printStream.println("");
@@ -279,7 +284,21 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         String p = ((ADGParameter) I.next()).getName();
         _printStream.println(_prefix + p + " = val" + p + ";");
       }
-
+      
+      // add pipeline initialization
+      MProcessor mp = _mapping.getMProcessor(x);
+      if (mp != null) {
+        Resource r = mp.getResource();
+        if (r instanceof CompaanHWNode) {
+          _printStream.println(_prefix + "for (int i = latRead + lat_"
+        		  + ((ADGNode)(x.getAdgNodeList().get(0))).getFunction().getName() 
+        		  + " + latWrite - 1; i >= 0; i--)");
+          _prefixInc();
+          _printStream.println(_prefix + "pipeline[i] = false;");
+          _prefixDec();
+        }
+      }
+      
       _prefixDec();
       _printStream.println(_prefix + "}");
       _printStream.println("");
@@ -460,9 +479,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             String s = gate.getName();
             String t = gate.getChannel().getName();
 
-            if (comModel == LinearizationType.fifo &&
-                comModel == LinearizationType.BroadcastInOrder &&
-                comModel == LinearizationType.sticky_fifo &&
+            if (comModel == LinearizationType.fifo ||
+                comModel == LinearizationType.BroadcastInOrder ||
+                comModel == LinearizationType.sticky_fifo ||
                 comModel == LinearizationType.shift_register) {
               _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
             }
@@ -495,7 +514,17 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             ADGParameter p = (ADGParameter) j.next();
             _printStream.println(_prefix + "int " + p.getName() + ";");
         }
-
+        _printStream.println("");
+        
+        // declare pipeline for HWNode
+        MProcessor mp = _mapping.getMProcessor(x);
+        if (mp != null) {
+          Resource r = mp.getResource();
+          if (r instanceof CompaanHWNode) {
+        	_printStream.println(_prefix + "bool pipeline[latRead + lat_" 
+        			+ ((ADGNode)(x.getAdgNodeList().get(0))).getFunction().getName() + " + latWrite];");
+          }
+        }
         _printStream.println("");
 
         // Declare common signals
@@ -520,6 +549,14 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "private:");
         _prefixInc();
         _printStream.println(_prefix + "void compute_period(const double& finish_time);");
+        // declare pipeline for HWNode
+        mp = _mapping.getMProcessor(x);
+        if (mp != null) {
+          Resource r = mp.getResource();
+          if (r instanceof CompaanHWNode) {
+            _printStream.println(_prefix + "void shift_pipeline();");
+          }
+        }
         _prefixDec();
         _prefixDec();
         _printStream.println(_prefix + "};");
@@ -643,7 +680,20 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
       _printStream.println(""); 
     }
        
-    
+    private void _writeshift_pipeline(CDProcess x) {
+        _printStream.println(_prefix + "// use this function only for the sink process");
+        _printStream.println(_prefix + "void " + x.getName() + "::shift_pipeline() {");
+        _prefixInc();
+        _printStream.println(_prefix + "for (int i = latRead + lat_"
+        		+ ((ADGNode)(x.getAdgNodeList().get(0))).getFunction().getName() + " + latWrite - 1; i > 0; i--)");
+        _prefixInc();
+        _printStream.println(_prefix + "pipeline[i] = pipeline[i - 1];");
+        _prefixDec();
+        _printStream.println(_prefix + "pipeline[0] = false;");
+        _prefixDec();
+        _printStream.println(_prefix + "}");
+        _printStream.println(""); 
+      }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
