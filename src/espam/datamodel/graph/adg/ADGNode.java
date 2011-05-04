@@ -36,7 +36,7 @@ import espam.visitor.ADGraphVisitor;
  * See Definition 2.2.2 on page 39 in [1].
  *
  * @author Todor Stefanov
- * @version  $Id: ADGNode.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: ADGNode.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
  */
 
 public class ADGNode extends Node {
@@ -133,6 +133,24 @@ public class ADGNode extends Node {
     }
 
     /**
+     *  Get the adg name to which an ADGNode belongs.
+     *
+     * @return  the _adgName
+     */
+    public String getADGName() {
+        return _adgName;
+    }
+
+    /**
+     *  Set the adg name to which an ADGNode belongs.
+     *
+     * @param  name The adg name
+     */
+    public void setADGName(String name) {
+        _adgName = name;
+    }
+
+    /**
      *  Return a description of the ADGNode.
      *
      * @return  a description of the ADGNode.
@@ -198,4 +216,11 @@ public class ADGNode extends Node {
      * List of (known) variables in this node.
      */
     private Vector<String> _varNames = new Vector<String>();
+
+    /**
+     * The adg name to which an ADGNode belongs.
+     */
+
+    private String _adgName = null;
+
 }

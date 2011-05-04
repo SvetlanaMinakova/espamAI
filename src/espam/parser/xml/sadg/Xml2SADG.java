@@ -66,7 +66,7 @@ import espam.utils.symbolic.matrix.SignedMatrix;
  *  This class
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2SADG.java,v 1.1 2007/12/07 22:07:05 stefanov Exp $
+ * @version  $Id: Xml2SADG.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
  */
 
 public class Xml2SADG {
@@ -192,6 +192,7 @@ public class Xml2SADG {
 		ADGraph adg = (ADGraph) stack.peek(); // The adg is at the top of the stack
 
 		adgNode.setLevelUpNode( adg );
+		adgNode.setADGName( adg.getName() );
 
 		Vector nodeList = adg.getNodeList();
 		nodeList.add( adgNode );
@@ -309,6 +310,8 @@ public class Xml2SADG {
 	public void processEdge(Stack stack) {
 		ADGEdge edge = (ADGEdge) stack.pop();
 		ADGraph adg = (ADGraph) stack.peek();
+
+		edge.setADGName( adg.getName() );
 
 		Vector ports = new Vector();
 

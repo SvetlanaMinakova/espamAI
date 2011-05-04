@@ -38,7 +38,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * See Definition 2.2.5 on page 40 in [1].
  *
  * @author Todor Stefanov
- * @version  $Id: ADGEdge.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: ADGEdge.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
  */
 
 public class ADGEdge extends Edge {
@@ -130,6 +130,24 @@ public class ADGEdge extends Edge {
     }
 
     /**
+     *  Get the adg name to which an ADGEdge belongs.
+     *
+     * @return  the adgName
+     */
+    public String getADGName() {
+        return _adgName;
+    }
+
+    /**
+     *  Set the adg name to which an ADGEdge belongs.
+     *
+     * @param  name The adg name
+     */
+    public void setADGName(String name) {
+        _adgName = name;
+    }
+
+    /**
      *  Return a description of the ADGEdge.
      *
      * @return  a description of the ADGEdge.
@@ -184,4 +202,11 @@ public class ADGEdge extends Edge {
      *  Size required for the edge; -1 if unknown.
      */
     private int _size = -1;
+
+    /**
+     * The adg name to which an ADGEdge belongs.
+     */
+
+    private String _adgName = null;
+
 }

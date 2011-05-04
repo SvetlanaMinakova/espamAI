@@ -25,14 +25,20 @@ import java.io.PrintStream;
 import java.io.IOException;
 
 import java.util.Vector;
+import java.util.Iterator;
 
 import java.net.URL;
 
 import espam.datamodel.platform.Platform;
 import espam.datamodel.graph.adg.ADGraph;
+import espam.datamodel.graph.adg.ADGParameter;
+import espam.datamodel.graph.adg.ADGNode;
+import espam.datamodel.graph.adg.ADGEdge;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.parsetree.ParserNode;
+import espam.datamodel.parsetree.statement.*;
+
 
 import espam.operations.ConsistencyCheck;
 import espam.operations.SynthesizeCDPN;
@@ -83,7 +89,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.12 2010/12/01 09:47:36 svhaastr Exp $
+ * @version $Id: Main.java,v 1.13 2011/05/04 15:24:41 nikolov Exp $
  */
 
 public class Main {
@@ -153,10 +159,33 @@ public class Main {
 			      //XmlADGParser parserADG = new XmlADGParser();
 			      //_adg = parserADG.doParse( _ui.getADGFileName() );
 
-			      XmlSADGParser parserSADG = new XmlSADGParser();
-			      _sadg = parserSADG.doParse( _ui.getADGFileName() );
-			      _adg = (ADGraph) _sadg.get(0);
+//			      XmlSADGParser parserSADG = new XmlSADGParser();
+//			      _sadg = parserSADG.doParse( _ui.getADGFileName() );
+//			      _adg = (ADGraph) _sadg.get(0);
 
+// sadg(0) contains the adg and sadg(1) contains the ast
+			      Vector sadg_0 = new Vector();
+		      	      Iterator i = _ui.getADGFileNames().iterator();
+			      while( i.hasNext() ) {
+				  XmlSADGParser parserSADG = new XmlSADGParser();
+				  String fileName = (String) i.next();
+				  //_sadg = parserSADG.doParse( fileName );
+				  Vector sadgTemp = new Vector();
+				  sadgTemp = parserSADG.doParse( fileName );
+				  sadg_0.add(sadgTemp.get(0));
+				  sadg_0.add(sadgTemp.get(1));
+			      }
+
+// in case of a single application, _ui file name (.kpn) is used as the name of the folder where the output is generated	
+			      if(_ui.getADGFileNames().size() > 1) {
+				   _ui.setFileName("myFileName");
+ 			           _sadg = _merge( sadg_0 );
+			      } else {
+			      	   _sadg.add(sadg_0.get(0));
+			      	   _sadg.add(sadg_0.get(1));
+			      }
+
+			      _adg = (ADGraph) _sadg.get(0);
 			}
 
 			// Load the XML file containing the mapping specification
@@ -408,6 +437,80 @@ public class Main {
         return printStream;
     }
 
+
+    /**
+     * @param  sadg (vector of n ADGs and ASTs) Description of the Parameter
+     * @return _sadg (2-element vector, 1 ADG adn 1 AST) Description of the Return Value
+     * merge all ADGs into one ADG placed at _sadg(0). 
+     * merge all ASTs into one AST placed at _sadg(1). 
+     */
+    private static Vector _merge( Vector sadg ) {
+// sadg is a vector organized as ADG1, AST1, ADG2, AST2, etc.
+
+	Vector sadgNew = new Vector();
+	ADGraph adg = new ADGraph( _ui.getFileName() );
+	RootStatement ast = new RootStatement();
+
+	Iterator i = sadg.iterator();
+	while( i.hasNext() ) {
+
+		ADGraph adgTemp = (ADGraph) i.next();
+		String adgName = adgTemp.getName();
+
+// Merge the adg graphs
+// Rename and add all parameters, nodes, and edges into one adg graph
+		Iterator j = adgTemp.getParameterList().iterator();
+		while( j.hasNext() ) {
+			ADGParameter adgParameter = (ADGParameter) j.next();
+			adgParameter.setName( adgName + "_" + adgParameter.getName() );
+			adg.getParameterList().add(adgParameter);	
+		}
+
+		j = adgTemp.getNodeList().iterator();
+		while( j.hasNext() ) {
+			ADGNode adgNode = (ADGNode) j.next();
+			adgNode.setName( adgName + "_" + adgNode.getName() );
+			adg.getNodeList().add(adgNode);	
+		}
+
+		j = adgTemp.getEdgeList().iterator();
+		while( j.hasNext() ) {
+			ADGEdge adgEdge = (ADGEdge) j.next();
+			adgEdge.setName( adgName + "_" + adgEdge.getName() );
+			adg.getEdgeList().add(adgEdge);	
+		}
+
+// Merge the schedules
+		ParserNode nodeTemp = (ParserNode) i.next();
+		_parseTreeNodesRename( nodeTemp, adgName );
+		ast.addChild(nodeTemp);
+	}
+
+	sadgNew.add(adg);
+	sadgNew.add(ast);
+	return( sadgNew );
+    }
+
+
+    /**
+     *  Rename the AssignStatements field adgNodeName to the new node name: adgName+"_"+adgNodeName
+     *
+     */
+    private static void _parseTreeNodesRename(ParserNode node, String adgName) {
+
+        if (node instanceof AssignStatement) {
+
+		((AssignStatement) node).setNodeName( adgName + "_" + ((AssignStatement) node).getNodeName() );
+//		System.out.println( ((AssignStatement) node).getNodeName() );
+        }
+
+        Iterator j = node.getChildren();
+        while (j.hasNext()) {
+            _parseTreeNodesRename((ParserNode) j.next(), adgName);
+        }
+    }
+
+
 	///////////////////////////////////////////////////////////////////
 	//// private variables ///
 
@@ -415,7 +518,7 @@ public class Main {
 
 	private static ADGraph _adg = null;
 
-	private static Vector _sadg = null;
+	private static Vector _sadg = new Vector();
 
         private static CDProcessNetwork _cdpn = null;
 

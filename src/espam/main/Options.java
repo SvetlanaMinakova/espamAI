@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.6 2011/03/23 15:20:37 nikolov Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.7 2011/05/04 15:24:41 nikolov Exp $ $Name:  $
  */
 
 public class Options {
@@ -70,6 +70,7 @@ public class Options {
 	protected void _parseArgs(String args[]) throws IllegalArgumentException,
 			NumberFormatException {
             if( args.length > 0 ) {
+//  	       int cntrAdg = 0;
                for( int i = 0; i < args.length; i++ ) {
                   String arg = args[i];
                   if( _parseArg(arg) == false ) {
@@ -80,6 +81,7 @@ public class Options {
                            _ui.setNetworkFileName(args[++i]);
                         } else if( arg.equals("--adg") || arg.equals("-a") ) {
                            _ui.setADGFileName(args[++i]);
+                           //_ui.setADGFileName(args[++i], cntrAdg++);
                         } else if( arg.equals("--mapping") || arg.equals("-m") ) {
                            _ui.setMappingFileName(args[++i]);
                         } else if( arg.equals("--scheduler") || arg.equals("-s") ) {

@@ -18,6 +18,7 @@ package espam.main;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.Vector;
 
 
 /**
@@ -90,14 +91,15 @@ public class UserInterface {
     }
 
 
+
     /**
      * Get the name of the ADG file.
      *
      * @return The adgFileName value
      */
-    public final String getADGFileName() {
-        return _adgFileName;
-    }
+//    public final String getADGFileName() {
+//        return _adgFileName;
+//    }
 
     /**
      * Set the name of the ADG file.
@@ -105,9 +107,39 @@ public class UserInterface {
      * @param adgFileName
      *            The new adgFileName value
      */
-    public final void setADGFileName(String adgFileName) {
-        _adgFileName = adgFileName;
+//    public final void setADGFileName(String adgFileName) {
+//        _adgFileName = adgFileName;
+//    }
+
+
+    /**
+     * Set the name of the ADG file.
+     *
+     * @param adgFileName
+     *            The new adgFileName value
+     */
+    public final void setADGFileName( String adgFileName ) {
+        _adgFileNames.add(adgFileName);
     }
+
+    /**
+     * Get the name of the ADG file.
+     *
+     * @return The adgFileName value
+     */
+    public final String getADGFileName( int pos ) {
+        return _adgFileNames.get(pos);
+    }
+
+    /**
+     *  Get the adgFileNames.
+     *
+     * @return  the adg file names
+     */
+    public Vector getADGFileNames() {
+        return _adgFileNames;
+    }
+
 
     /**
      * Get the name of the mapping file.
@@ -554,7 +586,9 @@ public class UserInterface {
     private String _networkFileName = null;
 
     // the adg file name
-    private String _adgFileName = null;
+    //private String _adgFileName = null;
+
+    private Vector<String> _adgFileNames = new Vector<String>();
 
     // the mapping file name
     private String _mappingFileName = null;
