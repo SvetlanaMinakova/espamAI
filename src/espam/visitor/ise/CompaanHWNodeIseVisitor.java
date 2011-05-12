@@ -61,7 +61,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.1 2009/09/24 12:46:19 sven Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.2 2011/05/12 15:28:24 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -107,17 +107,6 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					_HWNode = node;
 					_coreName = node.getName();
 
-          // create the subdirectories
-					_moduleName = _coreName + "_v1_00_a";
-					_moduleDir = "pcores/" + _moduleName;
-					_hdlFile = _coreName + ".vhd";
-
-					_currentCodeDir = _codeDir + "/" + _moduleDir;
-					File dir = new File(_currentCodeDir);
-					dir.mkdirs();
-					dir = new File(_currentCodeDir + "/" + _hdlDir);
-					dir.mkdirs();
-
 					Iterator j = _mapping.getProcessorList().iterator();
 					while(j.hasNext()){
 						MProcessor mp = (MProcessor) j.next();
@@ -146,7 +135,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					}
 
 
-          if (_adgNode != null) {
+          if (_adgNode != null && !_isSource(_adgNode) && !_isSink(_adgNode)) {
+            // create the subdirectories
+            _moduleName = _coreName + "_v1_00_a";
+            _moduleDir = "pcores/" + _moduleName;
+            _hdlFile = _coreName + ".vhd";
+
+            _currentCodeDir = _codeDir + "/" + _moduleDir;
+            File dir = new File(_currentCodeDir);
+            dir.mkdirs();
+            dir = new File(_currentCodeDir + "/" + _hdlDir);
+            dir.mkdirs();
+
+            _analyzeCounters();
+
             _writeHdlFuncFile();
             _writeHdlExUnitFile();
             _writeHdlEvalLogRdFile();
@@ -168,6 +170,82 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	// // private methods ///
 
 	/**
+	 * Analyzes how many counters are really needed for this node.
+	 */
+	private void _analyzeCounters() {
+		//get the upper/lower bound expressions
+		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().firstElement());
+    _skipList = new Vector<String>();
+	
+		Iterator exprIter;
+		VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
+		exprIter = boundExp.iterator();
+		Iterator j = _indexList.getIterationVector().iterator();
+		while(j.hasNext()&& exprIter.hasNext()){
+			String s = (String) j.next();
+			
+			Expression lbExp = (Expression) exprIter.next();
+			Expression ubExp = (Expression) exprIter.next();
+
+      System.out.print("Analyzing " + s + ":  ");
+      if (lbExp.isNumber() && ubExp.isNumber()) {
+        int lb = lbExp.evaluate(null, null);
+        int ub = ubExp.evaluate(null, null);
+        System.out.print(lb + " .. " + ub + "   " + (ub-lb+1));
+        if (ub-lb+1 == 0) {
+          System.out.print("   0 iterations!");
+        }
+        else if (ub-lb+1 == 1) {
+          System.out.print("   1 iteration!");
+          _skipList.add(s);
+          //j.remove();
+        }
+        else if (((ub-lb+1)&(ub-lb))==0) {
+          System.out.print("   power of two!");
+        }
+      }
+      else {
+        System.out.print("no constant bounds");
+      }
+      System.out.println("");
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////
+/*    System.out.println("After modifications:");
+		exprIter = boundExp.iterator();
+		j = _indexList.getIterationVector().iterator();
+		while(j.hasNext()&& exprIter.hasNext()){
+			String s = (String) j.next();
+			
+			Expression lbExp = (Expression) exprIter.next();
+			Expression ubExp = (Expression) exprIter.next();
+      System.out.print("Analyzing " + s + ":  ");
+      if (lbExp.isNumber() && ubExp.isNumber()) {
+        int lb = lbExp.evaluate(null, null);
+        int ub = ubExp.evaluate(null, null);
+        System.out.print(lb + " .. " + ub + "   " + (ub-lb+1));
+        if (ub-lb+1 == 0) {
+          System.out.print("   0 iterations!");
+        }
+        else if (ub-lb+1 == 1) {
+          System.out.print("   1 iteration!");
+        }
+        else if (((ub-lb+1)&(ub-lb))==0) {
+          System.out.print("   power of two!");
+        }
+      }
+      else {
+        System.out.print("no constant bounds");
+      }
+      System.out.println("");
+
+		}*/
+  }
+
+
+
+	/**
 	 * write the vhdl file for the function.
 	 * (need to be modified, getting the function interface from the xml specification and ESPAM library)
 	 * (currently only an empty function with the same interface as the arguments of the ADG function, need to be manually replaced)
@@ -180,7 +258,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 		hdlPS.println("library ieee;");
 		hdlPS.println("use ieee.std_logic_1164.all;");
-		hdlPS.println("use ieee.std_logic_unsigned.all;");
+		hdlPS.println("use ieee.numeric_std.all;");
 		hdlPS.println("");
 		hdlPS.println("");
 		hdlPS.println("entity " + _adgNode.getFunction().getName() + " is");
@@ -196,7 +274,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			in_arg = (ADGVariable) i.next();
 			//currently default vector length 32.
-			hdlPS.println("      " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);  ");
+			hdlPS.println("      " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);");
 		}
 		hdlPS.println("");
 
@@ -242,8 +320,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   generic (");
 		hdlPS.println("      N_INPORTS  : natural := 1;");
 		hdlPS.println("      N_OUTPORTS : natural := 1;");
-		hdlPS.println("      IP_RESET   : natural := 1; ");
-		hdlPS.println("      QUANT      : natural := 32 ");
+		hdlPS.println("      IP_RESET   : natural := 1;");
+		hdlPS.println("      QUANT      : natural := 32");
 		hdlPS.println("   );");
 
 		hdlPS.println("   port (");
@@ -275,7 +353,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			in_arg = (ADGVariable) i.next();
 			//currently default signal width 32
-			hdlPS.println("         " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);  ");
+			hdlPS.println("         " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);");
 		}
 		hdlPS.println("");
 		
@@ -341,53 +419,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	}
 
 
+
 	/**
-	 * write the eval_logic_rd .vhd file
+	 * write the eval_logic_rd and eval_logic_wr body.
 	 * @throws CodeGenerationException
 	 */
-	private void _writeHdlEvalLogRdFile()throws FileNotFoundException, CodeGenerationException {
-		PrintStream hdlPS = _openFile(_hdlDir + "/" + "eval_logic_rd.vhd");
-
-		hdlPS.println("-- File automatically generated by ESPAM");
-		hdlPS.println("");
-
-		hdlPS.println("library ieee;");
-		hdlPS.println("use ieee.std_logic_1164.all;");
-		hdlPS.println("use ieee.std_logic_signed.all;");
-		hdlPS.println("use ieee.std_logic_arith.all;	");	
-		hdlPS.println("library work;");
-		hdlPS.println("use work.hw_node_pack.all;  ");
-		hdlPS.println("");
-
-		hdlPS.println("entity EVAL_LOGIC_RD_" + _coreName + " is");
-		hdlPS.println("   generic (");
-		hdlPS.println("      N_IN_PORTS    : natural := 1;");
-		hdlPS.println("      N_CNTRS       : natural := 1; ");
-		hdlPS.println("      QUANT         : natural := 32;");
-		hdlPS.println("      CNTR_WIDTH    : t_counter_width := ( 0=>10, 1=>10, 2=>9, others=>10 );");
-		hdlPS.println("      N_PAR         : natural;");
-		hdlPS.println("      PAR_WIDTH     : natural");
-		hdlPS.println("   );");
-
-		hdlPS.println("   port (");
-		hdlPS.println("      RST           : in  std_logic;");
-		hdlPS.println("      CLK           : in  std_logic;");
-		hdlPS.println("");
-		hdlPS.println("      PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0); ");
-		hdlPS.println("");
-		hdlPS.println("      LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
-		hdlPS.println("      UPPER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
-		hdlPS.println("      ITERATORS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
-		hdlPS.println("      REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
-		hdlPS.println("");	  
-		hdlPS.println("      CONTROL       : out std_logic_vector(N_IN_PORTS-1 downto 0)");
-		hdlPS.println("   );");
-		hdlPS.println("end EVAL_LOGIC_RD_" + _coreName + ";");
-		hdlPS.println("");
-		
-		hdlPS.println("architecture RTL of EVAL_LOGIC_RD_" + _coreName + " is");	
-		hdlPS.println("");
-		
+	private void _writeHdlEvalLogic(PrintStream hdlPS, Vector ports, Vector args) throws FileNotFoundException, CodeGenerationException {
 		Vector paramNames = _indexList.getParameterVectorNames();
 		
 		int i;
@@ -405,6 +442,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		// signals corresponding to index's upper/lower bounds.
 		while(j.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 			hdlPS.println("   signal sl_low_" + s +", sl_high_" + s +" : integer;");
 		}
 		
@@ -413,18 +452,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		// first one is the most outer loop
 		while(j.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 			hdlPS.println("   signal sl_loop_" + s + ", sl_loop_" + s + "_rg : integer;");
 		}
 		
 		if(paramNames.size() != 0){
-			hdlPS.println("   " + param + " : integer; ");
+			hdlPS.println("   " + param + " : integer;");
 		}
 		
 		int ctrlNum = 0;
 		Iterator ADGInIter;
-		ADGInIter = _adgInPorts.iterator();
+		ADGInIter = ports.iterator();
 		while (ADGInIter.hasNext()){
-			ADGInPort adg_in_port = (ADGInPort) ADGInIter.next();
+			ADGPort adg_in_port = (ADGPort) ADGInIter.next();
 			
 			Iterator linearBound = adg_in_port.getDomain().getLinearBound().iterator();
 			while(linearBound.hasNext()){
@@ -444,7 +485,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				}catch( Exception e ) {
 					e.printStackTrace();
 					throw new CodeGenerationException(
-						"simplifying domain of ADG Input port "
+						"simplifying domain of ADG port "
 							+ adg_in_port.getName()
 							+ ": "
 							+ e.getMessage());
@@ -460,6 +501,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println(ctrlSig + " : boolean;");	
 		hdlPS.println("");
 
+    if (_regEval) {
+      hdlPS.println("   signal sl_done_0 : std_logic;");
+      hdlPS.println("");
+    }
+
 		hdlPS.println("begin");
 		hdlPS.println("");	
 		
@@ -469,16 +515,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		k = paramNames.iterator();
 		while(k.hasNext()){
 			String s = (String) k.next();
-			hdlPS.println("   sl_" + s + " <= CONV_INTEGER( PARAMETERS(" + paramNum + "*PAR_WIDTH-1 downto " + (paramNum - 1) + "*PAR_WIDTH) ); ");
+      if (_skipList.contains(s))
+        continue;
+			hdlPS.println("   sl_" + s + " <= CONV_INTEGER( PARAMETERS(" + paramNum + "*PAR_WIDTH-1 downto " + (paramNum - 1) + "*PAR_WIDTH) );");
 			paramNum--;
 		}		
 		hdlPS.println("");
 		
 		// !!!!!!CNTR_WIDTH(0) corresponds to inner loop, to be consistant with gen_counter
-		int loopNum = _indexList.getIterationVector().size();
+		int loopNum = _indexList.getIterationVector().size() - _skipList.size();
 		j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 			hdlPS.println("   sl_loop_" + s + "    <= CONV_INTEGER( ITERATORS(CNTR_WIDTH(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
 			hdlPS.println("   sl_loop_" + s + "_rg <= CONV_INTEGER( REG_CNTRS(CNTR_WIDTH(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
 			loopNum--;
@@ -495,6 +545,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()&& exprIter.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 			
 			Expression lbExp = (Expression) exprIter.next();
 			Expression ubExp = (Expression) exprIter.next();
@@ -510,11 +562,13 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("");
 		
 		// !!!!!!most inner loop at right most position(QUANT-1 downto 0), to be consistant with gen_counter
-		loopNum = _indexList.getIterationVector().size();		
+		loopNum = _indexList.getIterationVector().size() - _skipList.size();
 		exprIter = boundExp.iterator();
 		j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()&& exprIter.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 			
 			hdlPS.println("   LOWER_BND_OUT(" + loopNum + "*QUANT-1 downto " + (loopNum -1) + "*QUANT) <= CONV_STD_LOGIC_VECTOR(sl_low_" + s + ",QUANT);");
 			loopNum--;
@@ -522,11 +576,13 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 		hdlPS.println("");
 
-		loopNum = _indexList.getIterationVector().size();
+		loopNum = _indexList.getIterationVector().size() - _skipList.size();
 		exprIter = boundExp.iterator();
 		j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()&& exprIter.hasNext()){
 			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
 
 			hdlPS.println("   UPPER_BND_OUT(" + loopNum + "*QUANT-1 downto " + (loopNum -1) + "*QUANT) <= CONV_STD_LOGIC_VECTOR(sl_high_" + s + ",QUANT);");
 			loopNum--;
@@ -535,20 +591,23 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("");
 
 		// set the control signals
-		if(_adgInPorts.size() == 0){
+		if(ports.size() == 0){
+      if (_regEval) {
+        System.out.println("WARNING: adding registers to eval_logic w/ empty port list has not been tested!");
+      }
 			
 		}
 		else{
 			// first get the ordered ADG in ports according to the bounded in arguments order
-			Vector<ADGInPort> orderedADGInPorts = new Vector<ADGInPort>();
-			Iterator inArgIter = _inArgList.iterator();
+			Vector<ADGPort> orderedADGInPorts = new Vector<ADGPort>();
+			Iterator inArgIter = args.iterator();
 			while(inArgIter.hasNext()){
 				ADGVariable in_arg = (ADGVariable) inArgIter.next();
 				String in_arg_name = in_arg.getName();
 							
-				j = _adgInPorts.iterator();
+				j = ports.iterator();
 				while (j.hasNext()) {
-					ADGInPort adg_in_port = (ADGInPort) j.next();
+					ADGPort adg_in_port = (ADGPort) j.next();
 					if (adg_in_port.getBindVariables().get(0).getName().equals(in_arg_name) == true){
 						orderedADGInPorts.addElement(adg_in_port);
 					}
@@ -560,8 +619,9 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 			HashMap <Expression, String> hashExpr = new HashMap <Expression, String>();
 			ADGInIter = orderedADGInPorts.iterator();
+      String ctrlAssign = "";
 			while (ADGInIter.hasNext()){
-				ADGInPort adg_in_port = (ADGInPort) ADGInIter.next();
+				ADGPort adg_in_port = (ADGPort) ADGInIter.next();
 				String ctrlPerPort = "";
 				
 				Iterator linearBound = adg_in_port.getDomain().getLinearBound().iterator();
@@ -616,20 +676,103 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					}catch( Exception e ) {
 						e.printStackTrace();
 						throw new CodeGenerationException(
-							"simplifying domain of ADG Input port "
+							"simplifying domain of ADG port "
 								+ adg_in_port.getName()
 								+ ": "
 								+ e.getMessage());
 					}
 				}
 				
-				hdlPS.println("");
-				hdlPS.println("   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';");
-				hdlPS.println("");
+        String ctrlIndent = _regEval ? "      " : "";
+				//hdlPS.println("   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';");
+				//hdlPS.println("");
+        ctrlAssign += ctrlIndent + "   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';\n";
 				
 				index++;
 			}
+
+      // Print control assignments:
+      hdlPS.println("");
+      if (_regEval) {
+        hdlPS.println("   process(clk)");
+        hdlPS.println("   begin");
+        hdlPS.println("     if (RST = '1') then");
+        hdlPS.println("       sl_done_0 <= '0';");
+        hdlPS.println("       CONTROL <= (others => '0');");
+        hdlPS.println("     elsif (rising_edge(CLK)) then");
+        hdlPS.println("       if (ENABLE = '1') then");
+        hdlPS.println("");
+      }
+      hdlPS.println(ctrlAssign);
+      if (_regEval) {
+        hdlPS.println("         sl_done_0 <= CNTR_DONE;");
+        hdlPS.println("        end if;");
+        hdlPS.println("      end if;");
+        hdlPS.println("   end process;");
+        hdlPS.println("");
+        hdlPS.println("   EVAL_DONE <= sl_done_0;");
+      }
+      hdlPS.println("");
 		}
+  }
+
+
+
+
+	/**
+	 * write the eval_logic_rd .vhd file
+	 * @throws CodeGenerationException
+	 */
+	private void _writeHdlEvalLogRdFile()throws FileNotFoundException, CodeGenerationException {
+		PrintStream hdlPS = _openFile(_hdlDir + "/" + "eval_logic_rd.vhd");
+
+		hdlPS.println("-- File automatically generated by ESPAM");
+		hdlPS.println("");
+
+		hdlPS.println("library ieee;");
+		hdlPS.println("use ieee.std_logic_1164.all;");
+		hdlPS.println("use ieee.std_logic_signed.all;");
+		hdlPS.println("use ieee.std_logic_arith.all;");	
+		hdlPS.println("library work;");
+		hdlPS.println("use work.hw_node_pack.all;");
+		hdlPS.println("");
+
+		hdlPS.println("entity EVAL_LOGIC_RD_" + _coreName + " is");
+		hdlPS.println("   generic (");
+		hdlPS.println("      N_IN_PORTS    : natural := 1;");
+		hdlPS.println("      N_CNTRS       : natural := 1;");
+		hdlPS.println("      QUANT         : natural := 32;");
+		hdlPS.println("      CNTR_WIDTH    : t_counter_width := ( 0=>10, 1=>10, 2=>9, others=>10 );");
+		hdlPS.println("      N_PAR         : natural;");
+		hdlPS.println("      PAR_WIDTH     : natural");
+		hdlPS.println("   );");
+
+		hdlPS.println("   port (");
+		hdlPS.println("      RST           : in  std_logic;");
+		hdlPS.println("      CLK           : in  std_logic;");
+		hdlPS.println("");
+		hdlPS.println("      PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
+		hdlPS.println("");
+		hdlPS.println("      LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
+		hdlPS.println("      UPPER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
+		hdlPS.println("      ITERATORS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
+		hdlPS.println("      REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
+		hdlPS.println("");	  
+    if (_regEval) {
+      hdlPS.println("      EVAL_DONE     : out std_logic;");
+      hdlPS.println("      CNTR_DONE     : in std_logic;");
+      hdlPS.println("      ENABLE        : in std_logic;");
+      hdlPS.println("");	  
+    }
+		hdlPS.println("      CONTROL       : out std_logic_vector(N_IN_PORTS-1 downto 0)");
+		hdlPS.println("   );");
+		hdlPS.println("end EVAL_LOGIC_RD_" + _coreName + ";");
+		hdlPS.println("");
+		
+		hdlPS.println("architecture RTL of EVAL_LOGIC_RD_" + _coreName + " is");	
+		hdlPS.println("");
+		
+    _writeHdlEvalLogic(hdlPS, _adgInPorts, _inArgList);
 		
 		hdlPS.println("end RTL;");
 	}
@@ -646,14 +789,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 		hdlPS.println("library ieee;");
 		hdlPS.println("use ieee.std_logic_1164.all;");
-		hdlPS.println("use ieee.std_logic_signed.all;	");	
+		hdlPS.println("use ieee.std_logic_signed.all;");	
 		hdlPS.println("use ieee.std_logic_arith.all;");		
 		hdlPS.println("library work;");
 		hdlPS.println("use work.hw_node_pack.all;");
 		hdlPS.println("");
 		
 		hdlPS.println("entity EVAL_LOGIC_WR_" + _coreName + " is");
-		hdlPS.println("   generic ( ");
+		hdlPS.println("   generic (");
 		hdlPS.println("      N_OUT_PORTS   : natural := 1;");
 		hdlPS.println("      N_CNTRS       : natural := 1;");
 		hdlPS.println("      QUANT         : natural := 32;");
@@ -673,259 +816,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      ITERATORS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("      REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("");	  
+    if (_regEval) {
+      hdlPS.println("      EVAL_DONE     : out std_logic;");
+      hdlPS.println("      CNTR_DONE     : in std_logic;");
+      hdlPS.println("      ENABLE        : in std_logic;");
+      hdlPS.println("");	  
+    }
 		hdlPS.println("      CONTROL       : out std_logic_vector(N_OUT_PORTS-1 downto 0)");
 		hdlPS.println("   );");
 		hdlPS.println("end EVAL_LOGIC_WR_" + _coreName + ";");
 		hdlPS.println("");
 		
 		hdlPS.println("architecture RTL of EVAL_LOGIC_WR_" + _coreName + " is	");
-		Vector paramNames = _indexList.getParameterVectorNames();
-		
-		hdlPS.println("");
 
-		int i;
-		// parameter signals
-		String param = "";
-		if(paramNames.size() != 0){
-			param = "signal sl_" + paramNames.get(0).toString();
-			for(i = 1; i < paramNames.size(); i++){
-				param = param + ", sl_" + paramNames.get(i).toString();
-			}
-		}
-
-
-		Iterator j;
-		j = _indexList.getIterationVector().iterator();
-		// signals corresponding to index's upper/lower bounds.
-		while(j.hasNext()){
-			String s = (String) j.next();
-			hdlPS.println("   signal sl_low_" + s +", sl_high_" + s +" : integer;");
-		}
-		
-		j = _indexList.getIterationVector().iterator();
-		//signals corresponding to iterators. 
-		//first one is the most outer loop
-		while(j.hasNext()){
-			String s = (String) j.next();
-			hdlPS.println("   signal sl_loop_" + s + ", sl_loop_" + s + "_rg : integer;");
-		}
-		
-		
-		if(paramNames.size() != 0){
-			hdlPS.println("   " + param + " : integer; ");
-		}
-		
-		int ctrlNum = 0;
-		Iterator ADGOutIter;
-		ADGOutIter = _adgOutPorts.iterator();
-		while (ADGOutIter.hasNext()){
-			ADGOutPort adg_out_port = (ADGOutPort) ADGOutIter.next();
-			
-			Iterator linearBound = adg_out_port.getDomain().getLinearBound().iterator();
-			while(linearBound.hasNext()){
-				Polytope polytope = (Polytope) linearBound.next();
-				
-				try{
-					Polytope ndPolytope = _adgNode.getDomain().getLinearBound().get(0);
-					Polytope sPolytope = Polytope2IfStatements.simplifyPDinND( polytope, ndPolytope);
-					
-					if (sPolytope.getConstraints()==null){						
-					}
-					else{
-						Vector <Expression> vectorExpr = Polytope2Expression.getExpression(sPolytope);
-						ctrlNum = ctrlNum + vectorExpr.size();
-					}
-					
-				}catch( Exception e ) {
-					e.printStackTrace();
-					throw new CodeGenerationException(
-						"simplifying domain of ADG Output port "
-							+ adg_out_port.getName()
-							+ ": "
-							+ e.getMessage());
-				}
-			}
-		}
-		
-		String ctrlSig = "   signal e0";
-		for(i = 1; i < ctrlNum; i++){
-			ctrlSig = ctrlSig + " ,e" + i;
-		}
-
-		hdlPS.println(ctrlSig + " : boolean;");
-
-		hdlPS.println("");
-		hdlPS.println("begin");
-		hdlPS.println("");	
-		
-		// first parameter's value is got from the left most signals, which is also input first.(shift left register)
-		int paramNum = paramNames.size();
-		Iterator k;
-		k = paramNames.iterator();
-		while(k.hasNext()){
-			String s = (String) k.next();
-			hdlPS.println("   sl_" + s + " <= CONV_INTEGER( PARAMETERS(" + paramNum + "*PAR_WIDTH-1 downto " + (paramNum - 1) + "*PAR_WIDTH) ); ");
-			paramNum--;
-		}
-		hdlPS.println("");
-
-		// !!!!!!CNTR_WIDTH(0) corresponds to inner loop, to be consistant with gen_counter
-		int loopNum = _indexList.getIterationVector().size();
-		j = _indexList.getIterationVector().iterator();
-		while(j.hasNext()){
-			String s = (String) j.next();
-			hdlPS.println("   sl_loop_" + s + "    <= CONV_INTEGER( ITERATORS(CNTR_WIDTH(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
-			hdlPS.println("   sl_loop_" + s + "_rg <= CONV_INTEGER( REG_CNTRS(CNTR_WIDTH(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
-			loopNum--;
-		}
-		
-		hdlPS.println("");	
-		
-		// get the upper/lower bound expressions
-		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().firstElement());
-		
-		Iterator exprIter;
-		VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
-		exprIter = boundExp.iterator();
-		j = _indexList.getIterationVector().iterator();
-		while(j.hasNext()&& exprIter.hasNext()){
-			String s = (String) j.next();
-			
-			Expression lbExp = (Expression) exprIter.next();
-			Expression ubExp = (Expression) exprIter.next();
-			
-			String lowerBound   = ExpVisit.visit(lbExp, _indexList, 0);
-			String lowerBoundRg = ExpVisit.visit(lbExp, _indexList, 1);
-			String upperBound   = ExpVisit.visit(ubExp, _indexList, 1);
-
-			hdlPS.println("   sl_low_" + s + "  <= " + lowerBound + " when RST='0' else " + lowerBoundRg +";");
-			hdlPS.println("   sl_high_" + s + " <= " + upperBound + ";");
-		}
-		
-		hdlPS.println("");	
-	
-		// !!!!!!most inner loop at right most position(QUANT-1 downto 0), to be consistant with gen_counter
-		loopNum = _indexList.getIterationVector().size();
-		exprIter = boundExp.iterator();
-		j = _indexList.getIterationVector().iterator();
-		while(j.hasNext()&& exprIter.hasNext()){
-			String s = (String) j.next();
-			
-			hdlPS.println("   LOWER_BND_OUT(" + loopNum + "*QUANT-1 downto " + (loopNum -1) + "*QUANT) <= CONV_STD_LOGIC_VECTOR(sl_low_" + s + ",QUANT);");
-			loopNum--;
-		}
-		
-		hdlPS.println("");	
-		
-		
-		loopNum = _indexList.getIterationVector().size();
-		exprIter = boundExp.iterator();
-		j = _indexList.getIterationVector().iterator();
-		while(j.hasNext()&& exprIter.hasNext()){
-			String s = (String) j.next();
-
-			hdlPS.println("   UPPER_BND_OUT(" + loopNum + "*QUANT-1 downto " + (loopNum -1) + "*QUANT) <= CONV_STD_LOGIC_VECTOR(sl_high_" + s + ",QUANT);");
-			loopNum--;
-		}
-
-		hdlPS.println("");
-
-		// set the control signals
-		if(_adgOutPorts.size() == 0){
-			
-		}
-		else{
-			// first get the ordered ADG out ports according to the bounded out arguments order
-			Vector<ADGOutPort> orderedADGOutPorts = new Vector<ADGOutPort>();
-			Iterator outArgIter = _outArgList.iterator();
-			while(outArgIter.hasNext()){
-				ADGVariable out_arg = (ADGVariable) outArgIter.next();
-				String out_arg_name = out_arg.getName();
-							
-				j = _adgOutPorts.iterator();
-				while (j.hasNext()) {
-					ADGOutPort adg_out_port = (ADGOutPort) j.next();
-					if (adg_out_port.getBindVariables().get(0).getName().equals(out_arg_name) == true){
-						orderedADGOutPorts.addElement(adg_out_port);
-					}
-				}
-			}
-
-			int index = 0;
-			int exprIndex = 0;
-			
-			HashMap <Expression, String> hashExpr = new HashMap <Expression, String>();
-			ADGOutIter = orderedADGOutPorts.iterator();
-			while (ADGOutIter.hasNext()){
-				ADGOutPort adg_out_port = (ADGOutPort) ADGOutIter.next();
-				String ctrlPerPort = "";
-				
-				Iterator linearBound = adg_out_port.getDomain().getLinearBound().iterator();
-				while(linearBound.hasNext()){
-					Polytope polytope = (Polytope) linearBound.next();
-					
-					try{
-						Polytope ndPolytope = _adgNode.getDomain().getLinearBound().get(0);
-						Polytope sPolytope = Polytope2IfStatements.simplifyPDinND( polytope, ndPolytope);
-						
-						if (sPolytope.getConstraints()==null){
-							ctrlPerPort = ""; 
-						}
-						else{
-							Vector <Expression> vectorExpr = Polytope2Expression.getExpression(sPolytope);
-							Iterator expIter = vectorExpr.iterator();
-							while(expIter.hasNext()){
-								Expression e = (Expression) expIter.next();
-								//System.out.println("expression for write log " + adg_out_port.getName() + " " + e.toString());
-								
-							
-								//if not found in hashmap, add it, expression as key
-								if(! hashExpr.containsKey(e)){
-									String value = "e" + exprIndex;
-									
-									hashExpr.put(e, value);
-									
-									String s = ExpVisit.visit(e, sPolytope.getIndexVector(), 1);
-									if(e.getEqualityType()== Expression.GEQ){
-										hdlPS.println("   " + value + " <= " + s + ">=0;");
-									}
-									else if(e.getEqualityType() == Expression.EQU){
-										hdlPS.println("   " + value + " <= " + s + "=0;");
-									}
-									else{
-										hdlPS.println("   " + value + " <= " + s + "<=0;");
-									}
-									
-									ctrlPerPort = ctrlPerPort + "b2std(" + value + ") and ";
-									
-									exprIndex++;
-								}						
-								//if found in hashmap, use the current value of the expression
-								else{
-									String value = (String) hashExpr.get(e);
-									
-									ctrlPerPort = ctrlPerPort + "b2std(" + value + ") and ";
-								}
-							}
-						}
-
-					}catch( Exception e ) {
-						e.printStackTrace();
-						throw new CodeGenerationException(
-							"simplifying domain of ADG Input port "
-								+ adg_out_port.getName()
-								+ ": "
-								+ e.getMessage());
-					}
-				}
-
-				hdlPS.println("");
-				hdlPS.println("   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';");
-				hdlPS.println("");
-
-				index++;
-			}
-		}
+    _writeHdlEvalLogic(hdlPS, _adgOutPorts, _outArgList);
 
 		hdlPS.println("end RTL;");
 	}
@@ -995,7 +899,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					ADGInPort in = (ADGInPort) k.next();
 					hdlPS.println("      " + in.getName() + "_Rd    : out std_logic;");
 					hdlPS.println("      " + in.getName() + "_Din   : in  std_logic_vector(QUANT-1 downto 0);");
-					hdlPS.println("      " + in.getName() + "_Exist : in  std_logic; ");
+					hdlPS.println("      " + in.getName() + "_Exist : in  std_logic;");
 					hdlPS.println("      " + in.getName() + "_CLK   : out std_logic;");
 					hdlPS.println("      " + in.getName() + "_CTRL  : in  std_logic;");
 					hdlPS.println("");
@@ -1060,7 +964,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   component READ_MUX is");
 		hdlPS.println("      generic (");
 		hdlPS.println("         N_PORTS    : natural := 1;");
-		hdlPS.println("         PORT_WIDTH : natural := 32 ");
+		hdlPS.println("         PORT_WIDTH : natural := 32");
 		hdlPS.println("      );");
 
 		hdlPS.println("      port(");
@@ -1080,7 +984,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   component EVAL_LOGIC_RD_" + _coreName + " is");
 		hdlPS.println("      generic (");
 		hdlPS.println("         N_IN_PORTS    : natural := 1;");
-		hdlPS.println("         N_CNTRS       : natural := 1; ");
+		hdlPS.println("         N_CNTRS       : natural := 1;");
 		hdlPS.println("         QUANT         : natural := 32;");
 		hdlPS.println("         CNTR_WIDTH    : t_counter_width := ( 0=>10, 1=>10, 2=>9, others=>10 );");
 		hdlPS.println("         N_PAR         : natural;");
@@ -1096,17 +1000,23 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("         LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("         UPPER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("         ITERATORS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
-		hdlPS.println("         REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0); ");
-		hdlPS.println("");	  
+		hdlPS.println("         REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
+		hdlPS.println("");
+    if (_regEval) {
+      hdlPS.println("         EVAL_DONE     : out std_logic;");
+      hdlPS.println("         CNTR_DONE     : in std_logic;");
+      hdlPS.println("         ENABLE        : in std_logic;");
+      hdlPS.println("");
+    }
 		hdlPS.println("         CONTROL       : out std_logic_vector(N_IN_PORTS-1 downto 0)");
 		hdlPS.println("      );");
 		hdlPS.println("   end component;");
 		hdlPS.println("");
 		
 		hdlPS.println("   component EVAL_LOGIC_WR_" + _coreName + " is");
-		hdlPS.println("      generic ( ");
+		hdlPS.println("      generic (");
 		hdlPS.println("         N_OUT_PORTS   : natural := 1;");
-		hdlPS.println("         N_CNTRS       : natural := 1; ");
+		hdlPS.println("         N_CNTRS       : natural := 1;");
 		hdlPS.println("         QUANT         : natural := 32;");
 		hdlPS.println("         CNTR_WIDTH    : t_counter_width := ( 0=>10, 1=>10, 2=>9, others=>10 );");
 		hdlPS.println("         N_PAR         : natural;");
@@ -1117,21 +1027,27 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("         RST           : in  std_logic;");
 		hdlPS.println("         CLK           : in  std_logic;");
 		hdlPS.println("");
-		hdlPS.println("         PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0); ");
+		hdlPS.println("         PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("         LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("         UPPER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("         ITERATORS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("         REG_CNTRS     : in  std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
 		hdlPS.println("");
+    if (_regEval) {
+      hdlPS.println("         EVAL_DONE     : out std_logic;");
+      hdlPS.println("         CNTR_DONE     : in std_logic;");
+      hdlPS.println("         ENABLE        : in std_logic;");
+      hdlPS.println("");
+    }
 		hdlPS.println("         CONTROL       : out std_logic_vector(N_OUT_PORTS-1 downto 0)");
 		hdlPS.println("      );");
 		hdlPS.println("   end component;");
 		hdlPS.println("");
 
 		hdlPS.println("   component GEN_COUNTER is");
-		hdlPS.println("      generic ( ");
-		hdlPS.println("         N_CNTRS      : natural := 1; ");
+		hdlPS.println("      generic (");
+		hdlPS.println("         N_CNTRS      : natural := 1;");
 		hdlPS.println("         QUANT        : natural := 32;");
 		hdlPS.println("         CNTR_WIDTH   : t_counter_width := ( 0=>10, 1=>10, 2=>9, others=>10 )");
 		hdlPS.println("      );");
@@ -1191,10 +1107,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("");
 		
 		hdlPS.println("   component CONTROLLER is");
-		hdlPS.println("      generic ( ");
+		hdlPS.println("      generic (");
 		hdlPS.println("         N_STAGES  : natural := 1;");
 		hdlPS.println("         BLOCKING  : natural := 0");
-		hdlPS.println("      ); ");
+		hdlPS.println("      );");
 
 		hdlPS.println("      port (");
 		hdlPS.println("         READ      : out std_logic;");
@@ -1215,14 +1131,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   end component;");
 		hdlPS.println("");  
 		
-		hdlPS.println("   component PARAMETERS is ");
+		hdlPS.println("   component PARAMETERS is");
 		hdlPS.println("      generic (");
 		hdlPS.println("         PAR_WIDTH  : natural;");
 		hdlPS.println("         N_PAR      : natural;");
 		hdlPS.println("         PAR_VALUES : t_par_values");
 		hdlPS.println("      );");
 
-		hdlPS.println("      port (  ");
+		hdlPS.println("      port (");
 		hdlPS.println("         RST        : in  std_logic;");
 		hdlPS.println("         CLK        : in  std_logic;");
 		hdlPS.println("");
@@ -1257,15 +1173,17 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("others=>0 ); -- each number represents the default value of a parameter");
 
 
-		hdlPS.println("   constant c_COUNTERS     : natural := " + _indexList.getIterationVector().size() + "; -- number of iterators");
+		hdlPS.println("   constant c_COUNTERS     : natural := " + (_indexList.getIterationVector().size()-_skipList.size()) + "; -- number of iterators");
 		
 		// get counter_width, default is 10
 		String s = "";
-		int num = _indexList.getIterationVector().size() - 1;
+		int num = _indexList.getIterationVector().size() - _skipList.size() - 1;
 		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().get(0));
 		
 		for (int iterNum = 0; iterNum < _indexList.getIterationVector().size(); iterNum++){
 			String indexName = _indexList.getIterationVector().get(iterNum);
+      if (_skipList.contains(indexName))
+        continue;
 			//System.out.println("index name " + indexName);
 			Expression expr_lb = boundExp.get(2*iterNum);
 			Expression expr_ub = boundExp.get(2*iterNum + 1);
@@ -1273,13 +1191,13 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			//System.out.println("upperbound expression " + expr_ub.toString());
 			//System.out.println("lowerbound expression " + expr_lb.toString());
 			
-			//int ub = _findUpperBound(indexName, expr_lb, expr_ub);
-      int ub = 1024;
+			int ub = _findUpperBound(indexName, expr_lb, expr_ub);
+      //int ub = 1024;
 			//System.out.println("index name " + indexName);
 			
 	
 			//int counterWidth = (int) ((Math.log(ub)+1)/Math.log(2)) ;
-			int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2) ;
+			int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2);
 			s = num + "=>" + counterWidth + ", " + s;
 			
 			num--;
@@ -1333,11 +1251,31 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   signal sl_REG_CNTRS_RD, sl_REG_CNTRS_WR : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("   signal sl_RST : std_logic;");
+    if (_regEval) {
+      hdlPS.println("   signal sl_RST_1 : std_logic;");
+      hdlPS.println("   signal sl_initstrobe : std_logic;");
+      hdlPS.println("   signal sl_cntr_rd_en, sl_cntr_rd_done : std_logic;");
+      hdlPS.println("   signal sl_cntr_wr_en, sl_cntr_wr_done : std_logic;");
+    }
 		hdlPS.println("");
-		hdlPS.println("begin ");
+		hdlPS.println("begin");
 		hdlPS.println("");
 		hdlPS.println("   sl_RST <= RST when RESET_HIGH=1 else not RST;");
 		hdlPS.println("");
+    if (_regEval) {
+      hdlPS.println("   -- RST is delayed 1 CLK cycle (used in eval_rd/rw and controller units)");
+      hdlPS.println("   process(clk)");
+      hdlPS.println("   begin");
+      hdlPS.println("      if rising_edge(clk) then");
+      hdlPS.println("         sl_RST_1 <= sl_RST;");
+      hdlPS.println("      end if;");
+      hdlPS.println("   end process;");
+		hdlPS.println("");
+		hdlPS.println("   sl_initstrobe <= not sl_RST and sl_RST_1;");
+		hdlPS.println("   sl_cntr_rd_en <= sl_read or sl_initstrobe;");
+		hdlPS.println("   sl_cntr_wr_en <= sl_write or sl_initstrobe;");
+		hdlPS.println("");
+    }
 		hdlPS.println("--======================================================================================--");
 		hdlPS.println("");
 		
@@ -1369,7 +1307,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				hdlPS.println("   RD_MUX_" + index_rd_mux + " : READ_MUX");
 				hdlPS.println("   generic map (");
 				hdlPS.println("      N_PORTS    => "+ binding_in_ports.size() + ",");
-				hdlPS.println("      PORT_WIDTH => QUANT ");
+				hdlPS.println("      PORT_WIDTH => QUANT");
 				hdlPS.println("   )");
 
 				hdlPS.println("   port map (");
@@ -1408,7 +1346,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				int temp_index = total_in_ports;
 				while (k.hasNext())	{
 					ADGInPort in = (ADGInPort) k.next();
-					hdlPS.println("   " + in.getName() + "_Rd <= sl_READS(" + temp_index + ");");
+					hdlPS.println("   " + in.getName() + "_Rd <= sl_READS(" + temp_index +");");
 					temp_index++;
 				}
 				
@@ -1446,9 +1384,9 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 
 		hdlPS.println("   EVAL_RD : EVAL_LOGIC_RD_" + _coreName + "");
-		hdlPS.println("   generic map ( ");
+		hdlPS.println("   generic map (");
 		hdlPS.println("      N_IN_PORTS    => c_IN_PORTS,");
-		hdlPS.println("      N_CNTRS       => c_COUNTERS, ");
+		hdlPS.println("      N_CNTRS       => c_COUNTERS,");
 		hdlPS.println("      QUANT         => c_CNTR_QUANT,");
 		hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS,");
 		hdlPS.println("      N_PAR         => c_PARAMETERS,");
@@ -1466,6 +1404,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
 		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
 		hdlPS.println("");
+    if (_regEval) {
+      hdlPS.println("      EVAL_DONE     => sl_done_rd,");
+      hdlPS.println("      CNTR_DONE     => sl_cntr_rd_done,");
+      hdlPS.println("      ENABLE        => sl_cntr_rd_en,");
+      hdlPS.println("");
+    }
 		hdlPS.println("      CONTROL       => sl_control_rd");
 		hdlPS.println("   );");
 		hdlPS.println("");
@@ -1481,14 +1425,24 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           => sl_RST,");
 		hdlPS.println("      CLK           => CLK,");
 		hdlPS.println("");
-		hdlPS.println("      ENABLE        => sl_read,	");
+    if (_regEval) {
+      hdlPS.println("      ENABLE        => sl_cntr_rd_en,");
+    }
+    else {
+      hdlPS.println("      ENABLE        => sl_read,");
+    }
 		hdlPS.println("");
 		hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_RD,");
-		hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_RD,  ");
+		hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_RD,");
 		hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
 		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
 		hdlPS.println("");
-		hdlPS.println("      DONE          => sl_done_rd");
+    if (_regEval) {
+		  hdlPS.println("      DONE          => sl_cntr_rd_done");
+    }
+    else {
+		  hdlPS.println("      DONE          => sl_done_rd");
+    }
 		hdlPS.println("   );");
 
 		hdlPS.println("");
@@ -1521,7 +1475,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			
 			while (i.hasNext()){
 				adg_out_port = (ADGOutPort) i.next();
-				hdlPS.println("   " + adg_out_port.getName() + "_Wr <= sl_WRITES(" + index + ");");
+				hdlPS.println("   " + adg_out_port.getName() + "_Wr <= sl_WRITES(" + index +");");
 				index++;
 			}
 
@@ -1538,7 +1492,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					adg_out_port = (ADGOutPort) j.next();
 					if (adg_out_port.getBindVariables().get(0).getName().equals(out_arg_name)== true){
 						if(index == 0){
-							hdlPS.println("   " + adg_out_port.getName() + "_Dout <= sl_out_ports_ex(QUANT-1 downto 0);  ");
+							hdlPS.println("   " + adg_out_port.getName() + "_Dout <= sl_out_ports_ex(QUANT-1 downto 0);");
 						}
 						else{
 							hdlPS.println("   " + adg_out_port.getName() + "_Dout <= sl_out_ports_ex(" + (index + 1) + "*QUANT-1 downto " + index + "*QUANT);");
@@ -1568,7 +1522,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 		
 		hdlPS.println("   EVAL_WR : EVAL_LOGIC_WR_" + _coreName + "");
-		hdlPS.println("   generic map ( ");
+		hdlPS.println("   generic map (");
 		hdlPS.println("      N_OUT_PORTS   => c_OUT_PORTS,");
 		hdlPS.println("      N_CNTRS       => c_COUNTERS,");
 		hdlPS.println("      QUANT         => c_CNTR_QUANT,");
@@ -1588,12 +1542,18 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      ITERATORS     => sl_ITERATORS_WR,");
 		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_WR,");
 		hdlPS.println("");
+    if (_regEval) {
+      hdlPS.println("      EVAL_DONE     => sl_done_wr,");
+      hdlPS.println("      CNTR_DONE     => sl_cntr_wr_done,");
+      hdlPS.println("      ENABLE        => sl_cntr_wr_en,");
+      hdlPS.println("");
+    }
 		hdlPS.println("      CONTROL       => sl_control_wr");
 		hdlPS.println("   );");
 		hdlPS.println("");
 
 		hdlPS.println("   ITER_WR : GEN_COUNTER");
-		hdlPS.println("   generic map ( ");
+		hdlPS.println("   generic map (");
 		hdlPS.println("      N_CNTRS       => c_COUNTERS,");
 		hdlPS.println("      QUANT         => c_CNTR_QUANT,");
 		hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS");
@@ -1603,14 +1563,24 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           => sl_RST,");
 		hdlPS.println("      CLK           => CLK,");
 		hdlPS.println("");
-		hdlPS.println("      ENABLE        => sl_write,");
+    if (_regEval) {
+      hdlPS.println("      ENABLE        => sl_cntr_wr_en,");
+    }
+    else {
+      hdlPS.println("      ENABLE        => sl_write,");
+    }
 		hdlPS.println("");
 		hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_WR,");
 		hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_WR,");
 		hdlPS.println("      ITERATORS     => sl_ITERATORS_WR,");
 		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_WR,");
 		hdlPS.println("");
-		hdlPS.println("      DONE          => sl_done_wr");
+    if (_regEval) {
+      hdlPS.println("      DONE          => sl_cntr_wr_done");
+    }
+    else {
+      hdlPS.println("      DONE          => sl_done_wr");
+    }
 		hdlPS.println("   );");
 
 		hdlPS.println("");
@@ -1620,7 +1590,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   EX : EXECUTION_UNIT_" + _coreName + "");
 		hdlPS.println("   generic map (");
 		hdlPS.println("      N_INPORTS  => c_IN_FUNC_VAR,");
-		hdlPS.println("      N_OUTPORTS => c_OUT_FUNC_VAR, ");
+		hdlPS.println("      N_OUTPORTS => c_OUT_FUNC_VAR,");
 		hdlPS.println("      IP_RESET   => c_IP_RESET,");
 		hdlPS.println("      QUANT      => QUANT");
 		hdlPS.println("   )");
@@ -1641,11 +1611,16 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   CTRL : CONTROLLER");
 		hdlPS.println("   generic map (");
 		hdlPS.println("      N_STAGES   => c_STAGES,");
-		hdlPS.println("      BLOCKING   => c_BLOCKING ");
+		hdlPS.println("      BLOCKING   => c_BLOCKING");
 		hdlPS.println("   )");
 
 		hdlPS.println("   port map (");
-		hdlPS.println("      RST        => sl_RST,");
+    if (_regEval) {
+      hdlPS.println("      RST        => sl_RST_1,");
+    }
+    else {
+      hdlPS.println("      RST        => sl_RST,");
+    }
 		hdlPS.println("      CLK        => CLK,");
 		hdlPS.println("");
 		hdlPS.println("      READ       => sl_read,");
@@ -1663,14 +1638,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   );");
 		hdlPS.println(""); 
 		
-		hdlPS.println("   PAR_LOAD : PARAMETERS ");
-		hdlPS.println("   generic map ( ");
+		hdlPS.println("   PAR_LOAD : PARAMETERS");
+		hdlPS.println("   generic map (");
 		hdlPS.println("      PAR_WIDTH  => PAR_WIDTH,");
 		hdlPS.println("      N_PAR      => c_PARAMETERS,");
 		hdlPS.println("      PAR_VALUES => c_PAR_VALUES");
 		hdlPS.println("   )");
 
-		hdlPS.println("   port map(   ");
+		hdlPS.println("   port map(");
 		hdlPS.println("      RST        => sl_RST,");
 		hdlPS.println("      CLK        => CLK,");
 		hdlPS.println("");
@@ -1872,6 +1847,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		return ub;
 	}
 
+  private boolean _isSource(ADGNode node) {
+    return (node.getInPorts().size() == 0);
+  }
+  
+  private boolean _isSink(ADGNode node) {
+    return (node.getOutPorts().size() == 0);
+  }
+  
 
 	// /////////////////////////////////////////////////////////////////
 	// // private variables ///
@@ -1914,9 +1897,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	
 	private  IndexVector _indexList ;  //index list of the ADG node
 
+  private Vector<String> _skipList;  // List of iterators that are skipped in counter generation
+
 	protected static HashMap <String, Vector<Integer>> _parameters = new HashMap <String, Vector<Integer>>();
 	
 	protected static HashMap <String, Vector<Integer>> _boundsLinks = new HashMap<String, Vector<Integer>>(); //hash map with index/param names as keys, and lower and upper bounds vector as values.
 	
 	private int _maxCounterWidth = 0;
+
+
+  ////////////////////////////////////
+  // Experimental & hardcoded options:
+  ////////////////////////////////////
+
+  // Put a register between expression and control signal in eval_logic modules
+  // This may increase the maximum achievable clock frequency
+  private boolean _regEval = false;
 }
