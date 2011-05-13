@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.2 2011/05/12 15:28:24 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.3 2011/05/13 07:26:54 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -418,7 +418,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
       _fifoInst += "  -- Instantiation of " + x.getName() + "  from " + src.getFunction().getName() + "." + outp.getBindVariables().get(0).getName()
                                                           + " to "    + dst.getFunction().getName() + "." + inp.getBindVariables().get(0).getName() + "\n";
-      int fifosize = x.getSize();
+      int fifosize = x.getSize() + 1;
       int implstyle;
       if (fifosize <= 32) {
         implstyle = 0;  // Use LUTRAM/SRL16
