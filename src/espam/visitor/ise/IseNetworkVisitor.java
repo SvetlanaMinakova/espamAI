@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.3 2011/05/13 07:26:54 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.4 2011/05/17 15:05:35 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -377,6 +377,8 @@ public class IseNetworkVisitor extends PlatformVisitor {
     LinearizationType commModel = _mapping.getCDChannel(x).getCommunicationModel();
     if (commModel == LinearizationType.GenericOutOfOrder) {
       System.err.println("WARNING: Out of order not yet supported in ISE visitor.");
+      ReorderMemoryVisitor rmv = new ReorderMemoryVisitor(_mapping, _codeDir);
+      x.accept(rmv);
     }
 
     ADGEdge edge = (ADGEdge) _mapping.getCDChannel(x).getAdgEdgeList().get(0);
