@@ -61,7 +61,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.2 2011/05/31 10:05:08 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.3 2011/05/31 16:07:27 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -169,6 +169,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       s = (String) j.next();
       outPS.println("  signal sl_low_" + s +", sl_high_" + s +"      : integer;");
       outPS.println("  signal sl_loop_" + s + ", sl_loop_" + s + "_rg  : integer;");
+      outPS.println("  signal sl_" + s + "                      : integer;");
     }
   }
 
@@ -220,38 +221,106 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
 
   /**
-   * Write addressing function.
+   * Computes bounding boxes for domain.
+   * @Return An array which is structured as follows:
+   *         [dim][0]  lowerbound
+   *         [dim][1]  upperbound
+   *         [dim][2]  max. required size
    */
-  private void _writeAddressFunction(PrintStream outPS, ADGNode node) {
-    IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
-    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
-    String addrFunc = "";
-    int cumulBoundingBox = 1;
-    for (int iterNum = 0; iterNum < indexList.getIterationVector().size(); iterNum++){
-      String indexName = indexList.getIterationVector().get(iterNum);
-      Expression expr_lb = boundExp.get(2*iterNum);
-      Expression expr_ub = boundExp.get(2*iterNum + 1);
-      int ub = CompaanHWNodeIseVisitor._findUpperBound(indexName, expr_lb, expr_ub);
-      int dimCard = ub+1; // dimension cardinality; assumes lb=0
-      outPS.println("  -- " + indexName + "  0--" + ub + "  " + dimCard);
-      if (iterNum == 0) {
-        addrFunc += "sl_loop_" + indexName + "_rg";
+  private int[][] _computeBoundingBoxes(Vector<Polytope> bound) {
+    IndexVector indexList = bound.firstElement().getIndexVector();
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(bound.get(0));
+    int nDims = indexList.getIterationVector().size();
+    int ret[][] = new int[nDims][3];
+
+    for (int i = 0; i < nDims; i++) {
+      String indexName = indexList.getIterationVector().get(i);
+			Expression lbExp = boundExp.get(2*i);
+			Expression ubExp = boundExp.get(2*i + 1);
+
+      if (lbExp.isNumber()) {
+        ret[i][0] = lbExp.evaluate(null, null);
       }
       else {
-        addrFunc += " + sl_loop_" + indexName + "_rg*" + cumulBoundingBox;
+        // TODO: do something smarter here to find more accurate lowerbound
+        System.out.println("[ReorderMemoryVisitor] Setting non-constant lowerbound to 0 for iterator " + indexName);
+        ret[i][0] = 0;
       }
-      cumulBoundingBox *= dimCard;
+
+      if (ubExp.isNumber()) {
+        ret[i][1] = ubExp.evaluate(null, null);
+      }
+      else {
+        ret[i][1] = CompaanHWNodeIseVisitor._findUpperBound(indexName, lbExp, ubExp);
+      }
+
+      ret[i][2] = ret[i][1] - ret[i][0] + 1;
     }
-    outPS.println("  s_writeAddr <= " + addrFunc + ";");
+
+    return ret;
   }
 
 
   /**
-   * Write the write address generator file.
+   * Writes the mapping of OPD to OPD (mode=0) or OPD to IPD (mode=1).
    */
-  private void _writeWriteAddrGen() throws FileNotFoundException {
-    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_wag.vhd");
-    outPS.println("-- Write address generator for channel " + _fifo.getName());
+  private void _writeIteratorMapping(PrintStream outPS, IndexVector indexList, boolean mode) {
+    int nDims = indexList.getIterationVector().size();
+    JMatrix m = _adgEdge.getMapping();
+
+    outPS.println("  -- Mapping");
+    for (int i = 0; i < nDims; i++) {
+      String indexName = indexList.getIterationVector().get(i);
+      String rhs = "";
+      if (mode) {
+        for (int j = 0; j < m.nbColumns()-1; j++) {
+          rhs += m.getElement(i,j) + "*sl_loop_" + indexList.getIterationVector().get(j) + "_rg + ";
+        }
+        rhs += m.getElement(i,m.nbColumns()-1);
+      }
+      else {
+        rhs = "sl_loop_" + indexName + "_rg";
+      }
+      // TODO: take offset from right domain; then substract offset
+      outPS.println("  sl_" + indexName + " <= " + rhs + ";");
+    }
+    outPS.println("");
+  }
+
+
+  /**
+   * Writes addressing function.
+   * @param isRead Determines whether the edge mapping has to be applied.
+   */
+  private void _writeAddressFunction(PrintStream outPS, ADGNode node, boolean isRead) {
+    IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
+    String addrFunc = "";
+    int cumulBoundingBox = 1;
+    int nDims = indexList.getIterationVector().size();
+    int boxes[][] = _computeBoundingBoxes(node.getDomain().getLinearBound());
+
+    _writeIteratorMapping(outPS, indexList, isRead);
+
+    outPS.println("  -- Address function");
+    for (int iterNum = 0; iterNum < nDims; iterNum++) {
+      String indexName = indexList.getIterationVector().get(iterNum);
+      outPS.println("  -- " + indexName + "  " + boxes[iterNum][0] + "--" + boxes[iterNum][1] + "  " + boxes[iterNum][2]);
+      if (iterNum == 0) {
+        addrFunc += "sl_" + indexName;
+      }
+      else {
+        addrFunc = "(" + addrFunc + "*" + boxes[iterNum][2] + "+sl_" + indexName + ")";
+      }
+    }
+    outPS.println("  s_address <= " + addrFunc + ";");
+  }
+
+
+  /**
+   * Writes common parts of address generator files.
+   */
+  private void _writeAddrGenCommon(PrintStream outPS, ADGNode node, String entityName) {
     outPS.println("-- Generated by ESPAM.");
     outPS.println("-- Sven van Haastregt, LIACS, Leiden University.");
     outPS.println("");
@@ -262,7 +331,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("library work;");
     outPS.println("use work.hw_node_pack.all;");
     outPS.println("");
-    outPS.println("entity " + _coreName + "_wag is");
+    outPS.println("entity " + entityName + " is");
     outPS.println("  generic (");
     outPS.println("    C_AWIDTH : integer := 16");
     outPS.println("  );");
@@ -270,12 +339,12 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("    clk       : in  std_logic;");
     outPS.println("    rst       : in  std_logic;");
     outPS.println("    nextAddr  : in  std_logic;");
-    outPS.println("    writeAddr : out std_logic_vector(C_AWIDTH-1 downto 0)");
+    outPS.println("    address   : out std_logic_vector(C_AWIDTH-1 downto 0)");
     outPS.println("  );");
-    outPS.println("end entity " + _coreName + "_wag;");
+    outPS.println("end entity " + entityName + ";");
     outPS.println("");
     outPS.println("");
-    outPS.println("architecture behaviour of " + _coreName + "_wag is");
+    outPS.println("architecture behaviour of " + entityName + " is");
     outPS.println("");
     outPS.println("  component GEN_COUNTER is");
     outPS.println("    generic (");
@@ -295,8 +364,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("    );");
     outPS.println("  end component;");
     outPS.println("");
-    _writeDomainData(outPS, _srcNode);
-    outPS.println("  signal s_writeAddr : integer;");
+    _writeDomainData(outPS, node);
+    outPS.println("  signal s_address : integer;");
     outPS.println("");
     outPS.println("begin");
     outPS.println("");
@@ -317,11 +386,21 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("    DONE          => open");
     outPS.println("  );");
     outPS.println("");
-    _writeLoopBounds(outPS, _srcNode);
+    _writeLoopBounds(outPS, node);
     outPS.println("");
-    _writeAddressFunction(outPS, _srcNode);
+  }
+
+
+  /**
+   * Write the write address generator file.
+   */
+  private void _writeWriteAddrGen() throws FileNotFoundException {
+    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_wag.vhd");
+    outPS.println("-- Write address generator for channel " + _fifo.getName());
+    _writeAddrGenCommon(outPS, _srcNode, _coreName + "_wag");
+    _writeAddressFunction(outPS, _srcNode, false);
     outPS.println("");
-    outPS.println("  writeAddr <= std_logic_vector(to_unsigned(s_writeAddr, C_AWIDTH));");
+    outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
     outPS.println("");
     outPS.println("end architecture behaviour;");
     outPS.println("");
@@ -333,7 +412,14 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
    */
   private void _writeReadAddrGen() throws FileNotFoundException {
     PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_rag.vhd");
-    outPS.println("-- Write address generator for channel " + _fifo.getName());
+    outPS.println("-- Read address generator for channel " + _fifo.getName());
+    _writeAddrGenCommon(outPS, _dstNode, _coreName + "_rag");
+    _writeAddressFunction(outPS, _srcNode, true);
+    outPS.println("");
+    outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
+    outPS.println("");
+    outPS.println("end architecture behaviour;");
+    outPS.println("");
   }
 
 
@@ -388,6 +474,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("  s_rst <= Ext_Rst when C_EXT_RESET_HIGH=1 else not Ext_Rst;");
     topPS.println("");
 
+    // TODO
     topPS.println("-- TODO: generate body, this is a playground for now");
     JMatrix m = _adgEdge.getMapping();
 
@@ -419,14 +506,6 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   }
 
 
-  private boolean _isSource(ADGNode node) {
-    return (node.getInPorts().size() == 0);
-  }
-  
-  private boolean _isSink(ADGNode node) {
-    return (node.getOutPorts().size() == 0);
-  }
-  
   
   
   // /////////////////////////////////////////////////////////////////
@@ -441,8 +520,6 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
   private String _codeDir;
 
-  private String _projectName;
-  
   private Mapping _mapping;
 
   private ADGraph _adg;
@@ -454,14 +531,6 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
   private Fifo _fifo;
   
-  private Vector _inArgList ;   //in arguments of the ADG function
-  
-  private Vector _adgInPorts ;      //in ports of the ADG node
-  
-  private Vector _outArgList ;      //out arguments of the ADG function
-  
-  private Vector _adgOutPorts ;     //out ports of the ADG node
-
   ////////////////////////////////////
   // Experimental & hardcoded options:
   ////////////////////////////////////
