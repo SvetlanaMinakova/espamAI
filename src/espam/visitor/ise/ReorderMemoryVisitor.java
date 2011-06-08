@@ -61,7 +61,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.4 2011/06/08 13:16:20 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.5 2011/06/08 14:41:46 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -286,9 +286,12 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       String rhs = "";
       if (mode) {
         for (int j = 0; j < m.nbColumns()-1; j++) {
-          rhs += m.getElement(i,j) + "*sl_loop_" + indexList.getIterationVector().get(j) + "_rg + ";
+          long coeff = m.getElement(i,j);
+          rhs += (j > 0 && coeff >= 0) ? " + " : " ";
+          rhs += coeff + "*sl_loop_" + indexList.getIterationVector().get(j) + "_rg";
         }
-        rhs += m.getElement(i,m.nbColumns()-1);
+        long offset = m.getElement(i,m.nbColumns()-1);
+        rhs += (offset>=0) ? " + "+offset : " "+offset;
       }
       else {
         rhs = "sl_loop_" + indexName + "_rg";
