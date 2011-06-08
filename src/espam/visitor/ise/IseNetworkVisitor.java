@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.4 2011/05/17 15:05:35 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.5 2011/06/08 13:16:20 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -106,9 +106,10 @@ public class IseNetworkVisitor extends PlatformVisitor {
       File dir = new File(_codeDir);
       dir.mkdirs();
       _moddefS = "  ---- Hardware node definitions\n";
+      _reorderdefS = "  ---- Reorder memory definitions\n";
       _modinstS = "  ---- Module instantiations\n";
       _siglistS = "  -- Signals\n";
-      _fifoInst = "  ---- FSL Instantiations\n";
+      _fifoInst = "  ---- FSL/Communication Instantiations\n";
       _externalFifoDecls = "";
       _externalFifoPorts = new Vector<String>();
 
@@ -237,17 +238,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println("");
       _systemPS.println("entity system is");
       _systemPS.println("  port (");
-      if (!_synth) {
-        _systemPS.println("    In1_Exist   : in std_logic;");
-        _systemPS.println("    In1_Rd      : out std_logic;");
-        _systemPS.println("    In1_Din     : in std_logic_vector(31 downto 0);");
-        _systemPS.println("    Out1_Full   : in std_logic;");
-        _systemPS.println("    Out1_Dout   : out std_logic_vector(31 downto 0);");
-        _systemPS.println("    Out1_Wr     : out std_logic;");
-      }
-
       _systemPS.print(_externalFifoDecls);
-
       _systemPS.println("    sys_clk_pin : in std_logic;");
       _systemPS.println("    sys_rst_pin : in std_logic");
       _systemPS.println("  );");
@@ -284,8 +275,9 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println("    );");
       _systemPS.println("  end component;");
       _systemPS.println("");
-      _systemPS.println(_moddefS);
+      _systemPS.println(_reorderdefS);
       _systemPS.println("");
+      _systemPS.println(_moddefS);
 
       _systemPS.println("  constant QUANT  : natural := 32;");
       _systemPS.println(_siglistS);
@@ -302,13 +294,6 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println("  net_gnd0  <= '0';");
       _systemPS.println("  net_gnd16 <= X\"0000\";");
       _systemPS.println("");
-      if (!_synth) {
-        _systemPS.println("  -- Some dummy assignments:");
-        _systemPS.println("  In1_Rd <= '0';");
-        _systemPS.println("  Out1_Wr <= '0';");
-        _systemPS.println("  Out1_Dout <= X\"00000000\";");
-        _systemPS.println("");
-      }
       _systemPS.println(_modinstS);       // HWN instantiations
       _systemPS.println(_fifoInst);       // FSL instantiations
 
@@ -376,9 +361,31 @@ public class IseNetworkVisitor extends PlatformVisitor {
     ADGOutPort outp = (ADGOutPort) _mapping.getCDChannel(x).getFromGate().getAdgPortList().get(0);
     LinearizationType commModel = _mapping.getCDChannel(x).getCommunicationModel();
     if (commModel == LinearizationType.GenericOutOfOrder) {
-      System.err.println("WARNING: Out of order not yet supported in ISE visitor.");
+      System.err.println("WARNING: Out of order support is still experimental!");
       ReorderMemoryVisitor rmv = new ReorderMemoryVisitor(_mapping, _codeDir);
       x.accept(rmv);
+      _iseScriptPS.println("xfile add reorder" + x.getName().substring(4) + "/*.vhd -lib_vhdl work");
+      _iseScriptPS.println();
+      _reorderdefS += "  component reorder" + x.getName().substring(4) + " is\n";
+      _reorderdefS += "    generic (\n";
+      _reorderdefS += "      C_EXT_RESET_HIGH    : integer;\n";
+      _reorderdefS += "      C_DWIDTH            : integer\n";
+      _reorderdefS += "    );\n";
+      _reorderdefS += "    port (\n";
+      _reorderdefS += "      Ext_Clk : in  std_logic;\n";
+      _reorderdefS += "      Ext_Rst : in  std_logic;\n";
+      _reorderdefS += "      FSL_M_Clk     : in  std_logic;\n";
+      _reorderdefS += "      FSL_M_Data    : in  std_logic_vector(0 to C_DWIDTH-1);\n";
+      _reorderdefS += "      FSL_M_Control : in  std_logic;\n";
+      _reorderdefS += "      FSL_M_Write   : in  std_logic;\n";
+      _reorderdefS += "      FSL_M_Full    : out std_logic;\n";
+      _reorderdefS += "      FSL_S_Clk     : in  std_logic;\n";
+      _reorderdefS += "      FSL_S_Data    : out std_logic_vector(0 to C_DWIDTH-1);\n";
+      _reorderdefS += "      FSL_S_Control : out std_logic;\n";
+      _reorderdefS += "      FSL_S_Read    : in  std_logic;\n";
+      _reorderdefS += "      FSL_S_Exists  : out std_logic\n";
+      _reorderdefS += "    );\n";
+      _reorderdefS += "  end component;\n";
     }
 
     ADGEdge edge = (ADGEdge) _mapping.getCDChannel(x).getAdgEdgeList().get(0);
@@ -420,43 +427,68 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
       _fifoInst += "  -- Instantiation of " + x.getName() + "  from " + src.getFunction().getName() + "." + outp.getBindVariables().get(0).getName()
                                                           + " to "    + dst.getFunction().getName() + "." + inp.getBindVariables().get(0).getName() + "\n";
-      int fifosize = x.getSize() + 1;
-      int implstyle;
-      if (fifosize <= 32) {
-        implstyle = 0;  // Use LUTRAM/SRL16
+      if (commModel == LinearizationType.GenericOutOfOrder) {
+        _fifoInst += "  " + x.getName() + " : reorder" + x.getName().substring(4) + "\n";
+        _fifoInst += "    generic map (\n";
+        _fifoInst += "      C_EXT_RESET_HIGH => " + _resetHigh + ",\n";
+        _fifoInst += "      C_DWIDTH         => 32\n";
+        _fifoInst += "    )\n";
+        _fifoInst += "    port map (\n";
+        _fifoInst += "      Ext_Clk         => sys_clk_s,\n";
+        _fifoInst += "      Ext_Rst         => sys_rst_s,\n";
+        _fifoInst += "      FSL_M_Clk       => net_gnd0,\n";
+        _fifoInst += "      FSL_M_Data      => s_" + outp.getName() + "_Dout,\n";
+        _fifoInst += "      FSL_M_Control   => s_" + outp.getName() + "_CTRL,\n";
+        _fifoInst += "      FSL_M_Write     => s_" + outp.getName() + "_Wr,\n";
+        _fifoInst += "      FSL_M_Full      => s_" + outp.getName() + "_Full,\n";
+        _fifoInst += "      FSL_S_Clk       => net_gnd0,\n";
+        _fifoInst += "      FSL_S_Data      => s_" + inp.getName() + "_Din,\n";
+        _fifoInst += "      FSL_S_Control   => s_" + inp.getName() + "_CTRL,\n";
+        _fifoInst += "      FSL_S_Read      => s_" + inp.getName() + "_Rd,\n";
+        _fifoInst += "      FSL_S_Exists    => s_" + inp.getName() + "_Exist\n";
+        _fifoInst += "    );\n";
+        _fifoInst += "\n";
       }
       else {
-        implstyle = 1;  // Use BRAMs
-      }
+        // Instantiate regular FIFO
+        int fifosize = x.getSize() + 1;
+        int implstyle;
+        if (fifosize <= 32) {
+          implstyle = 0;  // Use LUTRAM/SRL16
+        }
+        else {
+          implstyle = 1;  // Use BRAMs
+        }
 
-      _fifoInst += "  " + x.getName() + " : fsl_v20\n";
-      _fifoInst += "    generic map (\n";
-      _fifoInst += "      C_EXT_RESET_HIGH => 0,\n";
-      _fifoInst += "      C_ASYNC_CLKS     => 0,\n";
-      _fifoInst += "      C_IMPL_STYLE     => " + implstyle + ",\n";
-      _fifoInst += "      C_USE_CONTROL    => 0,\n";
-      _fifoInst += "      C_FSL_DWIDTH     => 32,\n";
-      _fifoInst += "      C_FSL_DEPTH      => " + (implstyle==1 ? 512*(int)Math.ceil( (double)fifosize/512 ) : fifosize) + "  -- " + fifosize + "\n";
-      _fifoInst += "    )\n";
-      _fifoInst += "    port map (\n";
-      _fifoInst += "      FSL_Clk         => sys_clk_s,\n";
-      _fifoInst += "      SYS_Rst         => sys_rst_s,\n";
-      _fifoInst += "      FSL_Rst         => open,\n";
-      _fifoInst += "      FSL_M_Clk       => net_gnd0,\n";
-      _fifoInst += "      FSL_M_Data      => s_" + outp.getName() + "_Dout,\n";
-      _fifoInst += "      FSL_M_Control   => s_" + outp.getName() + "_CTRL,\n";
-      _fifoInst += "      FSL_M_Write     => s_" + outp.getName() + "_Wr,\n";
-      _fifoInst += "      FSL_M_Full      => s_" + outp.getName() + "_Full,\n";
-      _fifoInst += "      FSL_S_Clk       => net_gnd0,\n";
-      _fifoInst += "      FSL_S_Data      => s_" + inp.getName() + "_Din,\n";
-      _fifoInst += "      FSL_S_Control   => s_" + inp.getName() + "_CTRL,\n";
-      _fifoInst += "      FSL_S_Read      => s_" + inp.getName() + "_Rd,\n";
-      _fifoInst += "      FSL_S_Exists    => s_" + inp.getName() + "_Exist,\n";
-      _fifoInst += "      FSL_Full        => open,\n";
-      _fifoInst += "      FSL_Has_Data    => open,\n";
-      _fifoInst += "      FSL_Control_IRQ => open\n";
-      _fifoInst += "    );\n";
-      _fifoInst += "\n";
+        _fifoInst += "  " + x.getName() + " : fsl_v20\n";
+        _fifoInst += "    generic map (\n";
+        _fifoInst += "      C_EXT_RESET_HIGH => " + _resetHigh + ",\n";
+        _fifoInst += "      C_ASYNC_CLKS     => 0,\n";
+        _fifoInst += "      C_IMPL_STYLE     => " + implstyle + ",\n";
+        _fifoInst += "      C_USE_CONTROL    => 0,\n";
+        _fifoInst += "      C_FSL_DWIDTH     => 32,\n";
+        _fifoInst += "      C_FSL_DEPTH      => " + (implstyle==1 ? 512*(int)Math.ceil( (double)fifosize/512 ) : fifosize) + "  -- " + fifosize + "\n";
+        _fifoInst += "    )\n";
+        _fifoInst += "    port map (\n";
+        _fifoInst += "      FSL_Clk         => sys_clk_s,\n";
+        _fifoInst += "      SYS_Rst         => sys_rst_s,\n";
+        _fifoInst += "      FSL_Rst         => open,\n";
+        _fifoInst += "      FSL_M_Clk       => net_gnd0,\n";
+        _fifoInst += "      FSL_M_Data      => s_" + outp.getName() + "_Dout,\n";
+        _fifoInst += "      FSL_M_Control   => s_" + outp.getName() + "_CTRL,\n";
+        _fifoInst += "      FSL_M_Write     => s_" + outp.getName() + "_Wr,\n";
+        _fifoInst += "      FSL_M_Full      => s_" + outp.getName() + "_Full,\n";
+        _fifoInst += "      FSL_S_Clk       => net_gnd0,\n";
+        _fifoInst += "      FSL_S_Data      => s_" + inp.getName() + "_Din,\n";
+        _fifoInst += "      FSL_S_Control   => s_" + inp.getName() + "_CTRL,\n";
+        _fifoInst += "      FSL_S_Read      => s_" + inp.getName() + "_Rd,\n";
+        _fifoInst += "      FSL_S_Exists    => s_" + inp.getName() + "_Exist,\n";
+        _fifoInst += "      FSL_Full        => open,\n";
+        _fifoInst += "      FSL_Has_Data    => open,\n";
+        _fifoInst += "      FSL_Control_IRQ => open\n";
+        _fifoInst += "    );\n";
+        _fifoInst += "\n";
+      }
     }
   }
 
@@ -488,10 +520,14 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("  component system is");
     simtbPS.println("    port (");
     simtbPS.print(_externalFifoDecls);
+    simtbPS.println("      sys_clk_pin : in std_logic;");
+    simtbPS.println("      sys_rst_pin : in std_logic");
     simtbPS.println("    );");
     simtbPS.println("  end component;");
     simtbPS.println("");
     String signaldecls = _externalFifoDecls.replaceAll("  s_", "signal s_");
+    signaldecls = signaldecls.replaceAll(": in  ", ": ");
+    signaldecls = signaldecls.replaceAll(": out ", ": ");
     simtbPS.println(signaldecls);
 
     simtbPS.println("  signal sys_clk_pin : std_logic := '0';");
@@ -537,7 +573,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("  process (sys_rst_pin,sys_clk_pin)");
     simtbPS.println("    variable linevar : line;");
     simtbPS.println("    variable good: boolean;");
-    simtbPS.println("    variable val : std_logic_vector(31 downto 0);");
+    simtbPS.println("    variable val0 : std_logic_vector(31 downto 0);");
     simtbPS.println("  begin");
     simtbPS.println("    if (sys_rst_pin = '0') then");
 
@@ -552,9 +588,9 @@ public class IseNetworkVisitor extends PlatformVisitor {
       }
     }
     simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
-    simtbPS.println("      if (cycle_counter = X\"00000040\" or s_ND_1IP_ED_0_0_V_0_Rd = '1') then   --TODO");
+    simtbPS.println("      if (cycle_counter = X\"00000030\" or s_ND_1IP_ED_0_0_V_0_Rd = '1') then   --TODO");
     simtbPS.println("        readline(infile, linevar);");
-    simtbPS.println("        hread(linevar, val, good);");
+    simtbPS.println("        hread(linevar, val0, good);");
     simtbPS.println("        assert good report \"Text I/O read error\" severity ERROR;");
     simtbPS.print(setIpSigs);
     simtbPS.println("      end if;");
@@ -729,7 +765,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     _modinstS += "  -- Component instantiation of node " + _adgNode.getName() + " (" + _adgNode.getFunction().getName() + ")\n";
     _modinstS += "  " + _coreName + "_0 : " + _coreName + "\n";
     _modinstS += "    generic map (\n";
-    _modinstS += "      RESET_HIGH => 0,\n";
+    _modinstS += "      RESET_HIGH => " + _resetHigh + ",\n";
     _modinstS += "      PAR_WIDTH => 16,\n";
     _modinstS += "      QUANT => 32\n";
     _modinstS += "    )\n";
@@ -804,6 +840,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
   private PrintStream _iseScriptPS;
 
   private String _moddefS;
+  private String _reorderdefS;
   private String _modinstS;
   private String _siglistS;
   private String _portmapS;
@@ -832,5 +869,6 @@ public class IseNetworkVisitor extends PlatformVisitor {
   ////////////////////////////////////
 
   private boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
-  private boolean _synth = false;  // Make output suitable for synthesis
+  private boolean _synth = false;   // Make output suitable for synthesis
+  private int _resetHigh = 0;       // Active reset level
 }

@@ -61,7 +61,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.3 2011/05/31 16:07:27 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.4 2011/06/08 13:16:20 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -90,10 +90,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   public void visitComponent(Fifo x) {
     try {
       LinearizationType commModel = _mapping.getCDChannel(x).getCommunicationModel();
-      if (commModel == LinearizationType.GenericOutOfOrder) {
-        System.err.println("WARNING: Out of order not yet supported in ISE visitor.");
-      }
-      else {
+      if (commModel != LinearizationType.GenericOutOfOrder) {
         System.err.println("WARNING: Reorder visitor called, but channel is not GenericOutOfOrder.");
       }
       _coreName = "reorder_" + x.getName().substring(5); // remove leading FIFO_ part from name
@@ -113,7 +110,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       _writeReadAddrGen();
 
     } catch (Exception e) {
-      System.out.println(" In ISE Network Visitor: exception " + "occured: " + e.getMessage());
+      System.out.println("Exception in ISE Network Visitor: " + e.getMessage());
       e.printStackTrace();
     }
 
@@ -130,19 +127,32 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   // // private methods ///
 
   /**
-   * Write node domain info.
+   * Computes the required memory size.
+   */
+  private int _computeMemsize() {
+    int size = 1;
+    // For now, just count the number of points in the bounding box and consider that as the size
+    int boxes[][] = _computeBoundingBoxes(_srcNode.getDomain().getLinearBound());
+    for (int i = 0; i < boxes.length; i++) {
+      size *= boxes[i][2];
+    }
+    return size;
+  }
+
+
+  /**
+   * Writes node domain signal declarations.
    */
   private void _writeDomainData(PrintStream outPS, ADGNode node) {
     IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
     outPS.println("  -- Constants");
     outPS.println("  constant c_COUNTERS     : natural := " + (indexList.getIterationVector().size()) + ";");
 
-    // get counter_width, default is 10
     String s = "";
     int maxCounterWidth = 0;
     int num = indexList.getIterationVector().size() - 1;
     Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
-    
+
     for (int iterNum = 0; iterNum < indexList.getIterationVector().size(); iterNum++){
       String indexName = indexList.getIterationVector().get(iterNum);
       Expression expr_lb = boundExp.get(2*iterNum);
@@ -150,7 +160,6 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       int ub = CompaanHWNodeIseVisitor._findUpperBound(indexName, expr_lb, expr_ub);
       int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2);  // Adding 2 to ensure correctness (sign bit)
       s = num + "=>" + counterWidth + ", " + s;
-
       num--;
 
       if(counterWidth > maxCounterWidth) {
@@ -225,7 +234,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
    * @Return An array which is structured as follows:
    *         [dim][0]  lowerbound
    *         [dim][1]  upperbound
-   *         [dim][2]  max. required size
+   *         [dim][2]  max. required size for dimension
    */
   private int[][] _computeBoundingBoxes(Vector<Polytope> bound) {
     IndexVector indexList = bound.firstElement().getIndexVector();
@@ -254,6 +263,9 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
         ret[i][1] = CompaanHWNodeIseVisitor._findUpperBound(indexName, lbExp, ubExp);
       }
 
+      assert(ret[i][0] >= 0);
+      assert(ret[i][1] >= 0);
+
       ret[i][2] = ret[i][1] - ret[i][0] + 1;
     }
 
@@ -262,7 +274,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
 
   /**
-   * Writes the mapping of OPD to OPD (mode=0) or OPD to IPD (mode=1).
+   * Writes the mapping for write addrgen (mode=0) or read addrgen (mode=1).
    */
   private void _writeIteratorMapping(PrintStream outPS, IndexVector indexList, boolean mode) {
     int nDims = indexList.getIterationVector().size();
@@ -281,7 +293,6 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       else {
         rhs = "sl_loop_" + indexName + "_rg";
       }
-      // TODO: take offset from right domain; then substract offset
       outPS.println("  sl_" + indexName + " <= " + rhs + ";");
     }
     outPS.println("");
@@ -290,7 +301,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
   /**
    * Writes addressing function.
-   * @param isRead Determines whether the edge mapping has to be applied.
+   * @param isRead Determines whether the edge mapping has to be applied or not.
    */
   private void _writeAddressFunction(PrintStream outPS, ADGNode node, boolean isRead) {
     IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
@@ -333,7 +344,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("");
     outPS.println("entity " + entityName + " is");
     outPS.println("  generic (");
-    outPS.println("    C_AWIDTH : integer := 16");
+    outPS.println("    C_AWIDTH : integer := 8");
     outPS.println("  );");
     outPS.println("  port (");
     outPS.println("    clk       : in  std_logic;");
@@ -369,7 +380,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("");
     outPS.println("begin");
     outPS.println("");
-    outPS.println("  wag_cntr : GEN_COUNTER");
+    outPS.println("  ag_cntr : GEN_COUNTER");
     outPS.println("  generic map(");
     outPS.println("    N_CNTRS       => c_COUNTERS,");
     outPS.println("    QUANT         => c_CNTR_QUANT,");
@@ -395,9 +406,9 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
    * Write the write address generator file.
    */
   private void _writeWriteAddrGen() throws FileNotFoundException {
-    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_wag.vhd");
+    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_WAG.vhd");
     outPS.println("-- Write address generator for channel " + _fifo.getName());
-    _writeAddrGenCommon(outPS, _srcNode, _coreName + "_wag");
+    _writeAddrGenCommon(outPS, _srcNode, _coreName + "_WAG");
     _writeAddressFunction(outPS, _srcNode, false);
     outPS.println("");
     outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
@@ -411,9 +422,9 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
    * Write the read address generator file.
    */
   private void _writeReadAddrGen() throws FileNotFoundException {
-    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_rag.vhd");
+    PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_RAG.vhd");
     outPS.println("-- Read address generator for channel " + _fifo.getName());
-    _writeAddrGenCommon(outPS, _dstNode, _coreName + "_rag");
+    _writeAddrGenCommon(outPS, _dstNode, _coreName + "_RAG");
     _writeAddressFunction(outPS, _srcNode, true);
     outPS.println("");
     outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
@@ -435,11 +446,13 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("library IEEE;");
     topPS.println("use IEEE.std_logic_1164.all;");
     topPS.println("");
+    topPS.println("library fsl_v20_v2_11_a;");
+    topPS.println("use fsl_v20_v2_11_a.sync_bram;");
+    topPS.println("");
     topPS.println("entity " + _coreName + " is");
     topPS.println("  generic (");
     topPS.println("    C_EXT_RESET_HIGH    : integer := 1;");
-    topPS.println("    C_DWIDTH            : integer := 32;");
-    topPS.println("    C_AWIDTH            : integer := 4");
+    topPS.println("    C_DWIDTH            : integer := 32");
     topPS.println("  );");
     topPS.println("  port (");
     topPS.println("    -- Clock and reset signals");
@@ -465,8 +478,63 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("");
     topPS.println("architecture behaviour of " + _coreName +" is");
     topPS.println("");
-    topPS.println("  signal s_rst : std_logic;");
-    topPS.println("  signal s_clk : std_logic;");
+    topPS.println("  component " + _coreName + "_RAG is");
+    topPS.println("    generic (");
+    topPS.println("      C_AWIDTH : integer := 8");
+    topPS.println("    );");
+    topPS.println("    port (");
+    topPS.println("      clk       : in  std_logic;");
+    topPS.println("      rst       : in  std_logic;");
+    topPS.println("      nextAddr  : in  std_logic;");
+    topPS.println("      address   : out std_logic_vector(C_AWIDTH-1 downto 0)");
+    topPS.println("    );");
+    topPS.println("  end component;");
+    topPS.println("");
+    topPS.println("  component " + _coreName + "_WAG is");
+    topPS.println("    generic (");
+    topPS.println("      C_AWIDTH : integer := 8");
+    topPS.println("    );");
+    topPS.println("    port (");
+    topPS.println("      clk       : in  std_logic;");
+    topPS.println("      rst       : in  std_logic;");
+    topPS.println("      nextAddr  : in  std_logic;");
+    topPS.println("      address   : out std_logic_vector(C_AWIDTH-1 downto 0)");
+    topPS.println("    );");
+    topPS.println("  end component;");
+    topPS.println("");
+    topPS.println("  component Sync_BRAM is");
+    topPS.println("    generic (");
+    topPS.println("      C_DWIDTH : integer := 32;");
+    topPS.println("      C_AWIDTH : integer := 16");
+    topPS.println("    );");
+    topPS.println("    port (");
+    topPS.println("      clk     : in  std_logic;");
+    topPS.println("      -- Write port");
+    topPS.println("      we      : in  std_logic;");
+    topPS.println("      a       : in  std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("      di      : in  std_logic_vector(C_DWIDTH-1 downto 0);");
+    topPS.println("      spo     : out std_logic_vector(C_DWIDTH-1 downto 0);");
+    topPS.println("      -- Read port");
+    topPS.println("      dpra_en : in  std_logic;");
+    topPS.println("      dpra    : in  std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("      dpo     : out std_logic_vector(C_DWIDTH-1 downto 0)");
+    topPS.println("    );");
+    topPS.println("  end component;");
+    topPS.println("");
+    topPS.println("  constant C_AWIDTH : natural := " + (int)Math.ceil(Math.log(_computeMemsize())/Math.log(2)) + ";");
+    topPS.println("");
+    topPS.println("  signal read_addr       : std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("  signal read_addr_1     : std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("  signal read_addr_bram  : std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("  signal write_addr      : std_logic_vector(C_AWIDTH-1 downto 0);");
+    topPS.println("  signal dout            : std_logic_vector(C_DWIDTH downto 0);");
+    topPS.println("  signal din             : std_logic_vector(C_DWIDTH downto 0);");
+    topPS.println("  signal read_en         : std_logic;");
+    topPS.println("  signal write_en        : std_logic;");
+    topPS.println("  signal exists          : std_logic;");
+    topPS.println("  signal s_initstrobe    : std_logic;");
+    topPS.println("  signal s_rst, s_rst_1  : std_logic;");
+    topPS.println("  signal s_clk           : std_logic;");
     topPS.println("");
     topPS.println("begin");
     topPS.println("");
@@ -474,9 +542,79 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("  s_rst <= Ext_Rst when C_EXT_RESET_HIGH=1 else not Ext_Rst;");
     topPS.println("");
 
-    // TODO
-    topPS.println("-- TODO: generate body, this is a playground for now");
-    JMatrix m = _adgEdge.getMapping();
+    topPS.println("  -- Read address generator");
+    topPS.println("  raddrgen_1 : " + _coreName + "_RAG");
+    topPS.println("    generic map (");
+    topPS.println("      C_AWIDTH => C_AWIDTH");
+    topPS.println("    )");
+    topPS.println("    port map (");
+    topPS.println("      clk => s_clk,");
+    topPS.println("      rst => s_rst,");
+    topPS.println("      nextAddr => read_en,");
+    topPS.println("      address => read_addr");
+    topPS.println("    );");
+    topPS.println("");
+    topPS.println("  -- Write address generator");
+    topPS.println("  waddrgen_1 : " + _coreName + "_WAG");
+    topPS.println("    generic map (");
+    topPS.println("      C_AWIDTH => C_AWIDTH");
+    topPS.println("    )");
+    topPS.println("    port map (");
+    topPS.println("      clk => s_clk,");
+    topPS.println("      rst => s_rst,");
+    topPS.println("      nextAddr => write_en,");
+    topPS.println("      address => write_addr");
+    topPS.println("    );");
+    topPS.println("");
+
+    topPS.println("  -- The actual memory");
+    topPS.println("  Sync_BRAM_I1 : Sync_BRAM");
+    topPS.println("    generic map (");
+    topPS.println("      C_DWIDTH => C_DWIDTH+1,");
+    topPS.println("      C_AWIDTH => C_AWIDTH");
+    topPS.println("    )");
+    topPS.println("    port map (");
+    topPS.println("      clk => s_clk,");
+    topPS.println("      -- Write port");
+    topPS.println("      we  => write_en,");
+    topPS.println("      a   => write_addr,");
+    topPS.println("      di  => din,");
+    topPS.println("      spo => open,");
+    topPS.println("      -- Read port");
+    topPS.println("      dpra_en => '1',");
+    topPS.println("      dpra    => read_addr_bram,");
+    topPS.println("      dpo     => dout");
+    topPS.println("    );");
+    topPS.println("");
+
+    topPS.println("  read_addr_bram <= read_addr when FSL_S_Read = '1' else read_addr_1;");
+    topPS.println("");
+    topPS.println("  write_en <= FSL_M_Write;");
+    topPS.println("  read_en <= FSL_S_Read or s_initstrobe;");
+    topPS.println("");
+    topPS.println("  FSL_M_Full <= s_rst_1;");
+    topPS.println("  din <= '1' & FSL_M_Data;");
+    topPS.println("");
+    topPS.println("  exists <= '1' when dout(C_DWIDTH) = '1' else '0';");
+    topPS.println("  FSL_S_Exists <= exists;");
+    topPS.println("  FSL_S_Data <= dout(C_DWIDTH-1 downto 0);");
+    topPS.println("");
+    topPS.println("  process (s_clk) begin");
+    topPS.println("    if (rising_edge(s_clk)) then");
+    topPS.println("      s_rst_1 <= s_rst;");
+    topPS.println("    end if;");
+    topPS.println("  end process;");
+    topPS.println("  s_initstrobe <= not s_rst and s_rst_1;");
+    topPS.println("");
+    topPS.println("  process (s_rst, s_clk) begin");
+    topPS.println("    if (s_rst = '1') then");
+    topPS.println("      read_addr_1 <= (others => '0');");
+    topPS.println("    elsif (rising_edge(s_clk)) then");
+    topPS.println("      if (read_en = '1') then");
+    topPS.println("        read_addr_1 <= read_addr;");
+    topPS.println("      end if;");
+    topPS.println("    end if;");
+    topPS.println("  end process;");
 
     topPS.println("");
     topPS.println("end architecture behaviour;");
