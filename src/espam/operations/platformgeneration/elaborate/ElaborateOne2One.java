@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.Vector;
 import java.util.Hashtable;
 
+import espam.datamodel.LinearizationType;
+
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Link;
@@ -62,6 +64,7 @@ import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.pn.cdpn.CDOutGate;
 import espam.datamodel.pn.cdpn.CDInGate;
+
 
 /**
  *  This class elaborates a platform in 'one-to-one' manner:
@@ -152,8 +155,13 @@ public class ElaborateOne2One {
 		CDProcessNetwork cdpn = mapping.getCDPN();
 
 		Resource processor = (Resource) platform.getResourceList().get(0);
-		int dataMemSize = ((Processor) processor).getDataMemSize();
-		int progMemSize = ((Processor) processor).getProgMemSize();
+
+		int dataMemSize = 0;
+		int progMemSize = 0;
+                if (processor instanceof MicroBlaze || processor instanceof PowerPC) {
+                    dataMemSize = ((Processor) processor).getDataMemSize();
+                    progMemSize = ((Processor) processor).getProgMemSize();
+                }
 
 		// The platform spec. contains only one component. New components to be added.
 		platform.getResourceList().clear();
