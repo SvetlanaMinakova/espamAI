@@ -35,7 +35,7 @@ import espam.datamodel.domain.*;
  * specific way for VHDL.
  *
  * @author Ying Tao
- * @version $Id: VhdlExpressionVisitor.java,v 1.1 2007/12/07 22:07:25 stefanov Exp $
+ * @version $Id: VhdlExpressionVisitor.java,v 1.2 2011/06/09 13:18:31 svhaastr Exp $
  *           
  * @stereotype Visitor Design Pattern
  */
@@ -57,6 +57,9 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 	public String visit(Expression x) {
 		String R = "";
 	
+    if (x.getDenominator() != 1) {
+      R += "(";
+    }
 		if (x.isZero() == false) {
 			Iterator i = x.iterator();
 			boolean first = true;
@@ -71,9 +74,11 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 		} else {
 			R += "0";
 		}
-		if (x.getDenominator() != 1) {
-			R += "," + x.getDenominator() + ")";
-		}
+    if (x.getDenominator() != 1) {
+      assert(x.getDenominator() > 0);
+      // Assuming ceiled division
+      R += " +" + (x.getDenominator()-1) + ")/" + x.getDenominator();
+    }
 
 		return R;
 	}
@@ -93,6 +98,9 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 		_indexVector = indexVector;
 		_flag = flag;
 	
+    if (x.getDenominator() != 1) {
+      R += "(";
+    }
 		if (x.isZero() == false) {
 			Iterator i = x.iterator();
 			boolean first = true;
@@ -107,9 +115,11 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 		} else {
 			R += "0";
 		}
-		if (x.getDenominator() != 1) {
-			R += "," + x.getDenominator() + ")";
-		}
+    if (x.getDenominator() != 1) {
+      assert(x.getDenominator() > 0);
+      // Assuming ceiled division
+      R += " +" + (x.getDenominator()-1) + ")/" + x.getDenominator();
+    }
 
 		return R;
 	}
