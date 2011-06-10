@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.5 2011/06/08 13:16:20 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.6 2011/06/10 11:49:22 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -869,6 +869,6 @@ public class IseNetworkVisitor extends PlatformVisitor {
   ////////////////////////////////////
 
   private boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
-  private boolean _synth = false;   // Make output suitable for synthesis
+  private boolean _synth = false;   // Make output suitable for synthesis (true) or simulation (false)
   private int _resetHigh = 0;       // Active reset level
 }

@@ -61,7 +61,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.5 2011/06/08 14:41:46 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.6 2011/06/10 11:49:22 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -149,15 +149,19 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("  constant c_COUNTERS     : natural := " + (indexList.getIterationVector().size()) + ";");
 
     String s = "";
+    String iterDecls = "";
+
     int maxCounterWidth = 0;
     int num = indexList.getIterationVector().size() - 1;
     Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
+    int bounds[][] = _computeBoundingBoxes(node.getDomain().getLinearBound());
 
     for (int iterNum = 0; iterNum < indexList.getIterationVector().size(); iterNum++){
       String indexName = indexList.getIterationVector().get(iterNum);
       Expression expr_lb = boundExp.get(2*iterNum);
       Expression expr_ub = boundExp.get(2*iterNum + 1);
-      int ub = CompaanHWNodeIseVisitor._findUpperBound(indexName, expr_lb, expr_ub);
+      int lb = bounds[iterNum][0];
+      int ub = bounds[iterNum][1];
       int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2);  // Adding 2 to ensure correctness (sign bit)
       s = num + "=>" + counterWidth + ", " + s;
       num--;
@@ -165,6 +169,10 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       if(counterWidth > maxCounterWidth) {
         maxCounterWidth = counterWidth;
       }
+
+      iterDecls += "  signal sl_low_" + indexName +", sl_high_" + indexName +"      : integer;\n";
+      iterDecls += "  signal sl_loop_" + indexName + ", sl_loop_" + indexName + "_rg  : integer range " + lb + " to " + ub + ";\n";
+      iterDecls += "  signal sl_" + indexName + "                      : integer range " + lb + " to " + ub + ";\n";
     }
     outPS.println("  constant c_CNTR_QUANT   : natural := " + maxCounterWidth + ";");
     outPS.println("  constant c_CNTR_WIDTHS  : t_counter_width := ( " + s + "others=>10 );");
@@ -172,14 +180,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("  signal sl_lower_bnd, sl_upper_bnd : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
     outPS.println("  signal sl_ITERATORS               : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
     outPS.println("  signal sl_REG_CNTRS               : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
-
-    Iterator j = indexList.getIterationVector().iterator();
-    while(j.hasNext()){
-      s = (String) j.next();
-      outPS.println("  signal sl_low_" + s +", sl_high_" + s +"      : integer;");
-      outPS.println("  signal sl_loop_" + s + ", sl_loop_" + s + "_rg  : integer;");
-      outPS.println("  signal sl_" + s + "                      : integer;");
-    }
+    outPS.println(iterDecls);
   }
 
 
@@ -241,31 +242,16 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(bound.get(0));
     int nDims = indexList.getIterationVector().size();
     int ret[][] = new int[nDims][3];
+    ExpressionAnalyzer ea = new ExpressionAnalyzer(indexList);
 
     for (int i = 0; i < nDims; i++) {
       String indexName = indexList.getIterationVector().get(i);
 			Expression lbExp = boundExp.get(2*i);
 			Expression ubExp = boundExp.get(2*i + 1);
 
-      if (lbExp.isNumber()) {
-        ret[i][0] = lbExp.evaluate(null, null);
-      }
-      else {
-        // TODO: do something smarter here to find more accurate lowerbound
-        System.out.println("[ReorderMemoryVisitor] Setting non-constant lowerbound to 0 for iterator " + indexName);
-        ret[i][0] = 0;
-      }
-
-      if (ubExp.isNumber()) {
-        ret[i][1] = ubExp.evaluate(null, null);
-      }
-      else {
-        ret[i][1] = CompaanHWNodeIseVisitor._findUpperBound(indexName, lbExp, ubExp);
-      }
-
-      assert(ret[i][0] >= 0);
-      assert(ret[i][1] >= 0);
-
+      int bnds[] = ea.findBounds(indexName, lbExp, ubExp);
+      ret[i][0] = bnds[0];
+      ret[i][1] = bnds[1];
       ret[i][2] = ret[i][1] - ret[i][0] + 1;
     }
 
