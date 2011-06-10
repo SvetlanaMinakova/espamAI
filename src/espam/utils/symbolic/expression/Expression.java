@@ -45,7 +45,7 @@ import espam.visitor.ExpressionVisitor;
  * 
  * 
  * @author Bart Kienhuis, Alexandru Turjan
- * @version $Id: Expression.java,v 1.1 2007/12/07 22:06:51 stefanov Exp $
+ * @version $Id: Expression.java,v 1.2 2011/06/10 11:41:38 svhaastr Exp $
  */
 
 public class Expression extends ArrayList {
@@ -329,7 +329,7 @@ public class Expression extends ArrayList {
 			j = (LinTerm) i.next();
 			sum += j.evaluate(point, indices);
 		}
-		return sum;
+		return sum/getDenominator();
 	}
 
 	/**
@@ -1287,7 +1287,7 @@ public class Expression extends ArrayList {
 	 * the manager.
 	 * 
 	 * @author Bart Kienhuis
-	 * @version $Id: Expression.java,v 1.1 2007/12/07 22:06:51 stefanov Exp $
+	 * @version $Id: Expression.java,v 1.2 2011/06/10 11:41:38 svhaastr Exp $
 	 */
 	private static class State {
 
