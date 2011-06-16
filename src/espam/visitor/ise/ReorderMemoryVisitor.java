@@ -61,7 +61,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.6 2011/06/10 11:49:22 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.7 2011/06/16 16:14:22 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -99,7 +99,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       dir.mkdirs();
 
       CDChannel cdchan = _mapping.getCDChannel(x);
-      assert(cdchan.getAdgEdgeList().size() == 1);    // Multiple ADGEdges for same channel untested/unhandled
+      //assert(cdchan.getAdgEdgeList().size() == 1);    // Multiple ADGEdges for same channel untested/unhandled
       _adgEdge = (ADGEdge) cdchan.getAdgEdgeList().get(0);
 
       _fifo = x;
@@ -156,13 +156,14 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
     int bounds[][] = _computeBoundingBoxes(node.getDomain().getLinearBound());
 
+    ExpressionAnalyzer ea = new ExpressionAnalyzer(indexList);
     for (int iterNum = 0; iterNum < indexList.getIterationVector().size(); iterNum++){
       String indexName = indexList.getIterationVector().get(iterNum);
-      Expression expr_lb = boundExp.get(2*iterNum);
-      Expression expr_ub = boundExp.get(2*iterNum + 1);
+			Expression expr_lb = boundExp.get(2*iterNum);
+			Expression expr_ub = boundExp.get(2*iterNum + 1);
       int lb = bounds[iterNum][0];
       int ub = bounds[iterNum][1];
-      int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2);  // Adding 2 to ensure correctness (sign bit)
+      int counterWidth = ea.computeCounterWidth(indexName, expr_lb, expr_ub);
       s = num + "=>" + counterWidth + ", " + s;
       num--;
 
@@ -170,9 +171,11 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
         maxCounterWidth = counterWidth;
       }
 
-      iterDecls += "  signal sl_low_" + indexName +", sl_high_" + indexName +"      : integer;\n";
+      iterDecls += "  signal sl_low_" + indexName + ", sl_high_" + indexName + "      : integer;\n";
       iterDecls += "  signal sl_loop_" + indexName + ", sl_loop_" + indexName + "_rg  : integer range " + lb + " to " + ub + ";\n";
-      iterDecls += "  signal sl_" + indexName + "                      : integer range " + lb + " to " + ub + ";\n";
+      iterDecls += "  signal sl_" + indexName + ", sl_" + indexName + "_rg            : integer range " + lb + " to " + ub + ";\n";
+      iterDecls += "  signal sl_m_" + indexName + "                    : integer range " + lb + " to " + ub + ";\n";
+      iterDecls += "  signal sl_" + indexName + "incr                  : std_logic;\n";
     }
     outPS.println("  constant c_CNTR_QUANT   : natural := " + maxCounterWidth + ";");
     outPS.println("  constant c_CNTR_WIDTHS  : t_counter_width := ( " + s + "others=>10 );");
@@ -194,28 +197,46 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
     exprIter = boundExp.iterator();
     
-    Iterator j = indexList.getIterationVector().iterator();
+    String incrAssignments = "";
+    String loopIterAssignments = "";
+    String loopIterRgAssignments = "";
+    Iterator j;
+    int loopNum = indexList.getIterationVector().size();
+    j = indexList.getIterationVector().iterator();
+    while (j.hasNext()) {
+      String s = (String) j.next();
+      outPS.println("  sl_" + s + "    <= to_integer(signed( sl_ITERATORS(c_CNTR_WIDTHS(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*c_CNTR_QUANT-1 downto " + (loopNum - 1) + "*c_CNTR_QUANT)));");
+      outPS.println("  sl_" + s + "_rg <= to_integer(signed( sl_REG_CNTRS(c_CNTR_WIDTHS(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*c_CNTR_QUANT-1 downto " + (loopNum - 1) + "*c_CNTR_QUANT)));");
+      if (j.hasNext()) {
+        int counterNum = Integer.parseInt(s.substring(1));
+        incrAssignments += "  sl_" + s + "incr <= '1' when sl_" + s.substring(0,1) + (counterNum+1) + "_rg=sl_high_" + s + " else '0';\n";
+        loopIterAssignments += "  sl_loop_" + s + " <= sl_" + s + " when sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
+      }
+      loopIterRgAssignments += "  sl_loop_" + s + "_rg <= sl_" + s + "_rg;\n";
+      loopNum--;
+    }
+    outPS.println("");
+
+		outPS.println("  -- Individual counter increment signals");
+    outPS.println(incrAssignments);
+    outPS.println("  -- Iterators used in bound expressions");	
+		outPS.println(loopIterAssignments);
+    outPS.println("  -- Registered iterators");
+		outPS.println(loopIterRgAssignments);
+
+    j = indexList.getIterationVector().iterator();
     while (j.hasNext() && exprIter.hasNext()) {
       String s = (String) j.next();
       Expression lbExp = (Expression) exprIter.next();
       Expression ubExp = (Expression) exprIter.next();
 
       String lowerBound   = ExpVisit.visit(lbExp, indexList, 0);
-      String lowerBoundRg = ExpVisit.visit(lbExp, indexList, 1);
+      //String lowerBoundRg = ExpVisit.visit(lbExp, indexList, 1);
       String upperBound   = ExpVisit.visit(ubExp, indexList, 1);
 
-      outPS.println("  sl_low_" + s + "     <= " + lowerBound + " when RST='0' else " + lowerBoundRg +";");
-      outPS.println("  sl_high_" + s + "    <= " + upperBound + ";");
-    }
-    outPS.println("");
-
-    int loopNum = indexList.getIterationVector().size();
-    j = indexList.getIterationVector().iterator();
-    while (j.hasNext()) {
-      String s = (String) j.next();
-      outPS.println("  sl_loop_" + s + "    <= to_integer(signed( sl_ITERATORS(c_CNTR_WIDTHS(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*c_CNTR_QUANT-1 downto " + (loopNum - 1) + "*c_CNTR_QUANT)));");
-      outPS.println("  sl_loop_" + s + "_rg <= to_integer(signed( sl_REG_CNTRS(c_CNTR_WIDTHS(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*c_CNTR_QUANT-1 downto " + (loopNum - 1) + "*c_CNTR_QUANT)));");
-      loopNum--;
+      //outPS.println("  sl_low_" + s + "     <= " + lowerBound + " when RST='0' else " + lowerBoundRg +";");
+			outPS.println("  sl_low_" + s + "  <= " + lowerBound + ";");
+      outPS.println("  sl_high_" + s + " <= " + upperBound + ";");
     }
     outPS.println("");
 
@@ -282,7 +303,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       else {
         rhs = "sl_loop_" + indexName + "_rg";
       }
-      outPS.println("  sl_" + indexName + " <= " + rhs + ";");
+      outPS.println("  sl_m_" + indexName + " <= " + rhs + ";");
     }
     outPS.println("");
   }
@@ -307,10 +328,10 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       String indexName = indexList.getIterationVector().get(iterNum);
       outPS.println("  -- " + indexName + "  " + boxes[iterNum][0] + "--" + boxes[iterNum][1] + "  " + boxes[iterNum][2]);
       if (iterNum == 0) {
-        addrFunc += "sl_" + indexName;
+        addrFunc += "sl_m_" + indexName;
       }
       else {
-        addrFunc = "(" + addrFunc + "*" + boxes[iterNum][2] + "+sl_" + indexName + ")";
+        addrFunc = "(" + addrFunc + "*" + boxes[iterNum][2] + "+sl_m_" + indexName + ")";
       }
     }
     outPS.println("  s_address <= " + addrFunc + ";");

@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.6 2011/06/10 11:49:22 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.7 2011/06/16 16:14:22 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -194,11 +194,11 @@ public class IseNetworkVisitor extends PlatformVisitor {
           Iterator j = _mapping.getProcessorList().iterator();
           while(j.hasNext()){
             MProcessor mp = (MProcessor) j.next();
-            System.out.println(mp.getResource().getName() + "   " + _coreName);
+            //System.out.println(mp.getResource().getName() + "   " + _coreName);
             if(mp.getResource() instanceof CompaanHWNode){
               if(mp.getResource().getName().equals(_coreName)== true){
                 MProcess p = (MProcess)mp.getProcessList().get(0);
-                System.out.println(p);
+                //System.out.println(p);
                 _adgNode = p.getNode();
                 _inArgList = _adgNode.getFunction().getInArgumentList();
                 _adgInPorts = _adgNode.getInPorts();
@@ -386,6 +386,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _reorderdefS += "      FSL_S_Exists  : out std_logic\n";
       _reorderdefS += "    );\n";
       _reorderdefS += "  end component;\n";
+      _reorderdefS += "\n";
     }
 
     ADGEdge edge = (ADGEdge) _mapping.getCDChannel(x).getAdgEdgeList().get(0);
@@ -425,7 +426,8 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _siglistS += "  signal s_" + inp.getName() + "_Din   : std_logic_vector(QUANT-1 downto 0);\n";
       _siglistS += "  signal s_" + inp.getName() + "_Exist : std_logic;\n";
 
-      _fifoInst += "  -- Instantiation of " + x.getName() + "  from " + src.getFunction().getName() + "." + outp.getBindVariables().get(0).getName()
+      _fifoInst += "  -- Instantiation of " + x.getName() + " " + edge.getName()
+                                                          + "  from " + src.getFunction().getName() + "." + outp.getBindVariables().get(0).getName()
                                                           + " to "    + dst.getFunction().getName() + "." + inp.getBindVariables().get(0).getName() + "\n";
       if (commModel == LinearizationType.GenericOutOfOrder) {
         _fifoInst += "  " + x.getName() + " : reorder" + x.getName().substring(4) + "\n";
@@ -584,7 +586,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
         simtbPS.println("      s_" + fifoName + "_Exist <= '0';");
         simtbPS.println("      s_" + fifoName + "_Din <= X\"FFFFFFFF\";");
         setIpSigs += "        s_" + fifoName + "_Exist <= '1';\n";
-        setIpSigs += "        s_" + fifoName + "_Din <= val" + i + ";\n";
+        setIpSigs += "        s_" + fifoName + "_Din <= val0;\n";
       }
     }
     simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
@@ -715,6 +717,10 @@ public class IseNetworkVisitor extends PlatformVisitor {
           adg_out_port = (ADGOutPort) j.next();
           if (adg_out_port.getBindVariables().get(0).getName().equals(out_arg_name)== true){
             binding_out_ports.addElement(adg_out_port);
+          }
+          else {
+            System.out.println("Skipping " + adg_out_port.getName() + "  " + out_arg_name);
+            System.out.println("WARNING: Probably you didn't specify --no-reuse to pn?");
           }
         }
         

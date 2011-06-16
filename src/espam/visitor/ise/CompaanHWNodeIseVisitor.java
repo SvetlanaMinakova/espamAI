@@ -61,7 +61,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.2 2011/05/12 15:28:24 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.3 2011/06/16 16:14:22 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -115,10 +115,39 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 								MProcess p = (MProcess)mp.getProcessList().get(0);
 								_adgNode = p.getNode();
 								_inArgList = _adgNode.getFunction().getInArgumentList();
-								_adgInPorts = _adgNode.getInPorts();
+								//_adgInPorts = _adgNode.getInPorts();
 								_outArgList = _adgNode.getFunction().getOutArgumentList();
-								_adgOutPorts = _adgNode.getOutPorts();
+								//_adgOutPorts = _adgNode.getOutPorts();
 								_indexList = _adgNode.getDomain().getLinearBound().firstElement().getIndexVector();
+
+                //////
+                // Only take the relevant input ports
+                _adgInPorts = new Vector();
+                Iterator pi = _adgNode.getInPorts().iterator();
+                while (pi.hasNext()) {
+                  ADGInPort port = (ADGInPort) pi.next();
+                  Iterator ai = _inArgList.iterator();
+                  while (ai.hasNext()) {
+                    ADGVariable var = (ADGVariable) ai.next();
+                    if (var.getName().equals(port.getBindVariables().get(0).getName())) {
+                      _adgInPorts.add(port);
+                    }
+                  }
+                }
+                // Only take the relevant output ports
+                _adgOutPorts = new Vector();
+                pi = _adgNode.getOutPorts().iterator();
+                while (pi.hasNext()) {
+                  ADGOutPort port = (ADGOutPort) pi.next();
+                  Iterator ai = _outArgList.iterator();
+                  while (ai.hasNext()) {
+                    ADGVariable var = (ADGVariable) ai.next();
+                    if (var.getName().equals(port.getBindVariables().get(0).getName())) {
+                      _adgOutPorts.add(port);
+                    }
+                  }
+                }
+                //////
 
 								//get the hashmap of all parameters and their upperbounds
 								Iterator paramIter;
@@ -147,7 +176,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
             dir = new File(_currentCodeDir + "/" + _hdlDir);
             dir.mkdirs();
 
-            _analyzeCounters();
+            if (_optimizeCounters == true)
+              _analyzeCounters();
 
             _writeHdlFuncFile();
             _writeHdlExUnitFile();
@@ -175,7 +205,6 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	private void _analyzeCounters() {
 		//get the upper/lower bound expressions
 		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().firstElement());
-    _skipList = new Vector<String>();
 	
 		Iterator exprIter;
 		VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
@@ -448,7 +477,6 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 		
 		j = _indexList.getIterationVector().iterator();
-		// signals corresponding to iterators.
 		// first one is the most outer loop
 		while(j.hasNext()){
 			String s = (String) j.next();
@@ -457,6 +485,26 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			hdlPS.println("   signal sl_loop_" + s + ", sl_loop_" + s + "_rg : integer;");
 		}
 		
+		j = _indexList.getIterationVector().iterator();
+		// first one is the most outer loop
+		while(j.hasNext()){
+			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
+			hdlPS.println("   signal sl_" + s + ", sl_" + s + "_rg : integer;");
+		}
+		
+    // Print increment strobes for first N-1 counters
+		j = _indexList.getIterationVector().iterator();
+		while(j.hasNext()){
+			String s = (String) j.next();
+      if (_skipList.contains(s))
+        continue;
+      if (j.hasNext()) {
+  			hdlPS.println("   signal sl_" + s + "incr : std_logic;");
+      }
+		}
+
 		if(paramNames.size() != 0){
 			hdlPS.println("   " + param + " : integer;");
 		}
@@ -522,6 +570,9 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}		
 		hdlPS.println("");
 		
+    String incrAssignments = "";
+    String loopIterAssignments = "";
+    String loopIterRgAssignments = "";
 		// !!!!!!CNTR_WIDTH(0) corresponds to inner loop, to be consistant with gen_counter
 		int loopNum = _indexList.getIterationVector().size() - _skipList.size();
 		j = _indexList.getIterationVector().iterator();
@@ -529,12 +580,24 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			String s = (String) j.next();
       if (_skipList.contains(s))
         continue;
-			hdlPS.println("   sl_loop_" + s + "    <= CONV_INTEGER( ITERATORS(CNTR_WIDTH(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
-			hdlPS.println("   sl_loop_" + s + "_rg <= CONV_INTEGER( REG_CNTRS(CNTR_WIDTH(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
+			hdlPS.println("   sl_" + s + "    <= CONV_INTEGER( ITERATORS(CNTR_WIDTH(" + (loopNum - 1)+ ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
+			hdlPS.println("   sl_" + s + "_rg <= CONV_INTEGER( REG_CNTRS(CNTR_WIDTH(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
+      if (j.hasNext()) {
+        int counterNum = Integer.parseInt(s.substring(1));
+        incrAssignments += "   sl_" + s + "incr <= '1' when sl_" + s.substring(0,1) + (counterNum+1) + "_rg=sl_high_" + s + " else '0';\n";
+        loopIterAssignments += "   sl_loop_" + s + " <= sl_" + s + " when sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
+      }
+      loopIterRgAssignments += "   sl_loop_" + s + "_rg <= sl_" + s + "_rg;\n";
 			loopNum--;
 		}
 		
-		hdlPS.println("");	
+		hdlPS.println("");
+		hdlPS.println("   -- Individual counter increment signals");
+    hdlPS.println(incrAssignments);
+    hdlPS.println("   -- Iterators used in bound expressions");	
+		hdlPS.println(loopIterAssignments);
+    hdlPS.println("   -- Registered iterators");
+		hdlPS.println(loopIterRgAssignments);
 		
 		//get the upper/lower bound expressions
 		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().firstElement());
@@ -555,7 +618,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			String lowerBoundRg = ExpVisit.visit(lbExp, _indexList, 1);
 			String upperBound   = ExpVisit.visit(ubExp, _indexList, 1);
 
-			hdlPS.println("   sl_low_" + s + "  <= " + lowerBound + " when RST='0' else " + lowerBoundRg +";");
+			//hdlPS.println("   sl_low_" + s + "  <= " + lowerBound + " when RST='0' else " + lowerBoundRg +";");
+			hdlPS.println("   sl_low_" + s + " <= " + lowerBound + ";");
 			hdlPS.println("   sl_high_" + s + " <= " + upperBound + ";");
 		}
 
@@ -1175,29 +1239,20 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 		hdlPS.println("   constant c_COUNTERS     : natural := " + (_indexList.getIterationVector().size()-_skipList.size()) + "; -- number of iterators");
 		
-		// get counter_width, default is 10
+		// get counter_width
 		String s = "";
 		int num = _indexList.getIterationVector().size() - _skipList.size() - 1;
 		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().get(0));
 		
+    ExpressionAnalyzer ea = new ExpressionAnalyzer(_indexList);
 		for (int iterNum = 0; iterNum < _indexList.getIterationVector().size(); iterNum++){
 			String indexName = _indexList.getIterationVector().get(iterNum);
       if (_skipList.contains(indexName))
         continue;
-			//System.out.println("index name " + indexName);
 			Expression expr_lb = boundExp.get(2*iterNum);
 			Expression expr_ub = boundExp.get(2*iterNum + 1);
 			
-			//System.out.println("upperbound expression " + expr_ub.toString());
-			//System.out.println("lowerbound expression " + expr_lb.toString());
-			
-			int ub = _findUpperBound(indexName, expr_lb, expr_ub);
-      //int ub = 1024;
-			//System.out.println("index name " + indexName);
-			
-	
-			//int counterWidth = (int) ((Math.log(ub)+1)/Math.log(2)) ;
-			int counterWidth = (int) ((Math.log(ub)/Math.log(2))+2);
+			int counterWidth = ea.computeCounterWidth(indexName, expr_lb, expr_ub);
 			s = num + "=>" + counterWidth + ", " + s;
 			
 			num--;
@@ -1897,7 +1952,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	
 	private  IndexVector _indexList ;  //index list of the ADG node
 
-  private Vector<String> _skipList;  // List of iterators that are skipped in counter generation
+  private Vector<String> _skipList = new Vector<String>();  // List of iterators that are skipped in counter generation
 
 	protected static HashMap <String, Vector<Integer>> _parameters = new HashMap <String, Vector<Integer>>();
 	
@@ -1913,4 +1968,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
   // Put a register between expression and control signal in eval_logic modules
   // This may increase the maximum achievable clock frequency
   private boolean _regEval = false;
+
+  // Try to optimize counters (such as pruning single-iteration counters)
+  private boolean _optimizeCounters = false;
 }
