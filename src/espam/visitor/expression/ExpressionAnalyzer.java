@@ -50,6 +50,24 @@ public class ExpressionAnalyzer {
 
   };
 
+
+  /**
+   * Computes the number of bits needed to store a counter counting from expr_lb to expr_ub.
+   */
+  public int computeCounterWidth(String index, Expression expr_lb, Expression expr_ub) {
+    int bounds[] = findBounds(index, expr_lb, expr_ub);
+    int lb = bounds[0];
+    int ub = bounds[1];
+    int maxval = Math.max(Math.abs(lb), Math.abs(ub+1)); // ub+1 to make sure one-ahead value also fits
+    int counterWidth = (int) (Math.ceil(Math.log(maxval)/Math.log(2)));
+    if (lb < 0 || ub < 0) {
+      // Accomodate sign bit
+      counterWidth++;
+    }
+    return counterWidth+1;  // TODO: +1 seems to be necessary for some reason
+  }
+
+
   /**
    * Computes lower and upper bounds of given expressions. Should be called from outermost to innermost bounds.
    * @Return Returns a 2-element array, which is structured as follows:
