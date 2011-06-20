@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<!DOCTYPE sadg PUBLIC "-//LIACS//DTD ESPAM 1//EN" "http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<sadg>
+  <adg name="counter3" levelUpNode="">
+    <node name="ND_0" levelUpNode="">
+      <outport name="ND_0OP_ED_0_0_V_0" node="ND_0" edge="ED_0">
+        <bindvariable name="out_0" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, 0, 1, 0, -1; 1, 0, -1, 0, 5; 1, 0, 0, 1, -1; 1, 0, 0, -1, 5]"/>
+          </linearbound>
+        </domain>
+      </outport>
+      <function name="source">
+        <outargument name="out_0" dataType="int"/>
+      </function>
+      <domain type="LBS">
+        <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+          <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, 0, 1, 0, -1; 1, 0, -1, 0, 5; 1, 0, 0, 1, -1; 1, 0, 0, -1, 5]"/>
+        </linearbound>
+      </domain>
+    </node>
+    <node name="ND_1" levelUpNode="">
+      <inport name="ND_1IP_ED_0_0_V_0" node="ND_1" edge="ED_0">
+        <bindvariable name="in_0" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, 0, 0, 1, -1; 1, 0, 0, -1, 5; 1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, 0, 1, 0, -1; 1, 0, -1, 0, 5]"/>
+          </linearbound>
+        </domain>
+      </inport>
+      <outport name="ND_1OP_ED_1_0_V_1" node="ND_1" edge="ED_1">
+        <bindvariable name="out_1" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5; 1, -1, 0, 1, 0; 1, 0, 0, -1, 5]"/>
+          </linearbound>
+        </domain>
+      </outport>
+      <function name="copy1">
+        <inargument name="in_0" dataType="int"/>
+        <outargument name="out_1" dataType="int"/>
+      </function>
+      <domain type="LBS">
+        <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+          <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, 0, 1, 0, -1; 1, 0, -1, 0, 5; 1, 0, 0, 1, -1; 1, 0, 0, -1, 5]"/>
+        </linearbound>
+      </domain>
+    </node>
+    <node name="ND_2" levelUpNode="">
+      <inport name="ND_2IP_ED_1_0_V_0" node="ND_2" edge="ED_1">
+        <bindvariable name="in_0" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, -1, 0, 1, 0; 1, 0, 0, -1, 5; 1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5]"/>
+          </linearbound>
+        </domain>
+      </inport>
+      <outport name="ND_2OP_ED_2_0_V_1" node="ND_2" edge="ED_2">
+        <bindvariable name="out_1" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5; 1, -1, 0, 1, 0; 1, 0, 0, -1, 5]"/>
+          </linearbound>
+        </domain>
+      </outport>
+      <function name="copy2">
+        <inargument name="in_0" dataType="int"/>
+        <outargument name="out_1" dataType="int"/>
+      </function>
+      <domain type="LBS">
+        <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+          <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5; 1, -1, 0, 1, 0; 1, 0, 0, -1, 5]"/>
+        </linearbound>
+      </domain>
+    </node>
+    <node name="ND_3" levelUpNode="">
+      <inport name="ND_3IP_ED_2_0_V_0" node="ND_3" edge="ED_2">
+        <bindvariable name="in_0" dataType="int"/>
+        <domain type="LBS">
+          <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+            <constraint matrix="[1, -1, 0, 1, 0; 1, 0, 0, -1, 5; 1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5]"/>
+          </linearbound>
+        </domain>
+      </inport>
+      <function name="sink">
+        <inargument name="in_0" dataType="int"/>
+      </function>
+      <domain type="LBS">
+        <linearbound index="c0, c1, c2" staticControl="" dynamicControl="" parameter="">
+          <constraint matrix="[1, 1, 0, 0, -1; 1, -1, 0, 0, 5; 1, -1, 1, 0, 0; 1, 0, -1, 0, 5; 1, -1, 0, 1, 0; 1, 0, 0, -1, 5]"/>
+        </linearbound>
+      </domain>
+    </node>
+    <edge name="ED_0" fromPort="ND_0OP_ED_0_0_V_0" fromNode="ND_0" toPort="ND_1IP_ED_0_0_V_0" toNode="ND_1" size="1">
+      <linearization type="fifo"/>
+      <mapping matrix="[1, 0, 0, 0; 0, 1, 0, 0; 0, 0, 1, 0]"/>
+    </edge>
+    <edge name="ED_1" fromPort="ND_1OP_ED_1_0_V_1" fromNode="ND_1" toPort="ND_2IP_ED_1_0_V_0" toNode="ND_2" size="1">
+      <linearization type="fifo"/>
+      <mapping matrix="[1, 0, 0, 0; 0, 1, 0, 0; 0, 0, 1, 0]"/>
+    </edge>
+    <edge name="ED_2" fromPort="ND_2OP_ED_2_0_V_1" fromNode="ND_2" toPort="ND_3IP_ED_2_0_V_0" toNode="ND_3" size="1">
+      <linearization type="fifo"/>
+      <mapping matrix="[1, 0, 0, 0; 0, 1, 0, 0; 0, 0, 1, 0]"/>
+    </edge>
+  </adg>
+  <ast>
+    <for iterator="c0" LB="1" UB="5" stride="1">
+      <for iterator="c1" LB="1" UB="5" stride="1">
+        <for iterator="c2" LB="1" UB="5" stride="1">
+          <stmt node="ND_0"/>
+          <port name="ND_0OP_ED_0_0_V_0"/>
+          <port name="ND_1IP_ED_0_0_V_0"/>
+          <stmt node="ND_1"/>
+          <if LHS="1*c0" RHS="1*c1" sign="-1">
+            <if LHS="1*c0" RHS="1*c2" sign="-1">
+              <port name="ND_1OP_ED_1_0_V_1"/>
+              <port name="ND_2IP_ED_1_0_V_0"/>
+              <stmt node="ND_2"/>
+              <port name="ND_2OP_ED_2_0_V_1"/>
+              <port name="ND_3IP_ED_2_0_V_0"/>
+              <stmt node="ND_3"/>
+            </if>
+          </if>
+        </for>
+      </for>
+    </for>
+  </ast>
+</sadg>
