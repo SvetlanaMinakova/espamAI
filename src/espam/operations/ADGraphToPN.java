@@ -43,7 +43,7 @@ import espam.operations.scheduler.Scheduler;
  * This class ...
  *
  * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
- * @version $Id: ADGraphToPN.java,v 1.3 2009/08/31 16:36:27 nikolov Exp $
+ * @version $Id: ADGraphToPN.java,v 1.4 2011/06/22 08:51:50 nikolov Exp $
  */
 
 public class ADGraphToPN {
@@ -180,6 +180,11 @@ public class ADGraphToPN {
 		Iterator i = adgEdgeList.iterator();
 		while( i.hasNext() ) {
 			ADGEdge adgEdge = (ADGEdge) i.next();
+
+			if( adgEdge.getSize() < 1 ) {
+			    System.out.println("[Espam] WARNING: The FIFO size for edge " + adgEdge.getName() + " is " + adgEdge.getSize() + "!");
+			}
+
 			String edgeName = adgEdge.getName();
 
 			if ( !_relationEdgeChannel.containsKey( edgeName ) ) {
