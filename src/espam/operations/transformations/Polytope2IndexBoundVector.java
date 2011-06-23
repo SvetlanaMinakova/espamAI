@@ -37,8 +37,8 @@ import espam.utils.util.Convert;
 /**
  *  This class gets the vector of expressions of lower and upper bounds of indexes of a polytope
  *
- * @author  Ying Tao
- * @version  $Id: Polytope2IndexBoundVector.java,v 1.1 2006/06/14 15:51:42
+ * @author  Ying Tao, Sven van Haastregt
+ * @version  $Id: Polytope2IndexBoundVector.java,v 1.2 2011/06/23 13:46:05 svhaastr Exp $
  *
  */
 
@@ -82,7 +82,9 @@ public class Polytope2IndexBoundVector {
                 for (int level = 1; level <= polytope.getIndexVector().getIterationVector().size(); level++) {
 
                     index = paramVec.get(level - 1).toString();
-                    M = PolyLib.getInstance().Polyhedron2Constraints((Polyhedron) i.next());
+                    Polyhedron pp = (Polyhedron)i.next();
+
+                    M = PolyLib.getInstance().Polyhedron2Constraints(pp);
                     //Vector v = MatrixLib.toLinearExpression(M, paramVec);
                     List<Expression> v = Convert.toLinearExpression(M, paramVec);
 
@@ -121,6 +123,9 @@ public class Polytope2IndexBoundVector {
                         } else {
                         }
                     }
+
+                    lowerBound = _simplifyEquivBound(level-1, lowerBound, vectorBounds, paramVec);
+                    upperBound = _simplifyEquivBound(level-1, upperBound, vectorBounds, paramVec);
 
                     Expression finalUpperBound;
                     Expression finalLowerBound;
@@ -173,5 +178,57 @@ public class Polytope2IndexBoundVector {
         return vectorBounds;
     }
 
+
+
+  /**
+   * This function tries to repair/simplify bounds arising from equalities in a polyhedron. getExpression produces
+   * unnecessarily complicated bounds when 2 or more equalities that depend on outer iterators are present.
+   * E.g., the matrix        0 -1  0  1 -6
+   *                         0 -1  1  0  0
+   *                         1  1  0  0 -1
+   *                         1 -1  0  0  5
+   *                        
+   * Results in bounds:      c0 := [1]          --  [5]
+   *                         c1 := [c0]         --  [c0]
+   *                         c2 := [c0+6, c1+6] --  [c0+6, c1+6]
+   *                        
+   * This function           c0 := [1]          --  [5]
+   * simplifies them into:   c1 := [c0]         --  [c0]
+   *                         c2 := [c0+6]       --  [c0+6]
+   */
+  private static Vector<Expression> _simplifyEquivBound(int level, Vector<Expression> expr, Vector<Expression> outerBounds, Vector paramVec) {
+    if (expr.size() <= 1) {
+      // Nothing to simplify
+      return expr;
+    }
+
+    for (int i = 0; i < expr.size(); i++) {
+      // Try to substitute inner iterators by more outer iterators.
+      for (int j = level-1; j >= 0; j--) {
+        String index = (String)paramVec.get(j);
+        Expression lb = outerBounds.get(2*j);
+        Expression ub = outerBounds.get(2*j+1);
+        if (lb.equals(ub)) {
+          // Only substitute if candidate substitute's LB == UB
+          Expression newExpr = expr.get(i).substituteExpression(index, lb);
+          newExpr.simplify();
+          expr.set(i, newExpr);
+        }
+      }
+    }
+
+    // Now prune all expressions that have become equal
+    for (int i = 0; i < expr.size(); i++) {
+      for (int j = i+1; j < expr.size(); j++) {
+        //System.out.println(expr.get(i) + " ?= " + expr.get(j) + "  : " + expr.get(i).equals(expr.get(j)));
+        if (expr.get(i).equals(expr.get(j))) {
+          System.out.println("[Polytope2IndexBoundVector] Removing redundant expression: " + expr.get(j).toString());
+          expr.remove(j);
+          j--;
+        }
+      }
+    }
+    return expr;
+  }
 
 }
