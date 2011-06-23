@@ -61,7 +61,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.4 2011/06/23 13:17:19 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.5 2011/06/23 15:29:21 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -491,49 +491,28 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			}
 		}
 
-		Iterator j;
-		j = _indexList.getIterationVector().iterator();
-		// signals corresponding to index's upper/lower bounds.
-		while(j.hasNext()){
-			String s = (String) j.next();
-      if (_skipList.contains(s))
-        continue;
-			hdlPS.println("   signal sl_low_" + s +", sl_high_" + s +" : integer;");
-		}
-		
-		j = _indexList.getIterationVector().iterator();
-		// first one is the most outer loop
-		while(j.hasNext()){
-			String s = (String) j.next();
-      if (_skipList.contains(s))
-        continue;
-			hdlPS.println("   signal sl_loop_" + s + ", sl_loop_" + s + "_rg : integer;");
-		}
-		
-		j = _indexList.getIterationVector().iterator();
-		// first one is the most outer loop
-		while(j.hasNext()){
-			String s = (String) j.next();
-      if (_skipList.contains(s))
-        continue;
-			hdlPS.println("   signal sl_" + s + ", sl_" + s + "_rg : integer;");
-		}
-		
-    // Print increment strobe declarations for first N-1 counters
-		j = _indexList.getIterationVector().iterator();
-		while(j.hasNext()){
-			String s = (String) j.next();
-      if (_skipList.contains(s))
-        continue;
-      if (j.hasNext()) {
-  			hdlPS.println("   signal sl_" + s + "incr : std_logic;");
-      }
-		}
+		//get the upper/lower bound expressions
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().get(0));
+
+    String iterDecls = "";
+    ExpressionAnalyzer ea = new ExpressionAnalyzer(_indexList);
+    for (int iterNum = 0; iterNum < _indexList.getIterationVector().size(); iterNum++){
+      String indexName = _indexList.getIterationVector().get(iterNum);
+			Expression expr_lb = boundExp.get(2*iterNum);
+			Expression expr_ub = boundExp.get(2*iterNum + 1);
+      int bnds[] = ea.findBounds(indexName, expr_lb, expr_ub);
+
+      iterDecls += "  signal sl_low_" + indexName + ", sl_high_" + indexName + "      : integer;\n";
+      iterDecls += "  signal sl_loop_" + indexName + ", sl_loop_" + indexName + "_rg  : integer range " + bnds[0] + " to " + (bnds[1]+1) + ";\n";
+      iterDecls += "  signal sl_" + indexName + ", sl_" + indexName + "_rg            : integer range " + bnds[0] + " to " + (bnds[1]+1) + ";\n";
+      iterDecls += "  signal sl_" + indexName + "incr                  : std_logic;\n";
+    }
+    hdlPS.println(iterDecls);
 
 		if(paramNames.size() != 0){
 			hdlPS.println("   " + param + " : integer;");
 		}
-		
+
 		int ctrlNum = 0;
 		Iterator ADGInIter;
 		ADGInIter = ports.iterator();
@@ -600,7 +579,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
     String loopIterRgAssignments = "";
 		// !!!!!!CNTR_WIDTH(0) corresponds to inner loop, to be consistant with gen_counter
 		int loopNum = _indexList.getIterationVector().size() - _skipList.size();
-		j = _indexList.getIterationVector().iterator();
+		Iterator j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()){
 			String s = (String) j.next();
       if (_skipList.contains(s))
@@ -629,9 +608,6 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
     hdlPS.println("   -- Registered iterators");
 		hdlPS.println(loopIterRgAssignments);
 		
-		//get the upper/lower bound expressions
-		Vector <Expression> boundExp = Polytope2IndexBoundVector.getExpression(_adgNode.getDomain().getLinearBound().firstElement());
-	
 		Iterator exprIter;
 		VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
 		exprIter = boundExp.iterator();
@@ -1696,8 +1672,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       hdlPS.println("");
       hdlPS.println("      PARAMETERS    => sl_parameters,");
       hdlPS.println("");
-      hdlPS.println("      LOWER_BND_OUT => sl_LOW_BND_RD,");
-      hdlPS.println("      UPPER_BND_OUT => sl_UP_BND_RD,");
+      hdlPS.println("      LOWER_BND_OUT => open,");
+      hdlPS.println("      UPPER_BND_OUT => open,");
       hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
       hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
       hdlPS.println("");
