@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.7 2011/06/16 16:14:22 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.8 2011/06/23 13:17:19 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -193,6 +193,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
           Iterator j = _mapping.getProcessorList().iterator();
           while(j.hasNext()){
+            CompaanHWNodeIseVisitor hwnodeVisitor = new CompaanHWNodeIseVisitor(new Mapping("dummy"));
             MProcessor mp = (MProcessor) j.next();
             //System.out.println(mp.getResource().getName() + "   " + _coreName);
             if(mp.getResource() instanceof CompaanHWNode){
@@ -203,7 +204,8 @@ public class IseNetworkVisitor extends PlatformVisitor {
                 _inArgList = _adgNode.getFunction().getInArgumentList();
                 _adgInPorts = _adgNode.getInPorts();
                 _outArgList = _adgNode.getFunction().getOutArgumentList();
-                _adgOutPorts = _adgNode.getOutPorts();
+                //_adgOutPorts = _adgNode.getOutPorts();
+                _adgOutPorts = hwnodeVisitor.getOutPortList(_adgNode);
                 break;
               }
             }
@@ -390,8 +392,8 @@ public class IseNetworkVisitor extends PlatformVisitor {
     }
 
     ADGEdge edge = (ADGEdge) _mapping.getCDChannel(x).getAdgEdgeList().get(0);
-    ADGNode src = (ADGNode) edge.getPortList().get(0).getNode();
-    ADGNode dst = (ADGNode) edge.getPortList().get(1).getNode();
+    ADGNode src = (ADGNode) edge.getFromPort().getNode();
+    ADGNode dst = (ADGNode) edge.getToPort().getNode();
 
     if (_isSource(src)) {
       // Source node
@@ -632,7 +634,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     // Start with an empty port map
     _portmapS = "";
 
-    _moddefS += "  -- Module definition of node " + _adgNode.getName() + ", core " + _coreName + "\n";
+    _moddefS += "  -- Module definition of node " + _adgNode.getName() + ", core " + _coreName + " (" + _adgNode.getFunction().getName() + ")\n";
     _moddefS += "  component " + _coreName + " is\n";
     _moddefS += "    generic (\n";
     _moddefS += "      RESET_HIGH : NATURAL;\n";
@@ -694,12 +696,33 @@ public class IseNetworkVisitor extends PlatformVisitor {
     }
 
     //the out ports of the node are corresponding to out ports of the ADGNode
-    Vector <ADGOutPort> binding_out_ports;
+    Vector<ADGOutPort> binding_out_ports;
     
     ADGVariable out_arg;  
     ADGOutPort adg_out_port;
     String out_arg_name;
     
+    Iterator k = _adgOutPorts.iterator();
+    while (k.hasNext()) {
+      ADGOutPort out = (ADGOutPort) k.next();
+      // Module definition
+      _moddefS += "      " + out.getName() + "_Wr   : out std_logic;\n";
+      _moddefS += "      " + out.getName() + "_Dout : out std_logic_vector(QUANT-1 downto 0);\n";
+      _moddefS += "      " + out.getName() + "_Full : in  std_logic;\n";
+      _moddefS += "      " + out.getName() + "_CLK  : out std_logic;\n";
+      _moddefS += "      " + out.getName() + "_CTRL : out std_logic;\n";
+      _moddefS += "\n";
+
+      // Port map instantiation
+      _portmapS += "      " + out.getName() + "_Wr    => s_" + out.getName() + "_Wr,\n";
+      _portmapS += "      " + out.getName() + "_Dout  => s_" + out.getName() + "_Dout,\n";
+      _portmapS += "      " + out.getName() + "_Full  => s_" + out.getName() + "_Full,\n";
+      _portmapS += "      " + out.getName() + "_CLK   => s_" + out.getName() + "_CLK,\n";
+      _portmapS += "      " + out.getName() + "_CTRL  => s_" + out.getName() + "_CTRL,\n";
+      _portmapS += "\n";
+
+    }
+    /*
     if(_adgOutPorts.size() == 0){
       
     }
@@ -719,8 +742,9 @@ public class IseNetworkVisitor extends PlatformVisitor {
             binding_out_ports.addElement(adg_out_port);
           }
           else {
-            System.out.println("Skipping " + adg_out_port.getName() + "  " + out_arg_name);
+            System.out.println("Reuse port " + adg_out_port.getName() + "  " + out_arg_name);
             System.out.println("WARNING: Probably you didn't specify --no-reuse to pn?");
+            binding_out_ports.addElement(adg_out_port);
           }
         }
         
@@ -743,15 +767,9 @@ public class IseNetworkVisitor extends PlatformVisitor {
           _portmapS += "      " + out.getName() + "_CTRL  => s_" + out.getName() + "_CTRL,\n";
           _portmapS += "\n";
 
-          // Signals
-          /*_siglistS += "  signal s_" + out.getName() + "_Wr    : std_logic;\n";
-          _siglistS += "  signal s_" + out.getName() + "_Dout  : std_logic_vector(QUANT-1 downto 0);\n";
-          _siglistS += "  signal s_" + out.getName() + "_Full  : std_logic;\n";
-          _siglistS += "  signal s_" + out.getName() + "_CLK   : std_logic;\n";
-          _siglistS += "  signal s_" + out.getName() + "_CTRL  : std_logic;\n";*/
         }
       }
-    }
+    }*/
     _moddefS += "      PARAM_DT : in  std_logic_vector(PAR_WIDTH-1 downto 0);\n";
     _moddefS += "      PARAM_LD : in  std_logic;\n";
     _moddefS += "\n";

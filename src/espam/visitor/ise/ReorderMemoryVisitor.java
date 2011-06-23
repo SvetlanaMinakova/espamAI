@@ -29,6 +29,7 @@ import espam.datamodel.EspamException;
 import espam.datamodel.LinearizationType;
 import espam.datamodel.mapping.*;
 import espam.datamodel.domain.IndexVector;
+import espam.datamodel.domain.LBS;
 import espam.datamodel.domain.Polytope;
 import espam.datamodel.graph.adg.*;
 import espam.datamodel.platform.memories.*;
@@ -61,7 +62,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.7 2011/06/16 16:14:22 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.8 2011/06/23 13:17:19 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -99,7 +100,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       dir.mkdirs();
 
       CDChannel cdchan = _mapping.getCDChannel(x);
-      //assert(cdchan.getAdgEdgeList().size() == 1);    // Multiple ADGEdges for same channel untested/unhandled
+      assert(cdchan.getAdgEdgeList().size() == 1);    // Multiple ADGEdges for same channel untested/unhandled
       _adgEdge = (ADGEdge) cdchan.getAdgEdgeList().get(0);
 
       _fifo = x;
@@ -129,10 +130,10 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   /**
    * Computes the required memory size.
    */
-  private int _computeMemsize() {
+  private int _computeMemsize(LBS domain) {
     int size = 1;
     // For now, just count the number of points in the bounding box and consider that as the size
-    int boxes[][] = _computeBoundingBoxes(_srcNode.getDomain().getLinearBound());
+    int boxes[][] = _computeBoundingBoxes(domain.getLinearBound());
     for (int i = 0; i < boxes.length; i++) {
       size *= boxes[i][2];
     }
@@ -143,8 +144,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   /**
    * Writes node domain signal declarations.
    */
-  private void _writeDomainData(PrintStream outPS, ADGNode node) {
-    IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
+  private void _writeDomainData(PrintStream outPS, LBS domain) {
+    IndexVector indexList = domain.getLinearBound().firstElement().getIndexVector();
     outPS.println("  -- Constants");
     outPS.println("  constant c_COUNTERS     : natural := " + (indexList.getIterationVector().size()) + ";");
 
@@ -153,8 +154,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
 
     int maxCounterWidth = 0;
     int num = indexList.getIterationVector().size() - 1;
-    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
-    int bounds[][] = _computeBoundingBoxes(node.getDomain().getLinearBound());
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(domain.getLinearBound().get(0));
+    int bounds[][] = _computeBoundingBoxes(domain.getLinearBound());
 
     ExpressionAnalyzer ea = new ExpressionAnalyzer(indexList);
     for (int iterNum = 0; iterNum < indexList.getIterationVector().size(); iterNum++){
@@ -190,9 +191,9 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   /**
    * Write loop bounds.
    */
-  private void _writeLoopBounds(PrintStream outPS, ADGNode node) {
-    IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
-    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
+  private void _writeLoopControl(PrintStream outPS, LBS domain) {
+    IndexVector indexList = domain.getLinearBound().firstElement().getIndexVector();
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(domain.getLinearBound().get(0));
     Iterator exprIter;
     VhdlExpressionVisitor ExpVisit = new VhdlExpressionVisitor();
     exprIter = boundExp.iterator();
@@ -209,8 +210,13 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       outPS.println("  sl_" + s + "_rg <= to_integer(signed( sl_REG_CNTRS(c_CNTR_WIDTHS(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*c_CNTR_QUANT-1 downto " + (loopNum - 1) + "*c_CNTR_QUANT)));");
       if (j.hasNext()) {
         int counterNum = Integer.parseInt(s.substring(1));
-        incrAssignments += "  sl_" + s + "incr <= '1' when sl_" + s.substring(0,1) + (counterNum+1) + "_rg=sl_high_" + s + " else '0';\n";
-        loopIterAssignments += "  sl_loop_" + s + " <= sl_" + s + " when sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
+        String nextlevelIter = s.substring(0,1) + (counterNum+1);
+        incrAssignments += "  sl_" + s + "incr <= '1' when sl_" + nextlevelIter + "_rg=sl_high_" + nextlevelIter + " ";
+        if (counterNum < indexList.getIterationVector().size()-2) {
+          incrAssignments += "and sl_" + nextlevelIter + "incr='1'";
+        }
+        incrAssignments += "else '0';\n";
+        loopIterAssignments += "  sl_loop_" + s + " <= sl_" + s + " when RST='0' and sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
       }
       loopIterRgAssignments += "  sl_loop_" + s + "_rg <= sl_" + s + "_rg;\n";
       loopNum--;
@@ -261,6 +267,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   private int[][] _computeBoundingBoxes(Vector<Polytope> bound) {
     IndexVector indexList = bound.firstElement().getIndexVector();
     Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(bound.get(0));
+    //System.out.println(bound.get(0).toString() + "\n--");
+    //System.out.println(boundExp);
     int nDims = indexList.getIterationVector().size();
     int ret[][] = new int[nDims][3];
     ExpressionAnalyzer ea = new ExpressionAnalyzer(indexList);
@@ -269,6 +277,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
       String indexName = indexList.getIterationVector().get(i);
 			Expression lbExp = boundExp.get(2*i);
 			Expression ubExp = boundExp.get(2*i + 1);
+      //System.out.println(lbExp.toString() + "    " + ubExp.toString());
 
       int bnds[] = ea.findBounds(indexName, lbExp, ubExp);
       ret[i][0] = bnds[0];
@@ -313,13 +322,13 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
    * Writes addressing function.
    * @param isRead Determines whether the edge mapping has to be applied or not.
    */
-  private void _writeAddressFunction(PrintStream outPS, ADGNode node, boolean isRead) {
-    IndexVector indexList = node.getDomain().getLinearBound().firstElement().getIndexVector();
-    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(node.getDomain().getLinearBound().get(0));
+  private void _writeAddressFunction(PrintStream outPS, LBS domain, boolean isRead) {
+    IndexVector indexList = domain.getLinearBound().firstElement().getIndexVector();
+    Vector<Expression> boundExp = Polytope2IndexBoundVector.getExpression(domain.getLinearBound().get(0));
     String addrFunc = "";
     int cumulBoundingBox = 1;
     int nDims = indexList.getIterationVector().size();
-    int boxes[][] = _computeBoundingBoxes(node.getDomain().getLinearBound());
+    int boxes[][] = _computeBoundingBoxes(domain.getLinearBound());
 
     _writeIteratorMapping(outPS, indexList, isRead);
 
@@ -341,7 +350,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   /**
    * Writes common parts of address generator files.
    */
-  private void _writeAddrGenCommon(PrintStream outPS, ADGNode node, String entityName) {
+  private void _writeAddrGenCommon(PrintStream outPS, LBS domain, String entityName) {
     outPS.println("-- Generated by ESPAM.");
     outPS.println("-- Sven van Haastregt, LIACS, Leiden University.");
     outPS.println("");
@@ -385,7 +394,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("    );");
     outPS.println("  end component;");
     outPS.println("");
-    _writeDomainData(outPS, node);
+    _writeDomainData(outPS, domain);
     outPS.println("  signal s_address : integer;");
     outPS.println("");
     outPS.println("begin");
@@ -407,7 +416,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     outPS.println("    DONE          => open");
     outPS.println("  );");
     outPS.println("");
-    _writeLoopBounds(outPS, node);
+    _writeLoopControl(outPS, domain);
     outPS.println("");
   }
 
@@ -418,8 +427,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   private void _writeWriteAddrGen() throws FileNotFoundException {
     PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_WAG.vhd");
     outPS.println("-- Write address generator for channel " + _fifo.getName());
-    _writeAddrGenCommon(outPS, _srcNode, _coreName + "_WAG");
-    _writeAddressFunction(outPS, _srcNode, false);
+    _writeAddrGenCommon(outPS, _adgEdge.getFromPort().getDomain(), _coreName + "_WAG");
+    _writeAddressFunction(outPS, _adgEdge.getFromPort().getDomain(), false);
     outPS.println("");
     outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
     outPS.println("");
@@ -434,8 +443,8 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
   private void _writeReadAddrGen() throws FileNotFoundException {
     PrintStream outPS = _openFile(_moduleDir + "/" + _coreName + "_RAG.vhd");
     outPS.println("-- Read address generator for channel " + _fifo.getName());
-    _writeAddrGenCommon(outPS, _dstNode, _coreName + "_RAG");
-    _writeAddressFunction(outPS, _srcNode, true);
+    _writeAddrGenCommon(outPS, _adgEdge.getToPort().getDomain(), _coreName + "_RAG");
+    _writeAddressFunction(outPS, _adgEdge.getFromPort().getDomain(), true);
     outPS.println("");
     outPS.println("  address <= std_logic_vector(to_unsigned(s_address, C_AWIDTH));");
     outPS.println("");
@@ -531,7 +540,10 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("    );");
     topPS.println("  end component;");
     topPS.println("");
-    topPS.println("  constant C_AWIDTH : natural := " + (int)Math.ceil(Math.log(_computeMemsize())/Math.log(2)) + ";");
+    int opdSize = _computeMemsize(_adgEdge.getFromPort().getDomain());
+    int ipdSize = _computeMemsize(_adgEdge.getToPort().getDomain());
+    assert(opdSize >= ipdSize);   // we map all addresses back to OPD; probably we don't have to care about the IPD at all
+    topPS.println("  constant C_AWIDTH : natural := " + (int)Math.ceil(Math.log(opdSize+1)/Math.log(2)) + ";");
     topPS.println("");
     topPS.println("  signal read_addr       : std_logic_vector(C_AWIDTH-1 downto 0);");
     topPS.println("  signal read_addr_1     : std_logic_vector(C_AWIDTH-1 downto 0);");

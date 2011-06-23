@@ -61,7 +61,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.3 2011/06/16 16:14:22 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.4 2011/06/23 13:17:19 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -121,32 +121,22 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 								_indexList = _adgNode.getDomain().getLinearBound().firstElement().getIndexVector();
 
                 //////
-                // Only take the relevant input ports
+                // TODO: also move this to a separate function
+                // Take and sort input ports
                 _adgInPorts = new Vector();
-                Iterator pi = _adgNode.getInPorts().iterator();
-                while (pi.hasNext()) {
-                  ADGInPort port = (ADGInPort) pi.next();
-                  Iterator ai = _inArgList.iterator();
-                  while (ai.hasNext()) {
-                    ADGVariable var = (ADGVariable) ai.next();
+                Iterator ai = _inArgList.iterator();
+                while (ai.hasNext()) {
+                  ADGVariable var = (ADGVariable) ai.next();
+                  Iterator pi = _adgNode.getInPorts().iterator();
+                  while (pi.hasNext()) {
+                    ADGInPort port = (ADGInPort) pi.next();
                     if (var.getName().equals(port.getBindVariables().get(0).getName())) {
                       _adgInPorts.add(port);
                     }
                   }
                 }
-                // Only take the relevant output ports
-                _adgOutPorts = new Vector();
-                pi = _adgNode.getOutPorts().iterator();
-                while (pi.hasNext()) {
-                  ADGOutPort port = (ADGOutPort) pi.next();
-                  Iterator ai = _outArgList.iterator();
-                  while (ai.hasNext()) {
-                    ADGVariable var = (ADGVariable) ai.next();
-                    if (var.getName().equals(port.getBindVariables().get(0).getName())) {
-                      _adgOutPorts.add(port);
-                    }
-                  }
-                }
+                _adgOutPorts = getOutPortList(_adgNode);
+
                 //////
 
 								//get the hashmap of all parameters and their upperbounds
@@ -195,6 +185,41 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 
 	}
+
+
+  /**
+   * Returns an ordered list of all output ports of the ADGNode.
+   */
+  public Vector<ADGOutPort> getOutPortList(ADGNode node) {
+    // Take the relevant output ports
+    Vector<ADGOutPort> ret = new Vector<ADGOutPort>();
+    Iterator ai = node.getFunction().getOutArgumentList().iterator();
+    while (ai.hasNext()) {
+      ADGVariable var = (ADGVariable) ai.next();
+      Iterator pi = node.getOutPorts().iterator();
+      while (pi.hasNext()) {
+        ADGOutPort port = (ADGOutPort) pi.next();
+        if (var.getName().equals(port.getBindVariables().get(0).getName())) {
+          ret.add(port);
+        }
+      }
+    }
+    
+    _numReusePorts = 0;
+    // Add the reuse output ports to the end of the outport list
+    Iterator pi = node.getOutPorts().iterator();
+    while (pi.hasNext()) {
+      ADGOutPort port = (ADGOutPort) pi.next();
+      assert(port.getBindVariables().size() == 1);
+      if (_isReusePort(port)) {
+        // It's a reuse port
+        ret.add(port);
+        _numReusePorts++;
+      }
+    }
+
+    return ret;
+  }
 
 	// /////////////////////////////////////////////////////////////////
 	// // private methods ///
@@ -494,7 +519,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			hdlPS.println("   signal sl_" + s + ", sl_" + s + "_rg : integer;");
 		}
 		
-    // Print increment strobes for first N-1 counters
+    // Print increment strobe declarations for first N-1 counters
 		j = _indexList.getIterationVector().iterator();
 		while(j.hasNext()){
 			String s = (String) j.next();
@@ -584,8 +609,13 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			hdlPS.println("   sl_" + s + "_rg <= CONV_INTEGER( REG_CNTRS(CNTR_WIDTH(" + (loopNum - 1) + ")+" + (loopNum - 1) + "*QUANT-1 downto " + (loopNum - 1) + "*QUANT) );");
       if (j.hasNext()) {
         int counterNum = Integer.parseInt(s.substring(1));
-        incrAssignments += "   sl_" + s + "incr <= '1' when sl_" + s.substring(0,1) + (counterNum+1) + "_rg=sl_high_" + s + " else '0';\n";
-        loopIterAssignments += "   sl_loop_" + s + " <= sl_" + s + " when sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
+        String nextlevelIter = s.substring(0,1) + (counterNum+1);
+        incrAssignments += "   sl_" + s + "incr <= '1' when sl_" + nextlevelIter + "_rg=sl_high_" + nextlevelIter + " ";
+        if (counterNum < _indexList.getIterationVector().size()-2) {
+          incrAssignments += "and sl_" + nextlevelIter + "incr='1'";
+        }
+        incrAssignments += "else '0';\n";
+        loopIterAssignments += "   sl_loop_" + s + " <= sl_" + s + " when RST='0' and sl_" + s + "incr='1' else sl_" + s + "_rg;\n";
       }
       loopIterRgAssignments += "   sl_loop_" + s + "_rg <= sl_" + s + "_rg;\n";
 			loopNum--;
@@ -663,20 +693,21 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 		else{
 			// first get the ordered ADG in ports according to the bounded in arguments order
-			Vector<ADGPort> orderedADGInPorts = new Vector<ADGPort>();
+      Vector<ADGPort> orderedADGInPorts = ports;  // We sorted them in the constructor
+			/*Vector<ADGPort> orderedADGInPorts = new Vector<ADGPort>();
 			Iterator inArgIter = args.iterator();
 			while(inArgIter.hasNext()){
 				ADGVariable in_arg = (ADGVariable) inArgIter.next();
-				String in_arg_name = in_arg.getName();
-							
+				String arg_name = in_arg.getName();
+
 				j = ports.iterator();
 				while (j.hasNext()) {
-					ADGPort adg_in_port = (ADGPort) j.next();
-					if (adg_in_port.getBindVariables().get(0).getName().equals(in_arg_name) == true){
-						orderedADGInPorts.addElement(adg_in_port);
+					ADGPort adg_port = (ADGPort) j.next();
+					if (adg_port.getBindVariables().get(0).getName().equals(arg_name) == true){
+						orderedADGInPorts.addElement(adg_port);
 					}
 				}
-			}
+			}*/
 
 			int index = 0;
 			int exprIndex = 0;
@@ -750,7 +781,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
         String ctrlIndent = _regEval ? "      " : "";
 				//hdlPS.println("   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';");
 				//hdlPS.println("");
-        ctrlAssign += ctrlIndent + "   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';\n";
+        //ctrlAssign += ctrlIndent + "   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';\n";
+        ctrlAssign += ctrlIndent + "   CONTROL(" + index + ") <= " + ctrlPerPort + "'1';  --" + adg_in_port.getName() + "\n";
 				
 				index++;
 			}
@@ -979,7 +1011,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		ADGVariable out_arg;	
 		ADGOutPort adg_out_port;
 		String out_arg_name;
-		
+/*	
 		if(_adgOutPorts.size() == 0){
 			
 		}
@@ -991,15 +1023,16 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				////get the vector of the out ports of the node relating to the specific out_argument of the function
 				binding_out_ports = new Vector<ADGOutPort>();
 				out_arg_name = out_arg.getName();
-							
+
 				j = _adgOutPorts.iterator();
 				while (j.hasNext()) {				
 					adg_out_port = (ADGOutPort) j.next();
-					if (adg_out_port.getBindVariables().get(0).getName().equals(out_arg_name)== true){
+          System.out.println("Port: " + adg_out_port.getName() + "  " + adg_out_port.getBindVariables().get(0).getName());
+					//if (adg_out_port.getBindVariables().get(0).getName().equals(out_arg_name)== true){
 						binding_out_ports.addElement(adg_out_port);
-					}
+					//}
 				}
-				
+
 				Iterator k = binding_out_ports.iterator();
 				while (k.hasNext())	{
 					ADGOutPort out = (ADGOutPort) k.next();
@@ -1012,6 +1045,17 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				}
 			}
 		}
+*/
+    i = _adgOutPorts.iterator();
+    while (i.hasNext())	{
+      ADGOutPort out = (ADGOutPort) i.next();
+      hdlPS.println("      " + out.getName() + "_Wr   : out std_logic;");
+      hdlPS.println("      " + out.getName() + "_Dout : out std_logic_vector(QUANT-1 downto 0);");
+      hdlPS.println("      " + out.getName() + "_Full : in  std_logic;");
+      hdlPS.println("      " + out.getName() + "_CLK  : out std_logic;");
+      hdlPS.println("      " + out.getName() + "_CTRL : out std_logic;");
+      hdlPS.println("");
+    }
 
 		hdlPS.println("      PARAM_DT : in  std_logic_vector(PAR_WIDTH-1 downto 0);");
 		hdlPS.println("      PARAM_LD : in  std_logic;");
@@ -1298,6 +1342,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   signal sl_WRITES       : std_logic_vector(c_OUT_PORTS-1 downto 0);");
 		hdlPS.println("   signal sl_FULLS        : std_logic_vector(c_OUT_PORTS-1 downto 0);");
 		hdlPS.println("");
+		hdlPS.println("   signal sl_control_reuse : std_logic_vector(c_OUT_PORTS-1 downto 0);");
+		hdlPS.println("");
 		hdlPS.println("   signal sl_parameters   : std_logic_vector(c_PARAMETERS*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("   signal sl_LOW_BND_RD, sl_UP_BND_RD      : std_logic_vector(c_COUNTERS*c_CNTR_QUANT-1 downto 0);");
@@ -1530,7 +1576,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 			
 			while (i.hasNext()){
 				adg_out_port = (ADGOutPort) i.next();
-				hdlPS.println("   " + adg_out_port.getName() + "_Wr <= sl_WRITES(" + index +");");
+        if (!_isReusePort(adg_out_port)) {
+          hdlPS.println("   " + adg_out_port.getName() + "_Wr <= sl_WRITES(" + index +");");
+        }
+        else {
+          hdlPS.println("   " + adg_out_port.getName() + "_Wr <= sl_control_reuse(" + index + ") and not " + adg_out_port.getName() + "_Full and sl_read;");
+        }
 				index++;
 			}
 
@@ -1556,6 +1607,26 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				}
 				index++;
 			}
+      // Handle reuse ports
+      if (_numReusePorts > 0) {
+        j = _adgOutPorts.iterator();
+        while (j.hasNext()) {
+          adg_out_port = (ADGOutPort) j.next();
+          if (_isReusePort(adg_out_port)) {
+            ADGVariable var = adg_out_port.getBindVariables().get(0);
+            int argno = -1;
+            Iterator jj = _inArgList.iterator();
+            while (jj.hasNext()) {
+              ADGVariable vvar = (ADGVariable) jj.next();
+              if (vvar.getName().equals(var.getName())) {
+                argno = _inArgList.indexOf(vvar);
+              }
+            }
+            assert(argno>=0); // Otherwise corresponding input arg was not found, which means something is wrong
+            hdlPS.println("   " + adg_out_port.getName() + "_Dout <= sl_in_ports_ex(" + (argno+1) + "*QUANT-1 downto " + argno + "*QUANT);");
+          }
+        }
+      }
 			
 			String sl_fulls = ((ADGOutPort)_adgOutPorts.get(0)).getName() + "_Full;";
 			
@@ -1606,6 +1677,42 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      CONTROL       => sl_control_wr");
 		hdlPS.println("   );");
 		hdlPS.println("");
+
+    if (_numReusePorts > 0) {
+      hdlPS.println("   -- Additional write evaluation logic for reuse ports");
+      hdlPS.println("   EVAL_REUSE : EVAL_LOGIC_WR_" + _coreName + "");
+      hdlPS.println("   generic map (");
+      hdlPS.println("      N_OUT_PORTS   => c_OUT_PORTS,");
+      hdlPS.println("      N_CNTRS       => c_COUNTERS,");
+      hdlPS.println("      QUANT         => c_CNTR_QUANT,");
+      hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS,");
+      hdlPS.println("      N_PAR         => c_PARAMETERS,");
+      hdlPS.println("      PAR_WIDTH     => PAR_WIDTH");
+      hdlPS.println("   )");
+
+      hdlPS.println("   port map (");
+      hdlPS.println("      RST           => sl_RST,");
+      hdlPS.println("      CLK           => CLK,");
+      hdlPS.println("");
+      hdlPS.println("      PARAMETERS    => sl_parameters,");
+      hdlPS.println("");
+      hdlPS.println("      LOWER_BND_OUT => sl_LOW_BND_RD,");
+      hdlPS.println("      UPPER_BND_OUT => sl_UP_BND_RD,");
+      hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
+      hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
+      hdlPS.println("");
+      if (_regEval) {
+        System.err.println("Please check if reuse and registered eval still work correctly!");
+        assert(false);
+        hdlPS.println("      EVAL_DONE     => sl_done_reuse,"); // TODO: check this signal
+        hdlPS.println("      CNTR_DONE     => sl_cntr_rd_done,");
+        hdlPS.println("      ENABLE        => sl_cntr_rd_en,");
+        hdlPS.println("");
+      }
+      hdlPS.println("      CONTROL       => sl_control_reuse");
+      hdlPS.println("   );");
+      hdlPS.println("");
+    }
 
 		hdlPS.println("   ITER_WR : GEN_COUNTER");
 		hdlPS.println("   generic map (");
@@ -1909,6 +2016,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
   private boolean _isSink(ADGNode node) {
     return (node.getOutPorts().size() == 0);
   }
+
+  private boolean _isReusePort(ADGOutPort port) {
+    return (port.getBindVariables().get(0).getName().indexOf("in") >= 0);
+  }
   
 
 	// /////////////////////////////////////////////////////////////////
@@ -1949,6 +2060,8 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	private Vector _outArgList ;      //out arguments of the ADG function
 	
 	private Vector _adgOutPorts ;     //out ports of the ADG node
+
+  private int _numReusePorts = 0;   // Number of reuse ports
 	
 	private  IndexVector _indexList ;  //index list of the ADG node
 
