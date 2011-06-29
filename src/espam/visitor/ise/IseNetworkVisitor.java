@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.9 2011/06/23 15:29:21 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.10 2011/06/29 15:39:16 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -538,8 +538,17 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("  signal sys_rst_pin : std_logic := '0';");
     simtbPS.println("  signal cycle_counter : unsigned(31 downto 0);");
     simtbPS.println("");
-    simtbPS.println("  file infile   : TEXT is IN  \"trcinput.txt\";");
-    simtbPS.println("  file outfile  : TEXT is OUT \"trcoutput.txt\";");
+    for (int i = 0; i < _externalFifoPorts.size(); i++) {
+      String fifoName = _externalFifoPorts.get(i);
+      if (fifoName.indexOf("IP") > 0) {
+        simtbPS.println("  file infile" + i + "   : TEXT is IN  \"trcin" + i + ".txt\";");
+      }
+      else {
+        simtbPS.println("  file outfile" + i + "  : TEXT is OUT \"trcout" + i + ".txt\";");
+      }
+    }
+    //simtbPS.println("  file infile   : TEXT is IN  \"trcinput.txt\";");
+    //simtbPS.println("  file outfile  : TEXT is OUT \"trcoutput.txt\";");
     simtbPS.println("");
     simtbPS.println("begin");
     simtbPS.println("  sys_clk_pin <= not sys_clk_pin after 5 ns;");
@@ -565,54 +574,56 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("      sys_rst_pin => sys_rst_pin");
     simtbPS.println("    );");
     simtbPS.println("");
-    for (int i = 0; i < _externalFifoPorts.size(); i++) {
-      String fifoName = _externalFifoPorts.get(i);
-      if (fifoName.indexOf("OP") > 0) {
-        simtbPS.println("  s_" + fifoName + "_Full <= '0';");
-      }
-    }
-    simtbPS.println("  ");
-    simtbPS.println("  -- Process input file");
-    simtbPS.println("  -- IMPORTANT: This part requires manual modification to make it fit the actual application.");
-    simtbPS.println("  process (sys_rst_pin,sys_clk_pin)");
-    simtbPS.println("    variable linevar : line;");
-    simtbPS.println("    variable good: boolean;");
-    simtbPS.println("    variable val0 : std_logic_vector(31 downto 0);");
-    simtbPS.println("  begin");
-    simtbPS.println("    if (sys_rst_pin = '0') then");
+    simtbPS.println("");
+    simtbPS.println("  -- Trace I/O handling");
+    simtbPS.println("");
 
-    String setIpSigs = "";
+    simtbPS.println("  -- Inputs");
     for (int i = 0; i < _externalFifoPorts.size(); i++) {
       String fifoName = _externalFifoPorts.get(i);
       if (fifoName.indexOf("IP") > 0) {
+        simtbPS.println("  -- Process input file " + i);
+        simtbPS.println("  process (sys_rst_pin,sys_clk_pin)");
+        simtbPS.println("    variable linevar : line;");
+        simtbPS.println("    variable good: boolean;");
+        simtbPS.println("    variable val0 : std_logic_vector(31 downto 0);");
+        simtbPS.println("  begin");
+        simtbPS.println("    if (sys_rst_pin = '0') then");
         simtbPS.println("      s_" + fifoName + "_Exist <= '0';");
         simtbPS.println("      s_" + fifoName + "_Din <= X\"FFFFFFFF\";");
-        setIpSigs += "        s_" + fifoName + "_Exist <= '1';\n";
-        setIpSigs += "        s_" + fifoName + "_Din <= val0;\n";
+        simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
+        simtbPS.println("      if (cycle_counter = X\"00000030\" or s_" + fifoName + "_Rd = '1') then");
+        simtbPS.println("        readline(infile" + i + ", linevar);");
+        simtbPS.println("        hread(linevar, val0, good);");
+        simtbPS.println("        assert good report \"Read error or no more input in trcin" + i + ".txt for port " + fifoName+ "\" severity ERROR;");
+        simtbPS.println("        s_" + fifoName + "_Exist <= '1';");
+        simtbPS.println("        s_" + fifoName + "_Din <= val0;");
+        simtbPS.println("      end if;");
+        simtbPS.println("    end if;");
+        simtbPS.println("  end process;");
+        simtbPS.println("");
       }
     }
-    simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
-    simtbPS.println("      if (cycle_counter = X\"00000030\" or s_ND_1IP_ED_0_0_V_0_Rd = '1') then   --TODO");
-    simtbPS.println("        readline(infile, linevar);");
-    simtbPS.println("        hread(linevar, val0, good);");
-    simtbPS.println("        assert good report \"Text I/O read error\" severity ERROR;");
-    simtbPS.print(setIpSigs);
-    simtbPS.println("      end if;");
-    simtbPS.println("    end if;");
-    simtbPS.println("  end process;");
-    simtbPS.println("");
-    simtbPS.println("  -- Write output to file");
-    simtbPS.println("  process (sys_rst_pin, sys_clk_pin)");
-    simtbPS.println("    variable linevar : line;");
-    simtbPS.println("  begin");
-    simtbPS.println("    if (sys_rst_pin = '0') then");
-    simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
-    simtbPS.println("      if (s_ND_2OP_ED_2_0_V_1_Wr = '1') then   --TODO");
-    simtbPS.println("        hwrite(linevar, s_ND_2OP_ED_2_0_V_1_Dout);   --TODO");
-    simtbPS.println("        writeline(outfile, linevar);");
-    simtbPS.println("      end if;");
-    simtbPS.println("    end if;");
-    simtbPS.println("  end process;");
+
+    simtbPS.println("  -- Outputs");
+    for (int i = 0; i < _externalFifoPorts.size(); i++) {
+      String fifoName = _externalFifoPorts.get(i);
+      if (fifoName.indexOf("OP") > 0) {
+        simtbPS.println("  -- Write output file " + i);
+        simtbPS.println("  process (sys_rst_pin, sys_clk_pin)");
+        simtbPS.println("    variable linevar : line;");
+        simtbPS.println("  begin");
+        simtbPS.println("    if (sys_rst_pin = '0') then");
+        simtbPS.println("    elsif (rising_edge(sys_clk_pin)) then");
+        simtbPS.println("      if (s_" + fifoName + "_Wr = '1') then");
+        simtbPS.println("        hwrite(linevar, s_" + fifoName + "_Dout);");
+        simtbPS.println("        writeline(outfile" + i + ", linevar);");
+        simtbPS.println("      end if;");
+        simtbPS.println("    end if;");
+        simtbPS.println("  end process;");
+        simtbPS.println("  s_" + fifoName + "_Full <= '0';");
+      }
+    }
     simtbPS.println("");
     simtbPS.println("  process (sys_rst_pin,sys_clk_pin) begin");
     simtbPS.println("    if (sys_rst_pin = '0') then");
@@ -893,6 +904,6 @@ public class IseNetworkVisitor extends PlatformVisitor {
   ////////////////////////////////////
 
   private boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
-  private boolean _synth = true;   // Make output suitable for synthesis (true) or simulation (false)
+  private boolean _synth = false;   // Make output suitable for synthesis (true) or simulation (false)
   private int _resetHigh = 0;       // Active reset level
 }
