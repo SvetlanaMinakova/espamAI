@@ -126,24 +126,8 @@ public class ExpressionAnalyzer {
 
     }
 
-    Iterator j = _boundsLinks.keySet().iterator();
-    while(j.hasNext()){
-      String index_name = (String)j.next();
-      Iterator expr_it = expr_ub.iterator();
-      LinTerm term;
-      while (expr_it.hasNext()) {
-        term = (LinTerm) expr_it.next();
-        if( term.getName().equals(index_name) && term.getSign() == 1){
-          ttParam_ub.put(index_name, _boundsLinks.get(index_name).get(1));
-          //continue;
-        }
-        else if(term.getName().equals(index_name) && term.getSign() == -1){
-          ttParam_ub.put(index_name, _boundsLinks.get(index_name).get(0));
-          //continue;
-        }
-      }
-
-    }
+    ttParam_ub.putAll(_findIteratorBounds(expr_ub, true));
+    Iterator j;
 
     /*	Iterator i = expr.iterator();
         LinTerm j;
@@ -172,7 +156,9 @@ public class ExpressionAnalyzer {
       _ub = 1;
     }
 
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////		
+    // Lower bound
     //System.out.println("upperbound expression is " + expr_ub.toString());
     //System.out.println("lowerbound expression is " + expr_lb.toString());
 
@@ -203,25 +189,7 @@ public class ExpressionAnalyzer {
 
     }
 
-    j = _boundsLinks.keySet().iterator();
-    while(j.hasNext()){
-      String index_name = (String)j.next();
-      Iterator expr_it = expr_lb.iterator();
-      LinTerm term;
-      while (expr_it.hasNext()) {
-        term = (LinTerm) expr_it.next();
-        if( term.getName().equals(index_name) && term.getSign() == -1){
-          ttParam_lb.put(index_name, _boundsLinks.get(index_name).get(1));
-          //continue;
-        }
-        else if(term.getName().equals(index_name) && term.getSign() == 1){
-          ttParam_lb.put(index_name, _boundsLinks.get(index_name).get(0));
-          //continue;
-        }
-      }
-
-    }
-
+    ttParam_lb.putAll(_findIteratorBounds(expr_lb, false));
 
     Vector<Integer> point_lb = new Vector<Integer>();
     point_lb.addAll(ttParam_lb.values());
@@ -229,8 +197,8 @@ public class ExpressionAnalyzer {
     Vector<String> indice_lb = new Vector<String>();
     indice_lb.addAll(ttParam_lb.keySet());
 
-    //System.out.println("indice_ub " + indice_lb.toString());
-    //System.out.println("point_ub " + point_lb.toString());
+    //System.out.println("indice_lb " + indice_lb.toString());
+    //System.out.println("point_lb " + point_lb.toString());
     _lb = expr_lb.evaluate(point_lb, indice_lb);
     //System.out.println(_lb);
 
@@ -239,6 +207,45 @@ public class ExpressionAnalyzer {
     lb_ub.addElement(new Integer(_ub));
 
     _boundsLinks.put(index, lb_ub);
+  }
+
+
+  /**
+   * Tries to find bound values for outer iterators.
+   * @param isUpperbound indicates if we're establishing upper bounds (true) or lower bounds (false).
+   */
+  private HashMap<String,Integer> _findIteratorBounds(Expression expr, boolean isUpperbound) {
+    HashMap<String,Integer> values = new HashMap <String,Integer>();
+    int sign = isUpperbound ? 1 : -1;
+
+    Iterator j = _boundsLinks.keySet().iterator();
+    while(j.hasNext()){
+      String index_name = (String)j.next();
+      //System.out.println(expr + " contains " + index_name + "?? " + expr.containsVariable(index_name));
+      Iterator expr_it = expr.iterator();
+      LinTerm term;
+      while (expr_it.hasNext()) {
+        term = (LinTerm) expr_it.next();
+        if (term instanceof MinimumTerm) {
+          values.putAll(_findIteratorBounds(((MinimumTerm)term).getExpressionOne(), isUpperbound));
+          values.putAll(_findIteratorBounds(((MinimumTerm)term).getExpressionTwo(), isUpperbound));
+        }
+        else if (term instanceof MaximumTerm) {
+          values.putAll(_findIteratorBounds(((MaximumTerm)term).getExpressionOne(), isUpperbound));
+          values.putAll(_findIteratorBounds(((MaximumTerm)term).getExpressionTwo(), isUpperbound));
+        }
+        else if (term.getName().equals(index_name) && term.getSign() == sign) {
+          values.put(index_name, _boundsLinks.get(index_name).get(1));
+          //continue;
+        }
+        else if (term.getName().equals(index_name) && term.getSign() == -sign) {
+          values.put(index_name, _boundsLinks.get(index_name).get(0));
+          //continue;
+        }
+      }
+    }
+
+    return values;
   }
 
 
