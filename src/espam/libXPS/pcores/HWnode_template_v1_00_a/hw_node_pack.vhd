@@ -27,6 +27,8 @@ package hw_node_pack is
    function int2slv(int_value : integer; size: integer) return std_logic_vector;
    function slv2int(vect : std_logic_vector; size : integer) return integer;
    Function modulo2(a:integer; b:integer) return integer;
+   function max(a:integer; b:integer) return integer;
+   function min(a:integer; b:integer) return integer;
 
 end hw_node_pack;
 
@@ -81,5 +83,27 @@ package body hw_node_pack is
       eval := (int2slv(a, 8) and int2slv(1, 8)) xor int2slv(b,8);
       return slv2int(eval,8);
    end modulo2;
+
+----------------------------------------------------------------------------------- 
+
+   function max(a:integer; b:integer) return integer is
+   begin
+     if (a > b) then
+       return a;
+     else
+       return b;
+     end if;
+   end max;
+
+----------------------------------------------------------------------------------- 
+
+   function min(a:integer; b:integer) return integer is
+   begin
+     if (a < b) then
+       return a;
+     else
+       return b;
+     end if;
+   end min;
 
 end hw_node_pack;
