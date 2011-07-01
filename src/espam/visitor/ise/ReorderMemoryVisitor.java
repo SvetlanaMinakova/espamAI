@@ -62,7 +62,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * This class generates a reorder memory in VHDL for a given channel.
  *
  * @author Sven van Haastregt
- * @version $Id: ReorderMemoryVisitor.java,v 1.8 2011/06/23 13:17:19 svhaastr Exp $
+ * @version $Id: ReorderMemoryVisitor.java,v 1.9 2011/07/01 12:07:20 svhaastr Exp $
  */
 
 public class ReorderMemoryVisitor extends PlatformVisitor {
@@ -542,7 +542,7 @@ public class ReorderMemoryVisitor extends PlatformVisitor {
     topPS.println("");
     int opdSize = _computeMemsize(_adgEdge.getFromPort().getDomain());
     int ipdSize = _computeMemsize(_adgEdge.getToPort().getDomain());
-    assert(opdSize >= ipdSize);   // we map all addresses back to OPD; probably we don't have to care about the IPD at all
+    //assert(opdSize >= ipdSize);   // we map all addresses back to OPD; probably we don't have to care about the IPD at all
     topPS.println("  constant C_AWIDTH : natural := " + (int)Math.ceil(Math.log(opdSize+1)/Math.log(2)) + ";");
     topPS.println("");
     topPS.println("  signal read_addr       : std_logic_vector(C_AWIDTH-1 downto 0);");

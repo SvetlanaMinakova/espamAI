@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.10 2011/06/29 15:39:16 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.11 2011/07/01 12:07:20 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -457,12 +457,13 @@ public class IseNetworkVisitor extends PlatformVisitor {
         // Instantiate regular FIFO
         int fifosize = x.getSize() + 1;
         int implstyle;
-        if (fifosize <= 32) {
-          implstyle = 0;  // Use LUTRAM/SRL16
-        }
-        else {
+//        if (fifosize <= 32) {
+//          implstyle = 0;  // Use LUTRAM/SRL16
+//        }
+//        else {
+//          // TODO: currently, always use BRAMs, as there seems to be a difference in timing between BRAM & non-BRAM FSLs
           implstyle = 1;  // Use BRAMs
-        }
+//        }
 
         _fifoInst += "  " + x.getName() + " : fsl_v20\n";
         _fifoInst += "    generic map (\n";

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.lang.Math;
 
 import espam.datamodel.EspamException;
+import espam.datamodel.LinearizationType;
 import espam.datamodel.mapping.*;
 import espam.datamodel.domain.IndexVector;
 import espam.datamodel.domain.Polytope;
@@ -61,7 +62,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.5 2011/06/23 15:29:21 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.6 2011/07/01 12:07:20 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -500,6 +501,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       String indexName = _indexList.getIterationVector().get(iterNum);
 			Expression expr_lb = boundExp.get(2*iterNum);
 			Expression expr_ub = boundExp.get(2*iterNum + 1);
+      //System.out.println("bounds: " + expr_lb + " -- " + expr_ub);
       int bnds[] = ea.findBounds(indexName, expr_lb, expr_ub);
 
       iterDecls += "  signal sl_low_" + indexName + ", sl_high_" + indexName + "      : integer;\n";
@@ -1045,13 +1047,32 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		
 		hdlPS.println("architecture RTL of " + _coreName + " is");
 		hdlPS.println("");   
-		hdlPS.println("   component READ_MUX is");
+		hdlPS.println("   component read_mux is");
 		hdlPS.println("      generic (");
 		hdlPS.println("         N_PORTS    : natural := 1;");
 		hdlPS.println("         PORT_WIDTH : natural := 32");
 		hdlPS.println("      );");
-
 		hdlPS.println("      port(");
+		hdlPS.println("         IN_PORTS   : in  std_logic_vector(N_PORTS*PORT_WIDTH-1 downto 0);");
+		hdlPS.println("         EXISTS     : in  std_logic_vector(N_PORTS-1 downto 0);");
+		hdlPS.println("         READS      : out std_logic_vector(N_PORTS-1 downto 0);");
+		hdlPS.println("");
+		hdlPS.println("         OUT_PORT   : out std_logic_vector(PORT_WIDTH-1 downto 0);");
+		hdlPS.println("         EXIST      : out std_logic;");
+		hdlPS.println("         READ       : in  std_logic;");
+		hdlPS.println("");
+		hdlPS.println("         CONTROL    : in  std_logic_vector(N_PORTS-1 downto 0)");
+		hdlPS.println("      );");
+		hdlPS.println("   end component;");
+		hdlPS.println(""); 
+		hdlPS.println("   component read_mux_sticky is");
+		hdlPS.println("      generic (");
+		hdlPS.println("         N_PORTS    : natural := 1;");
+		hdlPS.println("         PORT_WIDTH : natural := 32");
+		hdlPS.println("      );");
+		hdlPS.println("      port(");
+    hdlPS.println("         RST        : in  std_logic;");
+    hdlPS.println("         CLK        : in  std_logic;");
 		hdlPS.println("         IN_PORTS   : in  std_logic_vector(N_PORTS*PORT_WIDTH-1 downto 0);");
 		hdlPS.println("         EXISTS     : in  std_logic_vector(N_PORTS-1 downto 0);");
 		hdlPS.println("         READS      : out std_logic_vector(N_PORTS-1 downto 0);");
@@ -1372,16 +1393,23 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				////get the vector of the in ports of the node relating to the specific in_argument of the function
 				binding_in_ports = new Vector<ADGInPort>();
 				in_arg_name = in_arg.getName();
-							
+
+        boolean hasSticky = false;
 				j = _adgInPorts.iterator();
 				while (j.hasNext()) {
 					adg_in_port = (ADGInPort) j.next();
 					if (adg_in_port.getBindVariables().get(0).getName().equals(in_arg_name)== true){
 						binding_in_ports.addElement(adg_in_port);
+            if (((ADGEdge)adg_in_port.getEdge()).getLinModel() == LinearizationType.sticky_fifo) {
+              hasSticky = true;
+            }
 					}
 				}
 				
-				hdlPS.println("   RD_MUX_" + index_rd_mux + " : READ_MUX");
+        if (!hasSticky)
+          hdlPS.println("   RD_MUX_" + index_rd_mux + " : read_mux");
+        else
+          hdlPS.println("   RD_MUX_" + index_rd_mux + " : read_mux_sticky");
 				hdlPS.println("   generic map (");
 				hdlPS.println("      N_PORTS    => "+ binding_in_ports.size() + ",");
 				hdlPS.println("      PORT_WIDTH => QUANT");
@@ -1391,6 +1419,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				
 				//the situation of only one rd_mux is different
 				if (total_in_ports == 0){
+          if (hasSticky) {
+            hdlPS.println("      RST        => sl_RST,");
+            hdlPS.println("      CLK        => CLK,");
+          }
 					hdlPS.println("      IN_PORTS   => sl_IN_PORTS(" + binding_in_ports.size() + "*QUANT-1 downto 0),");
 					hdlPS.println("      EXISTS     => sl_EXISTS(" + (binding_in_ports.size()-1) + " downto 0),");
 					hdlPS.println("      READS      => sl_READS(" + (binding_in_ports.size()-1) + " downto 0),");
@@ -1405,6 +1437,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					hdlPS.println("");
 				}
 				else{
+          if (hasSticky) {
+            hdlPS.println("      RST        => sl_RST,");
+            hdlPS.println("      CLK        => CLK,");
+          }
 					hdlPS.println("      IN_PORTS   => sl_IN_PORTS(" + (binding_in_ports.size()+ total_in_ports) + "*QUANT-1 downto " + total_in_ports + "*QUANT),");
 					hdlPS.println("      EXISTS     => sl_EXISTS(" + (binding_in_ports.size() + total_in_ports -1) + " downto " + total_in_ports + "),");
 					hdlPS.println("      READS      => sl_READS(" + (binding_in_ports.size() + total_in_ports -1) + " downto " + total_in_ports + "),");
