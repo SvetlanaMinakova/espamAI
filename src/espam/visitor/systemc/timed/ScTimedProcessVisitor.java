@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.11 2011/04/26 08:58:36 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.12 2011/07/12 08:22:48 tzhai Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -73,8 +73,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     /**
      *  Constructor for the ScTimedProcessVisitor object
      */
-    public ScTimedProcessVisitor(Mapping mapping) {
+    public ScTimedProcessVisitor(Mapping mapping, boolean scTimedPeriod) {
       _mapping = mapping;
+      _scTimedPeriod = scTimedPeriod;
     }
 
     /**
@@ -363,6 +364,14 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "// Initial 1-cycle delay to ensure FIFO is ready");
         _printStream.println(_prefix + "waitcycles(1);");
         _printStream.println("");
+        
+        // we want to execute the network for 10 times to make sure that it reaches "steady-state" (Teddy)
+	if ( _scTimedPeriod ){
+	  _printStream.println(_prefix + "for( int t = ceil1(1); t <= ceil1(10); t += 1 ) {");
+	} else {
+	  _printStream.println(_prefix + "// for( int t = ceil1(1); t <= 10; t += 1 ) {");
+	}
+        
     }
 
 
@@ -373,11 +382,21 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
      */
     private void _writeMainProcEnd( CDProcess x) {
         _printStream.println("");
+        	
+	// compute the period of processes (networks)
+        if ( _scTimedPeriod ){
+	  _printStream.println(_prefix + "iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
+	  _printStream.println(_prefix + "compute_period(sc_time_stamp().to_default_time_units());");
+	  _printStream.println(_prefix + "}");
+        } else {
+	  _printStream.println(_prefix + "// iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
+	  _printStream.println(_prefix + "// compute_period(sc_time_stamp().to_default_time_units());");
+          _printStream.println(_prefix + "// }");
+        }
+        
         _printStream.println(_prefix + "finish.write(true);");
         _printStream.println(_prefix + "cout << \"" + x.getName() + " finished at \" << sc_time_stamp() << endl;");
-
-        _printStream.println(_prefix + "iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
-        _printStream.println(_prefix + "compute_period(sc_time_stamp().to_default_time_units());");
+                
         _printStream.println("");
         _printStream.println(_prefix + "return;");
         _prefixDec();
@@ -701,6 +720,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     private CDProcessNetwork _pn = null;
 
     private Mapping _mapping = null;
+    private boolean _scTimedPeriod = false;
 
     private PrintStream _printStream = null;
 

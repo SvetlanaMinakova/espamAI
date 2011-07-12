@@ -407,6 +407,25 @@ public class UserInterface {
     public final void setScTimedFlag() {
         _scTimed = true;
     }
+    
+    /**
+     * Sets the SystemC timed flag (computing period)
+     */
+
+    public final void setScTimedPeriodFlag() {
+	// set the flag for computing period only in the systemC simulation
+	if ( _scTimed ){
+	  _scTimedPeriod = true;
+	}
+    }
+    
+    /**
+     * Gets the SystemC timed flag (computing period)
+     */
+
+    public final boolean getScTimedPeriodFlag() {
+        return _scTimedPeriod;
+    }
 
     /**
      * Get the status of the HDPC flag
@@ -628,6 +647,9 @@ public class UserInterface {
 
     // the SystemC timed flag
     private boolean _scTimed = false;
+    
+    // in case of SystemC timed, an option to compute period of processes (networks)
+    private boolean _scTimedPeriod = false;
 
     // the hdpc flag
     private boolean _hdpc = false;

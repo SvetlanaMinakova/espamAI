@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.7 2011/05/04 15:24:41 nikolov Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.8 2011/07/12 08:19:20 tzhai Exp $ $Name:  $
  */
 
 public class Options {
@@ -145,6 +145,8 @@ public class Options {
                 _ui.setScUntimedFlag();
             } else if( arg.equals("--systemc-timed") ) {
                 _ui.setScTimedFlag();
+	    } else if( arg.equals("--sc-timed-period") ) {
+		_ui.setScTimedPeriodFlag();
             } else if( arg.equals("--hdpc") ) {
                 _ui.setHdpcFlag();
             } else if( arg.equals("--size") || arg.equals("-S") ) {

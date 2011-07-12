@@ -89,7 +89,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.13 2011/05/04 15:24:41 nikolov Exp $
+ * @version $Id: Main.java,v 1.14 2011/07/12 08:19:20 tzhai Exp $
  */
 
 public class Main {
@@ -306,9 +306,11 @@ public class Main {
 				  System.out.println(" - Generation [Finished]");
 			} else if (_ui.getScTimedFlag()) {
           System.out.println(" - Generating timed SystemC model");
-
+	  
+	  boolean _scTimedPeriod = _ui.getScTimedPeriodFlag();
+	  
           //printStream = _openFile(_cdpn.getName() + "_KPN", "h");
-          ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping);
+          ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping, _scTimedPeriod);
           _cdpn.accept(scTimedVisitor);
 
 				  System.out.println(" - Generation [Finished]");

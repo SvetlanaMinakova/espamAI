@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.8 2011/04/15 09:09:06 svhaastr Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.9 2011/07/12 08:22:48 tzhai Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -62,9 +62,11 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
      * @param  printStream Description of the Parameter
      */
     //public ScTimedNetworkVisitor(Mapping mapping, PrintStream printStream) {
-    public ScTimedNetworkVisitor(Mapping mapping) throws EspamException {
+    public ScTimedNetworkVisitor(Mapping mapping, boolean scTimedPeriod) throws EspamException {
       _mapping = mapping;
-
+      
+      _scTimedPeriod = scTimedPeriod;
+      
       // Use the directory indicated by the '-o' option. Otherwise
       // select the orignal filename. (REFACTOR)
       UserInterface ui = UserInterface.getInstance();
@@ -102,7 +104,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     public void visitComponent( CDProcessNetwork x ) {
         _pn = x;
 
-        ScTimedProcessVisitor pt = new ScTimedProcessVisitor(_mapping);
+        ScTimedProcessVisitor pt = new ScTimedProcessVisitor(_mapping, _scTimedPeriod);
         x.accept( pt );
 
         _writeMakeFile();
@@ -150,7 +152,6 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
           chSize = 65536;
           System.err.println("Warning: currently maximum buffer size for all channels!");
         }else {
-          // TODO: fsl_fifo has some problems on blocking write
           chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
         }
         ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
@@ -241,7 +242,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/apps/systemc-2.2");
+                cf.println("SYSTEMC = $(HOME)/apps/systemc-2.2.0");
+//                 cf.println("SYSTEMC = $(HOME)/TOOLS/systemc-2.2.0");
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);
@@ -412,7 +414,6 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     /**
      * Open a file for writing workload of all function calls and communication cost.
      *
-     *
      */
     private void _writeWorkloadHeader() {
         try {
@@ -434,11 +435,15 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             mf.println("");
             
             mf.println("// Latency numbers");
-            //  // FIFO read/write latency
+            
+            // FIFO read/write latency
             // Currently we assume that communication cost is constant and equal for all
             mf.println("extern const int latRead  = 1;     // Latency of FIFO read operation");
-            mf.println("extern const int latWrite  = 1;     // Latency of FIFO read operation");
+            mf.println("extern const int latWrite  = 1;     // Latency of FIFO write operation");
             
+            // latency for remote communication
+//             mf.println("extern const int latRead_remote  = 1;     // Latency of remote FIFO read operation");
+//             mf.println("extern const int latWrite_remote  = 1;     // Latency of remote FIFO write operation");
             
             // iterate over all processes to write latency of function calls
             _functionNames = new Vector<String>();
@@ -483,6 +488,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     private CDProcessNetwork _pn = null;
 
     private Mapping _mapping = null;
+    
+    private boolean _scTimedPeriod = false;
 
     private String _outputDir = null;
     
