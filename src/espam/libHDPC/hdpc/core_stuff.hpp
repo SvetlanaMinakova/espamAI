@@ -1,4 +1,4 @@
-/* $Id: core_stuff.hpp,v 1.1 2010/02/12 14:46:28 nikolov Exp $ */
+/* $Id: core_stuff.hpp,v 1.2 2011/08/23 16:15:03 dmitryn Exp $ */
 /* $license$ */
 #pragma once
 
@@ -38,7 +38,8 @@ namespace hdpc {
 	#if defined(_WIN32)
 		if (mask != CPU_CORES<>()) SetThreadAffinityMask(h, mask);
 	#else
-		sched_setaffinity(h, sizeof(mask), &mask);
+		//sched_setaffinity(h, sizeof(mask), &mask);
+		 pthread_setaffinity_np(h, sizeof(mask), &mask);
 	#endif /* _WIN32 */
 	}
 
