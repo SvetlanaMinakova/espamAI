@@ -207,7 +207,8 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
                    _printStream.print(var.getVariableName() + x.getNodeName());
                }
            }
-           _printStream.print(") ;");
+           _printStream.println(") ;");
+           _printStream.println(_prefix + "firings[\"" + x.getFunctionName() + "\"]++;");
            _printStream.println("");
 //           _printStream.println(_prefix + "execute(\""
 //                            + "_" + x.getFunctionName() + "\");");

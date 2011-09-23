@@ -57,7 +57,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.1 2010/11/05 16:23:58 svhaastr Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.2 2011/09/23 12:21:37 svhaastr Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -128,6 +128,9 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _writeParameterAndGates( x );
         _writeFunctionArguments( x );
         _writeConstructor( x );
+        _printStream.println(_prefix + "  std::map<const char*,int> get_firings() {");
+        _printStream.println(_prefix + "    return firings;");
+        _printStream.println(_prefix + "  }");
         _writeMain( x );
 
         _prefixDec();
@@ -262,7 +265,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                 comModel != LinearizationType.sticky_fifo &&
                 comModel != LinearizationType.shift_register) {
                System.out.println("ERROR: Out of order channels are not supported yet!");
-               System.exit(0);
+               //System.exit(0);
             }
         }
 
@@ -374,6 +377,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                 _printStream.println(_prefix + t +" " + funcArgument + ";");
             }
         }
+
+        // Statistics
+        _printStream.println("");
+        _printStream.println(_prefix + "// Statistics");
+        _printStream.println(_prefix + "std::map<const char*,int> firings;");
 
         _prefixDec();
 
@@ -497,6 +505,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStream.println("#ifndef " + x.getName() + "_H");
         _printStream.println("#define " + x.getName() + "_H");
         _printStream.println("");
+        _printStream.println("#include <map>");
         _printStream.println("#include \"math.h\"");
         _printStream.println("");
         _printStream.println("#include \"aux_func.h\"");
@@ -514,7 +523,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                 comModel != LinearizationType.sticky_fifo &&
                 comModel != LinearizationType.shift_register ) {
                System.out.println("ERROR: Out of order channels are not supported yet!");
-               System.exit(0);
+               //System.exit(0);
             }
         }
         _printStream.println("");
@@ -631,14 +640,24 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("class Fifo : public sc_channel, public write_if<T>, public read_if<T>");
         _printStreamFunc.println("{");
         _printStreamFunc.println("   public:");
-        _printStreamFunc.println("     Fifo(sc_module_name name) : sc_channel(name), num_elements(0), first(0) {}");
+        _printStreamFunc.println("     Fifo(sc_module_name name, int size) : sc_channel(name), fifosize(size), num_elements(0), first(0),");
+        _printStreamFunc.println("                                 nwritten(0), nread(0), maxtokens(0) {");
+        _printStreamFunc.println("       data = new T[size];");
+        _printStreamFunc.println("     }");
+        _printStreamFunc.println("");
+        _printStreamFunc.println("     ~Fifo() {");
+        _printStreamFunc.println("       delete [] data;");
+        _printStreamFunc.println("     }");
         _printStreamFunc.println("");
         _printStreamFunc.println("     void write(T c) {");
-        _printStreamFunc.println("       if (num_elements == max)");
+        _printStreamFunc.println("       if (num_elements == fifosize)");
         _printStreamFunc.println("         wait(read_event);");
         _printStreamFunc.println("");
-        _printStreamFunc.println("       data[(first + num_elements) % max] = c;");
+        _printStreamFunc.println("       data[(first + num_elements) % fifosize] = c;");
         _printStreamFunc.println("       ++ num_elements;");
+        _printStreamFunc.println("       ++ nwritten;");
+        _printStreamFunc.println("       if (num_elements > maxtokens)");
+        _printStreamFunc.println("         maxtokens = num_elements;");
         _printStreamFunc.println("       write_event.notify();");
         _printStreamFunc.println("     }");
         _printStreamFunc.println("");
@@ -648,7 +667,8 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("");
         _printStreamFunc.println("       c = data[first];");
         _printStreamFunc.println("       -- num_elements;");
-        _printStreamFunc.println("       first = (first + 1) % max;");
+        _printStreamFunc.println("       ++ nread;");
+        _printStreamFunc.println("       first = (first + 1) % fifosize;");
         _printStreamFunc.println("       read_event.notify();");
         _printStreamFunc.println("     }");
         _printStreamFunc.println("");
@@ -656,11 +676,17 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("");
         _printStreamFunc.println("     int num_available() { return num_elements;}");
         _printStreamFunc.println("");
+        _printStreamFunc.println("     int get_size() {return fifosize;}");
+        _printStreamFunc.println("     int get_nwritten() {return nwritten;}");
+        _printStreamFunc.println("     int get_nread() {return nread;}");
+        _printStreamFunc.println("     int get_maxtokens() {return maxtokens;}");
+        _printStreamFunc.println("");
         _printStreamFunc.println("   private:");
-        _printStreamFunc.println("     enum e { max = 10 };");
-        _printStreamFunc.println("     T data[max];");
+        _printStreamFunc.println("     int fifosize;");
+        _printStreamFunc.println("     T *data;");
         _printStreamFunc.println("     int num_elements, first;");
         _printStreamFunc.println("     sc_event write_event, read_event;");
+        _printStreamFunc.println("     int nwritten, nread, maxtokens;");
         _printStreamFunc.println("};");
         _printStreamFunc.println("");
 
@@ -691,7 +717,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                 comModel != LinearizationType.sticky_fifo &&
                 comModel != LinearizationType.shift_register) {
                System.out.println("ERROR: Out of order channels are not supported yet!");
-               System.exit(0);
+               //System.exit(0);
             }
         }
 

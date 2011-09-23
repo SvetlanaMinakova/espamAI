@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.1 2010/11/05 16:23:58 svhaastr Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.2 2011/09/23 12:21:37 svhaastr Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -116,9 +116,46 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
         }
 
         _printStream.println("");
+        _printStream.println("");
         _prefixDec();
         _printConstructor();
 
+        _printStream.println(_prefix + "void dump_statistics() {");
+        _printStream.println(_prefix + "  printf(\"Computation statistics:\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+------------------+----------+\\n\");");
+        _printStream.println(_prefix + "  printf(\"| Process  |     Function     | #Firings |\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+------------------+----------+\\n\");");
+        i = x.getProcessList().iterator();
+        _printStream.println(_prefix + "  std::map<const char*,int>::iterator it;");
+        while( i.hasNext() ) {
+            process = (CDProcess) i.next();
+            String piname = process.getName() + "_instance";
+            _printStream.println(_prefix + "  printf(\"| %-8s | %-16s | %8s |\\n\", \"" + process.getName() + "\", \"\", \"\");");
+            _printStream.println(_prefix + "  for (it = " + piname + ".get_firings().begin(); it != " + piname + ".get_firings().end(); ++it) {");
+            _printStream.println(_prefix + "    printf(\"| %-8s | %-16s | %8d |\\n\", \"\", it->first, it->second);");
+            _printStream.println(_prefix + "  }");
+        }
+        _printStream.println(_prefix + "  printf(\"+----------+------------------+----------+\\n\");");
+
+        _printStream.println(_prefix + "  printf(\"\\n\");");
+        _printStream.println(_prefix + "  printf(\"Communication statistics:\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
+        _printStream.println(_prefix + "  printf(\"| Channel  |   Size   | #Written |  #Read   | Max fill |\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
+        i = x.getChannelList().iterator();
+        while( i.hasNext() ) {
+            channel = (CDChannel) i.next();
+            _printStream.println(_prefix + "  printf(\"| %-8s | %8d | %8d | %8d | %8d |\\n\", \""
+                                         + channel.getName() + "\", "
+                                         + channel.getName() + ".get_size(), "
+                                         + channel.getName() + ".get_nwritten(), "
+                                         + channel.getName() + ".get_nread(), "
+                                         + channel.getName() + ".get_maxtokens());");
+        }
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
+
+        _printStream.println(_prefix + "}");
+        _printStream.println("");
         //  the type() function
         _printStream.println("");
         _prefixDec();
@@ -190,9 +227,9 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             int chSize = ( (ADGEdge) ch.getAdgEdgeList().get(0) ).getSize();
 
             if (chSize < 1) {
-                 csl += ",\n" + _prefix + channelName + "(\"" + channelName + "\")";
+                 csl += ",\n" + _prefix + channelName + "(\"" + channelName + "\", " + chSize + ")";
             } else {
-                 csl += ",\n" + _prefix + channelName + "(\"" + channelName + "\")";
+                 csl += ",\n" + _prefix + channelName + "(\"" + channelName + "\", " + chSize + ")";
             }
 
          }
@@ -280,7 +317,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             maf.println("#include \"" + _pn.getName() + "_KPN.h\"");
             maf.println("#include <fstream>");
             maf.println("using namespace std;");
-            maf.println(" ");
+            maf.println("");
             maf.println("int sc_main(int argc , char *argv[])");
             maf.println("{");
             maf.println(" ");
@@ -294,10 +331,11 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
                 maf.print(", " + parameter.getValue());
             }
             maf.println(");");
-            maf.println(" ");
-            maf.println(" sc_start();");
-            maf.println(" return 0;");
-            maf.println(" ");
+            maf.println("");
+            maf.println("  sc_start();");
+            maf.println("  " + _pn.getName() + ".dump_statistics();");
+            maf.println("  return 0;");
+            maf.println("");
             maf.println("}");
 
         }
