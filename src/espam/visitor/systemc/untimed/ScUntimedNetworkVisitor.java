@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.2 2011/09/23 12:21:37 svhaastr Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.3 2011/09/23 13:13:31 svhaastr Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -116,9 +116,9 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
         }
 
         _printStream.println("");
-        _printStream.println("");
         _prefixDec();
         _printConstructor();
+        _printStream.println("");
 
         _printStream.println(_prefix + "void dump_statistics() {");
         _printStream.println(_prefix + "  printf(\"Computation statistics:\\n\");");
@@ -140,7 +140,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "  printf(\"\\n\");");
         _printStream.println(_prefix + "  printf(\"Communication statistics:\\n\");");
         _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
-        _printStream.println(_prefix + "  printf(\"| Channel  |   Size   | #Written |  #Read   | Max fill |\\n\");");
+        _printStream.println(_prefix + "  printf(\"| Channel  |   Size   | Max fill | #Written |  #Read   |\\n\");");
         _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
         i = x.getChannelList().iterator();
         while( i.hasNext() ) {
@@ -148,9 +148,9 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             _printStream.println(_prefix + "  printf(\"| %-8s | %8d | %8d | %8d | %8d |\\n\", \""
                                          + channel.getName() + "\", "
                                          + channel.getName() + ".get_size(), "
+                                         + channel.getName() + ".get_maxtokens(), "
                                          + channel.getName() + ".get_nwritten(), "
-                                         + channel.getName() + ".get_nread(), "
-                                         + channel.getName() + ".get_maxtokens());");
+                                         + channel.getName() + ".get_nread());");
         }
         _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
 
