@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.3 2011/09/23 13:13:31 svhaastr Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.4 2011/09/26 09:17:42 svhaastr Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -131,7 +131,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             process = (CDProcess) i.next();
             String piname = process.getName() + "_instance";
             _printStream.println(_prefix + "  printf(\"| %-8s | %-16s | %8s |\\n\", \"" + process.getName() + "\", \"\", \"\");");
-            _printStream.println(_prefix + "  for (it = " + piname + ".get_firings().begin(); it != " + piname + ".get_firings().end(); ++it) {");
+            _printStream.println(_prefix + "  for (it = " + piname + ".get_firings()->begin(); it != " + piname + ".get_firings()->end(); ++it) {");
             _printStream.println(_prefix + "    printf(\"| %-8s | %-16s | %8d |\\n\", \"\", it->first, it->second);");
             _printStream.println(_prefix + "  }");
         }

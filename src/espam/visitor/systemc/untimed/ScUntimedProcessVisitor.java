@@ -57,7 +57,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.2 2011/09/23 12:21:37 svhaastr Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.3 2011/09/26 09:17:42 svhaastr Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -128,8 +128,8 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _writeParameterAndGates( x );
         _writeFunctionArguments( x );
         _writeConstructor( x );
-        _printStream.println(_prefix + "  std::map<const char*,int> get_firings() {");
-        _printStream.println(_prefix + "    return firings;");
+        _printStream.println(_prefix + "  std::map<const char*,int> *get_firings() {");
+        _printStream.println(_prefix + "    return &firings;");
         _printStream.println(_prefix + "  }");
         _writeMain( x );
 
