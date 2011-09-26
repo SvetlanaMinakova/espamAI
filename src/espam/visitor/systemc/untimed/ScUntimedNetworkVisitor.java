@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.4 2011/09/26 09:17:42 svhaastr Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.5 2011/09/26 12:00:21 svhaastr Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -136,31 +136,46 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             _printStream.println(_prefix + "  }");
         }
         _printStream.println(_prefix + "  printf(\"+----------+------------------+----------+\\n\");");
-
         _printStream.println(_prefix + "  printf(\"\\n\");");
+
+        // Print channel statistics
+        _printStream.println("");
         _printStream.println(_prefix + "  printf(\"Communication statistics:\\n\");");
-        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
-        _printStream.println(_prefix + "  printf(\"| Channel  |   Size   | Max fill | #Written |  #Read   |\\n\");");
-        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+----------+\\n\");");
+        _printStream.println(_prefix + "  printf(\"| Channel  |   Size   | Max fill | #Written |  #Read   | Blocked? |\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+----------+\\n\");");
         i = x.getChannelList().iterator();
         while( i.hasNext() ) {
             channel = (CDChannel) i.next();
-            _printStream.println(_prefix + "  printf(\"| %-8s | %8d | %8d | %8d | %8d |\\n\", \""
+            _printStream.println(_prefix + "  printf(\"| %-8s | %8d | %8d | %8d | %8d |  %2s  %2s  |\\n\", \""
                                          + channel.getName() + "\", "
                                          + channel.getName() + ".get_size(), "
                                          + channel.getName() + ".get_maxtokens(), "
                                          + channel.getName() + ".get_nwritten(), "
-                                         + channel.getName() + ".get_nread());");
+                                         + channel.getName() + ".get_nread(), "
+                                         + channel.getName() + ".is_blocking_read() ? \"RD\" : \"\", "
+                                         + channel.getName() + ".is_blocking_write() ? \"WR\" : \"\");");
         }
-        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+\\n\");");
+        _printStream.println(_prefix + "  printf(\"+----------+----------+----------+----------+----------+----------+\\n\");");
+        _printStream.println("");
+
+        // Print warning on deadlock
+        i = x.getChannelList().iterator();
+        _printStream.print(_prefix + "  if (");
+        while( i.hasNext() ) {
+            channel = (CDChannel) i.next();
+            _printStream.print(channel.getName() + ".is_blocking_write()");
+            if (i.hasNext()) {
+              _printStream.print(" || \n" + _prefix + "      ");
+            }
+        }
+        _printStream.println(") {");
+        _printStream.println(_prefix + "    printf(\"\\n****** DEADLOCK OCCURRED! ******\\n\\n\");");
+        _printStream.println(_prefix + "  }");
 
         _printStream.println(_prefix + "}");
         _printStream.println("");
-        //  the type() function
-        _printStream.println("");
         _prefixDec();
-//        _printStream.println(_prefix + "const char* type() const { " +
-//                      "return \"" + x.getName() + "\"; };");
 
         _printStream.println("");
         _printStream.println("};");

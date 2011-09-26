@@ -57,7 +57,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.3 2011/09/26 09:17:42 svhaastr Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.4 2011/09/26 12:00:21 svhaastr Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -641,7 +641,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("{");
         _printStreamFunc.println("   public:");
         _printStreamFunc.println("     Fifo(sc_module_name name, int size) : sc_channel(name), fifosize(size), num_elements(0), first(0),");
-        _printStreamFunc.println("                                 nwritten(0), nread(0), maxtokens(0) {");
+        _printStreamFunc.println("                                 blocking_read(false), blocking_write(false), nwritten(0), nread(0), maxtokens(0) {");
         _printStreamFunc.println("       data = new T[size];");
         _printStreamFunc.println("     }");
         _printStreamFunc.println("");
@@ -650,8 +650,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("     }");
         _printStreamFunc.println("");
         _printStreamFunc.println("     void write(T c) {");
-        _printStreamFunc.println("       if (num_elements == fifosize)");
+        _printStreamFunc.println("       if (num_elements == fifosize) {");
+        _printStreamFunc.println("         blocking_write = true;");
         _printStreamFunc.println("         wait(read_event);");
+        _printStreamFunc.println("         blocking_write = false;");
+        _printStreamFunc.println("       }");
         _printStreamFunc.println("");
         _printStreamFunc.println("       data[(first + num_elements) % fifosize] = c;");
         _printStreamFunc.println("       ++ num_elements;");
@@ -662,8 +665,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("     }");
         _printStreamFunc.println("");
         _printStreamFunc.println("     void read(T &c){");
-        _printStreamFunc.println("       if (num_elements == 0)");
+        _printStreamFunc.println("       if (num_elements == 0) {");
+        _printStreamFunc.println("         blocking_read = true;");
         _printStreamFunc.println("         wait(write_event);");
+        _printStreamFunc.println("         blocking_read = false;");
+        _printStreamFunc.println("       }");
         _printStreamFunc.println("");
         _printStreamFunc.println("       c = data[first];");
         _printStreamFunc.println("       -- num_elements;");
@@ -680,12 +686,15 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("     int get_nwritten() {return nwritten;}");
         _printStreamFunc.println("     int get_nread() {return nread;}");
         _printStreamFunc.println("     int get_maxtokens() {return maxtokens;}");
+        _printStreamFunc.println("     bool is_blocking_read() {return blocking_read;}");
+        _printStreamFunc.println("     bool is_blocking_write() {return blocking_write;}");
         _printStreamFunc.println("");
         _printStreamFunc.println("   private:");
         _printStreamFunc.println("     int fifosize;");
         _printStreamFunc.println("     T *data;");
         _printStreamFunc.println("     int num_elements, first;");
         _printStreamFunc.println("     sc_event write_event, read_event;");
+        _printStreamFunc.println("     bool blocking_read, blocking_write;");
         _printStreamFunc.println("     int nwritten, nread, maxtokens;");
         _printStreamFunc.println("};");
         _printStreamFunc.println("");
