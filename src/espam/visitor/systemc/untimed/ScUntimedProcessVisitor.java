@@ -57,7 +57,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.4 2011/09/26 12:00:21 svhaastr Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.5 2011/09/30 13:32:28 svhaastr Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -482,7 +482,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                         csl += "&" + arg.getName() + ", ";
                    }
 
-                   _printStreamFunc.println("    // " + csl.substring(0, (csl.length() - 2)) + " );");
+                   _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
                    //-------- END print of the initial function call in the wrapper ------------------------
 
                    _printStreamFunc.println("}");
