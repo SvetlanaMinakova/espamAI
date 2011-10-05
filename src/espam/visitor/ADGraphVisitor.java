@@ -29,6 +29,8 @@ import espam.datamodel.graph.adg.ADGOutPort;
 import espam.datamodel.graph.adg.ADGEdge;
 import espam.datamodel.graph.adg.ADGParameter;
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGCtrlVariable;
+import espam.datamodel.graph.adg.ADGInVar;
 import espam.datamodel.graph.adg.ADGFunction;
 
 import espam.datamodel.domain.LBS;
@@ -48,7 +50,7 @@ import espam.datamodel.EspamException;
  *  Approximated Dependence Graph description.
  *
  * @author  Todor Stefanov
- * @version  $Id: ADGraphVisitor.java,v 1.1 2007/12/07 22:07:24 stefanov Exp $
+ * @version  $Id: ADGraphVisitor.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class ADGraphVisitor extends GraphVisitor {
@@ -110,6 +112,22 @@ public class ADGraphVisitor extends GraphVisitor {
 	 * @param  x A Visitor Object.
 	 */
 	public void visitComponent(ADGVariable x) {
+	}
+
+	/**
+	 *  Visit a ADGCtrlVariable component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ADGCtrlVariable x) {
+	}
+
+	/**
+	 *  Visit an ADGInVar component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ADGInVar x) {
 	}
 
 	/**

@@ -38,7 +38,7 @@ import espam.utils.util.Convert;
  *  This class gets the vector of expressions of lower and upper bounds of indexes of a polytope
  *
  * @author  Ying Tao, Sven van Haastregt
- * @version  $Id: Polytope2IndexBoundVector.java,v 1.2 2011/06/23 13:46:05 svhaastr Exp $
+ * @version  $Id: Polytope2IndexBoundVector.java,v 1.3 2011/10/05 15:03:46 nikolov Exp $
  *
  */
 
@@ -58,9 +58,10 @@ public class Polytope2IndexBoundVector {
            SignedMatrix A = polytope.getConstraints();
 
            Vector paramVec = new Vector();
-           paramVec.addAll( polytope.getIndexVector().getIterationVector() );
-           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+//           paramVec.addAll( polytope.getIndexVector().getIterationVector() );
+//           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+	   paramVec = polytope.getIndexVector().getVectorsNames();
 
            int nPars = polytope.getIndexVector().getParameterVector().size();
 //            try {

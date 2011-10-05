@@ -43,7 +43,7 @@ import espam.operations.scheduler.Scheduler;
  * This class ...
  *
  * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
- * @version $Id: ADGraphToPN.java,v 1.4 2011/06/22 08:51:50 nikolov Exp $
+ * @version $Id: ADGraphToPN.java,v 1.5 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class ADGraphToPN {
@@ -184,6 +184,12 @@ public class ADGraphToPN {
 			if( adgEdge.getSize() < 1 ) {
 			    System.out.println("[Espam] WARNING: The FIFO size for edge " + adgEdge.getName() + " is " + adgEdge.getSize() + "!");
 			}
+                        // A port propagating dynamic control may have several binding variables. 
+                        // The corresponding FIFO is written/read 'numbBindVars' number of times at each iteration.
+                        // Therefore, we need to increase the FIFO size accordingly.
+                        ADGOutPort port = adgEdge.getFromPort();
+                        int numbBindVars = port.getBindVariables().size();
+			adgEdge.setSize(adgEdge.getSize()*numbBindVars);
 
 			String edgeName = adgEdge.getName();
 
@@ -373,7 +379,7 @@ public class ADGraphToPN {
 		while (i.hasNext()) {
 			CDProcess process = (CDProcess) i.next();
 			Vector nodeList = process.getAdgNodeList();
-			
+
 			MProcessor processor = mapping.getMProcessor(process);
 			if( processor != null && processor.getScheduleType() == 1 ) {
 				Iterator j = nodeList.iterator();

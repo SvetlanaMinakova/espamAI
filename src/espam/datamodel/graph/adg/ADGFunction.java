@@ -19,6 +19,8 @@ package espam.datamodel.graph.adg;
 import java.util.Vector;
 import java.util.Iterator;
 
+import espam.datamodel.domain.LBS;
+
 import espam.visitor.ADGraphVisitor;
 
 //////////////////////////////////////////////////////////////////////////
@@ -33,7 +35,7 @@ import espam.visitor.ADGraphVisitor;
  * See function Fn in Definition 2.2.2 on page 39 in [1].
  *
  * @author Todor Stefanov
- * @version  $Id: ADGFunction.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: ADGFunction.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class ADGFunction implements Cloneable {
@@ -49,6 +51,8 @@ public class ADGFunction implements Cloneable {
     	_name = name;
 	_inArgumentList = new Vector();
 	_outArgumentList = new Vector();
+	_ctrlVariableList = new Vector();
+	_domain = new LBS();
     }
 
     /** Accept a Visitor
@@ -70,6 +74,8 @@ public class ADGFunction implements Cloneable {
 	    newObj.setName(_name);
             newObj.setInArgumentList( (Vector) _inArgumentList.clone() );
             newObj.setOutArgumentList( (Vector) _outArgumentList.clone() );
+            newObj.setCtrlVarList( (Vector) _ctrlVariableList.clone() );
+	    newObj.setDomain( (LBS) _domain.clone() );
             return( newObj );
         }
 	catch( CloneNotSupportedException e ) {
@@ -133,6 +139,43 @@ public class ADGFunction implements Cloneable {
     }
 
     /**
+     *  Get the control variable list of the ADG function.
+     *
+     * @return  the output arguments list
+     */
+    public Vector getCtrlVarList() {
+        return _ctrlVariableList;
+    }
+
+    /**
+     *  Set the control variable list of the ADG function.
+     *
+     * @param  outArgumentList The new output arguments list
+     */
+    public void setCtrlVarList(Vector ctrlVariableList) {
+        _ctrlVariableList = ctrlVariableList;
+    }
+
+    /**
+     *  Get the domain of an ADG function.
+     *
+     * @return  the domain
+     */
+    public LBS getDomain() {
+        return _domain;
+    }
+
+    /**
+     *  Set the domain of an ADG function.
+     *Vector
+     * @param  domain The new domain
+     */
+    public void setDomain(LBS domain) {
+        _domain = domain;
+    }
+
+
+    /**
      *  Return a description of the ADG function.
      *
      * @return  a description of the ADG function.
@@ -157,5 +200,15 @@ public class ADGFunction implements Cloneable {
     /**
      *  the list of output arguments of the ADG function.
      */
-    private Vector _outArgumentList = null;
+    private Vector _outArgumentList = null;    
+
+    /**
+     *  the list of control variables of the ADG function.
+     */
+    private Vector _ctrlVariableList = null;    
+
+     /**
+     * The domain of the function.
+     */
+    private LBS _domain = null;
 }

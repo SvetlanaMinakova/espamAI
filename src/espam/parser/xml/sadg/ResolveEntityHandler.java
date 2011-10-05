@@ -69,7 +69,7 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT parameter EMPTY>"
 		+ "<!ATTLIST parameter name CDATA #REQUIRED lb CDATA #IMPLIED ub CDATA #IMPLIED value CDATA #IMPLIED>"
 
-		+ "<!ELEMENT node (inport*,outport*,function,domain)*>"
+		+ "<!ELEMENT node (inport*,invar*,outport*,file*,expression*,function,domain)*>"
 		+ "<!ATTLIST node name CDATA #REQUIRED  levelUpNode CDATA #IMPLIED>"
 
 		+ "<!ELEMENT inport (invariable*, bindvariable*,domain)>"
@@ -78,7 +78,7 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT outport (outvariable*, bindvariable*,domain)>"
 		+ "<!ATTLIST outport name CDATA #REQUIRED node CDATA #IMPLIED edge CDATA #IMPLIED>"
 
-		+ "<!ELEMENT function (inargument*,outargument*)>"
+		+ "<!ELEMENT function (inargument*,outargument*,ctrlvar*,domain)>"
 		+ "<!ATTLIST function name CDATA #REQUIRED>"
 
 		+ "<!ELEMENT edge (linearization,mapping)>"
@@ -93,11 +93,17 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT filterset (constraint+)>"
 		+ "<!ATTLIST filterset index CDATA #REQUIRED staticControl CDATA #REQUIRED dynamicControl CDATA #REQUIRED parameter CDATA #REQUIRED>"
 
+		+ "<!ELEMENT invar (bindvariable,domain)>"
+		+ "<!ATTLIST invar name CDATA #REQUIRED node CDATA #IMPLIED realName CDATA #IMPLIED>"
+
 		+ "<!ELEMENT invariable EMPTY>"
 		+ "<!ATTLIST invariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
 
 		+ "<!ELEMENT outvariable EMPTY>"
 		+ "<!ATTLIST outvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+
+		+ "<!ELEMENT ctrlvar EMPTY>"
+		+ "<!ATTLIST ctrlvar name CDATA #REQUIRED iterator CDATA #REQUIRED>"
 
 		+ "<!ELEMENT bindvariable EMPTY>"
 		+ "<!ATTLIST bindvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
@@ -108,6 +114,9 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT outargument EMPTY>"
 		+ "<!ATTLIST outargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
 
+		+ "<!ELEMENT file EMPTY>"
+		+ "<!ATTLIST file name CDATA #REQUIRED>"
+
 		+ "<!ELEMENT constraint EMPTY>"
 		+ "<!ATTLIST constraint matrix CDATA #REQUIRED>"
 
@@ -117,6 +126,9 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT control EMPTY>"
 		+ "<!ATTLIST control name CDATA #REQUIRED exp CDATA #REQUIRED>"
 
+		+ "<!ELEMENT expression EMPTY>"
+		+ "<!ATTLIST expression name CDATA #REQUIRED value CDATA #REQUIRED>"
+
 		+ "<!ELEMENT mapping EMPTY>"
 		+ "<!ATTLIST mapping matrix CDATA #REQUIRED>"
 
@@ -125,16 +137,19 @@ public class ResolveEntityHandler implements EntityResolver {
                  /* ----------End ADG---------- */
 
                 /* ----------Begin AST---------- */
-		+ "<!ELEMENT ast (stmt*,port*,for*)*>"
+		+ "<!ELEMENT ast (stmt*,port*,for*,var*)*>"
 
-		+ "<!ELEMENT for (for*,if*,stmt*,port*)*>"
+		+ "<!ELEMENT for (for*,if*,stmt*,port*,var*)*>"
 		+ "<!ATTLIST for iterator CDATA #REQUIRED  LB CDATA #IMPLIED UB CDATA #IMPLIED stride CDATA #IMPLIED>"
 
-		+ "<!ELEMENT if (for*, if*,stmt*,port*)*>"
+		+ "<!ELEMENT if (for*, if*,stmt*,port*,var*)*>"
 		+ "<!ATTLIST if LHS CDATA #REQUIRED RHS CDATA #IMPLIED sign CDATA #IMPLIED>"
 
 		+ "<!ELEMENT stmt EMPTY>"
 		+ "<!ATTLIST stmt node CDATA #REQUIRED>"
+
+		+ "<!ELEMENT var EMPTY>"
+		+ "<!ATTLIST var name CDATA #REQUIRED>"
 
 		+ "<!ELEMENT port EMPTY>"
 		+ "<!ATTLIST port name CDATA #REQUIRED>";

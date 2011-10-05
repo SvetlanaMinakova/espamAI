@@ -29,13 +29,14 @@ import espam.datamodel.platform.memories.Fifo;
 
 import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.graph.adg.ADGEdge;
+import espam.datamodel.graph.adg.ADGOutPort;
 
 /**
  *  This class sets the size of each FIFO component in a platform.
  *
  *
  * @author  Todor Stefanov
- * @version  $Id: SetFifoSizes.java,v 1.1 2007/12/07 22:07:47 stefanov Exp $
+ * @version  $Id: SetFifoSizes.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  *
  */
 public class SetFifoSizes {

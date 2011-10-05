@@ -69,6 +69,19 @@ public class Node2ControlStatements {
 		}
 	}
 
+	Iterator j = x.getExpressionList().iterator();
+	while( j.hasNext() ) {
+		ControlExpression cExp = (ControlExpression) j.next();
+                String expName = cExp.getName();
+
+                if ( !tmp.containsKey(expName) ) {
+
+		      tmp.put(expName, "");
+		      ControlStatement statement = new ControlStatement( expName, cExp.getExpression(), 1 );
+                      cStatements.add( statement );
+		}
+	}
+
         return cStatements;
     }
 

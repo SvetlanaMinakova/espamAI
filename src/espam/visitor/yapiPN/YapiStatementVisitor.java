@@ -31,6 +31,7 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -162,10 +163,23 @@ public class YapiStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(OpdStatement x) {
         _printStream.println("");
-        _printStream.println(_prefix + "write( " +
+/*        _printStream.println(_prefix + "write( " +
 	        x.getGateName() + ", " +
                 x.getArgumentName() + x.getNodeName() + ");");
         _printStream.println("");
+*/
+        _printStream.print(_prefix + "write( " +
+	        x.getGateName() + ", " +
+//                x.getArgumentName() + x.getNodeName() );
+                x.getArgumentName() );
+
+	Iterator i = x.getIndexList().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	
+	_printStream.println(" );");
     }
 
     /**
@@ -187,9 +201,11 @@ public class YapiStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                     _printStream.print(var.getVariableName() + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
+//                     _printStream.print(var.getVariableName() + x.getNodeName());
+                     _printStream.print(var.getVariableName());
                  }
             }
 
@@ -202,9 +218,11 @@ public class YapiStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                   _printStream.print(var.getVariableName() + ", ");
                } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
+//                   _printStream.print(var.getVariableName() + x.getNodeName());
+                   _printStream.print(var.getVariableName());
                }
            }
            _printStream.print(") ;");
@@ -215,12 +233,16 @@ public class YapiStatementVisitor extends StatementVisitor {
 
 	} else {
 
-	       VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
-	       VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
+	      VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
+	      VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
+//             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
+//	                                 inArg.getVariableName() + ";"           );
+
+             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
+	                                 inArg.getVariableName() + ";"           );
+
              _printStream.println("");
              _printStream.println(_prefix + "execute(\"CopyPropagate\");");
 	     _printStream.println("");
@@ -228,6 +250,36 @@ public class YapiStatementVisitor extends StatementVisitor {
 	}
 
     }
+
+
+
+    /**
+     *  Print an assign statement in the correct format for c++.
+     *
+     * @param  x The simple statement that needs to be rendered.
+     */
+    public void visitStatement(SimpleAssignStatement x) {
+
+//	_printStream.print(_prefix + x.getLHSVarName() + x.getNodeName() );
+	_printStream.print(_prefix + x.getLHSVarName() );
+
+	Iterator i = x.getIndexListLHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+	_printStream.print(" = " + x.getRHSVarName() );
+
+	i = x.getIndexListRHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	
+	_printStream.println(";\n");
+    }
+
 
     /**
      *  Print a Control statement in the correct format for c++.
@@ -237,11 +289,13 @@ public class YapiStatementVisitor extends StatementVisitor {
     public void visitStatement(ControlStatement x) {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-            _printStream.println(_prefix + "int "
+//            _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
         } else {
-            _printStream.println(_prefix + "int "
+//            _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = ("
                     + expression.accept(_cExpVisitor) + ")/" +
                     x.getDenominator() + ";");
@@ -255,11 +309,13 @@ public class YapiStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(FifoMemoryStatement x) {
+// FifoMemoryStatement has a list of binding variables
+/*
+	String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
 
-          String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
-
-        _printStream.println(_prefix + "read(" +
-                x.getGateName() + ", " + tmp + x.getNodeName() + ");");
+        _printStream.println("");
+        _printStream.println(_prefix + "read( " +
+                x.getGateName() + ", " + tmp + x.getNodeName() + " );");
 		
         Iterator i = x.getArgumentList().iterator();
 	if (i.hasNext()) {
@@ -271,10 +327,36 @@ public class YapiStatementVisitor extends StatementVisitor {
 	                                            + tmp + x.getNodeName() + ";");
 	}
 
-        _printStream.println("");
+//        _printStream.println("");
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
+*/
+
+	_printStream.println("");
+
+// for every binding vazriable, we need a read from fifo...
+	Iterator i = x.getArgumentList().iterator();
+	while( i.hasNext() ) {
+		ADGVariable bindVar = (ADGVariable) i.next();
+
+	       _printStream.print(_prefix + "read( " +
+		        x.getGateName() + ", " +
+//                	bindVar.getName() + x.getNodeName() );
+                	bindVar.getName() );
+
+		Iterator j = bindVar.getIndexList().iterator();
+		while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		}
+		_printStream.println(" );");
+	}
+        
+        _prefixInc();
+        _visitChildren(x);
+        _prefixDec();
+
     }
 
     ///////////////////////////////////////////////////////////////////

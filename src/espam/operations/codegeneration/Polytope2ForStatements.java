@@ -64,9 +64,10 @@ public class Polytope2ForStatements {
            SignedMatrix A = polytope.getConstraints();
 
            Vector paramVec = new Vector();
-	   paramVec.addAll( polytope.getIndexVector().getIterationVector() );
-           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+//	   paramVec.addAll( polytope.getIndexVector().getIterationVector() );
+//	   paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//	   paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+	   paramVec = polytope.getIndexVector().getVectorsNames();
 
            int nPars = polytope.getIndexVector().getParameterVector().size();
 //            try {

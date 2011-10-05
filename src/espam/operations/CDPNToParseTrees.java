@@ -22,13 +22,19 @@ import java.util.Vector;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.OpdStatement;
 import espam.datamodel.parsetree.statement.MemoryStatement;
+import espam.datamodel.parsetree.statement.FifoMemoryStatement;
 import espam.datamodel.parsetree.statement.RootStatement;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 
 import espam.datamodel.graph.adg.ADGInPort;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGOutPort;
+import espam.datamodel.graph.adg.ADGFunction;
+import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGCtrlVariable;
+import espam.datamodel.graph.adg.ADGInVar;
 
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
@@ -45,7 +51,7 @@ import espam.operations.codegeneration.CodeGenerationException;
 import espam.operations.codegeneration.Polytope2IfStatements;
 import espam.operations.codegeneration.InputPort2MemoryStatement;
 import espam.operations.codegeneration.OutputPort2OpdStatement;
-import espam.operations.codegeneration.Node2AssignStatement;
+import espam.operations.codegeneration.Function2AssignStatement;
 import espam.operations.codegeneration.Node2ControlStatements;
 
 /**
@@ -88,7 +94,6 @@ public class CDPNToParseTrees {
 			Vector vectorOfNames = new Vector();
 			Iterator p = pn.getProcessList().iterator();
 			while( p.hasNext() ) {
-
 				_process = (CDProcess) p.next();
                                 _numberOfNodes =_process.getAdgNodeList().size();
 
@@ -165,9 +170,9 @@ public class CDPNToParseTrees {
 		String description = "Node: " + node.getName();
 		root.setDescription(description);
 		ParserNode stitch = root;
+		_functionArgumentList = _getFunctionArguments( node );
 
 		try {
-
 		        if (_numberOfNodes > 1 && _scheduleType == 0 ) {
                             //   (0) Add the control statements of a ADGNode to the parse tree
  		            Vector ctrlStatements = Node2ControlStatements.convert( node );
@@ -179,12 +184,34 @@ public class CDPNToParseTrees {
 		            }
                         }
 
+                        // In case of dynamic control, we must set the boolean part to zero in the beggining of every iteration
+                        // <ctrlvar name="dc0_ND_6_b" iterator="1"/>
+                        i = node.getFunction().getCtrlVarList().iterator();
+                        while( i.hasNext() ) {
+                            ADGCtrlVariable var = (ADGCtrlVariable)i.next();
+                            if( var.getIterator().equals("1") ) {
+                                SimpleAssignStatement sas = new SimpleAssignStatement();
+               			sas.setLHSVarName( var.getName() ); 
+				sas.setRHSVarName( "0" );
+                                root.addChild( sas );
+                                sas.setParent( root );
+  	                    }				
+                        }
+
 			//   (1) Convert the input port domains to parse tree format.
 			_ui.printVerbose("- start step 1");
 			i = node.getInPorts().iterator();
 			while( i.hasNext() ) {
 				ADGInPort ip = (ADGInPort) i.next();
 				_processInputPort(ip, root);
+			}
+
+			//   (1.5) Convert the invar-s to parse tree format (in case of dynamic programs)
+			_ui.printVerbose("- start step 1.5");
+			i = node.getInVarList().iterator();
+			while( i.hasNext() ) {
+				ADGInVar invar = (ADGInVar) i.next();
+				_processInVar(invar, root);
 			}
 
 			//   (2) Convert the function to parse tree format.
@@ -225,6 +252,12 @@ public class CDPNToParseTrees {
 
 			memoryStatement = InputPort2MemoryStatement.convert( ip, _process );
 
+// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
+			String bndVar = ip.getBindVariables().get(0).getName();
+			if( _isDynamicCtrl( bndVar ) ) {
+				((FifoMemoryStatement)memoryStatement).setNodeName("");
+			}
+
 			Iterator i = ip.getDomain().getLinearBound().iterator();
 			while( i.hasNext() ) {
 			        Polytope polytope = (Polytope) i.next();
@@ -237,11 +270,60 @@ public class CDPNToParseTrees {
 				memoryStatement.setParent(stitch);
 			}
 
+
+
 		} catch( Exception e ) {
 			e.printStackTrace();
 			throw new CodeGenerationException(
 				"Processing Input port "
 					+ ip.getName()
+					+ ": "
+					+ e.getMessage());
+		}
+	}
+
+	/**
+	 *  (1.5) Converts an invar into its parse tree equivalent.
+	 *
+	 * @param  invar Description of the Parameter
+	 * @param  stitch Description of the Parameter
+	 * @exception  CodeGenerationException
+	 */
+	private void _processInVar(ADGInVar invar, ParserNode parent)
+		throws CodeGenerationException {
+
+		Vector ifStatements;
+		ParserNode stitch;
+
+		try {
+		        Polytope ndPolytope = (Polytope) invar.getNode().getDomain().getLinearBound().get(0);
+
+			Iterator i = invar.getDomain().getLinearBound().iterator();
+			while( i.hasNext() ) {
+			        Polytope polytope = (Polytope) i.next();
+				//simplify the invar domain in the context of the node domain
+				Polytope sPolytope = Polytope2IfStatements.simplifyPDinND( polytope, ndPolytope );
+				//convert the polytope to if-statements
+				ifStatements = Polytope2IfStatements.convert( sPolytope );
+			        stitch = addStatements(ifStatements, parent);
+
+
+				SimpleAssignStatement sas = new SimpleAssignStatement();
+
+				sas.setLHSVarName( invar.getBindVariable().getName() ); 
+				sas.setIndexListLHS( invar.getBindVariable().getIndexList() );
+				sas.setRHSVarName( invar.getRealName() );
+				sas.setNodeName( invar.getNode().getName() );
+				
+				stitch.addChild(sas);
+				sas.setParent(stitch);
+			}
+
+		} catch( Exception e ) {
+			e.printStackTrace();
+			throw new CodeGenerationException(
+				"Processing Input port "
+					+ invar.getName()
 					+ ": "
 					+ e.getMessage());
 		}
@@ -256,9 +338,63 @@ public class CDPNToParseTrees {
 	private void _processFunction(ADGNode node, ParserNode parent)
 		throws CodeGenerationException {
 
-		AssignStatement assignStatement = Node2AssignStatement.convert( node );
-		parent.addChild(assignStatement);
-		assignStatement.setParent(parent);
+		Vector ifStatements;
+		ParserNode stitch = null;
+		MemoryStatement memoryStatement;
+		ADGFunction nf = node.getFunction();
+
+		try {
+		        Polytope ndPolytope = node.getDomain().getLinearBound().get(0);
+
+			AssignStatement assignStatement = Function2AssignStatement.convert( node );
+
+			Iterator i = nf.getDomain().getLinearBound().iterator();
+			while( i.hasNext() ) {
+			        Polytope polytope = (Polytope) i.next();
+				//simplify the function domain in the context of the node domain
+				Polytope sPolytope = Polytope2IfStatements.simplifyPDinND( polytope, ndPolytope );
+				//convert the polytope to if-statements
+				ifStatements = Polytope2IfStatements.convert( sPolytope );
+		//		ifStatements = Polytope2IfStatements.convert( ndPolytope );
+
+			        stitch = addStatements(ifStatements, parent);
+				stitch.addChild(assignStatement);
+				assignStatement.setParent(stitch);
+			}
+
+			if( stitch != null ) {
+				Iterator j = nf.getCtrlVarList().iterator();
+				while( j.hasNext() ) {
+					ADGCtrlVariable cVar = (ADGCtrlVariable) j.next();
+					SimpleAssignStatement sas = new SimpleAssignStatement();
+
+					sas.setLHSVarName( cVar.getName() );
+					sas.setIndexListLHS( cVar.getIndexList() );
+					sas.setRHSVarName( cVar.getIterator() );
+
+// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
+					if( _isDynamicCtrl( sas.getLHSVarName() )) {
+						sas.setNodeName("");
+					} else {				
+						sas.setNodeName( node.getName() );
+					}
+				
+					stitch.addChild(sas);
+					sas.setParent(stitch);
+				}
+			}
+
+		} catch( Exception e ) {
+			e.printStackTrace();
+			throw new CodeGenerationException(
+				"Processing Function "
+					+ node.getFunction().getName()
+					+ ": "
+					+ e.getMessage());
+		}
+
+
+
 	}
 
 	/**
@@ -273,13 +409,15 @@ public class CDPNToParseTrees {
 		throws CodeGenerationException {
 
 		Vector ifStatements;
-		OpdStatement opdStatement;
+		Vector opdStatements;
+//		OpdStatement opdStatement;
 		ParserNode stitch;
 
 		try {
 		        Polytope ndPolytope = (Polytope) ((ADGNode) op.getNode()).getDomain().getLinearBound().get(0);
 
-			opdStatement = OutputPort2OpdStatement.convert( op, _process );
+//			opdStatement = OutputPort2OpdStatement.convert( op, _process );
+			opdStatements = OutputPort2OpdStatement.convert2list( op, _process );
 
 			Iterator i = op.getDomain().getLinearBound().iterator();
 			while( i.hasNext() ) {
@@ -289,8 +427,19 @@ public class CDPNToParseTrees {
 				//convert the polytope to if-statements
 				ifStatements = Polytope2IfStatements.convert( sPolytope );
 				stitch = addStatements(ifStatements, parent);
-				stitch.addChild( opdStatement );
-				opdStatement.setParent(stitch);
+				
+				Iterator j = opdStatements.iterator();
+				while( j.hasNext() ) {
+					OpdStatement os = (OpdStatement) j.next();
+// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
+					if( _isDynamicCtrl( os.getArgumentName() ) ) {
+						os.setNodeName("");
+					}
+					stitch.addChild( os );
+					os.setParent(stitch);
+				}
+//				stitch.addChild( opdStatement );
+//				opdStatement.setParent(stitch);
 			}
 
 		} catch( Exception e ) {
@@ -382,6 +531,49 @@ public class CDPNToParseTrees {
 		}
 	}
 
+
+
+	/**
+	 *  Add parser nodes in _markedList
+	 *
+	 * @param  node Description of the Parameter
+	 */
+	private Vector _getFunctionArguments( ADGNode node ) {
+		Vector tmpArgumentList = new Vector();
+	
+		Iterator i = node.getFunction().getInArgumentList().iterator();
+		while( i.hasNext() ) {
+			ADGVariable adgVar = (ADGVariable) i.next();
+			tmpArgumentList.add( adgVar );
+		}
+
+		i = node.getFunction().getOutArgumentList().iterator();
+		while( i.hasNext() ) {
+			ADGVariable adgVar = (ADGVariable) i.next();
+			tmpArgumentList.add( adgVar );
+		}
+		return tmpArgumentList;
+	}
+
+
+
+	/**
+	 *  Add parser nodes in _markedList
+	 *
+	 * @param  node Description of the Parameter
+	 */
+	private boolean _isDynamicCtrl( String name ) {
+
+		Iterator i = _functionArgumentList.iterator();
+		while( i.hasNext() ) {
+			ADGVariable adgVar = (ADGVariable) i.next();
+			if( adgVar.getName().equals( name ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	///////////////////////////////////////////////////////////////////
 	////                         private variables                 ////
 
@@ -398,5 +590,6 @@ public class CDPNToParseTrees {
 	private CDProcess _process;
 	private int _numberOfNodes;
 	private int _scheduleType;
+	private Vector _functionArgumentList = null;
 }
 

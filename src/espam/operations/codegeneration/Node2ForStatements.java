@@ -65,9 +65,11 @@ public class Node2ForStatements {
            SignedMatrix A = polytope.getConstraints();
 
            Vector paramVec = new Vector();
-	   paramVec.addAll( polytope.getIndexVector().getIterationVector() );
-           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+//	   paramVec.addAll( polytope.getIndexVector().getIterationVector() );
+//	   paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//	   paramVec.addAll( polytope.getIndexVector().getDynamicCtrlVector() );
+//	   paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+	   paramVec = polytope.getIndexVector().getVectorsNames();
 
            int nPars = polytope.getIndexVector().getParameterVector().size();
 //            try {
@@ -91,7 +93,7 @@ public class Node2ForStatements {
 
                     index = paramVec.get(level - 1).toString();
                     M = PolyLib.getInstance().Polyhedron2Constraints((Polyhedron) i.next());
-		    //System.out.println("MMMMMMM: " + M.toString());
+		    //System.out.println("MMMMMMM: \n" + M.toString());
                     //Vector v = MatrixLib.toLinearExpression(M, paramVec);
                     List<Expression> v = Convert.toLinearExpression(M, paramVec);
 

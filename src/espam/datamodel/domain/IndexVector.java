@@ -30,7 +30,7 @@ import espam.datamodel.graph.adg.ADGParameter;
  * This class describes the meaning of the columns of a sign matrix
  *
  * @author Hristo Nikolov
- * @version  $Id: IndexVector.java,v 1.1 2007/12/07 22:09:02 stefanov Exp $
+ * @version  $Id: IndexVector.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class IndexVector implements Cloneable {
@@ -202,7 +202,7 @@ public class IndexVector implements Cloneable {
 	   concVectNames.addAll( getIterationVector() );
 	   concVectNames.addAll( getStaticCtrlVectorNames() );
 	   concVectNames.addAll( getDynamicCtrlVector() );
-	   concVectNames.addAll( getParameterVector() );
+	   concVectNames.addAll( getParameterVectorNames() );
 
 	   return concVectNames;
     }

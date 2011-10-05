@@ -63,7 +63,7 @@ import espam.utils.symbolic.matrix.SignedMatrix;
  *  This class
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2ADG.java,v 1.1 2007/12/07 22:07:10 stefanov Exp $
+ * @version  $Id: Xml2ADG.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class Xml2ADG {
@@ -374,6 +374,8 @@ public class Xml2ADG {
 		     ControlExpression ce = new ControlExpression( p );
                      polytope.getIndexVector().getStaticCtrlVector().add( ce );
 		}
+
+// Dynamic control here ???
 
 		// set the parameter vector
                 Vector parameters = _string2Vector( parameter );

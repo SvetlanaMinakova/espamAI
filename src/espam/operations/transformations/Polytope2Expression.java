@@ -52,9 +52,10 @@ public class Polytope2Expression{
         if ( A != null) {
 
            Vector paramVec = new Vector();
-           paramVec.addAll( polytope.getIndexVector().getIterationVector() );
-           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+//           paramVec.addAll( polytope.getIndexVector().getIterationVector() );
+//           paramVec.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//           paramVec.addAll( polytope.getIndexVector().getParameterVectorNames() );
+	   paramVec = polytope.getIndexVector().getVectorsNames();
 
            //Vector v = MatrixLib.toLinearExpression(A, paramVec);
            List<Expression> v = Convert.toLinearExpression(A, paramVec);

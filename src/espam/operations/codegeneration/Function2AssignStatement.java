@@ -30,20 +30,20 @@ import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.graph.adg.ADGNode;
 
 //////////////////////////////////////////////////////////////////////////
-//// Node2AssignStatement
+//// Function2AssignStatement
 
 /**
  *  This class ...
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: Node2Assignment.java,v 1.24 2002/09/30 13:34:15 kienhuis
+ * @version  $Id: Function2Assignment.java,v 1.24 2002/09/30 13:34:15 kienhuis
  *      Exp $
  */
 
-public class Node2AssignStatement {
+public class Function2AssignStatement {
 
     /**
-     *  converts a node description into an AssignStatement.
+     *  converts a function description of a node into an AssignStatement.
      *
      * @param  node the node to convert.
      * @return  node that describing part of the parse tree.

@@ -20,6 +20,7 @@ import java.util.Iterator;
 
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -36,7 +37,7 @@ import espam.datamodel.parsetree.statement.LhsStatement;
  *  This abstract class
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: StatementVisitor.java,v 1.1 2007/12/07 22:07:24 stefanov Exp $
+ * @version  $Id: StatementVisitor.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,6 +100,13 @@ public class StatementVisitor implements Visitor {
      * @param  x A Visitor Object.
      */
     public void visitStatement(AssignStatement x) {};
+
+    /**
+     *  Visit the Simple Assign Statement.
+     *
+     * @param  x A Visitor Object.
+     */
+    public void visitStatement(SimpleAssignStatement x) {};
 
     /**
      *  Visit the OPD Statement.

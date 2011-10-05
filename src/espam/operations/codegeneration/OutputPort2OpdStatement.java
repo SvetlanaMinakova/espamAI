@@ -74,6 +74,7 @@ public class OutputPort2OpdStatement {
 		opdStatement.setGateName( gateName );
 		opdStatement.setNodeName( port.getNode().getName() );
 		opdStatement.setArgumentName( ((ADGVariable) port.getBindVariables().get(0)).getName() );
+		opdStatement.setIndexList( ((ADGVariable) port.getBindVariables().get(0)).getIndexList() );
 
         } catch (Exception e) {
             throw new CodeGenerationException(
@@ -85,4 +86,53 @@ public class OutputPort2OpdStatement {
         }
         return opdStatement;
     }
+
+
+    public static Vector convert2list(ADGOutPort port, CDProcess process)
+        throws CodeGenerationException {
+
+	Vector opdStatementList = new Vector();
+
+        try {
+		String gateName = "";
+
+		Vector outGates = process.getOutGates();
+		Iterator i = outGates.iterator();
+		while( i.hasNext() ) {
+			CDOutGate gate = (CDOutGate) i.next();
+			Vector portList = gate.getAdgPortList();
+			Iterator j = portList.iterator();
+			while( j.hasNext() ) {
+				ADGOutPort outPort = (ADGOutPort) j.next();
+				if( outPort.getName().equals(port.getName()) ) {
+					gateName = gate.getName();
+				}
+			}
+		}
+
+		i = port.getBindVariables().iterator();
+		while( i.hasNext() ) {
+			ADGVariable bindVar = (ADGVariable) i.next();
+
+			OpdStatement opdStatement = new OpdStatement();
+			opdStatement.setProcessName( process.getName() );
+			opdStatement.setGateName( gateName );
+			opdStatement.setNodeName( port.getNode().getName() );
+			opdStatement.setArgumentName( bindVar.getName() );
+			opdStatement.setIndexList( bindVar.getIndexList() );
+			opdStatementList.add( opdStatement );
+		}
+
+        } catch (Exception e) {
+            throw new CodeGenerationException(
+                " OutputPort2OpdStatement: "
+                    + " Input port: "
+                    + port.getName()
+                    + " "
+                    + e.getMessage());
+        }
+        return opdStatementList;
+    }
+
+
 }

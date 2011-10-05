@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+# $Id: makefile,v 1.2 2011/10/05 15:03:46 nikolov Exp $
 #
 
 ROOT  = ../../../..
@@ -9,6 +9,8 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
 	ADGVariable.java \
+	ADGCtrlVariable.java \
+	ADGInVar.java \
 	ADGParameter.java \
 	ADGFunction.java \
 	ADGPort.java \

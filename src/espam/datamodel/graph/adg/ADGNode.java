@@ -36,7 +36,7 @@ import espam.visitor.ADGraphVisitor;
  * See Definition 2.2.2 on page 39 in [1].
  *
  * @author Todor Stefanov
- * @version  $Id: ADGNode.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
+ * @version  $Id: ADGNode.java,v 1.3 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class ADGNode extends Node {
@@ -52,6 +52,8 @@ public class ADGNode extends Node {
     	super(name);
         _function = new ADGFunction("");
 	_domain = new LBS();
+	_inVarList = new Vector();
+	_fileList = new Vector();
     }
 
     /** Accept a Visitor
@@ -71,6 +73,9 @@ public class ADGNode extends Node {
         ADGNode newObj = (ADGNode) super.clone();
         newObj.setFunction( (ADGFunction) _function.clone() );
         newObj.setDomain( (LBS) _domain.clone() );
+        newObj.setInVarList( (Vector) _inVarList.clone() );
+        newObj.setFileList( (Vector) _fileList.clone() );
+        newObj.setExpressionList( (Vector) _expressionList.clone() );
         return( newObj );
     }
 
@@ -158,6 +163,60 @@ public class ADGNode extends Node {
     public String toString() {
         return "ADGNode: " + getName();
     }
+
+    /**
+     *  Get the invar list of an ADGNode.
+     *
+     * @return  the invar list
+     */
+    public Vector getInVarList() {
+        return _inVarList;
+    }
+
+    /**
+     *  Set the invar list of an ADGNode.
+     *
+     * @param  inVarList The new invarList
+     */
+    public void setInVarList(Vector inVarList) {
+        _inVarList = inVarList;
+    }
+    
+    /**
+     *  Get the file list of an ADGNode.
+     *
+     * @return  the invar list
+     */
+    public Vector getFileList() {
+        return _fileList;
+    }
+
+    /**
+     *  Set the expression list of an ADGNode.
+     *
+     * @param  expressionList The new expressionList
+     */
+    public void setExpressionList(Vector expressionList) {
+        _expressionList = expressionList;
+    }
+    
+      /**
+     *  Get the expression list of an ADGNode.
+     *
+     * @return  the expression list
+     */
+    public Vector getExpressionList() {
+        return _expressionList;
+    }
+
+    /**
+     *  Set the file list of an ADGNode.
+     *
+     * @param  fileList The new invarList
+     */
+    public void setFileList(Vector fileList) {
+        _fileList = fileList;
+    }
     
     /**
      *  Get the input ports of this ADGNode.
@@ -216,6 +275,25 @@ public class ADGNode extends Node {
      * List of (known) variables in this node.
      */
     private Vector<String> _varNames = new Vector<String>();
+
+    /**
+     * List of 'invar' variables in this node.
+     */
+    private Vector _inVarList = new Vector();
+
+    /**
+     * List of target implementation files of this node.
+     * each element of this list is a string representing
+     * the path to and the name of a file 
+     */
+    private Vector _fileList = new Vector();
+
+    /**
+     * List of of expressions bound to function arguments.
+     * Used when we want to propagate, e.g., loop iterators 
+     * as function arguments 
+     */
+    private Vector _expressionList = new Vector();
 
     /**
      * The adg name to which an ADGNode belongs.

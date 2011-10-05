@@ -46,7 +46,7 @@ import espam.datamodel.EspamException;
  *  This class
  *
  * @author  Todor Stefanov
- * @version  $Id: XmlSADGParser.java,v 1.1 2007/12/07 22:07:05 stefanov Exp $
+ * @version  $Id: XmlSADGParser.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class XmlSADGParser implements ContentHandler {
@@ -245,22 +245,30 @@ public class XmlSADGParser implements ContentHandler {
 			val = _xml2SADG.processLinearBound(attributes);
 		} else if( elementName.equals("filterset") ) {
 			val = _xml2SADG.processFilterSet(attributes);
+		} else if( elementName.equals("invar") ) {
+			val = _xml2SADG.processInVar(attributes);
 		} else if( elementName.equals("invariable") ) {
 			val = _xml2SADG.processInVariable(attributes);
 		} else if( elementName.equals("outvariable") ) {
 			val = _xml2SADG.processOutVariable(attributes);
+		} else if( elementName.equals("ctrlvar") ) {
+			val = _xml2SADG.processCtrlVariable(attributes);
 		} else if( elementName.equals("bindvariable") ) {
 			val = _xml2SADG.processBindVariable(attributes);
 		} else if( elementName.equals("inargument") ) {
 			val = _xml2SADG.processInArgument(attributes);
 		} else if( elementName.equals("outargument") ) {
 			val = _xml2SADG.processOutArgument(attributes);
+		} else if( elementName.equals("file") ) {
+			val = _xml2SADG.processFile(attributes);
 		} else if( elementName.equals("constraint") ) {
 			val = _xml2SADG.processConstraint(attributes);
 		} else if( elementName.equals("context") ) {
 			val = _xml2SADG.processContext(attributes);
 		} else if( elementName.equals("control") ) {
 			val = _xml2SADG.processControl(attributes);
+		} else if( elementName.equals("expression") ) {
+			val = _xml2SADG.processExpression(attributes);
 		} else if( elementName.equals("mapping") ) {
 			val = _xml2SADG.processMapping(attributes);
 		} else if( elementName.equals("linearization") ) {
@@ -273,6 +281,8 @@ public class XmlSADGParser implements ContentHandler {
 			val = _xml2SADG.processIF(attributes);
 		} else if( elementName.equals("stmt") ) {
 			val = _xml2SADG.processSTMT(attributes);
+		} else if( elementName.equals("var") ) {
+			val = _xml2SADG.processVar(attributes);
 		} else if( elementName.equals("port") ) {
 			val = _xml2SADG.processPort(attributes);
 		} else if( elementName.equals("doc") ) {
@@ -337,22 +347,30 @@ public class XmlSADGParser implements ContentHandler {
 			_xml2SADG.processLinearBound(_stack);
 		} else if( elementName.equals("filterset") ) {
 			_xml2SADG.processFilterSet(_stack);
+		} else if( elementName.equals("invar") ) {
+			_xml2SADG.processInVar(_stack);
 		} else if( elementName.equals("invariable") ) {
 			_xml2SADG.processInVariable(_stack);
 		} else if( elementName.equals("outvariable") ) {
 			_xml2SADG.processOutVariable(_stack);
+		} else if( elementName.equals("ctrlvar") ) {
+			_xml2SADG.processCtrlVariable(_stack);
 		} else if( elementName.equals("bindvariable") ) {
 			_xml2SADG.processBindVariable(_stack);
 		} else if( elementName.equals("inargument") ) {
 			_xml2SADG.processInArgument(_stack);
 		} else if( elementName.equals("outargument") ) {
 			_xml2SADG.processOutArgument(_stack);
+		} else if( elementName.equals("file") ) {
+			_xml2SADG.processFile(_stack);
 		} else if( elementName.equals("constraint") ) {
 			_xml2SADG.processConstraint(_stack);
 		} else if( elementName.equals("context") ) {
 			_xml2SADG.processContext(_stack);
 		} else if( elementName.equals("control") ) {
 			_xml2SADG.processControl(_stack);
+		} else if( elementName.equals("expression") ) {
+			_xml2SADG.processExpression(_stack);
 		} else if( elementName.equals("mapping") ) {
 			_xml2SADG.processMapping(_stack);
 		} else if( elementName.equals("linearization") ) {
@@ -365,6 +383,8 @@ public class XmlSADGParser implements ContentHandler {
 			_xml2SADG.processIF(_stack);
 		} else if( elementName.equals("stmt") ) {
 			_xml2SADG.processSTMT(_stack);
+		} else if( elementName.equals("var") ) {
+			_xml2SADG.processVar(_stack);
 		} else if( elementName.equals("port") ) {
 			_xml2SADG.processPort(_stack);
 		}

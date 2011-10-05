@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:09:13 stefanov Exp $
+# $Id: makefile,v 1.2 2011/10/05 15:03:46 nikolov Exp $
 #
 
 ROOT  = ../../../..
@@ -14,6 +14,7 @@ JSRCS = \
 	Statement.java  \
 	RootStatement.java  \
 	AssignStatement.java  \
+	SimpleAssignStatement.java  \
 	OpdStatement.java  \
 	IfStatement.java \
 	ElseStatement.java \

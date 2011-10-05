@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.lang.Integer;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGCtrlVariable;
+import espam.datamodel.graph.adg.ADGInVar;
 import espam.datamodel.graph.adg.ADGParameter;
 import espam.datamodel.graph.adg.ADGFunction;
 import espam.datamodel.graph.adg.ADGPort;
@@ -66,7 +68,7 @@ import espam.utils.symbolic.matrix.SignedMatrix;
  *  This class
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2SADG.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
+ * @version  $Id: Xml2SADG.java,v 1.3 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class Xml2SADG {
@@ -293,7 +295,11 @@ public class Xml2SADG {
 		String size = (String) attributes.getValue("size");
 
 		ADGEdge edge = new ADGEdge( name );
-		edge.setSize( Integer.valueOf( size ).intValue()  );
+		if( size == null ) {
+			edge.setSize( -1  );
+		} else {
+			edge.setSize( Integer.valueOf( size ).intValue()  );
+		}
 
 		ADGInPort i_port = new ADGInPort( toPort );
 		ADGOutPort o_port = new ADGOutPort( fromPort );
@@ -379,6 +385,12 @@ public class Xml2SADG {
 
 		    ((ADGOutPort) obj).setDomain( lbs );
 
+		} else if( obj instanceof ADGFunction ) {
+
+		    ((ADGFunction) obj).setDomain( lbs );
+		} else if( obj instanceof ADGInVar ) {
+
+		    ((ADGInVar) obj).setDomain( lbs );
 		}
 	}
 
@@ -497,37 +509,46 @@ public class Xml2SADG {
 	 * @param  attributes The attributes of the tag.
 	 * @return  an invariable object.
 	 */
+	public Object processInVar(Attributes attributes) {
+		//System.out.println(" -- InVar -- ");
+		String name = (String) attributes.getValue("name");
+		String realName = (String) attributes.getValue("realName");
+
+		ADGInVar variable = new ADGInVar( name );
+		variable.setRealName( realName );
+
+		return variable;
+	}
+
+	/**
+	 * @param  stack Description of the Parameter
+	 */
+	public void processInVar(Stack stack) {
+		ADGInVar variable = (ADGInVar) stack.pop();
+		ADGNode node = (ADGNode) stack.peek();
+		variable.setNode( node );
+		node.getInVarList().add( variable );
+	}
+
+
+	/**
+	 *  Process the start of an invariable tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  an invariable object.
+	 */
 	public Object processInVariable(Attributes attributes) {
 		//System.out.println(" -- InVariable -- ");
 		String name = (String) attributes.getValue("name");
 		String dataType = (String) attributes.getValue("dataType");
 
-		int index1 = name.indexOf('(');
-		int index2 = name.lastIndexOf(')');
-
 		ADGVariable variable = new ADGVariable("");
-		Vector indexList = variable.getIndexList();
 
-		// Extract the name and the indexes of a variable (if there are indexes)
-		if( index1 == -1 ) {
-			variable.setName( name ); // the variable has name without indexes
-		} else {
-                        variable.setName( name.substring(0, index1) ); // extract only the name
-			StringTokenizer st = new StringTokenizer( name.substring(index1+1,index2), "," );
+		// Set the variable name without any indexes
+		variable.setName( _string2VarName( name ) );
 
-			Expression exp = null;	// The indexes are expressions
-			while( st.hasMoreTokens() ) {
-
-				String token = st.nextToken();
-				try {
-					exp = _expParser.getExpression( token ) ;
-					indexList.add( exp );
-
-				} catch( Exception e ) {
-					throw new Error("Unkown expression: " + token );
-				}
-			}
-		}
+		// Extract the the indexes of a variable (if there are indexes)
+		variable.setIndexList( _string2IndexFunctionList( name ) );
 
 		// Set the data type of the variable
 		variable.setDataType( dataType );
@@ -557,32 +578,13 @@ public class Xml2SADG {
 		String name = (String) attributes.getValue("name");
 		String dataType = (String) attributes.getValue("dataType");
 
-		int index1 = name.indexOf('(');
-		int index2 = name.lastIndexOf(')');
-
 		ADGVariable variable = new ADGVariable("");
-		Vector indexList = variable.getIndexList();
 
-		// Extract the name and the indexes of a variable (if there are indexes)
-		if( index1 == -1 ) {
-			variable.setName( name ); // the variable has name without indexes
-		} else {
-                        variable.setName( name.substring(0, index1) ); // extract only the name
-			StringTokenizer st = new StringTokenizer( name.substring(index1+1,index2), "," );
+		// Set the variable name without any indexes
+		variable.setName( _string2VarName( name ) );
 
-			Expression exp = null;	// The indexes are expressions
-			while( st.hasMoreTokens() ) {
-
-				String token = st.nextToken();
-				try {
-					exp = _expParser.getExpression( token ) ;
-					indexList.add( exp );
-
-				} catch( Exception e ) {
-					throw new Error("Unkown expression: " + token);
-				}
-			}
-		}
+		// Extract the the indexes of a variable (if there are indexes)
+		variable.setIndexList( _string2IndexFunctionList( name ) );
 
 		// Set the data type of the variable
 		variable.setDataType( dataType );
@@ -602,6 +604,41 @@ public class Xml2SADG {
 
 
 	/**
+	 *  Process the start of an control variable (ctrlvar) tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  an ctrlvar object.
+	 */
+	public Object processCtrlVariable(Attributes attributes) {
+		String name = (String) attributes.getValue("name");
+		String iterator = (String) attributes.getValue("iterator");
+
+		ADGCtrlVariable variable = new ADGCtrlVariable("");
+
+		// Set the variable name without any indexes
+		variable.setName( _string2VarName( name ) );
+
+		// Extract the the indexes of a variable (if there are indexes)
+		variable.setIndexList( _string2IndexFunctionList( name ) );
+
+		// Set the iterator associated with the control variable
+		variable.setIterator( iterator );
+
+		return variable;
+	}
+
+	/**
+	 * @param  stack Description of the Parameter
+	 */
+	public void processCtrlVariable(Stack stack) {
+		ADGCtrlVariable variable = (ADGCtrlVariable) stack.pop();
+		ADGFunction function = (ADGFunction) stack.peek();
+
+                function.getCtrlVarList().add( variable );
+	}
+
+
+	/**
 	 *  Process the start of a bindvariable tag in the XML.
 	 *
 	 * @param  attributes The attributes of the tag.
@@ -612,7 +649,16 @@ public class Xml2SADG {
 		String name = (String) attributes.getValue("name");
 		String dataType = (String) attributes.getValue("dataType");
 
-		ADGVariable variable = new ADGVariable( name );
+//		ADGVariable variable = new ADGVariable( name );
+
+		ADGVariable variable = new ADGVariable("");
+
+		// Set the variable name without any indexes
+		variable.setName( _string2VarName( name ) );
+
+		// Extract the the indexes of a variable (if there are indexes)
+		variable.setIndexList( _string2IndexFunctionList( name ) );
+
 		// Set the data type of the variable
 		variable.setDataType( dataType );
 
@@ -623,10 +669,23 @@ public class Xml2SADG {
 	 * @param  stack Description of the Parameter
 	 */
 	public void processBindVariable(Stack stack) {
-		ADGVariable variable = (ADGVariable) stack.pop();
-		ADGPort port = (ADGPort) stack.peek();
+//		ADGVariable variable = (ADGVariable) stack.pop();
+//		ADGPort port = (ADGPort) stack.peek();
+//
+//              port.getBindVariables().add( variable );
 
-                port.getBindVariables().add( variable );
+		ADGVariable variable = (ADGVariable) stack.pop();
+		Object obj = (Object) stack.peek();
+
+		if( obj instanceof ADGPort ) {
+
+		     ((ADGPort) obj).getBindVariables().add( variable );
+
+		} else if( obj instanceof ADGInVar ) {
+
+		     ((ADGInVar) obj).setBindVariable( variable );
+
+		}
 	}
 
 	/**
@@ -683,6 +742,29 @@ public class Xml2SADG {
 		ADGFunction function = (ADGFunction) stack.peek();
 
                 function.getOutArgumentList().add( variable );
+	}
+
+	/**
+	 *  Process the start of a file tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  an outargument object.
+	 */
+	public Object processFile(Attributes attributes) {
+		//System.out.println(" -- OutArgument -- ");
+		String filePathAndName = (String) attributes.getValue("name");
+
+		return filePathAndName;
+	}
+
+	/**
+	 * @param  stack Description of the Parameter
+	 */
+	public void processFile(Stack stack) {
+		String filePathAndName = (String) stack.pop();
+		ADGNode node = (ADGNode) stack.peek();
+
+                node.getFileList().add( filePathAndName );
 	}
 
 
@@ -796,6 +878,39 @@ public class Xml2SADG {
 
 		}
 
+	}
+
+
+	/**
+	 *  Process the start of a control tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  a control object.
+	 */
+	public Object processExpression(Attributes attributes) {
+		//System.out.println(" -- Control -- ");
+		String name = (String) attributes.getValue("name");
+		String exp = (String) attributes.getValue("value");
+
+		ControlExpression ce = new ControlExpression( name );
+
+		try {
+			ce.setExpression( _expParser.getExpression( exp ) );
+		} catch( Exception e ) {
+			throw new Error("Unkown expression: " + exp);
+		}
+
+		return ce;
+	}
+
+
+	/**
+	* @param stack Description of the Parameter
+	*/
+	public void processExpression(Stack stack) {
+		ControlExpression ce = (ControlExpression) stack.pop();
+		ADGNode node = (ADGNode) stack.peek();
+		node.getExpressionList().add( ce );
 	}
 
 
@@ -1064,6 +1179,26 @@ public class Xml2SADG {
 		//node.addChild( ns );
 	}
 
+	/**
+	 *  Process the start of a domain tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return   object.
+	 */
+	public Object processVar(Attributes attributes) {
+           	//System.out.println(" -- Var -- ");
+		String name     = (String) attributes.getValue("name");
+
+                return ( new NilStatement() );
+
+	}
+
+	/**
+	 * @param  stack Description of the Parameter
+	 */
+	public void processVar(Stack stack) {
+		NilStatement ns = (NilStatement) stack.pop();
+	}
 
 
 	///////////////////////////////////////////////////////////////////
@@ -1086,6 +1221,62 @@ public class Xml2SADG {
 			vector.add( token );
 		}
 		return vector;
+	}
+
+
+	/**
+	 *  Extract the name of a control variable, e.g., ctrl(expr1,exprN) extracts 'ctrl'.
+	 *
+	 * @param  ctrlVarString Description of the Parameter
+	 * @return the java String.
+	 */
+	private String _string2VarName(String ctrlVarString) {
+
+		int index1 = ctrlVarString.indexOf('(');
+		int index2 = ctrlVarString.lastIndexOf(')');
+		String ctrlVarName = "";
+
+		if( index1 == -1 ) {
+			// the variable has name without indexes
+			return ctrlVarString; 
+		} else {
+                        // extract only the name
+			return ctrlVarString.substring(0, index1); 
+		}
+	}
+
+
+	/**
+	 *  Extract the indexing functions of a control variable, e.g., ctrl(expr1,exprN) returns a vector 'expr1','exprN'
+	 *
+	 * @param  ctrlVarString Description of the Parameter
+	 * @return the java Vector.
+	 */
+	private Vector _string2IndexFunctionList(String ctrlVarString) {
+
+		int index1 = ctrlVarString.indexOf('(');
+		int index2 = ctrlVarString.lastIndexOf(')');
+		Vector indexList = new Vector();
+
+		if( index1 > -1 ) {
+
+			Vector tmpList = _string2Vector( ctrlVarString.substring(index1+1,index2) );
+			Iterator i = tmpList.iterator();
+
+			Expression exp = null;	// The indexes are expressions
+			while( i.hasNext() ) {
+
+				String token = (String) i.next();
+				try {
+					exp = _expParser.getExpression( token ) ;
+					indexList.add( exp );
+
+				} catch( Exception e ) {
+					throw new Error("Unkown expression: " + token);
+				}
+			}
+		}
+		return indexList;
 	}
 
 	///////////////////////////////////////////////////////////////////

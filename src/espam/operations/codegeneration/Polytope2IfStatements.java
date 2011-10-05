@@ -60,9 +60,11 @@ public class Polytope2IfStatements {
             SignedMatrix A = polytope.getConstraints();
             Vector strVect = new Vector();
 
-	    strVect.addAll( polytope.getIndexVector().getIterationVector() );
-	    strVect.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-	    strVect.addAll( polytope.getIndexVector().getParameterVectorNames() );
+//	    strVect.addAll( polytope.getIndexVector().getIterationVector() );
+//	    strVect.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//	    strVect.addAll( polytope.getIndexVector().getDynamicCtrlVector() );
+//	    strVect.addAll( polytope.getIndexVector().getParameterVectorNames() );
+	    strVect = polytope.getIndexVector().getVectorsNames();
 
             //Vector v = MatrixLib.toLinearExpression(A, strVect);
             List<Expression> v = Convert.toLinearExpression(A, strVect);
@@ -90,28 +92,30 @@ public class Polytope2IfStatements {
      * @return  Description of the Return Value
      * @exception  CodeGenerationException
      */
-    public static Polytope simplifyPDinND(Polytope pd, Polytope nd)
+    public static Polytope simplifyPDinND(Polytope pfd, Polytope nd)
         throws CodeGenerationException {
 
-	Polytope sp = (Polytope) pd.clone();
+	Polytope sp = (Polytope) pfd.clone(); // pfd represents a port domain or a function domain
         SignedMatrix sND = null;
         try {
 
-	    int iSizePD  = pd.getIndexVector().getIterationVector().size();
-            int cSizePD = pd.getIndexVector().getStaticCtrlVectorNames().size();
-            int pSizePD = pd.getIndexVector().getParameterVectorNames().size();
+	    int iSizePFD = pfd.getIndexVector().getIterationVector().size();
+            int cSizePFD = pfd.getIndexVector().getStaticCtrlVectorNames().size();
+            int dSizePFD = pfd.getIndexVector().getDynamicCtrlVector().size();
+            int pSizePFD = pfd.getIndexVector().getParameterVectorNames().size();
 
-	    int iSizeND  = nd.getIndexVector().getIterationVector().size();
+	    int iSizeND = nd.getIndexVector().getIterationVector().size();
 	    int cSizeND = nd.getIndexVector().getStaticCtrlVectorNames().size();
+	    int dSizeND = nd.getIndexVector().getDynamicCtrlVector().size();
 
             if ( nd.getIndexVector().getIterationVector().size() != 0 ) {
 
                 sND = (SignedMatrix) nd.getConstraints().clone();
-	        //make the node domain with the same size as the port domain
-	        sND.insertZeroColumns( cSizePD - cSizeND, iSizeND + cSizeND +1 );
+	        //make the node domain with the same size as the port domain or the function domain
+	        sND.insertZeroColumns( (cSizePFD + dSizePFD) - (cSizeND + dSizeND), iSizeND + cSizeND + dSizeND + 1 );
 	        //add the context constraints to the node domain
 	        SignedMatrix ndContext = (SignedMatrix) nd.getContext().clone();
-	        ndContext.insertZeroColumns(iSizeND+cSizePD, 1 );
+	        ndContext.insertZeroColumns(iSizeND+cSizePFD+dSizePFD, 1 );
                 sND.insertRows(ndContext, -1);
 
 	    } else {
@@ -120,9 +124,9 @@ public class Polytope2IfStatements {
 
 	    }
 
-           //simplify the port domain in the context of the node domain
-	   SignedMatrix sPD = pd.getConstraints();
-           SignedMatrix A = PolyLib.getInstance().ConstraintsSimplify(sPD, sND);
+           //simplify the port domain or the function domain in the context of the node domain
+	   SignedMatrix sPFD = pfd.getConstraints();
+           SignedMatrix A = PolyLib.getInstance().ConstraintsSimplify(sPFD, sND);
 	   sp.setConstraints( A );
 
         } catch( Exception e ) {

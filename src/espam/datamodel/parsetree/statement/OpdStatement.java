@@ -16,13 +16,15 @@ You must not remove this notice, or any other, from this software.
 
 package espam.datamodel.parsetree.statement;
 
+import java.util.Vector;
+
 import espam.visitor.StatementVisitor;
 //////////////////////////////////////////////////////////////////////////
 //// OpdStatement
 /*
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: OpdStatement.java,v 1.1 2007/12/07 22:09:12 stefanov Exp $
+ * @version  $Id: OpdStatement.java,v 1.2 2011/10/05 15:03:46 nikolov Exp $
  */
 
 public class OpdStatement extends Statement {
@@ -55,6 +57,7 @@ public class OpdStatement extends Statement {
             os.setGateName( _gateName );
             os.setNodeName( _nodeName );
             os.setArgumentName( _argumentName );
+            os.setIndexList( (Vector) _indexList.clone() );
             return (os);
     }
 
@@ -128,6 +131,24 @@ public class OpdStatement extends Statement {
     }
 
     /**
+     *  Get the index list of the binding variable.
+     *
+     * @return  the index list
+     */
+    public Vector getIndexList() {
+        return _indexList;
+    }
+
+    /**
+     *  Set the index list of the binding variable.
+     *
+     * @param  indexListRHS The new index list
+     */
+    public void setIndexList(Vector indexList) {
+        _indexList = indexList;
+    }
+
+    /**
      *  Give the string representation of the opd statement.
      *
      * @return  a string representing the opd statement.
@@ -163,4 +184,9 @@ public class OpdStatement extends Statement {
      *  The name of the argument.
      */
     private String _argumentName;
+
+    /**
+     *  The list of expressions for the index functions of the binding variable
+     */
+    private Vector _indexList = null;
 }
