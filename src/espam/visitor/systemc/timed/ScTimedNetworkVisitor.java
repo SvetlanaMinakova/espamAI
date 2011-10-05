@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.9 2011/07/12 08:22:48 tzhai Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.10 2011/10/05 12:11:08 stefanov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -242,8 +242,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/apps/systemc-2.2.0");
-//                 cf.println("SYSTEMC = $(HOME)/TOOLS/systemc-2.2.0");
+                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);
