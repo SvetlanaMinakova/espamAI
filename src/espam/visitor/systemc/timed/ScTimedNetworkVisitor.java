@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.10 2011/10/05 12:11:08 stefanov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.11 2011/10/05 12:59:08 stefanov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -142,7 +142,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
       while( i.hasNext() ) {
         CDChannel channel = (CDChannel) i.next();
         if (channel.getAdgEdgeList().size() != 1) {
-          System.err.println("Warning: multiple ADG edges per channel not supported!");
+          System.err.println("Warning: multiple ADG edges per channel detected!");
         }
         
         
