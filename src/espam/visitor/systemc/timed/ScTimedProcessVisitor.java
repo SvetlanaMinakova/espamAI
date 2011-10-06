@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.12 2011/07/12 08:22:48 tzhai Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.13 2011/10/06 13:57:02 svhaastr Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -416,7 +416,12 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         Iterator i = _pn.getChannelList().iterator();
         while( i.hasNext() ) {
            channel = (CDChannel) i.next();
-           type = ((ADGVariable) ((ADGEdge)channel.getAdgEdgeList().get(0)).getFromPort().getBindVariables().get(0)).getDataType();
+
+           // FIXME::TYPE:  We should use the stored datatype "type". However, since the current fsl_fifo inherits from
+           // sc_fifo, this requires that the operator<< is defined for "type". We cannot assume that this operator is
+           // actually defined for any user data types, so for now we always use the int data type.
+           //type = ((ADGVariable) ((ADGEdge)channel.getAdgEdgeList().get(0)).getFromPort().getBindVariables().get(0)).getDataType();
+           type = "int";
 
            if( !type.equals("") ) {
                String s = "typedef " + type + " t" + channel.getName()+";";
@@ -602,7 +607,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             while( j1.hasNext() ) {
                 ADGVariable arg = (ADGVariable) j1.next();
                 String funcArgument = arg.getName() + node.getName();
-                String dataType = arg.getDataType();
+                //String dataType = arg.getDataType();
+                String dataType = "int";  // see FIXME::TYPE
 
                 t = "char";
                 if (dataType != null) {
@@ -651,7 +657,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             while( j2.hasNext() ) {
                 ADGVariable arg = (ADGVariable) j2.next();
                 String funcArgument = arg.getName() + node.getName();
-                String dataType = arg.getDataType();
+                //String dataType = arg.getDataType();
+                String dataType = "int";  // See FIXME::TYPE
 
                 t = "char";
                 if (dataType != null) {
