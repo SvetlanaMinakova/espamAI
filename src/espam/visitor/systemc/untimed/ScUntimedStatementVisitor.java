@@ -31,6 +31,7 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -223,11 +224,40 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
              _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
                                          inArg.getVariableName() + x.getNodeName() + ";"           );
              _printStream.println("");
-             _printStream.println(_prefix + "execute(\"CopyPropagate\");");
+//             _printStream.println(_prefix + "execute(\"CopyPropagate\");");
+             _printStream.println(_prefix + "firings[\"CopyPropagate\"]++;");
              _printStream.println("");
 
         }
 
+    }
+
+    /**
+     *  Print an assign statement in the correct format for c++.
+     *
+     * @param  x The simple statement that needs to be rendered.
+     */
+    public void visitStatement(SimpleAssignStatement x) {
+
+	_printStream.print(_prefix + x.getLHSVarName() + x.getNodeName() );
+//  _printStream.print(_prefix + x.getLHSVarName() );
+
+	Iterator i = x.getIndexListLHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+  _printStream.print(" = " + x.getRHSVarName() + x.getNodeName() );
+//  _printStream.print(" = " + x.getRHSVarName() );
+
+	i = x.getIndexListRHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	
+	_printStream.println(";\n");
     }
 
     /**
