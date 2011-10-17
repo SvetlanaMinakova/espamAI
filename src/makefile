@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:06:44 stefanov Exp $
+# $Id: makefile,v 1.2 2011/10/17 13:17:48 tzhai Exp $
 #
 # Makefile for the diva top-level package. The rules
 # implemented by this makefile are:
@@ -14,7 +14,7 @@
 #           do make install in the documentation directories.
 #           This will generate all necessary documentation.
 # jar:      Build the Diva jar file.
-# doc:      Build the HTML documentation.
+# javadoc:      Build the HTML documentation.
 #
 # The intent is that a user or casual developer can run "install"
 # to generate class files, JAR files, API docs, and so on. A
@@ -28,7 +28,7 @@ PACKAGEDIRS = 	\
 
 # list of packages for which javadoc will
 # generated documentation
-# include javaclasses.mk
+include javaclasses.mk
 include vars.mk
 
 # The all rule does "all" in all source directories
@@ -104,7 +104,7 @@ tags:
 # for the packages to generate documentation for
 javadoc: 
 	if [ ! -d ./doc/codeDoc ]; then mkdir -p ./doc/codeDoc; fi; \
-		$(JAVADOC) -link http://java.sun.com/j2se/1.4.2/docs/api -breakiterator -d ./doc/codeDoc -private -version -author -quiet -classpath "." -sourcepath . $(JAVACLASSES)
+		$(JAVADOC) -link http://java.sun.com/j2se/1.4.2/docs/api -breakiterator -d ./doc/codeDoc -private -version -author -quiet -classpath "." -sourcepath . -subpackages $(JAVACLASSES)
 
 # Make Java classes in all packages
 jtest:

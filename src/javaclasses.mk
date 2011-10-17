@@ -1,0 +1,1 @@
+JAVACLASSES=espam.datamodel:espam.utils:espam.operations:espam.parser:espam.visitor:espam.main
