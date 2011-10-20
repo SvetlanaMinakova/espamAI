@@ -59,6 +59,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 import espam.main.UserInterface;
 
 import org.xml.sax.Attributes;
@@ -70,7 +71,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Platform.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: Xml2Platform.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class Xml2Platform {
@@ -323,7 +324,11 @@ public class Xml2Platform {
 			System.out.println(" -- FPGA Board: ML505");
 			ML505 hostInterface = new ML505(name);
 			return hostInterface;
-		} else {
+		} else if ( type.equals("ML605") ) {
+            System.out.println(" -- FPGA Board: ML605");
+            ML605 hostInterface = new ML605(name);
+            return hostInterface;
+        } else {
 			throw new Error("Unknown Board Type: " + type);
 		}
 	}

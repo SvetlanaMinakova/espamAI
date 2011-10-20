@@ -19,6 +19,7 @@ package espam.visitor.xps.cdpn;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.File;
 import java.util.Iterator;
 
 import espam.datamodel.EspamException;
@@ -28,6 +29,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
@@ -46,7 +48,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.3 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: XmpVisitor.java,v 1.4 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -66,9 +68,9 @@ public class XmpVisitor extends CDPNVisitor {
     	_ui = UserInterface.getInstance();
 
         if (_ui.getOutputFileName() == "") {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getFileName();
+	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName();
         } else {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName();
+	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName();
         }
 
         _printStream = _openFile("system.xmp");
@@ -88,16 +90,16 @@ public class XmpVisitor extends CDPNVisitor {
 		_printStream.println("IntStyle: default");
 		_printStream.println("MHS File: system.mhs");
 		_printStream.println("MSS File: system.mss");
-		_printStream.println("NPL File: projnav/system.npl ");
+		_printStream.println("NPL File: projnav" + File.separatorChar + "system.npl ");
 
 		if( _targetBoard.equals("ADM-XRC-II") ) {
-			_printStream.println("UcfFile: data/system_ADMXRCII.ucf"); //?
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_ADMXRCII.ucf"); //?
 			_printStream.println("Architecture: virtex2");
 			_printStream.println("Device: xc2v6000");
 			_printStream.println("Package: ff1152");
 			_printStream.println("SpeedGrade: -5");
 		} else {
-			_printStream.println("UcfFile: data/system_ADMXPL.ucf"); //?
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_ADMXPL.ucf"); //?
 			_printStream.println("Architecture: virtex2p");
 			_printStream.println("Device: xc2vp20");
 			_printStream.println("Package: ff896");
@@ -106,8 +108,8 @@ public class XmpVisitor extends CDPNVisitor {
 
 		_printStream.println("UseProjNav: 0");
 		_printStream.println("AddToNPL: 0");
-		_printStream.println("PNImportBitFile: projnav/system.bit");
-		_printStream.println("PNImportBmmFile: implementation/system_stub.bmm");
+		_printStream.println("PNImportBitFile: projnav" + File.separatorChar + "system.bit");
+		_printStream.println("PNImportBmmFile: implementation" + File.separatorChar + "system_stub.bmm");
 		_printStream.println("UserCmd1:");
 		_printStream.println("UserCmd2:");
 		_printStream.println("SynProj: xst");
@@ -122,21 +124,33 @@ public class XmpVisitor extends CDPNVisitor {
 	
 		_visitAllProcessors( x );
 		
-	    } else if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
+	    } else if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605") ) {
 
 		if( _targetBoard.equals("XUPV5-LX110T") ) {
 
-			_printStream.println("XmpVersion: 11.2");
-			_printStream.println("VerMgmt:");
+			_printStream.println("XmpVersion: 13.2");
+			_printStream.println("VerMgmt: 13.2");
 			_printStream.println("IntStyle: default");
 			_printStream.println("MHS File: system.mhs");
-			_printStream.println("MSS File: system.mss");
+			//_printStream.println("MSS File: system.mss");
 	
-			_printStream.println("UcfFile: data/system_XUPV5LX110T.ucf");
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_XUPV5LX110T.ucf");
 			_printStream.println("Architecture: virtex5");
 			_printStream.println("Device: xc5vlx110t");
 			_printStream.println("Package: ff1136");
 			_printStream.println("SpeedGrade: -3");
+
+        } else if ( _targetBoard.equals("ML605") ) {
+			_printStream.println("XmpVersion: 13.2");
+			_printStream.println("VerMgmt: 13.2");
+			_printStream.println("IntStyle: default");
+			_printStream.println("MHS File: system.mhs");
+	
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605.ucf");
+			_printStream.println("Architecture: virtex6");
+			_printStream.println("Device: xc6vlx240t");
+			_printStream.println("Package: ff1156");
+			_printStream.println("SpeedGrade: -1");
 
 		} else {
 
@@ -146,7 +160,7 @@ public class XmpVisitor extends CDPNVisitor {
 			_printStream.println("MHS File: system.mhs");
 			_printStream.println("MSS File: system.mss");
 	
-			_printStream.println("UcfFile: data/system_ML505.ucf");
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML505.ucf");
 			_printStream.println("Architecture: virtex5");
 			_printStream.println("Device: xc5vlx50t");
 			_printStream.println("Package: ff1136");
@@ -159,12 +173,12 @@ public class XmpVisitor extends CDPNVisitor {
 		_printStream.println("UserCmd2Type: 0");
 		_printStream.println("GenSimTB: 0");
 		_printStream.println("SdkExportBmmBit: 1");
-		_printStream.println("SdkExportDir: SDK/SDK_Export");
+		_printStream.println("SdkExportDir: SDK" + File.separatorChar + "SDK_Export");
 		_printStream.println("InsertNoPads: 0");
 		_printStream.println("WarnForEAArch: 1");
 		_printStream.println("HdlLang: VHDL");
 		_printStream.println("SimModel: BEHAVIORAL");
-		_printStream.println("EnableParTimingError: 0");
+		_printStream.println("EnableParTimingError: 1");
 		_printStream.println("ShowLicenseDialog: 1");
 
 		// Print for all processors here
@@ -176,17 +190,24 @@ public class XmpVisitor extends CDPNVisitor {
 		if (resource instanceof Processor) {
 			Processor p = (Processor) resource;
 			_printStream.println("Processor: " + p.getName());
-			_printStream.println("BootLoop: 0");
-			_printStream.println("XmdStub: 0");
+			_printStream.println("ElfImp:");
+			_printStream.println("ElfSim:");
+			//_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
+			//_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
 		}
 		}
 	
 // add the host interface MicroBlaze
 
 		_printStream.println("Processor: host_if_mb");
-		_printStream.println("BootLoop: 0");
-		_printStream.println("XmdStub: 0");
+		_printStream.println("ElfImp:");
+		_printStream.println("ElfSim:");
+		//_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
+		//_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
 
+// Mohamed B: The following commented segment is no longer needed in XPS 13.x
+
+/*
 		_printStream.println("SwProj: HOST_IF");
 		_printStream.println("Processor: host_if_mb");
 		_printStream.println("Executable: host_if_mb/executable.elf");
@@ -216,6 +237,7 @@ public class XmpVisitor extends CDPNVisitor {
 		_printStream.println("ProgCCFlags:");
 
 		_visitAllProcessors( x );
+*/
 	    }	
 	} catch (Exception e) {
                 System.out.println(" In Xmp Visitor: exception " +
@@ -264,6 +286,8 @@ public class XmpVisitor extends CDPNVisitor {
                board = "XUPV5-LX110T";
             } else if( resource instanceof ML505 ) {
                board = "ML505";
+            } else if( resource instanceof ML605 ) {
+               board = "ML605";
             }
         }  
 
@@ -353,6 +377,13 @@ public class XmpVisitor extends CDPNVisitor {
      *  @param CDProcessNetwork
      */
     private void _visitML505( CDProcessNetwork x ) {
+    }
+
+    /**
+     *  visit with target = ML605
+     *  @param CDProcessNetwork
+     */
+    private void _visitML605( CDProcessNetwork x ) {
     }
 
     ///////////////////////////////////////////////////////////////////

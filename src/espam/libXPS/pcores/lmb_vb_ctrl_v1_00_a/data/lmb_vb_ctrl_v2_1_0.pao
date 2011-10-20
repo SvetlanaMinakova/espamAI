@@ -8,6 +8,6 @@
 ##
 ################################################################################
 
-lib proc_common_v1_00_c pselect
+lib proc_common_v3_00_a pselect
 lib lmb_vb_ctrl_v1_00_a lmb_vb_ctrl
 

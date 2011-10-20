@@ -64,6 +64,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 
 import espam.main.UserInterface;
 import espam.datamodel.EspamException;
@@ -76,7 +77,7 @@ import espam.datamodel.EspamException;
  *  Platform description.
  *
  * @author  Hristo Nikolov, Todor Stefanov
- * @version  $Id: PlatformVisitor.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: PlatformVisitor.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class PlatformVisitor implements Visitor {
@@ -421,6 +422,13 @@ public class PlatformVisitor implements Visitor {
 	public void visitComponent(ML505 x) {
 	}
 
+	/**
+	 *  Visit a ML605 interface component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(ML605 x) {
+	}
 
 
 /******************************************************************************/

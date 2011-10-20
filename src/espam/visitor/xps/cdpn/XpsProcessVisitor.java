@@ -1,13 +1,13 @@
 /*******************************************************************\
 
-The ESPAM Software Tool 
+The ESPAM Software Tool
 Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
 All rights reserved.
 
-The use and distribution terms for this software are covered by the 
+The use and distribution terms for this software are covered by the
 Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
 which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
+By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.6 2010/02/04 16:15:46 stefanov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.7 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -79,7 +79,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	    File dir = new File(_codeDir);
 	    dir.mkdirs();
     }
-     
+
     /**
      * @param  x Description of the Parameter
      */
@@ -94,7 +94,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
             _printStreamFunc.println("#include \"mb_interface.h\"");
-            _printStreamFunc.println("#include \"./func_code/" + x.getName() + "_func.h\"");	    
+            _printStreamFunc.println("#include \"./func_code/" + x.getName() + "_func.h\"");
             _printStreamFunc.println("");
 
             _writeChannelTypes();
@@ -111,7 +111,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
                 if (resource instanceof Processor) {
 
                     _printStream = _openFile(process.getName(), process.getName(), "cpp");
-		    
+
 		    if ( mProcessor.getScheduleType() == 1 ) {
 			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
 			process.accept(pt);
@@ -160,11 +160,11 @@ public class XpsProcessVisitor extends CDPNVisitor {
             file = new FileOutputStream(fullFileName);
             printStream = new PrintStream(file);
         }
-        
+
         return printStream;
-        
+
     }
-    
+
     /**
      *  Description of the Method
      * @param  subDirName Descripton of the subdirectory
@@ -173,8 +173,8 @@ public class XpsProcessVisitor extends CDPNVisitor {
      * @return  Description of the Return Value
      * @exception  FileNotFoundException Description of the Exception
      */
-    private static PrintStream _openFile(String subDirName, 
-					 String fileName, 
+    private static PrintStream _openFile(String subDirName,
+					 String fileName,
 					 String extension)
             throws FileNotFoundException {
         PrintStream printStream = null;
@@ -197,7 +197,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         return printStream;
     }
 
-    
+
     /**
      *  Description of the Method
      */
@@ -231,12 +231,12 @@ public class XpsProcessVisitor extends CDPNVisitor {
         Iterator j = _pn.getAdg().getParameterList().iterator();
         while (j.hasNext()) {
             ADGParameter p = (ADGParameter) j.next();
-	        _printStreamFunc.println(_prefix + "#define " + p.getName() + 
+	        _printStreamFunc.println(_prefix + "#define " + p.getName() +
 				     " " + p.getValue());
         }
         _printStreamFunc.println("");
     }
-    
+
     /**
      *  Description of the Method
      */
@@ -265,27 +265,27 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
-    
+
     /**
      * Repository directory for the source codes
      */
     private static String _codeDir = "";
-    
+
     /**
      *  The UserInterface
      */
     private UserInterface _ui = null;
-    
+
     private Mapping _mapping = null;
 
     private CDProcessNetwork _pn = null;
 
     private PrintStream _printStream = null;
-    
+
     private PrintStream _printStreamFunc = null;
 
     private Map _relation2 = new HashMap();
-    
+
     /**
      *  Read/Write fifo api
      */
@@ -388,12 +388,12 @@ public class XpsProcessVisitor extends CDPNVisitor {
  	"        isEmpty = dataReg_requestReg + 1;\\\n" +
  	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
 	"        for (i = 0; i < n; i++) {\\\n" +
-	"            while (*isEmpty != 2) {\\\n" + 
-	"                if( *isEmpty == 3 ) {\\\n" + 
-	"                    *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" + 
-	"                    yield();\\\n" + 
+	"            while (*isEmpty != 2) {\\\n" +
+	"                if( *isEmpty == 3 ) {\\\n" +
+	"                    *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
+	"                    yield();\\\n" +
         "                    *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
-	"                }\\\n" + 
+	"                }\\\n" +
 	"            }\\\n" +
 	"            ((volatile int *) value)[i] = *dataReg_requestReg;\\\n" +
 	"        }\\\n" +
@@ -410,7 +410,54 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	"            while (*isFull) { yield(); };\\\n" +
 	"            *outPort = ((volatile int *) value)[i];\\\n" +
 	"        }\\\n" +
-	"    } while(0)\n";
-
+	"    } while(0)\n" +
+	"\n/////////////////////////////// Primitives for SW FIFOs \n" +
+	"inline volatile void *acquire_write_ptr(int f, int len) {\n" +
+	"	volatile long *fifo = (long *)f;\n" +
+	"	register long fifoSize = fifo[0];\n" +
+	"	register long fifo_2 = fifo[2];\n" +
+	"\n" +
+	"	while( (fifo_2^fifo[5]) == 0x80000000) { }; // full\n" +
+	"\n" +
+	"	void *ptr = (void *)(fifo + 6 + (fifo_2 & 0x7FFFFFFF));\n" +
+	"\n" +
+	"	fifo_2 += len;      // wr index + token size in dwords (32 bits)\n" +
+	"\n" +
+	"	if( (fifo_2 & 0x7FFFFFFF) == fifoSize ) { \n" +
+	"		fifo_2 = fifo_2 & 0x80000000;\n" +
+	"		fifo_2 = fifo_2 ^ 0x80000000; // toggle the flag\n" +
+	"	}\n" +
+	"\n" +
+	"	fifo[2] = fifo_2;\n" +
+	"\n" +
+	"	return ptr;\n" +
+	"}\n" +
+	"\n\ninline void release_write_ptr(int f) {" +
+	"\n	volatile long *fifo = (volatile long *)f;\n" +
+	"	fifo[3] = fifo[2];\n" +
+	"}\n" +
+	"\n\ninline volatile void *acquire_read_ptr(int f, int len) {" +
+	"\n	volatile long *fifo = (long *)f;" +
+	"\n	register long fifoSize = fifo[0];" +
+	"\n	register long fifo_4 = fifo[4];" +
+	"\n" +
+	"\n	while( fifo[3] == fifo_4 ) { }; // empty" +
+	"\n" +
+	"\n	void *ptr = (void *)(fifo + 6 + (fifo_4 & 0x7FFFFFFF));" +
+	"\n" +
+	"\n	fifo_4 += len;      // rd index + token size in dwords (32 bits)" +
+	"\n" +
+	"\n	if( (fifo_4 & 0x7FFFFFFF) == fifoSize ) {" +
+	"\n		fifo_4 = fifo_4 & 0x80000000;" +
+	"\n		fifo_4 = fifo_4 ^ 0x80000000; // toggle the flag" +
+	"\n	}" +
+	"\n	fifo[4] = fifo_4;" +
+	"\n" +
+	"\n	return ptr;" +
+	"\n}" +
+	"\n\ninline void release_read_ptr(int f) {" +
+	"\n	volatile int *fifo = (volatile int *)f;" +
+	"\n	fifo[5] = fifo[4];" +
+	"\n}";
 }
 

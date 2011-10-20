@@ -17,8 +17,8 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-LIBRARY proc_common_v1_00_c;
-USE proc_common_v1_00_c.pselect;
+LIBRARY proc_common_v3_00_a;
+USE proc_common_v3_00_a.pselect;
 
 entity lmb_vb_ctrl is 
   generic

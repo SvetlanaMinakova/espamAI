@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2010/04/02 12:21:24 nikolov Exp $
+# $Id: makefile,v 1.2 2011/10/20 12:08:44 mohamed Exp $
 #
 
 ROOT  = ../../../..
@@ -11,7 +11,8 @@ JSRCS = \
 	ADMXRCII.java \
 	ADMXPL.java \
 	XUPV5LX110T.java \
-	ML505.java
+	ML505.java \
+	ML605.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

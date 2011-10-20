@@ -18,5 +18,5 @@
 ## Date:              Sun Aug 28 16:06:49 2005 (by Create and Import Peripheral Wizard)
 ##############################################################################
 
-lib proc_common_v1_00_c pselect vhdl
+lib proc_common_v3_00_a pselect vhdl
 lib fin_ctrl_v1_00_a fin_ctrl vhdl

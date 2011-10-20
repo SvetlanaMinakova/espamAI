@@ -1,13 +1,13 @@
 /*******************************************************************\
 
-The ESPAM Software Tool 
+The ESPAM Software Tool
 Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
 All rights reserved.
 
-The use and distribution terms for this software are covered by the 
+The use and distribution terms for this software are covered by the
 Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
 which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
+By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
@@ -43,8 +43,7 @@ import espam.visitor.CDPNVisitor;
  *  This class .................
  *
  * @author  Wei Zhong, Hristo Nikolov, Todor Stefanov
- * @version  $Id: XpsNetworkVisitor.java,v 1.3 2002/06/12 18:28:59 sjain
- *      Exp $
+ * @version  $Id: XpsNetworkVisitor.java,v 1.2 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class XpsNetworkVisitor extends CDPNVisitor {
@@ -65,7 +64,7 @@ public class XpsNetworkVisitor extends CDPNVisitor {
      * @param  x Description of the Parameter
      */
     public void visitComponent( CDProcessNetwork x ) {
-        
+
     	try {
             //copy the library
     	    UserInterface _ui = UserInterface.getInstance();
@@ -78,19 +77,19 @@ public class XpsNetworkVisitor extends CDPNVisitor {
             File f = new File(_ui.getXpsLibPath());
             File t = new File(_codeDir);
             Copier.copy(f, t, 1, true);
-                
+
         	//Create the software
             XpsProcessVisitor pt = new XpsProcessVisitor( _mapping );
             x.accept( pt );
-            
+
     	} catch (Exception e) {
             System.out.println(" In Xps Network Visitor: exception " +
  			       "occured: " + e.getMessage());
              e.printStackTrace();
  	    }
-        
+
     }
-    
+
     /**
      * @param  x Description of the Parameter
      */
@@ -107,7 +106,7 @@ public class XpsNetworkVisitor extends CDPNVisitor {
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-    
+
     private Mapping _mapping;
 
 }

@@ -19,8 +19,8 @@ use IEEE.STD_LOGIC_1164.all;
 USE ieee.std_logic_arith.all;
 USE ieee.std_logic_unsigned.all;
 
-LIBRARY proc_common_v1_00_c;
-USE proc_common_v1_00_c.pselect;
+LIBRARY proc_common_v3_00_a;
+USE proc_common_v3_00_a.pselect;
 
 entity fin_ctrl is
   GENERIC (

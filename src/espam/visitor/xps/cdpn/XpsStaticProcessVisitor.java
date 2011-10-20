@@ -46,6 +46,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 
 import espam.datamodel.parsetree.ParserNode;
 
@@ -62,7 +63,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.3 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.4 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -92,7 +93,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
         _printStream.println("int main (){");
 	_prefixInc();
 
-	if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
+	if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605") ) {
 		_printStream.println("");
 		_printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
 		_printStream.println("");
@@ -394,6 +395,8 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
                board = "XUPV5-LX110T";
             } else if( resource instanceof ML505 ) {
                board = "ML505";
+            } else if( resource instanceof ML605 ) {
+                board = "ML605";
             }
         }  
 

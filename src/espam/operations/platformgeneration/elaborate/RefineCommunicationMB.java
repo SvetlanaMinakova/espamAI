@@ -1,13 +1,13 @@
 /*******************************************************************\
 
-The ESPAM Software Tool 
+The ESPAM Software Tool
 Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
 All rights reserved.
 
-The use and distribution terms for this software are covered by the 
+The use and distribution terms for this software are covered by the
 Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
 which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
+By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
@@ -16,14 +16,21 @@ You must not remove this notice, or any other, from this software.
 
 package espam.operations.platformgeneration.elaborate;
 
+import java.io.OutputStream;
+
 import java.util.Iterator;
 import java.util.Vector;
+
+import espam.datamodel.pn.cdpn.CDChannel;
+import espam.datamodel.pn.cdpn.CDOutGate;
+import espam.datamodel.pn.cdpn.CDInGate;
 
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Link;
 import espam.datamodel.platform.Port;
+import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.ports.LMBPort;
 import espam.datamodel.platform.ports.DLMBPort;
 import espam.datamodel.platform.ports.FifoReadPort;
@@ -31,14 +38,16 @@ import espam.datamodel.platform.ports.FifoWritePort;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.controllers.FifosController;
 
+
+
 /**
  *  This class utilizes the Fast Simplex Links (FSL) presented in MicroBlaze processors:
  *
  *      First 8 input and first 8 output fifos are connected to the FSLs, the others are connected to a fifos controller
  *
  * @author  Hristo Nikolov
- * @version  $Id: PNToParseTree.java,v 1.15 2002/10/08 14:23:14 kienhuis Exp
- *      $
+ * @version  $Id: RefineCommunicationMB.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
+ *
  */
 public class RefineCommunicationMB {
 
@@ -83,8 +92,8 @@ public class RefineCommunicationMB {
 		    // Reconnect the fifos to a MicroBlaze FSL processor ports
 		    // -------------------------------------------------------
 		    if( controller != null ) {
-		    	
-			_setFSLs( controller, resource );
+
+			_setFSLs( controller, resource, mapping );
 		    }
 		}
 	    }
@@ -98,7 +107,7 @@ public class RefineCommunicationMB {
 	///////////////////////////////////////////////////////////////////
 	////                         private methods                   ////
 
-       /****************************************************************************************************************
+	/****************************************************************************************************************
 	*  Find a fifos controller connected to a processor
 	*
 	* @param  platform Description of the Parameter
@@ -139,12 +148,12 @@ public class RefineCommunicationMB {
 	}
 
        /****************************************************************************************************************
-	*  First 8 input and first 8 output fifos are connected to the FSLs, 
+	*  First 8 input and first 8 output fifos are connected to the FSLs,
 	*  the others are connected to a fifos controller
 	*
 	* @param  platform Description of the Parameter
 	****************************************************************************************************************/
-	private void _setFSLs( FifosController controller, Resource processor ) {
+	private void _setFSLs( FifosController controller, Resource processor, Mapping mapping) {
 
 		// -------------------------------------------------------------------------------------------------------
 		// Find the controller port (processor side), Input fifo ports and output fifo ports of a fifos controller
@@ -163,12 +172,11 @@ public class RefineCommunicationMB {
 			controllerPort = port;
 
 		    } else if( port instanceof FifoWritePort ) {
-
-			outFifoPorts.add( port );
+				outFifoPorts.add( port );
 
 		    }  else if( port instanceof FifoReadPort ) {
 
-			inFifoPorts.add( port );
+				inFifoPorts.add( port );
 		    }
 		}
 
@@ -183,6 +191,22 @@ public class RefineCommunicationMB {
 		    while( op.hasNext() ) {
 
 			Port fslPort = (FifoWritePort) op.next();
+
+
+			//////////////////////////////////////////////////////////////////////
+			// check, if the port belongs to a self-edge in the CDPN
+			// get the CDchannel of the FIFO
+			Port port = fslPort.getConnectedPort();
+			assert ( port != null );
+			CDChannel self_ch = mapping.getCDChannel((Fifo)port.getResource());
+			// get in and out gates
+			CDOutGate outgate = self_ch.getFromGate();
+			CDInGate ingate = self_ch.getToGate();
+
+			// check if two gates belong to the same CDProcess
+
+			//////////////////////////////////////////////////////////////////////
+
 
 			fslPort.setResource( processor );
 			controller.getPortList().remove( fslPort );
@@ -237,7 +261,7 @@ public class RefineCommunicationMB {
 	 *  Create a unique instance of this class to implement a singleton
 	 */
 	private final static RefineCommunicationMB _instance = new RefineCommunicationMB();
-	
+
 	// Contains the components (fifos controllers) to be removed from the platform
 	private Vector _oldResources = null;
 }

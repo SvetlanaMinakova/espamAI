@@ -46,6 +46,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 
 import espam.operations.ConsistencyCheck;
 
@@ -166,7 +167,8 @@ public class CheckPlatform {
 			    !(resource instanceof Crossbar) && !(resource instanceof CompaanHWNode) &&
 			    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) && 
 			    !(resource instanceof ADMXRCII) && !(resource instanceof ADMXPL) &&
-			    !(resource instanceof XUPV5LX110T) && !(resource instanceof ML505) ) {
+			    !(resource instanceof XUPV5LX110T) && !(resource instanceof ML505) && 
+			    !(resource instanceof ML605)) {
 			    System.err.println("[Espam]ERROR: Resource " + resource + " cannot be used in the describtion of the platform. \n ");
 			    _error++;
 			}
@@ -190,7 +192,7 @@ public class CheckPlatform {
 			    _uart++; // count the number of Uart in the platform
 
 			} else if( resource instanceof ADMXRCII || resource instanceof ADMXPL ||
-			           resource instanceof XUPV5LX110T || resource instanceof ML505 ) {
+			           resource instanceof XUPV5LX110T || resource instanceof ML505 || resource instanceof ML605 ) {
 
 			    _hostInterface++; // count the number of host interfaces
 			}

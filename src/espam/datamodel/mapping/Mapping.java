@@ -38,7 +38,7 @@ import espam.visitor.MappingVisitor;
  * is mapped onto a platform.
  *
  * @author Todor Stefanov
- * @version  $Id: Mapping.java,v 1.1 2007/12/07 22:09:11 stefanov Exp $
+ * @version  $Id: Mapping.java,v 1.2 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class Mapping implements Cloneable {
@@ -238,7 +238,7 @@ public class Mapping implements Cloneable {
            while (i.hasNext()) {
                MFifo mFifo = (MFifo) i.next();
                CDChannel mcdChannel = mFifo.getChannel(); 
-               if (mcdChannel.getName().equals(cdChannelName)) {
+               if (mcdChannel != null && mcdChannel.getName().equals(cdChannelName)) {
                   return mFifo;
                }
            }

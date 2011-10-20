@@ -1,13 +1,13 @@
 /*******************************************************************\
 
-The ESPAM Software Tool 
+The ESPAM Software Tool
 Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
 All rights reserved.
 
-The use and distribution terms for this software are covered by the 
+The use and distribution terms for this software are covered by the
 Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
 which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
+By using this software in any fashion, you are agreeing to be bound by
 the terms of this license.
 
 You must not remove this notice, or any other, from this software.
@@ -16,7 +16,10 @@ You must not remove this notice, or any other, from this software.
 
 package espam.datamodel.platform;
 
+import java.util.Iterator;
 import java.util.Vector;
+
+import espam.datamodel.platform.Link;
 
 //////////////////////////////////////////////////////////////////////////
 //// Port
@@ -27,7 +30,7 @@ import java.util.Vector;
  *
  *
  * @author Todor Stefanov
- * @version  $Id: Port.java,v 1.2 2010/04/02 12:21:24 nikolov Exp $
+ * @version  $Id: Port.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
  */
 
 public class Port implements Cloneable {
@@ -141,6 +144,30 @@ public class Port implements Cloneable {
     public void setMemSize(int size) {
         _memSize = size;
     }
+
+	/**
+     *  Get the port conected on the other side of the link
+     *
+     * @return  port
+     */
+	public Port getConnectedPort(){
+		if (_link == null ){
+			return null;
+		}
+
+		Iterator pit = _link.getPortList().iterator();
+		while( pit.hasNext() ) {
+			Port port = (Port) pit.next();
+			// if it is not the current port, it is another one we need
+			if (port.getName() != _name){
+				return port;
+			}
+		}
+
+		// should not reach here
+		return null;
+	}
+
 
     /**
      *  Return a description of the port.

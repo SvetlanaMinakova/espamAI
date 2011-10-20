@@ -19,8 +19,8 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.std_logic_arith.all;
 USE ieee.std_logic_unsigned.all;
 
-LIBRARY proc_common_v1_00_c;
-USE proc_common_v1_00_c.pselect;
+LIBRARY proc_common_v3_00_a;
+USE proc_common_v3_00_a.pselect;
 
 ENTITY clock_cycle_counter IS
   GENERIC (
