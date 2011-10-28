@@ -619,10 +619,10 @@ public class CheckPlatform {
 		if( _hostInterface == 0 ) {
 			System.err.println("\n[Espam] WARNING: No target board specified.");
 			System.err.println("=====> Use HOST_IF component to specify a target board in the platform specification.");
-			System.err.println("=====> Supported boards are: ADM-XRC-II, ADM-XPL, XUPV5-LX110T, ML505.");
-			System.err.println("[Espam] WARNING: Espam continues assuming a default target board: ADM-XRC-II.\n");
+			System.err.println("=====> Supported boards are: ADM-XRC-II, ADM-XPL, XUPV5-LX110T, ML505, ML605.");
+			System.err.println("[Espam] WARNING: Espam continues assuming a default target board: ML605.\n");
 
-			ADMXRCII hostInterface = new ADMXRCII("default");
+			ML605 hostInterface = new ML605("default");
 			hostInterface.setLevelUpResource(platform);
 			platform.getResourceList().add(hostInterface);
 		} else {
