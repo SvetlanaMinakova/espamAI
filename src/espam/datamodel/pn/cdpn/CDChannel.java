@@ -21,6 +21,7 @@ import java.util.Iterator;
 
 import espam.datamodel.pn.Channel;
 import espam.datamodel.LinearizationType;
+import espam.datamodel.graph.adg.ADGEdge;
 
 import espam.visitor.CDPNVisitor;
 
@@ -35,8 +36,8 @@ import espam.visitor.CDPNVisitor;
  *
  * See Definition 2.4.5 on page 51 in [1].
  *
- * @author Todor Stefanov
- * @version  $Id: CDChannel.java,v 1.1 2007/12/07 22:09:08 stefanov Exp $
+ * @author Todor Stefanov, Teddy Zhai
+ * @version  $Id: CDChannel.java,v 1.2 2011/10/28 14:40:45 tzhai Exp $
  */
 
 public class CDChannel extends Channel {
@@ -149,6 +150,39 @@ public class CDChannel extends Channel {
 	}
 	return null;
     }
+    
+    /**
+     *  Chcck if the CDChannel is mapped onto the same processor
+     *
+     * @return  true if the CDChannel is mapped onto the same processor, false otherwise
+     */
+    public boolean isSelfChannel() {
+	if ( this.getFromGate().getProcess().getName().equals( this.getToGate().getProcess().getName() ) ) {
+	    return true;
+	} else {
+	    return false;
+	}
+    }
+    
+    /**
+     *  Get the maximum size of ADGEdge associated with this CDChannel
+     *
+     * @return the maximum size among all ADGEdges associated with this CDChannel
+     */
+    public int getMaxSize() {
+	int max_size = -1;
+	
+	Iterator adgit = _adgEdgeList.iterator();
+	while ( adgit.hasNext() ){
+	    ADGEdge adg_ed = (ADGEdge) adgit.next();
+	    if ( adg_ed.getSize() > max_size ){
+		max_size = adg_ed.getSize();
+	    }
+	}
+	
+	assert( max_size > 0 );
+	return max_size;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
@@ -166,4 +200,6 @@ public class CDChannel extends Channel {
      *  See "CM" in Definition 2.4.5 on page 52 in [1].
      */
     private LinearizationType _communicationModel = null;
+   
+    
 }
