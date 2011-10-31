@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGInVar;
 import espam.datamodel.graph.adg.ADGFunction;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGParameter;
@@ -44,8 +45,13 @@ import espam.datamodel.pn.cdpn.CDOutGate;
 
 import espam.datamodel.parsetree.ParserNode;
 
+import espam.datamodel.domain.Polytope;
+import espam.datamodel.domain.ControlExpression;
+
 import espam.main.UserInterface;
 import espam.datamodel.LinearizationType;
+
+import espam.utils.symbolic.expression.Expression;
 
 import espam.visitor.CDPNVisitor;
 
@@ -57,7 +63,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.5 2011/09/30 13:32:28 svhaastr Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.6 2011/10/31 17:17:13 nikolov Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -126,7 +132,8 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "private:");
 
         _writeParameterAndGates( x );
-        _writeFunctionArguments( x );
+        _writeLocalVariables( x );
+
         _writeConstructor( x );
         _printStream.println(_prefix + "  std::map<const char*,int> *get_firings() {");
         _printStream.println(_prefix + "    return &firings;");
@@ -137,6 +144,8 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStream.println("};");
         _printStream.println("");
         _printStream.println("#endif");
+
+        _writeFunctionsInAuxFile( x );
     }
 
     /**
@@ -154,8 +163,10 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         UserInterface ui = UserInterface.getInstance();
         String fullFileName = "";
 
-        // Create the directory indicated by the '-o' option. Otherwise
-        // select the orignal filename. (REFACTOR)
+        //--------------------------------------------------- 
+        // Create the directory indicated by the '-o' option. 
+        // Otherwise select the orignal filename. (REFACTOR)
+        //---------------------------------------------------
         if( ui.getOutputFileName() == "" ) {
             fullFileName =
                 ui.getBasePath() + "/" +
@@ -273,223 +284,387 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "}; ");
         _printStream.println("");
 
-        // print the type() method;
-        // _printStream.println(_prefix + "const char* type() const {return \"" + x.getName() + "\";};");
         _printStream.println(_prefix + "SC_HAS_PROCESS(" + x.getName() + ");");
-
     }
+
+
 
     /**
      * @param  x Description of the Parameter
      */
-    private void _writeFunctionArguments( CDProcess x ) {
+    private void _writeLocalVariables( CDProcess x ) {
 
-        String funcName = "";
-        String csl = "";
-        String t = "";
+	String varName = "";
+	String dimension = "";
+	String t = "";
+	HashMap  tmp = new HashMap();
+	Vector inArguments = new Vector();
+	Vector outArguments = new Vector();
+	Vector miscVariables = new Vector();
+	Vector tempVector = new Vector();
 
-        _prefixInc();
-        // declare the input arguments of the function
-        _printStream.println(_prefix + "// Input Arguments ");
+	_prefixInc();
 
         Iterator n = x.getAdgNodeList().iterator();
         while( n.hasNext() ) {
             ADGNode node = (ADGNode) n.next();
-            ADGFunction function = (ADGFunction) node.getFunction();
+	    ADGFunction function = (ADGFunction) node.getFunction();
 
-            Iterator j1 = function.getInArgumentList().iterator();
+	    //-------------------------
+	    // Scan the ports of a node
+	    //-------------------------
+	    Iterator j1 = node.getPortList().iterator();
             while( j1.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j1.next();
-                String funcArgument = arg.getName() + node.getName();
-                String dataType = arg.getDataType();
+		ADGPort port = (ADGPort) j1.next();
 
-                t = "char";
-                if (dataType != null) {
-                   if (!dataType.equals("")) {
-                       t = dataType;
-                   }
+		Iterator j2 = port.getBindVariables().iterator();
+		while( j2.hasNext() ) {
+                	ADGVariable bindVar = (ADGVariable) j2.next();
+			dimension = "";
+                	varName = bindVar.getName();
+
+                        //-------------------------------------------------
+			// Find the gate corresponding to this funcArgument
+                        //-------------------------------------------------
+			Iterator g = x.getGateList().iterator();
+	        	while ( g.hasNext() ) {
+			    CDGate  gate = (CDGate) g.next();
+
+			    Iterator p = gate.getAdgPortList().iterator();
+			    while( p.hasNext() ) {
+				ADGPort tmpPort = (ADGPort) p.next();
+
+				if( tmpPort.getName().equals( port.getName() ) ) {
+				    t = "t" + gate.getChannel().getName();
+				}
+			    }
+			}
+
+                        //-----------------------------------------------------------
+			// Find the dimensions in case the local variable is an array
+                        //-----------------------------------------------------------
+			Iterator j3 = bindVar.getIndexList().iterator();
+			while( j3.hasNext() ) {
+			   Expression exp = (Expression) j3.next();
+                           //----------------------------------------
+			   // Do some expression computations here!!!
+                           //---------------------------------------- 
+			   String arrSize = "";
+			   dimension += "[" + arrSize + "]";
+			}	
+			varName += dimension;
+	
+                        //-------------------------------------------------------------------
+			// Avoid duplicating declarations 
+			// (unique names for the hash function are needed in case of merging)
+                        //-------------------------------------------------------------------
+			if ( !tmp.containsKey(varName+node.getName()) ) {
+			   tmp.put(varName+node.getName(), "");
+			   String decString = _prefix + t + " " + varName;
+			   
+                           //------------------------------------------------------------------------------------  
+			   // sort the variables into input arguments, output arguments, and additional variables
+                           //------------------------------------------------------------------------------------
+			   int counter = 0;
+			   Iterator j4 = function.getInArgumentList().iterator();
+			   while( j4.hasNext() ) {
+				ADGVariable arg = (ADGVariable) j4.next();
+				String funcArgument = arg.getName();
+				if( funcArgument.equals( varName ) ) {
+					inArguments.add( decString  + ";" );
+					counter++;
+				}
+			   }
+			   if( counter==0 ) {
+				j4 = function.getOutArgumentList().iterator();
+				while( j4.hasNext() ) {
+					ADGVariable arg = (ADGVariable) j4.next();
+					String funcArgument = arg.getName();
+					if( funcArgument.equals( varName ) ) {
+						outArguments.add( decString + ";" );
+						counter++;
+					}
+				}
+			   }
+			   if( counter==0 ) { 
+				miscVariables.add( decString + ";" );
+			   }
+			}
+
+                        //-----------------------------------------------
+                        // add the static control statements (int e0;...)
+                        //-----------------------------------------------
+			Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
+			Iterator j = staticCtrl.iterator();
+			while( j.hasNext() ) {
+				ControlExpression cExp = (ControlExpression) j.next();
+				String expName = cExp.getName();
+
+				if ( !tmp.containsKey(expName) ) {
+				      tmp.put(expName, "");
+
+				      String decString = _prefix + "int " + expName + ";"; 
+				      miscVariables.add( decString );
+				}
+			}
+		}
+            } // while 'ports'
+
+	    //------------------------------
+	    // Scan the invar list of a node
+	    //------------------------------
+	    j1 = node.getInVarList().iterator();
+            while( j1.hasNext() ) {
+		ADGInVar invar = (ADGInVar) j1.next();
+
+		ADGVariable bindVar = invar.getBindVariable();
+
+ 			dimension = "";
+                	varName = bindVar.getName();
+			t = bindVar.getDataType();
+
+                        //-----------------------------------------------------------
+			// Find the dimensions in case the local variable is an array
+                        //-----------------------------------------------------------
+			Iterator j3 = bindVar.getIndexList().iterator();
+			while( j3.hasNext() ) {
+			   Expression exp = (Expression) j3.next();
+                           //----------------------------------------  
+			   // Do some expression computations here!!!
+                           //----------------------------------------
+			   String arrSize = "";
+			   dimension += "[" + arrSize + "]";
+			}	
+			varName += dimension;
+		
+                        //-------------------------------------------------------------------
+			// Avoid duplicating declarations
+			// (unique names for the hash function are needed in case of merging)
+                        //-------------------------------------------------------------------
+			if ( !tmp.containsKey(varName+node.getName()) ) {
+			   tmp.put(varName+node.getName(), "");
+			   String decString = _prefix + t + " " + varName;
+			   
+                           //------------------------------------------------------------------------------------ 
+			   // sort the variables into input arguments, output arguments, and additional variables
+                           //------------------------------------------------------------------------------------
+			   int counter = 0;
+			   Iterator j4 = function.getInArgumentList().iterator();
+			   while( j4.hasNext() ) {
+				ADGVariable arg = (ADGVariable) j4.next();
+				String funcArgument = arg.getName();
+				if( funcArgument.equals( varName ) ) {
+					inArguments.add( decString + ";" );
+					counter++;
+				}
+			   }
+			   if( counter==0 ) {
+				j4 = function.getOutArgumentList().iterator();
+				while( j4.hasNext() ) {
+					ADGVariable arg = (ADGVariable) j4.next();
+					String funcArgument = arg.getName();
+					if( funcArgument.equals( varName ) ) {
+						outArguments.add( decString + ";" );
+						counter++;
+					}
+				}
+			   }
+			   if( counter==0 ) { 
+				miscVariables.add( decString + ";" );
+			   }
+			}
+            } // while 'invars'
+
+	    //-----------------------------------------------------------------
+	    // Add an input function argument which is not bound to any port. 
+            // This happens in case loop iterators are propagated to functions.
+	    //-----------------------------------------------------------------
+	    Iterator f = function.getInArgumentList().iterator();
+            while( f.hasNext() ) {
+                ADGVariable arg = (ADGVariable) f.next();
+
+		dimension = "";
+               	varName = arg.getName();
+		String dataType = arg.getDataType();
+
+		if ( !tmp.containsKey(varName+node.getName()) ) {
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+    		    inArguments.add( funcArgDeclaration );
                 }
+	    }
 
-                // Find the gate corresponding to this funcArgumnet
-                Iterator g = x.getGateList().iterator();
-                while ( g.hasNext() ) {
-                    CDGate  gate = (CDGate) g.next();
+	    //----------------------------------------------------------------
+	    // Add an output function argument which is not bound to any port.
+            // This happens in case of a sink node. 
+	    //----------------------------------------------------------------
+	    f = function.getOutArgumentList().iterator();
+            while( f.hasNext() ) {
+                ADGVariable arg = (ADGVariable) f.next();
 
-                    Iterator p = gate.getAdgPortList().iterator();
-                    while( p.hasNext() ) {
-                       ADGPort port = (ADGPort) p.next();
+		dimension = "";
+               	varName = arg.getName();
+		String dataType = arg.getDataType();
 
-                       Iterator bvi = port.getBindVariables().iterator();
-                       while ( bvi.hasNext() ) {
-                           ADGVariable bv = (ADGVariable) bvi.next();
-                           String tmp = bv.getName() + port.getNode().getName();
-                           if( funcArgument.equals( tmp ) ) {
-                               t = "t" + gate.getChannel().getName();
-                          }
-                       }
-
-                    }
+		if ( !tmp.containsKey(varName+node.getName()) ) {
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+    		    outArguments.add( funcArgDeclaration );
                 }
+	    }
+	} // while 'nodes'
 
-                _printStream.println(_prefix + t + " " + funcArgument + ";");
-            }
-        }
-
-        _printStream.println("");
-
-        // declare the output arguments of the function
-        _printStream.println(_prefix + "// Output Arguments ");
-
-        n = x.getAdgNodeList().iterator();
-        while( n.hasNext() ) {
-            ADGNode node = (ADGNode) n.next();
-            ADGFunction function1 = (ADGFunction) node.getFunction();
-
-
-            Iterator j2 = function1.getOutArgumentList().iterator();
-            while( j2.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j2.next();
-                String funcArgument = arg.getName() + node.getName();
-                String dataType = arg.getDataType();
-
-                t = "char";
-                if (dataType != null) {
-                   if (!dataType.equals("")) {
-                       t = dataType;
-                   }
-                }
-
-                // Find the gate corresponding to this funcArgumnet
-                Iterator g = x.getGateList().iterator();
-                while ( g.hasNext() ) {
-                    CDGate  gate = (CDGate) g.next();
-
-                    Iterator p = gate.getAdgPortList().iterator();
-                    while( p.hasNext() ) {
-                       ADGPort port = (ADGPort) p.next();
-                       String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
-                       if( funcArgument.equals( tmp ) ) {
-                          t = "t" + gate.getChannel().getName();
-                       }
-                    }
-                }
-
-                _printStream.println(_prefix + t +" " + funcArgument + ";");
-            }
-        }
+        //-------------------------------
+        // print the sorted declarations
+        //-------------------------------
+	if( inArguments.size()>0 ) {
+		_printStream.println(_prefix + "// Function's Input Arguments ");
+		n = inArguments.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+		_printStream.println("");
+	}
+	if( outArguments.size()>0 ) {
+		_printStream.println(_prefix + "// Function's Output Arguments ");
+		n = outArguments.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+		_printStream.println("");
+	}
+	if( miscVariables.size()>0 ) {
+		_printStream.println(_prefix + "// Additional Local Variables ");
+		n = miscVariables.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+		_printStream.println("");
+	}
 
         // Statistics
-        _printStream.println("");
         _printStream.println(_prefix + "// Statistics");
         _printStream.println(_prefix + "std::map<const char*,int> firings;");
+        _printStream.println("");
 
-        _prefixDec();
+	_prefixDec();
+    }
 
-        //write func wrapper in aux file
-        n = x.getAdgNodeList().iterator();
+
+
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeFunctionsInAuxFile( CDProcess x ) {
+
+	String funcName = "";
+        String csl = "";
+	String t = "";
+
+        //------------------------------- 
+        // Write func wrapper in aux file
+        //-------------------------------
+        Iterator n = x.getAdgNodeList().iterator();
         while( n.hasNext() ) {
             ADGNode node = (ADGNode) n.next();
             ADGFunction function1 = (ADGFunction) node.getFunction();
 
             csl = "";
             funcName = function1.getName();
-            if ( !funcName.equals("") ) {
+	    if ( !funcName.equals("") ) {
 
-                if(!_relation2.containsKey(funcName) ) {
-                    _printStreamFunc.println("inline");
+	        if(!_relation2.containsKey(funcName) ) {
+	            _printStreamFunc.println("inline");
                     csl += "void  _" + funcName + "( ";
 
                     Iterator j2 = function1.getInArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
                         String funcArgument = arg.getName() + node.getName();
-                        String dataType = arg.getDataType();
+	                String dataType = arg.getDataType();
 
-                        t = "char";
-                        if (dataType != null) {
-                          if (!dataType.equals("") ) {
-                             t = dataType;
-                          }
-                        }
+	                t = "char";
+		        if (dataType != null) {
+		          if (!dataType.equals("") ) {
+		             t = dataType;
+		          }
+		        }
 
-                        Iterator g = x.getGateList().iterator();
-                        while ( g.hasNext() ) {
-                           CDGate  gate = (CDGate) g.next();
+		        Iterator g = x.getGateList().iterator();
+	                while ( g.hasNext() ) {
+		           CDGate  gate = (CDGate) g.next();
 
-                           Iterator p = gate.getAdgPortList().iterator();
-                           while( p.hasNext() ) {
-                               ADGPort port = (ADGPort) p.next();
+		           Iterator p = gate.getAdgPortList().iterator();
+		           while( p.hasNext() ) {
+       	                       ADGPort port = (ADGPort) p.next();
 
-                               Iterator bvi = port.getBindVariables().iterator();
-                               while ( bvi.hasNext() ) {
-                                   ADGVariable bv = (ADGVariable) bvi.next();
+   		               Iterator bvi = port.getBindVariables().iterator();
+		               while ( bvi.hasNext() ) {
+		                   ADGVariable bv = (ADGVariable) bvi.next();
                                    String tmp = bv.getName() + port.getNode().getName();
-                                   if( funcArgument.equals( tmp ) ) {
-                                       t = "t" + gate.getChannel().getName();
-                                   }
-                               }
-
+		                   if( funcArgument.equals( tmp ) ) {
+	                               t = "t" + gate.getChannel().getName();
+	                           }
+		               }
                           }
-                       }
-
-                       csl +=  t + " &" + arg.getName() + ", ";
+		       }
+		       csl +=  t + " &" + arg.getName() + ", ";
                     }
 
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
                         String funcArgument = arg.getName() + node.getName();
-                        String dataType = arg.getDataType();
+	                String dataType = arg.getDataType();
 
-                        t = "char";
-                        if (dataType != null) {
-                          if (!dataType.equals("") ) {
-                             t = dataType;
+	                t = "char";
+		        if (dataType != null) {
+		          if (!dataType.equals("") ) {
+		             t = dataType;
+		          }
+		        }
+
+		        Iterator g = x.getGateList().iterator();
+	                while ( g.hasNext() ) {
+		           CDGate  gate = (CDGate) g.next();
+
+		           Iterator p = gate.getAdgPortList().iterator();
+		           while( p.hasNext() ) {
+       	                      ADGPort port = (ADGPort) p.next();
+		              String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
+		              if( funcArgument.equals( tmp ) ) {
+		                 t = "t" + gate.getChannel().getName();
+	                      }
                           }
-                        }
-
-                        Iterator g = x.getGateList().iterator();
-                        while ( g.hasNext() ) {
-                           CDGate  gate = (CDGate) g.next();
-
-                           Iterator p = gate.getAdgPortList().iterator();
-                           while( p.hasNext() ) {
-                              ADGPort port = (ADGPort) p.next();
-                              String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
-                              if( funcArgument.equals( tmp ) ) {
-                                 t = "t" + gate.getChannel().getName();
-                              }
-                          }
-                        }
-
+		        }
                         csl += t + " &" + arg.getName() + ", ";
                    }
                    _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
 
-                   //-------- print the initial function call in the wrapper ------------------------
+		   //-------- print the initial function call in the wrapper -----------------------
                     csl = funcName + "( ";
 
                     j2 = function1.getInArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
-                        csl += "&" + arg.getName() + ", ";
-                        //csl += arg.getName() + ", ";
+ 		        csl += "&" + arg.getName() + ", ";
                     }
 
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
-                        csl += "&" + arg.getName() + ", ";
-                   }
+			csl += "&" + arg.getName() + ", ";
+                    }
 
-                   _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
-                   //-------- END print of the initial function call in the wrapper ------------------------
+                    _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+		    //-------- END print of the initial function call in the wrapper ---------------
 
-                   _printStreamFunc.println("}");
-                   _printStreamFunc.println("");
+                    _printStreamFunc.println("}");
+		    _printStreamFunc.println("");
                 }
                 _relation2.put(funcName, "");
-            }
+	    }
         }
         _printStream.println("");
     }
@@ -698,7 +873,6 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("     int nwritten, nread, maxtokens;");
         _printStreamFunc.println("};");
         _printStreamFunc.println("");
-
     }
 
     /**
@@ -706,12 +880,15 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
      */
     private void _writeParameterAndGates( CDProcess x ) {
         _prefixInc();
-        _printStream.println("");
-        _printStream.println(_prefix + "// Input Gates and controllers");
-
-
+        
+        //-----------------------
         // declare the read gates
+        //-----------------------
         Iterator n = x.getInGates().iterator();
+        if( n.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Input Gates and controllers");
+        }
         while( n.hasNext() ) {
             CDInGate gate = (CDInGate) n.next();
             LinearizationType comModel =
@@ -730,11 +907,14 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
             }
         }
 
-        _printStream.println("");
-
-       _printStream.println(_prefix + "// Output Gates");
+        //------------------------
         // declare the write gates
+        //------------------------
         n = x.getOutGates().iterator();
+        if( n.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Output Gates");
+        }
         while( n.hasNext() ) {
             CDOutGate gate = (CDOutGate) n.next();
             String s = gate.getName();
@@ -743,12 +923,14 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
             _printStream.println(_prefix + "sc_port<write_if<t" + t + "> > " + s + ";");
         }
 
-        _printStream.println("");
-
+        //------------------------------
         // declare the public parameters
-        _printStream.println(_prefix + "// Parameters");
-
+        //------------------------------
         Iterator j = _pn.getAdg().getParameterList().iterator();
+        if( j.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Parameters");
+        }
         while (j.hasNext()) {
             ADGParameter p = (ADGParameter) j.next();
             _printStream.println(_prefix + "int " + p.getName() + ";");

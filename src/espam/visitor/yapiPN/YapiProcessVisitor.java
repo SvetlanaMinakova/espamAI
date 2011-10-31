@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: YapiProcessVisitor.java,v 1.4 2011/10/05 15:03:46 nikolov Exp $
+ * @version  $Id: YapiProcessVisitor.java,v 1.5 2011/10/31 17:17:13 nikolov Exp $
  */
 
 public class YapiProcessVisitor extends CDPNVisitor {
@@ -385,7 +385,7 @@ public class YapiProcessVisitor extends CDPNVisitor {
 				ControlExpression cExp = (ControlExpression) j.next();
 				String expName = cExp.getName();
 
-// shoul we use 		if ( !tmp.containsKey(expName+node.getName()) ) {   ???
+// should we use 		if ( !tmp.containsKey(expName+node.getName()) ) {   ???
 				if ( !tmp.containsKey(expName) ) {
 				      tmp.put(expName, "");
 
@@ -905,9 +905,6 @@ public class YapiProcessVisitor extends CDPNVisitor {
         _prefixInc();
         _printStream.println(_prefix + "void main() {");
         _printStream.println("");
-
-// set the boolean control variables to 0 here
-// set the control variables to a 'max+1' value
 
         // Print the Parse tree
         YapiStatementVisitor ypvisitor = new YapiStatementVisitor(_printStream, x.getName());

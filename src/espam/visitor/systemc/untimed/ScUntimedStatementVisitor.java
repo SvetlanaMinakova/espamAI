@@ -164,9 +164,15 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(OpdStatement x) {
         _printStream.println("");
-        _printStream.println(_prefix + x.getGateName() + "->write( " +
-                x.getArgumentName() + x.getNodeName() + ");");
-        _printStream.println("");
+        _printStream.print(_prefix + x.getGateName() + "->write( " +
+                x.getArgumentName() );
+
+	Iterator i = x.getIndexList().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	_printStream.println(" );");
     }
 
     /**
@@ -188,9 +194,9 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                     _printStream.print(var.getVariableName() + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
+                     _printStream.print(var.getVariableName());
                  }
             }
 
@@ -203,33 +209,28 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                   _printStream.print(var.getVariableName() + ", ");
                } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
+                   _printStream.print(var.getVariableName());
                }
            }
            _printStream.println(") ;");
            _printStream.println(_prefix + "firings[\"" + x.getFunctionName() + "\"]++;");
            _printStream.println("");
-//           _printStream.println(_prefix + "execute(\""
-//                            + "_" + x.getFunctionName() + "\");");
-          _printStream.println("");
+           _printStream.println("");
 
         } else {
 
-               VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
-               VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
+           VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
+           VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
-             _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-                                         inArg.getVariableName() + x.getNodeName() + ";"           );
-             _printStream.println("");
-//             _printStream.println(_prefix + "execute(\"CopyPropagate\");");
-             _printStream.println(_prefix + "firings[\"CopyPropagate\"]++;");
-             _printStream.println("");
-
+           _printStream.println("");
+           _printStream.print(_prefix + outArg.getVariableName() + " = "  +
+                                         inArg.getVariableName() + ";");
+           _printStream.println("");
+           _printStream.println(_prefix + "firings[\"CopyPropagate\"]++;");
+           _printStream.println("");
         }
-
     }
 
     /**
@@ -239,8 +240,7 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(SimpleAssignStatement x) {
 
-	_printStream.print(_prefix + x.getLHSVarName() + x.getNodeName() );
-//  _printStream.print(_prefix + x.getLHSVarName() );
+        _printStream.print(_prefix + x.getLHSVarName() );
 
 	Iterator i = x.getIndexListLHS().iterator();
 	while( i.hasNext() ) {
@@ -248,15 +248,14 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
 
-  _printStream.print(" = " + x.getRHSVarName() + x.getNodeName() );
-//  _printStream.print(" = " + x.getRHSVarName() );
+        _printStream.print(" = " + x.getRHSVarName() );
 
 	i = x.getIndexListRHS().iterator();
 	while( i.hasNext() ) {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
-	
+
 	_printStream.println(";\n");
     }
 
@@ -268,11 +267,11 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
     public void visitStatement(ControlStatement x) {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-            _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
         } else {
-            _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = ("
                     + expression.accept(_cExpVisitor) + ")/" +
                     x.getDenominator() + ";");
@@ -287,26 +286,28 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(FifoMemoryStatement x) {
 
-          String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
+	_printStream.println("");
+        // for every binding vazriable, we need a read from a fifo
+	Iterator i = x.getArgumentList().iterator();
+	while( i.hasNext() ) {
+		ADGVariable bindVar = (ADGVariable) i.next();
 
-        _printStream.println(_prefix + x.getGateName() + "->read(" 
-                + tmp + x.getNodeName() + ");");
-                
-        Iterator i = x.getArgumentList().iterator();
-        if (i.hasNext()) {
-            ADGVariable var = (ADGVariable) i.next();
-        }
-        while (i.hasNext()) {
-             ADGVariable var = (ADGVariable) i.next();
-            _printStream.println(_prefix + var.getName() + x.getNodeName() +" = " 
-                                                    + tmp + x.getNodeName() + ";");
-        }
+	       _printStream.print(_prefix + x.getGateName() + "->read( " +
+                	bindVar.getName() );
 
-        _printStream.println("");
+		Iterator j = bindVar.getIndexList().iterator();
+		while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		}
+		_printStream.println(" );");
+	}
+        
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
     }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                  ///
@@ -324,8 +325,10 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
         UserInterface ui = UserInterface.getInstance();
 
         String directory = null;
-        // Create the directory indicated by the '-o' option. Otherwise
-        // select the orignal filename.
+        //---------------------------------------------------
+        // Create the directory indicated by the '-o' option. 
+        // Otherwise select the orignal filename.
+        //---------------------------------------------------
         if( ui.getOutputFileName() == "" ) {
             directory = ui.getBasePath() + "/" + ui.getFileName();
         } else {

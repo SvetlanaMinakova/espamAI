@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -28,6 +29,7 @@ import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGInVar;
 import espam.datamodel.graph.adg.ADGFunction;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGParameter;
@@ -48,10 +50,15 @@ import espam.datamodel.platform.processors.*;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 
+import espam.datamodel.domain.Polytope;
+import espam.datamodel.domain.ControlExpression;
+
 import espam.datamodel.EspamException;
 
 import espam.main.UserInterface;
 import espam.datamodel.LinearizationType;
+
+import espam.utils.symbolic.expression.Expression;
 
 import espam.visitor.CDPNVisitor;
 
@@ -62,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.13 2011/10/06 13:57:02 svhaastr Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.14 2011/10/31 17:17:13 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -142,10 +149,6 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     }
 
 
-
-
-
-
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                   ////
 
@@ -208,9 +211,6 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         parserNode.accept(hwnvisitor);
 
         _writeMainProcEnd( x );
-
-        //_printStream.println(_prefix + "private:");
-        //_writeFunctionArguments( x );
 
         _printStream.println("");
         _writeComputPeriod( x );
@@ -354,12 +354,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _prefixInc();
 
         _functionNames = new Vector<String>();
-        _writeFunctionArguments(x);
+//        _writeFunctionArguments(x);
+        _writeLocalVariables(x);
 
-        // We omit the _ on purpose, to avoid conflicts with user-defined function names
-//         _printStream.println(_prefix + "const int latRead  = 1;     // Latency of FIFO read operation");
-//         _writeFunctionLatencies(parserNode);
-//         _printStream.println(_prefix + "const int latWrite = 1;     // Latency of FIFO write operation");
         _printStream.println("");
         _printStream.println(_prefix + "// Initial 1-cycle delay to ensure FIFO is ready");
         _printStream.println(_prefix + "waitcycles(1);");
@@ -368,10 +365,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         // we want to execute the network for 10 times to make sure that it reaches "steady-state" (Teddy)
 	if ( _scTimedPeriod ){
 	  _printStream.println(_prefix + "for( int t = ceil1(1); t <= ceil1(10); t += 1 ) {");
-	} else {
-	  _printStream.println(_prefix + "// for( int t = ceil1(1); t <= 10; t += 1 ) {");
-	}
-        
+//	} else {
+//	  _printStream.println(_prefix + "// for( int t = ceil1(1); t <= 10; t += 1 ) {");
+	}       
     }
 
 
@@ -388,10 +384,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 	  _printStream.println(_prefix + "iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
 	  _printStream.println(_prefix + "compute_period(sc_time_stamp().to_default_time_units());");
 	  _printStream.println(_prefix + "}");
-        } else {
-	  _printStream.println(_prefix + "// iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
-	  _printStream.println(_prefix + "// compute_period(sc_time_stamp().to_default_time_units());");
-          _printStream.println(_prefix + "// }");
+//        } else {
+//	  _printStream.println(_prefix + "// iter_finish_time.push_back(sc_time_stamp().to_default_time_units());");
+//	  _printStream.println(_prefix + "// compute_period(sc_time_stamp().to_default_time_units());");
+//          _printStream.println(_prefix + "// }");
         }
         
         _printStream.println(_prefix + "finish.write(true);");
@@ -480,7 +476,6 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("#define waitcycles(v) \\");
         _printStreamFunc.println("  wait((v), SC_NS);");
         _printStreamFunc.println("");
-
     }
 
     /**
@@ -492,10 +487,15 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "std::vector<double> iter_finish_time;");
         _printStream.println(_prefix + "public:");
         _prefixInc();
-        _printStream.println(_prefix + "// Input Gates and controllers");
 
+        //-----------------------
         // declare the read gates
+        //-----------------------
         Iterator n = x.getInGates().iterator();
+        if( n.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Input Gates and controllers");
+        }
         while( n.hasNext() ) {
             CDInGate gate = (CDInGate) n.next();
             LinearizationType comModel =
@@ -503,23 +503,25 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             String s = gate.getName();
             String t = gate.getChannel().getName();
 
-            if (comModel == LinearizationType.fifo ||
+            _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+
+            if( comModel == LinearizationType.fifo ||
                 comModel == LinearizationType.BroadcastInOrder ||
                 comModel == LinearizationType.sticky_fifo ||
-                comModel == LinearizationType.shift_register) {
-              _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
-            }
-            else if (comModel == LinearizationType.GenericOutOfOrder) {
-              _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
-              System.out.println("WARNING: Out of order channels are not supported yet!");
+                comModel == LinearizationType.shift_register ) {
+            } else if( comModel == LinearizationType.GenericOutOfOrder ) {
+                System.out.println("WARNING: Out of order channels are not supported yet!");
             }
         }
 
-        _printStream.println("");
-
-       _printStream.println(_prefix + "// Output Gates");
+        //------------------------
         // declare the write gates
+        //------------------------
         n = x.getOutGates().iterator();
+        if( n.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Output Gates");
+        }
         while( n.hasNext() ) {
             CDOutGate gate = (CDOutGate) n.next();
             String s = gate.getName();
@@ -528,30 +530,36 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             _printStream.println(_prefix + "sc_fifo_out<t" + t + "> " + s + ";");
         }
 
-        _printStream.println("");
-
+        //------------------------------
         // declare the public parameters
-        _printStream.println(_prefix + "// Parameters");
-
+        //------------------------------
         Iterator j = _pn.getAdg().getParameterList().iterator();
+        if( j.hasNext() ) {
+            _printStream.println("");
+            _printStream.println(_prefix + "// Parameters");
+        }
         while (j.hasNext()) {
             ADGParameter p = (ADGParameter) j.next();
             _printStream.println(_prefix + "int " + p.getName() + ";");
         }
-        _printStream.println("");
-        
+
+        //----------------------------
         // declare pipeline for HWNode
+        //----------------------------
         MProcessor mp = _mapping.getMProcessor(x);
         if (mp != null) {
           Resource r = mp.getResource();
           if (r instanceof CompaanHWNode) {
+                _printStream.println("");
         	_printStream.println(_prefix + "bool pipeline[latRead + lat_" 
         			+ ((ADGNode)(x.getAdgNodeList().get(0))).getFunction().getName() + " + latWrite];");
           }
         }
-        _printStream.println("");
 
+        //-----------------------
         // Declare common signals
+        //-----------------------
+        _printStream.println("");
         _printStream.println(_prefix + "// Common signals");
         _printStream.println(_prefix + "sc_in<bool> clk;");
         _printStream.println(_prefix + "sc_out<bool> finish;");
@@ -573,7 +581,9 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "private:");
         _prefixInc();
         _printStream.println(_prefix + "void compute_period(const double& finish_time);");
+        //----------------------------
         // declare pipeline for HWNode
+        //----------------------------
         mp = _mapping.getMProcessor(x);
         if (mp != null) {
           Resource r = mp.getResource();
@@ -588,8 +598,263 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     }
 
 
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeLocalVariables( CDProcess x ) {
 
-    private void _writeFunctionArguments( CDProcess x ) {
+	String varName = "";
+	String dimension = "";
+	String t = "";
+	HashMap  tmp = new HashMap();
+	Vector inArguments = new Vector();
+	Vector outArguments = new Vector();
+	Vector miscVariables = new Vector();
+	Vector tempVector = new Vector();
+
+        Iterator n = x.getAdgNodeList().iterator();
+        while( n.hasNext() ) {
+            ADGNode node = (ADGNode) n.next();
+	    ADGFunction function = (ADGFunction) node.getFunction();
+
+	    //-------------------------
+	    // Scan the ports of a node
+	    //-------------------------
+	    Iterator j1 = node.getPortList().iterator();
+            while( j1.hasNext() ) {
+		ADGPort port = (ADGPort) j1.next();
+
+		Iterator j2 = port.getBindVariables().iterator();
+		while( j2.hasNext() ) {
+                	ADGVariable bindVar = (ADGVariable) j2.next();
+			dimension = "";
+                	varName = bindVar.getName();
+
+                        //-------------------------------------------------
+			// Find the gate corresponding to this funcArgument
+                        //-------------------------------------------------
+			Iterator g = x.getGateList().iterator();
+	        	while ( g.hasNext() ) {
+			    CDGate  gate = (CDGate) g.next();
+
+			    Iterator p = gate.getAdgPortList().iterator();
+			    while( p.hasNext() ) {
+				ADGPort tmpPort = (ADGPort) p.next();
+
+				if( tmpPort.getName().equals( port.getName() ) ) {
+				    t = "t" + gate.getChannel().getName();
+				}
+			    }
+			}
+
+                        //-----------------------------------------------------------
+			// Find the dimensions in case the local variable is an array
+                        //-----------------------------------------------------------
+			Iterator j3 = bindVar.getIndexList().iterator();
+			while( j3.hasNext() ) {
+			   Expression exp = (Expression) j3.next();
+                           //----------------------------------------
+			   // Do some expression computations here!!!
+                           //---------------------------------------- 
+			   String arrSize = "";
+			   dimension += "[" + arrSize + "]";
+			}	
+			varName += dimension;
+	
+                        //-------------------------------------------------------------------
+			// Avoid duplicating declarations 
+			// (unique names for the hash function are needed in case of merging)
+                        //-------------------------------------------------------------------
+			if ( !tmp.containsKey(varName+node.getName()) ) {
+			   tmp.put(varName+node.getName(), "");
+			   String decString = _prefix + t + " " + varName;
+			   
+                           //------------------------------------------------------------------------------------  
+			   // sort the variables into input arguments, output arguments, and additional variables
+                           //------------------------------------------------------------------------------------
+			   int counter = 0;
+			   Iterator j4 = function.getInArgumentList().iterator();
+			   while( j4.hasNext() ) {
+				ADGVariable arg = (ADGVariable) j4.next();
+				String funcArgument = arg.getName();
+				if( funcArgument.equals( varName ) ) {
+					inArguments.add( decString  + ";" );
+					counter++;
+				}
+			   }
+			   if( counter==0 ) {
+				j4 = function.getOutArgumentList().iterator();
+				while( j4.hasNext() ) {
+					ADGVariable arg = (ADGVariable) j4.next();
+					String funcArgument = arg.getName();
+					if( funcArgument.equals( varName ) ) {
+						outArguments.add( decString + ";" );
+						counter++;
+					}
+				}
+			   }
+			   if( counter==0 ) { 
+				miscVariables.add( decString + ";" );
+			   }
+			}
+
+                        //-----------------------------------------------
+                        // add the static control statements (int e0;...)
+                        //-----------------------------------------------
+			Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
+			Iterator j = staticCtrl.iterator();
+			while( j.hasNext() ) {
+				ControlExpression cExp = (ControlExpression) j.next();
+				String expName = cExp.getName();
+
+				if ( !tmp.containsKey(expName) ) {
+				      tmp.put(expName, "");
+
+				      String decString = _prefix + "int " + expName + ";"; 
+				      miscVariables.add( decString );
+				}
+			}
+		}
+            } // while 'ports'
+
+	    //------------------------------
+	    // Scan the invar list of a node
+	    //------------------------------
+	    j1 = node.getInVarList().iterator();
+            while( j1.hasNext() ) {
+		ADGInVar invar = (ADGInVar) j1.next();
+
+		ADGVariable bindVar = invar.getBindVariable();
+
+ 			dimension = "";
+                	varName = bindVar.getName();
+			t = bindVar.getDataType();
+
+                        //-----------------------------------------------------------
+			// Find the dimensions in case the local variable is an array
+                        //-----------------------------------------------------------
+			Iterator j3 = bindVar.getIndexList().iterator();
+			while( j3.hasNext() ) {
+			   Expression exp = (Expression) j3.next();
+                           //----------------------------------------  
+			   // Do some expression computations here!!!
+                           //----------------------------------------
+			   String arrSize = "";
+			   dimension += "[" + arrSize + "]";
+			}	
+			varName += dimension;
+		
+                        //-------------------------------------------------------------------
+			// Avoid duplicating declarations
+			// (unique names for the hash function are needed in case of merging)
+                        //-------------------------------------------------------------------
+			if ( !tmp.containsKey(varName+node.getName()) ) {
+			   tmp.put(varName+node.getName(), "");
+			   String decString = _prefix + t + " " + varName;
+			   
+                           //------------------------------------------------------------------------------------ 
+			   // sort the variables into input arguments, output arguments, and additional variables
+                           //------------------------------------------------------------------------------------
+			   int counter = 0;
+			   Iterator j4 = function.getInArgumentList().iterator();
+			   while( j4.hasNext() ) {
+				ADGVariable arg = (ADGVariable) j4.next();
+				String funcArgument = arg.getName();
+				if( funcArgument.equals( varName ) ) {
+					inArguments.add( decString + ";" );
+					counter++;
+				}
+			   }
+			   if( counter==0 ) {
+				j4 = function.getOutArgumentList().iterator();
+				while( j4.hasNext() ) {
+					ADGVariable arg = (ADGVariable) j4.next();
+					String funcArgument = arg.getName();
+					if( funcArgument.equals( varName ) ) {
+						outArguments.add( decString + ";" );
+						counter++;
+					}
+				}
+			   }
+			   if( counter==0 ) { 
+				miscVariables.add( decString + ";" );
+			   }
+			}
+            } // while 'invars'
+
+	    //-----------------------------------------------------------------
+	    // Add an input function argument which is not bound to any port. 
+            // This happens in case loop iterators are propagated to functions.
+	    //-----------------------------------------------------------------
+	    Iterator f = function.getInArgumentList().iterator();
+            while( f.hasNext() ) {
+                ADGVariable arg = (ADGVariable) f.next();
+
+		dimension = "";
+               	varName = arg.getName();
+		String dataType = arg.getDataType();
+
+		if ( !tmp.containsKey(varName+node.getName()) ) {
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+    		    inArguments.add( funcArgDeclaration );
+                }
+	    }
+
+	    //----------------------------------------------------------------
+	    // Add an output function argument which is not bound to any port.
+            // This happens in case of a sink node. 
+	    //----------------------------------------------------------------
+	    f = function.getOutArgumentList().iterator();
+            while( f.hasNext() ) {
+                ADGVariable arg = (ADGVariable) f.next();
+
+		dimension = "";
+               	varName = arg.getName();
+		String dataType = arg.getDataType();
+
+		if ( !tmp.containsKey(varName+node.getName()) ) {
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+    		    outArguments.add( funcArgDeclaration );
+                }
+	    }
+	} // while 'nodes'
+
+        //-------------------------------
+        // print the sorted declarations
+        //-------------------------------
+	if( inArguments.size()>0 ) {
+		_printStream.println("");
+		_printStream.println(_prefix + "// Function's Input Arguments ");
+		n = inArguments.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+	}
+	if( outArguments.size()>0 ) {
+		_printStream.println("");
+		_printStream.println(_prefix + "// Function's Output Arguments ");
+		n = outArguments.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+	}
+	if( miscVariables.size()>0 ) {
+		_printStream.println("");
+		_printStream.println(_prefix + "// Additional Local Variables ");
+		n = miscVariables.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+	}
+    }
+
+
+
+
+/*    private void _writeFunctionArguments( CDProcess x ) {
 
         String funcName = "";
         String csl = "";
@@ -687,7 +952,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         }
         _printStream.println("");
     }
-    
+    */
     
     private void _writeComputPeriod(CDProcess x) {
       _printStream.println(_prefix + "// use this function only for the sink process");

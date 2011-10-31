@@ -31,6 +31,7 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -162,12 +163,27 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(OpdStatement x) {
+//         _printStream.println(_prefix + "wr.write(true);");
+//         _printStream.println(_prefix + x.getGateName() + "->write( " +
+// //                x.getArgumentName() + x.getNodeName() + ");");
+//                 x.getArgumentName() + ");");
+//         _printStream.println(_prefix + "waitcycles(latWrite);");
+//         _printStream.println(_prefix + "wr.write(false);");
+//         _printStream.println("");
+
+        _printStream.println("");
         _printStream.println(_prefix + "wr.write(true);");
-        _printStream.println(_prefix + x.getGateName() + "->write( " +
-                x.getArgumentName() + x.getNodeName() + ");");
+        _printStream.print(_prefix + x.getGateName() + "->write( " +
+                x.getArgumentName() );
+
+	Iterator i = x.getIndexList().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	_printStream.println(" );");
         _printStream.println(_prefix + "waitcycles(latWrite);");
         _printStream.println(_prefix + "wr.write(false);");
-        _printStream.println("");
     }
 
     /**
@@ -193,9 +209,11 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                     _printStream.print(var.getVariableName() + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
+//                      _printStream.print(var.getVariableName() + x.getNodeName());
+                     _printStream.print(var.getVariableName());
                  }
             }
 
@@ -208,14 +226,16 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                    _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                   _printStream.print(var.getVariableName() + ", ");
                } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
+//                    _printStream.print(var.getVariableName() + x.getNodeName());
+                   _printStream.print(var.getVariableName());
                }
            }
            _printStream.print(") ;");
            _printStream.println("");
-          _printStream.println("");
+           _printStream.println("");
 
         } else {
 
@@ -223,15 +243,42 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
                VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-                                         inArg.getVariableName() + x.getNodeName() + ";"           );
+//              _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
+//                                          inArg.getVariableName() + x.getNodeName() + ";"           );
+             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
+                                         inArg.getVariableName() + ";");
              _printStream.println("");
              _printStream.println(_prefix + "execute(\"CopyPropagate\");");
              _printStream.println("");
-
         }
-
     }
+
+    /**
+     *  Print an assign statement in the correct format for c++.
+     *
+     * @param  x The simple statement that needs to be rendered.
+     */
+    public void visitStatement(SimpleAssignStatement x) {
+
+        _printStream.print(_prefix + x.getLHSVarName() );
+
+	Iterator i = x.getIndexListLHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+        _printStream.print(" = " + x.getRHSVarName() );
+
+	i = x.getIndexListRHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+	_printStream.println(";\n");
+    }
+
 
     /**
      *  Print a Control statement in the correct format for c++.
@@ -241,11 +288,13 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
     public void visitStatement(ControlStatement x) {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-            _printStream.println(_prefix + "int "
+//             _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
         } else {
-            _printStream.println(_prefix + "int "
+//             _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = ("
                     + expression.accept(_cExpVisitor) + ")/" +
                     x.getDenominator() + ";");
@@ -259,8 +308,8 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(FifoMemoryStatement x) {
-
-          String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
+/*
+        String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
 
         _printStream.println(_prefix + "rd.write(true);");
         _printStream.println(_prefix + x.getGateName() + "->read(" + tmp + x.getNodeName() + ");");
@@ -280,6 +329,32 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
+/*/
+	_printStream.println("");
+        // for every binding vazriable, we need a read from a fifo
+	Iterator i = x.getArgumentList().iterator();
+	while( i.hasNext() ) {
+		ADGVariable bindVar = (ADGVariable) i.next();
+
+               _printStream.println(_prefix + "rd.write(true);");
+	       _printStream.print(_prefix + x.getGateName() + "->read( " +
+                	bindVar.getName() );
+
+		Iterator j = bindVar.getIndexList().iterator();
+		while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		}
+		_printStream.println(" );");
+               _printStream.println(_prefix + "waitcycles(latRead);");
+               _printStream.println(_prefix + "rd.write(false);");
+               _printStream.println("");
+	}
+        
+        _prefixInc();
+        _visitChildren(x);
+        _prefixDec();
+//*/
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -298,8 +373,10 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         UserInterface ui = UserInterface.getInstance();
 
         String directory = null;
-        // Create the directory indicated by the '-o' option. Otherwise
-        // select the orignal filename.
+        //---------------------------------------------------
+        // Create the directory indicated by the '-o' option. 
+        // Otherwise select the orignal filename.
+        //---------------------------------------------------
         if( ui.getOutputFileName() == "" ) {
             directory = ui.getBasePath() + "/" + ui.getFileName() + "_systemc/";
         } else {
