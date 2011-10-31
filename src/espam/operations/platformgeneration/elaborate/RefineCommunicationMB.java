@@ -46,7 +46,7 @@ import espam.datamodel.platform.controllers.FifosController;
  *      First 8 input and first 8 output fifos are connected to the FSLs, the others are connected to a fifos controller
  *
  * @author  Hristo Nikolov
- * @version  $Id: RefineCommunicationMB.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: RefineCommunicationMB.java,v 1.4 2011/10/31 15:04:47 tzhai Exp $
  *
  */
 public class RefineCommunicationMB {
@@ -181,11 +181,11 @@ public class RefineCommunicationMB {
 		}
 
 		// ------------------------------------------------------------------
-		// Connect the first 8 output fifos to the fsl processor output ports
+		// Connect the first "nr_mb_fsl" output fifos to the fsl processor output ports
 		// ------------------------------------------------------------------
 		if( outFifoPorts.size() > 0 ) {
 
-		    int cntFSL = 8;
+		    int cntFSL = _nr_mb_fsl;
 
 		    Iterator op = outFifoPorts.iterator();
 		    while( op.hasNext() ) {
@@ -220,11 +220,11 @@ public class RefineCommunicationMB {
 		}
 
 		// ----------------------------------------------------------------
-		// Connect the first 8 input fifos to the fsl processor input ports
+		// Connect the first "_nr_mb_fsl" input fifos to the fsl processor input ports
 		// ----------------------------------------------------------------
 		if( inFifoPorts.size() > 0 ) {
 
-		    int cntFSL = 8;
+		    int cntFSL = _nr_mb_fsl;
 
 		    Iterator ip = inFifoPorts.iterator();
 		    while( ip.hasNext() ) {
@@ -264,6 +264,9 @@ public class RefineCommunicationMB {
 
 	// Contains the components (fifos controllers) to be removed from the platform
 	private Vector _oldResources = null;
+	
+	// number of FSL ports attached to MB directly (depending on specification of MicroBlaze provided by Xilinx)
+	private int _nr_mb_fsl = 16;
 }
 
 
