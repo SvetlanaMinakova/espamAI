@@ -1,7 +1,7 @@
 /*******************************************************************\
 
 The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
+Copyright (c) 2004-2011 Leiden University (LERC group at LIACS).
 All rights reserved.
 
 The use and distribution terms for this software are covered by the 
@@ -61,8 +61,8 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: HdpcStatementVisitor.java,v 1.11 2002/06/24 15:48:36 sjain
- *      Exp $
+ * @version  $Id: HdpcStatementVisitor.java,v 1.2 2011/11/02 15:05:17 tzhai Exp $
+ *      
  */
 
 public class HdpcStatementVisitor extends StatementVisitor {
@@ -162,7 +162,7 @@ public class HdpcStatementVisitor extends StatementVisitor {
     }
 
     /**
-     *  Print an ipd statement in the correct format for c++.
+     *  Print an Opd (write primitives) statement in the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
@@ -183,7 +183,13 @@ public class HdpcStatementVisitor extends StatementVisitor {
 	String port = tmpStr.toString();
         int intPort = Integer.parseInt(port);
 	intPort--;
+        
         _printStream.println("");
+        /* in case of self channel, static scheduling, and size equal to 1,
+	 * direct assignment from Opd to Ipd is possible without accessing SW FIFO */
+        if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
+	    _printStream.println(_prefix + "// accessing self-loop with size 1: " + cdChannel.getName());
+	}
         _printStream.println(_prefix + "proc.writeToPort<" + syncType + ">( " +
 	        intPort + ", " + x.getArgumentName() + x.getNodeName() + " );");
     }
@@ -265,7 +271,7 @@ public class HdpcStatementVisitor extends StatementVisitor {
     }
 
     /**
-     *  Print the Fifo Memory Statement in the correct format for c++
+     *  Print the Fifo Memory (Read primitives) Statement in the correct format for c++
      *
      * @param  x Description of the Parameter
      */
@@ -288,7 +294,13 @@ public class HdpcStatementVisitor extends StatementVisitor {
 	String port = tmpStr.toString();
         int intPort = Integer.parseInt(port);
 	intPort--;
-
+	
+	_printStream.println("");
+	/* in case of self channel, static scheduling, and size equal to 1,
+	 * direct assignment from Opd to Ipd is possible without accessing SW FIFO */
+	if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
+	    _printStream.println(_prefix + "// acessing self-loop with size 1: " + cdChannel.getName());
+	}
         _printStream.println(_prefix + "proc.readFromPort<" + syncType + ">( " +
                 intPort + ", " + tmp + x.getNodeName() + " );");
 		

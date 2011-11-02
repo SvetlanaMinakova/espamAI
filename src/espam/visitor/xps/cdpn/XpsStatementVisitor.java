@@ -1,7 +1,7 @@
 /*******************************************************************\
 
 The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
+Copyright (c) 2004-2011 Leiden University (LERC group at LIACS).
 All rights reserved.
 
 The use and distribution terms for this software are covered by the 
@@ -61,8 +61,8 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.11 2002/06/24 15:48:36 stefanov
- *      Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.5 2011/11/02 15:06:28 tzhai Exp $
+ *      
  */
 
 public class XpsStatementVisitor extends StatementVisitor {
@@ -162,7 +162,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     }
 
     /**
-     *  Print an opd statement in the correct format for c++.
+     *  Print an opd statement (Write primitives) in the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
@@ -170,7 +170,12 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
-
+	
+	
+	/* in case of self channel, static scheduling, and size equal to 1
+	 * we want to have direct assignment from Opd to Ipd.
+	 * Of course, this should be done cleanly in Parsetree to CDPN */
+	boolean isSelfChSizeOne = false;
     	
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
@@ -195,7 +200,7 @@ public class XpsStatementVisitor extends StatementVisitor {
         			 x.getNodeName() + ", " + s + ");");
 
         	_printStream.println("");
-    	} else {
+    	} else { // fifo is not MultiFifo
     		Iterator i;
             i = fifo.getPortList().iterator();
             Port wPort = null;
@@ -221,14 +226,21 @@ public class XpsStatementVisitor extends StatementVisitor {
             	funName = "writeFSL("; 
             }
             else {
-		    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+		    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
 			    funName = "writeDyn(";
-		    } else {
+		    } else { // static scheduling
+			    if ( cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1 ){
+				isSelfChSizeOne = true;
+			    }
 			    funName = "write(";	
 		    }
 	    }
 
             _printStream.println("");
+            if ( isSelfChSizeOne = true ){
+		// print the channel name to allow assignment to Ipd directly
+		_printStream.println(_prefix + "// accessing self channel with size 1: " + cdChannel.getName());
+            }
             _printStream.println(_prefix + funName + eName + 
         			 ", " + "&" + x.getArgumentName() +
         			 x.getNodeName() + ", " + s + ");");
@@ -315,7 +327,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     }
 
     /**
-     *  Print the Fifo Memory Statement in the correct format for c++
+     *  Print the Fifo Memory (Read primitives) Statement in the correct format for c++
      *
      * @param  x Description of the Parameter
      */
@@ -324,7 +336,11 @@ public class XpsStatementVisitor extends StatementVisitor {
        	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
-
+	
+	/* in case of self channel, static scheduling, and size equal to 1
+	 * we want to have direct assignment from Opd to Ipd.
+	 * Of course, this should be done cleanly in Parsetree to CDPN */
+	boolean isSelfChSizeOne = false;
 
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
@@ -363,7 +379,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 	    }
 
             _printStream.println("");
-    	} else {
+    	} else { // not MultiFifo
 	
             i = fifo.getPortList().iterator();
             Port rPort = null;
@@ -389,26 +405,33 @@ public class XpsStatementVisitor extends StatementVisitor {
             	funName = "readFSL(";
             }
             else if ( rPort.getResource() instanceof Crossbar ) {
-		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
 			funName = "readDynMF(";
 		} else {
 			funName = "readMF(";
 		}
 
-            } else {
-		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+            } else { // p2p FIFO port
+		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
 			funName = "readDyn(";
-		} else {
+		} else { // static scheduling
+			if ( cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1 ){
+			    isSelfChSizeOne = true;
+			}
 			funName = "read(";
 		}
             }
 
             _printStream.println("");
-
+            if ( isSelfChSizeOne = true ){
+		// print the channel name to allow assignment from Opd directly
+		_printStream.println(_prefix + "// accessing self channel with size 1: " + cdChannel.getName());
+            }
             _printStream.println(_prefix + funName + eName +
         			 ", " + "&" + tmp +
         			 x.getNodeName() + ", " + s + ");");
-
+	    
+	    
             i = x.getArgumentList().iterator();
 	    if (i.hasNext()) {
                  ADGVariable var = (ADGVariable) i.next();
