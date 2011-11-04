@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.13 2011/11/04 16:30:51 stefanov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.14 2011/11/04 16:54:04 nikolov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -156,7 +156,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
         }
 //         ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
         ps.println(_prefix + "fsl<int> " + channel.getName() + "(\"" + channel.getName() + "\", " + 
-                    "(sizeof(t" + channel.getName() + ")+(sizeof(t" + channel.getName() + ")%4)+3)/4, tf);");
+                    chSize + "*(sizeof(t" + channel.getName() + ")+(sizeof(t" + channel.getName() + ")%4)+3)/4, tf);");
         fifoConnects += _prefix + channel.getName() + ".clk(sysClk);\n";
       }
 
