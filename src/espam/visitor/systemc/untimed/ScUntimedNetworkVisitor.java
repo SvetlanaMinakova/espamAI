@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.5 2011/09/26 12:00:21 svhaastr Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.6 2011/11/04 10:36:59 nikolov Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -304,7 +304,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
+                cf.println("SYSTEMC = /local/appl/systemc-2.2.0");
             }
             else {
                 System.out.println(" -- Preserving config.mk");
@@ -375,7 +375,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             mf.println("BIN_DIR=.\n");
             mf.println("EXEC= $(BIN_DIR)/sim\n");
             mf.println("COMP_FLAGS= -Wall -c -g -I$(INC_DIR) -I$(SYSTEMC)/include");
-            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux");
+            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux64");
             mf.println("DEFINES= -DPLATFORM_X86\n");
             mf.println("HEADER= $(wildcard $(INC_DIR)/*.h)");
             mf.println("SRC=    $(wildcard $(SRC_DIR)/*.cc)"); 

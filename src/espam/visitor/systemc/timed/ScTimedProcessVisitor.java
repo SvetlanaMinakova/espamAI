@@ -69,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.14 2011/10/31 17:17:13 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.15 2011/11/04 10:36:59 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -98,7 +98,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#define " + "aux_func_H");
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
-            _printStreamFunc.println("//#include \"" + x.getName() + "_func.h\"");
+            _printStreamFunc.println("#include \"" + x.getName() + "_func.h\"");
             _printStreamFunc.println("#include \"systemc.h\"");
             _printStreamFunc.println("");
 
@@ -113,7 +113,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
                 MProcessor mp = _mapping.getMProcessor(process);
                 if (mp == null) {
                   // Process not mapped to a resource, apparently platform file was empty
-//                  throw new EspamException("ERROR - Process not mapped onto resource; make sure you specify a non-empty platform.");
+                  // throw new EspamException("ERROR - Process not mapped onto resource; make sure you specify a non-empty platform.");
 
                   _scMicroBlazeProcess(process);
                 
@@ -171,7 +171,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _writeMainProcBegin( x );
         // Print the Parse tree
         ParserNode parserNode = (ParserNode) x.getSchedule().get(0);
-        ScTimedMBStatementVisitor mbvisitor = new ScTimedMBStatementVisitor(_printStream, x.getName());
+        ScTimedMBStatementVisitor mbvisitor = new ScTimedMBStatementVisitor(_printStream, x);
         mbvisitor.setPrefix( _prefix );
         mbvisitor.setOffset( _offset );
         parserNode.accept(mbvisitor);
@@ -183,6 +183,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _prefixDec();
         _printStream.println("");
         _printStream.println("#endif");
+
+        _writeFunctionsInAuxFile( x );
     }
 
 
@@ -300,9 +302,17 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         }
       }
       
+      _printStream.println(_prefix + "}");
+      _printStream.println("");
+
+      // Write Destructor
+      _printStream.println(_prefix + x.getName() + "::~" + x.getName() + "() {");
+      _prefixInc();
+      _printStream.println(_prefix + "cout << finishTime.str();");
       _prefixDec();
       _printStream.println(_prefix + "}");
       _printStream.println("");
+      _prefixDec();
     }
 
 
@@ -404,6 +414,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     /**
      *  Description of the Method
      */
+/*
     private void _writeChannelTypes() {
 
         CDChannel channel;
@@ -417,7 +428,33 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
            // sc_fifo, this requires that the operator<< is defined for "type". We cannot assume that this operator is
            // actually defined for any user data types, so for now we always use the int data type.
            //type = ((ADGVariable) ((ADGEdge)channel.getAdgEdgeList().get(0)).getFromPort().getBindVariables().get(0)).getDataType();
+
+// FIXED: see the writeFSL and readFSL primitives in the aux_func.h file
            type = "int";
+
+           if( !type.equals("") ) {
+               String s = "typedef " + type + " t" + channel.getName()+";";
+               _printStreamFunc.println( s );
+           } else {
+               String s = "typedef char t" + channel.getName()+";";
+               _printStreamFunc.println( s );
+           }
+        }
+    }
+/*
+
+    /**
+     *  Description of the Method
+     */
+    private void _writeChannelTypes() {
+
+        CDChannel channel;
+        String type;
+
+        Iterator i = _pn.getChannelList().iterator();
+        while( i.hasNext() ) {
+           channel = (CDChannel) i.next();
+           type = ((ADGVariable) ((ADGEdge)channel.getAdgEdgeList().get(0)).getFromPort().getBindVariables().get(0)).getDataType();
 
            if( !type.equals("") ) {
                String s = "typedef " + type + " t" + channel.getName()+";";
@@ -473,6 +510,30 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("    return (int) floor(a);");
         _printStreamFunc.println("}\n");
 
+        _printStreamFunc.println("#define writeFSL( wr, fifo, value, len ) \\");
+        _printStreamFunc.println("     do {\\");
+        _printStreamFunc.println("        unsigned int i;\\");
+        _printStreamFunc.println("        for( i = 0; i < len; i++ ) { \\");
+        _printStreamFunc.println("            wr.write(true);\\");
+        _printStreamFunc.println("            fifo->write( ((int *) &value)[i] );\\");
+        _printStreamFunc.println("            waitcycles(latWrite);\\");
+        _printStreamFunc.println("            wr.write(false);\\");
+        _printStreamFunc.println("        }\\");
+        _printStreamFunc.println("     } while(0)");
+        _printStreamFunc.println("");
+     
+        _printStreamFunc.println("#define readFSL( rd, fifo, value, len ) \\");
+        _printStreamFunc.println("    do {\\");
+        _printStreamFunc.println("        unsigned int i;\\");
+        _printStreamFunc.println("        for( i = 0; i < len; i++ ) { \\");
+        _printStreamFunc.println("           rd.write(true);\\");
+        _printStreamFunc.println("           fifo->read( ((int *) &value)[i] );\\");
+        _printStreamFunc.println("           waitcycles(latRead);\\");
+        _printStreamFunc.println("           rd.write(false);\\");
+        _printStreamFunc.println("        }\\");
+        _printStreamFunc.println("    } while(0)");    
+        _printStreamFunc.println("");
+
         _printStreamFunc.println("#define waitcycles(v) \\");
         _printStreamFunc.println("  wait((v), SC_NS);");
         _printStreamFunc.println("");
@@ -503,7 +564,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             String s = gate.getName();
             String t = gate.getChannel().getName();
 
-            _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+//            _printStream.println(_prefix + "sc_fifo_in<t" + t + "> " + s + ";");
+            _printStream.println(_prefix + "sc_fifo_in<int> " + s + ";");
 
             if( comModel == LinearizationType.fifo ||
                 comModel == LinearizationType.BroadcastInOrder ||
@@ -527,7 +589,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             String s = gate.getName();
             String t = gate.getChannel().getName();
 
-            _printStream.println(_prefix + "sc_fifo_out<t" + t + "> " + s + ";");
+//            _printStream.println(_prefix + "sc_fifo_out<t" + t + "> " + s + ";");
+            _printStream.println(_prefix + "sc_fifo_out<int> " + s + ";");
         }
 
         //------------------------------
@@ -574,6 +637,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "SC_HAS_PROCESS(" + x.getName() + ");");
         _printStream.println(_prefix + x.getName() + "(sc_module_name mn, sc_trace_file *tf);");
         _printStream.println("");
+
+        _printStream.println(_prefix + "~" + x.getName() + "();");
+        _printStream.println("");
+
         _printStream.println(_prefix + "void main_proc();");
 
         _printStream.println("");
@@ -581,6 +648,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "private:");
         _prefixInc();
         _printStream.println(_prefix + "void compute_period(const double& finish_time);");
+        _printStream.println(_prefix + "std::ostringstream finishTime;");
         //----------------------------
         // declare pipeline for HWNode
         //----------------------------
@@ -852,108 +920,129 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     }
 
 
+    /**
+     * @param  x Description of the Parameter
+     */
+    private void _writeFunctionsInAuxFile( CDProcess x ) {
 
-
-/*    private void _writeFunctionArguments( CDProcess x ) {
-
-        String funcName = "";
+	String funcName = "";
         String csl = "";
-        String t = "";
+	String t = "";
 
-        // declare the input arguments of the function
-        _printStream.println(_prefix + "// Input Arguments ");
-
+        //------------------------------- 
+        // Write func wrapper in aux file
+        //-------------------------------
         Iterator n = x.getAdgNodeList().iterator();
-        while( n.hasNext() ) {
-            ADGNode node = (ADGNode) n.next();
-            ADGFunction function = (ADGFunction) node.getFunction();
-
-            Iterator j1 = function.getInArgumentList().iterator();
-            while( j1.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j1.next();
-                String funcArgument = arg.getName() + node.getName();
-                //String dataType = arg.getDataType();
-                String dataType = "int";  // see FIXME::TYPE
-
-                t = "char";
-                if (dataType != null) {
-                   if (!dataType.equals("")) {
-                       t = dataType;
-                   }
-                }
-
-                // Find the gate corresponding to this funcArgumnet
-                Iterator g = x.getGateList().iterator();
-                while ( g.hasNext() ) {
-                    CDGate  gate = (CDGate) g.next();
-
-                    Iterator p = gate.getAdgPortList().iterator();
-                    while( p.hasNext() ) {
-                       ADGPort port = (ADGPort) p.next();
-
-                       Iterator bvi = port.getBindVariables().iterator();
-                       while ( bvi.hasNext() ) {
-                           ADGVariable bv = (ADGVariable) bvi.next();
-                           String tmp = bv.getName() + port.getNode().getName();
-                           if( funcArgument.equals( tmp ) ) {
-                               t = "t" + gate.getChannel().getName();
-                          }
-                       }
-
-                    }
-                }
-
-                _printStream.println(_prefix + t + " " + funcArgument + ";");
-            }
-        }
-
-        _printStream.println("");
-
-        // declare the output arguments of the function
-        _printStream.println(_prefix + "// Output Arguments ");
-
-        n = x.getAdgNodeList().iterator();
         while( n.hasNext() ) {
             ADGNode node = (ADGNode) n.next();
             ADGFunction function1 = (ADGFunction) node.getFunction();
 
+            csl = "";
+            funcName = function1.getName();
+	    if ( !funcName.equals("") ) {
 
-            Iterator j2 = function1.getOutArgumentList().iterator();
-            while( j2.hasNext() ) {
-                ADGVariable arg = (ADGVariable) j2.next();
-                String funcArgument = arg.getName() + node.getName();
-                //String dataType = arg.getDataType();
-                String dataType = "int";  // See FIXME::TYPE
+	        if(!_relation2.containsKey(funcName) ) {
+	            _printStreamFunc.println("inline");
+                    csl += "void  _" + funcName + "( ";
 
-                t = "char";
-                if (dataType != null) {
-                   if (!dataType.equals("")) {
-                       t = dataType;
-                   }
-                }
+                    Iterator j2 = function1.getInArgumentList().iterator();
+                    while( j2.hasNext() ) {
+                        ADGVariable arg = (ADGVariable) j2.next();
+                        String funcArgument = arg.getName() + node.getName();
+	                String dataType = arg.getDataType();
 
-                // Find the gate corresponding to this funcArgumnet
-                Iterator g = x.getGateList().iterator();
-                while ( g.hasNext() ) {
-                    CDGate  gate = (CDGate) g.next();
+	                t = "char";
+		        if (dataType != null) {
+		          if (!dataType.equals("") ) {
+		             t = dataType;
+		          }
+		        }
 
-                    Iterator p = gate.getAdgPortList().iterator();
-                    while( p.hasNext() ) {
-                       ADGPort port = (ADGPort) p.next();
-                       String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
-                       if( funcArgument.equals( tmp ) ) {
-                          t = "t" + gate.getChannel().getName();
-                       }
+		        Iterator g = x.getGateList().iterator();
+	                while ( g.hasNext() ) {
+		           CDGate  gate = (CDGate) g.next();
+
+		           Iterator p = gate.getAdgPortList().iterator();
+		           while( p.hasNext() ) {
+       	                       ADGPort port = (ADGPort) p.next();
+
+   		               Iterator bvi = port.getBindVariables().iterator();
+		               while ( bvi.hasNext() ) {
+		                   ADGVariable bv = (ADGVariable) bvi.next();
+                                   String tmp = bv.getName() + port.getNode().getName();
+		                   if( funcArgument.equals( tmp ) ) {
+	                               t = "t" + gate.getChannel().getName();
+	                           }
+		               }
+                          }
+		       }
+		       csl +=  t + " &" + arg.getName() + ", ";
                     }
-                }
 
-                _printStream.println(_prefix + t +" " + funcArgument + ";");
-            }
+                    j2 = function1.getOutArgumentList().iterator();
+                    while( j2.hasNext() ) {
+                        ADGVariable arg = (ADGVariable) j2.next();
+                        String funcArgument = arg.getName() + node.getName();
+	                String dataType = arg.getDataType();
+
+	                t = "char";
+		        if (dataType != null) {
+		          if (!dataType.equals("") ) {
+		             t = dataType;
+		          }
+		        }
+
+		        Iterator g = x.getGateList().iterator();
+	                while ( g.hasNext() ) {
+		           CDGate  gate = (CDGate) g.next();
+
+		           Iterator p = gate.getAdgPortList().iterator();
+		           while( p.hasNext() ) {
+       	                      ADGPort port = (ADGPort) p.next();
+		              String tmp = ((ADGVariable) port.getBindVariables().get(0)).getName() + port.getNode().getName();
+		              if( funcArgument.equals( tmp ) ) {
+		                 t = "t" + gate.getChannel().getName();
+	                      }
+                          }
+		        }
+                        csl += t + " &" + arg.getName() + ", ";
+                   }
+                   _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
+
+		   //-------- print the initial function call in the wrapper -----------------------
+                    csl = funcName + "( ";
+
+                    j2 = function1.getInArgumentList().iterator();
+                    while( j2.hasNext() ) {
+                        ADGVariable arg = (ADGVariable) j2.next();
+ 		        csl += "&" + arg.getName() + ", ";
+                    }
+
+                    j2 = function1.getOutArgumentList().iterator();
+                    while( j2.hasNext() ) {
+                        ADGVariable arg = (ADGVariable) j2.next();
+			csl += "&" + arg.getName() + ", ";
+                    }
+
+                    _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+		    //-------- END print of the initial function call in the wrapper ---------------
+
+                    _printStreamFunc.println("}");
+		    _printStreamFunc.println("");
+                }
+                _relation2.put(funcName, "");
+	    }
         }
         _printStream.println("");
     }
-    */
-    
+
+
+
+
+
+
+
+
     private void _writeComputPeriod(CDProcess x) {
       _printStream.println(_prefix + "// use this function only for the sink process");
       _printStream.println(_prefix + "void " + x.getName() + "::compute_period(const double& finish_time) {");
@@ -999,5 +1088,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     private PrintStream _printStreamFunc = null;
 
     private Vector<String> _functionNames = null;  // The function names used in this CDProcess
+
+    private HashMap _relation2 = new HashMap();
 
 }

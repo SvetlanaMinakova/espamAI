@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.11 2011/10/05 12:59:08 stefanov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.12 2011/11/04 10:36:59 nikolov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -154,7 +154,9 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
         }else {
           chSize = ((ADGEdge)channel.getAdgEdgeList().get(0)).getSize();
         }
-        ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
+//         ps.println(_prefix + "fsl<t"+channel.getName()+"> " + channel.getName() + "(\"" + channel.getName() + "\", " + chSize + ", tf);");
+        ps.println(_prefix + "fsl<int> " + channel.getName() + "(\"" + channel.getName() + "\", " + 
+                    "(sizeof(t" + channel.getName() + ")+(sizeof(t" + channel.getName() + ")%4)+3)/4, tf);");
         fifoConnects += _prefix + channel.getName() + ".clk(sysClk);\n";
       }
 
@@ -242,7 +244,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
+                cf.println("SYSTEMC = /local/appl/systemc-2.2.0");
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);
@@ -345,14 +347,15 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             // create the makefile
             PrintStream mf = _openFile(_outputDir + "/Makefile");
 
-            mf.println("include config.mk\n");
+            mf.println("include config.mk");
+            mf.println("include sources\n");
             mf.println("SRC_DIR=.");
             mf.println("INC_DIR=.");
             mf.println("OBJ_DIR=.");
             mf.println("BIN_DIR=.\n");
             mf.println("EXEC= $(BIN_DIR)/sim\n");
             mf.println("COMP_FLAGS= -Wall -c -g -I$(INC_DIR) -I$(SYSTEMC)/include");
-            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux");
+            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux64");
             mf.println("DEFINES= -DPLATFORM_X86\n");
             mf.println("HEADER= $(wildcard $(INC_DIR)/*.h)");
             mf.println("SRC=    $(wildcard $(SRC_DIR)/*.cc)"); 
@@ -454,7 +457,9 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             } // end processes
             
             for(int j=0; j< _functionNames.size();j++){
-              mf.println("extern const int lat_" + _functionNames.get(j) + " = 1;     // latency of " + _functionNames.get(j));
+              String functionName = _functionNames.get(j);
+              if( _functionNames.get(j).equals("") )  functionName="CopyPropagate";
+              mf.println("extern const int lat_" + functionName + " = 1;     // latency of " + functionName);
             }
             
             mf.println("#endif");
