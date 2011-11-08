@@ -18,6 +18,7 @@ package espam.operations;
 
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.HashMap;
 
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.OpdStatement;
@@ -183,13 +184,13 @@ public class CDPNToParseTrees {
 	                         cs.setParent( root );
 		            }
                         }
-
+/*
                         // In case of dynamic control, we must set the boolean part to zero in the beggining of every iteration
                         // <ctrlvar name="dc0_ND_6_b" iterator="1"/>
                         i = node.getFunction().getCtrlVarList().iterator();
                         while( i.hasNext() ) {
                             ADGCtrlVariable var = (ADGCtrlVariable)i.next();
-                            if( var.getIterator().equals("1") ) {
+                            if( var.getIterator().equals("1") ) {  // the boolean variable
                                 SimpleAssignStatement sas = new SimpleAssignStatement();
                			sas.setLHSVarName( var.getName() ); 
 				sas.setRHSVarName( "0" );
@@ -197,7 +198,18 @@ public class CDPNToParseTrees {
                                 sas.setParent( root );
   	                    }				
                         }
-
+/*/
+			_boolCtrlVarList = _getBoolCtrlVars( node );
+                        i = _boolCtrlVarList.iterator();
+                        while( i.hasNext() ) {
+			    String varName = (String)i.next();
+                            SimpleAssignStatement sas = new SimpleAssignStatement();
+               	   	    sas.setLHSVarName( varName ); 
+			    sas.setRHSVarName( "0" );
+                            root.addChild( sas );
+                            sas.setParent( root );				
+                        }
+//*/
 			//   (1) Convert the input port domains to parse tree format.
 			_ui.printVerbose("- start step 1");
 			i = node.getInPorts().iterator();
@@ -574,6 +586,51 @@ public class CDPNToParseTrees {
 		return true;
 	}
 
+
+	/**
+	 *  Extract the bool dynamic variables in _boolCtrlVarList
+	 *
+	 * @param  node Description of the Parameter
+	 */
+	private Vector _getBoolCtrlVars( ADGNode node ) {
+		Vector tmpVarList = new Vector();
+	        HashMap  tmp = new HashMap();
+
+		Iterator i = node.getInPorts().iterator();
+		while( i.hasNext() ) {
+			ADGInPort adgInPort = (ADGInPort) i.next();
+                        Iterator j = adgInPort.getBindVariables().iterator();
+                        while( j.hasNext() ) {
+                             ADGVariable adgVar = (ADGVariable) j.next();
+                             String varName = adgVar.getName();
+                             if( varName.endsWith("_b") ) {
+        			   if ( !tmp.containsKey(varName) ) {
+			                tmp.put(varName, "");
+   			                tmpVarList.add( varName );
+                                   }
+                             }
+			}
+		}
+
+		i = node.getOutPorts().iterator();
+		while( i.hasNext() ) {
+			ADGOutPort adgOutPort = (ADGOutPort) i.next();
+                        Iterator j = adgOutPort.getBindVariables().iterator();
+                        while( j.hasNext() ) {
+                             ADGVariable adgVar = (ADGVariable) j.next();
+                             String varName = adgVar.getName();
+                             if( varName.endsWith("_b") ) {
+        			   if ( !tmp.containsKey(varName) ) {
+			                tmp.put(varName, "");
+   			                tmpVarList.add( varName );
+                                   }
+                             }
+			}
+		}
+
+		return tmpVarList;
+        }
+
 	///////////////////////////////////////////////////////////////////
 	////                         private variables                 ////
 
@@ -591,5 +648,6 @@ public class CDPNToParseTrees {
 	private int _numberOfNodes;
 	private int _scheduleType;
 	private Vector _functionArgumentList = null;
+        private Vector _boolCtrlVarList = null;
 }
 
