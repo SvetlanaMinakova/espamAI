@@ -109,10 +109,10 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ATTLIST bindvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
 
 		+ "<!ELEMENT inargument EMPTY>"
-		+ "<!ATTLIST inargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+		+ "<!ATTLIST inargument name CDATA #REQUIRED dataType CDATA #IMPLIED pass CDATA #IMPLIED>"
 
 		+ "<!ELEMENT outargument EMPTY>"
-		+ "<!ATTLIST outargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+		+ "<!ATTLIST outargument name CDATA #REQUIRED dataType CDATA #IMPLIED pass CDATA #IMPLIED>"
 
 		+ "<!ELEMENT file EMPTY>"
 		+ "<!ATTLIST file name CDATA #REQUIRED>"
