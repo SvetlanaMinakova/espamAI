@@ -69,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.16 2012/01/13 15:11:25 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.17 2012/01/13 17:30:04 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -968,6 +968,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         String csl = "";
 	String t = "";
         String returnValue = "";
+        boolean rhsArg = false;
 
         //------------------------------- 
         // Write func wrapper in aux file
@@ -1027,6 +1028,8 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
+                        } else if( arg.getPassType().equals("reference") ) {
+                           rhsArg = true; 
                         }
 
 	                t = "char";
@@ -1074,7 +1077,11 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
                         }
                     }
 
-                    _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    if( function1.getInArgumentList().size()==0 && rhsArg==false ) {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 1)) + ");");
+                    } else {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    }
 		    //-------- END print of the initial function call in the wrapper ---------------
 
                     _printStreamFunc.println("}");

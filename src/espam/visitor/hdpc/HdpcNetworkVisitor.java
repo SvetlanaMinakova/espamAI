@@ -686,7 +686,7 @@ cf.println("</VisualStudioProject>");
             cf.println("#        3) Add additional .cpp files (if any)");
             cf.println("");
 
-            cf.println("BOOST_DIR = /appl/boost_1_36_0/lib");
+            cf.println("BOOST_DIR = $(HOME)/boost_1_36_0/lib");
             cf.println("");
             cf.println("FILE_NAME = " + x.getName() );
             cf.println("");

@@ -63,7 +63,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.4 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.5 2012/01/13 17:30:04 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -213,7 +213,9 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 
     	_prefixDec();
 
+        //-------------------------------
         //write func wrapper in aux file
+        //------------------------------
         n = x.getAdgNodeList().iterator();
         while( n.hasNext() ) {
             ADGNode node = (ADGNode) n.next();

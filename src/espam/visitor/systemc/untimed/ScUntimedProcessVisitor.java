@@ -63,7 +63,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.7 2012/01/13 15:11:26 nikolov Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.8 2012/01/13 17:30:04 nikolov Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -562,6 +562,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         String csl = "";
 	String t = "";
         String returnValue = "";
+        boolean rhsArg = false;
 
         //------------------------------- 
         // Write func wrapper in aux file
@@ -621,6 +622,8 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
+                        } else if( arg.getPassType().equals("reference") ) {
+                           rhsArg = true; 
                         }
 
 	                t = "char";
@@ -668,7 +671,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                         }
                     }
 
-                    _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    if( function1.getInArgumentList().size()==0 && rhsArg==false ) {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 1)) + ");");
+                    } else {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    }
 		    //-------- END print of the initial function call in the wrapper ---------------
 
                     _printStreamFunc.println("}");

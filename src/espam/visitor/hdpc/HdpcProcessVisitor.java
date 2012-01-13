@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: HdpcProcessVisitor.java,v 1.3 2012/01/13 15:11:25 nikolov Exp $
+ * @version  $Id: HdpcProcessVisitor.java,v 1.4 2012/01/13 17:30:04 nikolov Exp $
  */
 
 public class HdpcProcessVisitor extends CDPNVisitor {
@@ -481,6 +481,7 @@ public class HdpcProcessVisitor extends CDPNVisitor {
         String csl = "";
 	String t = "";
         String returnValue = "";
+        boolean rhsArg = false;
 
         //write func wrapper in aux file
         Iterator n = x.getAdgNodeList().iterator();
@@ -540,6 +541,8 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
+                        } else if( arg.getPassType().equals("reference") ) {
+                           rhsArg = true; 
                         }
 
 	                t = "char";
@@ -588,7 +591,11 @@ public class HdpcProcessVisitor extends CDPNVisitor {
                         }
                    }
 
-                   _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    if( function1.getInArgumentList().size()==0 && rhsArg==false ) {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 1)) + ");");
+                    } else {
+                        _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
+                    }
 		   //-------- END print of the initial function call in the wrapper ------------------------
 
                    _printStreamFunc.println("}");
