@@ -31,6 +31,7 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -61,7 +62,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: HdpcStatementVisitor.java,v 1.2 2011/11/02 15:05:17 tzhai Exp $
+ * @version  $Id: HdpcStatementVisitor.java,v 1.3 2012/01/13 15:11:25 nikolov Exp $
  *      
  */
 
@@ -190,8 +191,17 @@ public class HdpcStatementVisitor extends StatementVisitor {
         if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
 	    _printStream.println(_prefix + "// accessing self-loop with size 1: " + cdChannel.getName());
 	}
-        _printStream.println(_prefix + "proc.writeToPort<" + syncType + ">( " +
-	        intPort + ", " + x.getArgumentName() + x.getNodeName() + " );");
+//        _printStream.println(_prefix + "proc.writeToPort<" + syncType + ">( " +
+//	        intPort + ", " + x.getArgumentName() + x.getNodeName() + " );");
+        _printStream.print(_prefix + "proc.writeToPort<" + syncType + ">( " +
+	        intPort + ", " + x.getArgumentName());
+
+	Iterator i = x.getIndexList().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+	_printStream.println(" );");
     }
 
     /**
@@ -213,9 +223,11 @@ public class HdpcStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                      _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                     _printStream.print(var.getVariableName() + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
+//                      _printStream.print(var.getVariableName() + x.getNodeName());
+                     _printStream.print(var.getVariableName());
                  }
             }
 
@@ -228,9 +240,11 @@ public class HdpcStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+//                    _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                   _printStream.print(var.getVariableName() + ", ");
                } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
+//                    _printStream.print(var.getVariableName() + x.getNodeName());
+                   _printStream.print(var.getVariableName());
                }
            }
            _printStream.println(") ;");
@@ -243,12 +257,41 @@ public class HdpcStatementVisitor extends StatementVisitor {
 	       VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
+//              _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
+// 	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
+             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
+	                                 inArg.getVariableName() + ";"           );
 	     _printStream.println("");
 	}
 
     }
+
+    /**
+     *  Print an assign statement in the correct format for c++.
+     *
+     * @param  x The simple statement that needs to be rendered.
+     */
+    public void visitStatement(SimpleAssignStatement x) {
+
+	_printStream.print(_prefix + x.getLHSVarName() );
+
+	Iterator i = x.getIndexListLHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+	_printStream.print(" = " + x.getRHSVarName() );
+
+	i = x.getIndexListRHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+	_printStream.println(";\n");
+    }
+
 
     /**
      *  Print a Control statement in the correct format for c++.
@@ -258,11 +301,13 @@ public class HdpcStatementVisitor extends StatementVisitor {
     public void visitStatement(ControlStatement x) {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-            _printStream.println(_prefix + "int "
+//            _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
         } else {
-            _printStream.println(_prefix + "int "
+//             _printStream.println(_prefix + "int "
+            _printStream.println(_prefix
                     + x.getName() + " = ("
                     + expression.accept(_cExpVisitor) + ")/" +
                     x.getDenominator() + ";");
@@ -301,6 +346,27 @@ public class HdpcStatementVisitor extends StatementVisitor {
 	if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
 	    _printStream.println(_prefix + "// acessing self-loop with size 1: " + cdChannel.getName());
 	}
+
+//*
+// for every binding vazriable, we need a read from fifo...
+	Iterator i = x.getArgumentList().iterator();
+	while( i.hasNext() ) {
+		ADGVariable bindVar = (ADGVariable) i.next();
+
+	       _printStream.print(_prefix + "proc.readFromPort<" + syncType + ">( " +
+		        intPort + ", " +
+                	bindVar.getName() );
+
+		Iterator j = bindVar.getIndexList().iterator();
+		while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		}
+		_printStream.println(" );");
+	}
+
+/*/
+
         _printStream.println(_prefix + "proc.readFromPort<" + syncType + ">( " +
                 intPort + ", " + tmp + x.getNodeName() + " );");
 		
@@ -313,12 +379,13 @@ public class HdpcStatementVisitor extends StatementVisitor {
             _printStream.println(_prefix + var.getName() + x.getNodeName() +" = " 
 	                                            + tmp + x.getNodeName() + ";");
 	}
-
-//        _printStream.println("");
+//*/
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
     }
+
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                  ///

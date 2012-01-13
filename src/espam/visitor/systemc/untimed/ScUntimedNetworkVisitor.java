@@ -42,7 +42,7 @@ import espam.visitor.CDPNVisitor;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedNetworkVisitor.java,v 1.7 2011/11/04 16:30:51 stefanov Exp $
+ * @version  $Id: ScUntimedNetworkVisitor.java,v 1.8 2012/01/13 15:11:26 nikolov Exp $
  */
 
 public class ScUntimedNetworkVisitor extends CDPNVisitor {
@@ -345,6 +345,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
                 parameter = (ADGParameter) i.next();
                 maf.print(", " + parameter.getValue());
             }
+
             maf.println(");");
             maf.println("");
             maf.println("  sc_start();");

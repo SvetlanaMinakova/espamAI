@@ -68,7 +68,7 @@ import espam.utils.symbolic.matrix.SignedMatrix;
  *  This class
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2SADG.java,v 1.3 2011/10/05 15:03:46 nikolov Exp $
+ * @version  $Id: Xml2SADG.java,v 1.4 2012/01/13 15:11:25 nikolov Exp $
  */
 
 public class Xml2SADG {
@@ -698,10 +698,13 @@ public class Xml2SADG {
 		//System.out.println(" -- InArgument -- ");
 		String name = (String) attributes.getValue("name");
 		String dataType = (String) attributes.getValue("dataType");
+		String pass = (String) attributes.getValue("pass");
 
 		ADGVariable variable = new ADGVariable( name );
 		// Set the data type of the variable
 		variable.setDataType( dataType );
+		// Set how the argument is passed to the function
+		variable.setPassType( pass );
 
 		return variable;
 	}
@@ -726,10 +729,13 @@ public class Xml2SADG {
 		//System.out.println(" -- OutArgument -- ");
 		String name = (String) attributes.getValue("name");
 		String dataType = (String) attributes.getValue("dataType");
+		String pass = (String) attributes.getValue("pass");
 
 		ADGVariable variable = new ADGVariable( name );
 		// Set the data type of the variable
 		variable.setDataType( dataType );
+		// Set how the argument is passed to the function
+		variable.setPassType( pass );
 
 		return variable;
 	}

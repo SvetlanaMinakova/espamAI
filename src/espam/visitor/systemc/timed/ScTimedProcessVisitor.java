@@ -69,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.15 2011/11/04 10:36:59 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.16 2012/01/13 15:11:25 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -100,6 +100,22 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#include <math.h>");
             _printStreamFunc.println("#include \"" + x.getName() + "_func.h\"");
             _printStreamFunc.println("#include \"systemc.h\"");
+            _printStreamFunc.println("");
+
+            _printStreamFunc.println("#define numProcs " + x.getProcessList().size());
+
+            //------------------------------
+            // define the parameters
+            //------------------------------
+            ADGParameter parameter;
+            Iterator j = _pn.getAdg().getParameterList().iterator();
+            if( j.hasNext() ) {
+                _printStreamFunc.println("");
+            }
+            while (j.hasNext()) {
+                parameter = (ADGParameter) j.next();
+                _printStreamFunc.println(_prefix + "#define param_" + parameter.getName() + " " + parameter.getValue());
+            }
             _printStreamFunc.println("");
 
             _writeChannelTypes();
@@ -269,23 +285,35 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
      */
     private void _writeConstructor( CDProcess x ) {
       _printStream.println(_prefix + "// Constructor ");
-      _printStream.println(_prefix + x.getName() + "::" + x.getName() + "(sc_module_name mn, sc_trace_file *tf) {");
+
+      String paramString = "";
+      Iterator i = _pn.getAdg().getParameterList().iterator();
+      while( i.hasNext() ) {
+        ADGParameter parameter = (ADGParameter) i.next();
+        paramString += ", int value_" + parameter.getName();
+      }        
+
+      _printStream.println(_prefix + x.getName() + "::" + x.getName() + "(sc_module_name mn, sc_trace_file *tf" + paramString + ") {");
       _prefixInc();
       _printStream.println(_prefix + "SC_THREAD(main_proc);");
       _printStream.println(_prefix + "sensitive << clk.pos();");
       _printStream.println(_prefix + "dont_initialize();");
       _printStream.println("");
-      _printStream.println(_prefix + "finish.initialize(false);");
-      _printStream.println("");
       _printStream.println(_prefix + "sc_trace(tf, rd, \"" + x.getName() + ".RD\");");
       _printStream.println(_prefix + "sc_trace(tf, ex, \"" + x.getName() + ".UX\");");
       _printStream.println(_prefix + "sc_trace(tf, wr, \"" + x.getName() + ".WR\");");
       _printStream.println("");
+      _printStream.println(_prefix + "rd.initialize(sc_logic_0);");
+      _printStream.println(_prefix + "ex.initialize(sc_logic_0);");
+      _printStream.println(_prefix + "wr.initialize(sc_logic_0);");
+      _printStream.println(_prefix + "finish.initialize(sc_logic_0);");
+      _printStream.println("");
+
       if (_pn.getAdg().getParameterList().size() > 0) _printStream.println(_prefix + "// Initialize parameters");
       Iterator I = _pn.getAdg().getParameterList().iterator();
       while( I.hasNext() ) {
         String p = ((ADGParameter) I.next()).getName();
-        _printStream.println(_prefix + p + " = val" + p + ";");
+        _printStream.println(_prefix + p + " = value_" + p + ";");
       }
       
       // add pipeline initialization
@@ -400,7 +428,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 //          _printStream.println(_prefix + "// }");
         }
         
-        _printStream.println(_prefix + "finish.write(true);");
+        _printStream.println(_prefix + "finish.write(sc_logic_1);");
         _printStream.println(_prefix + "cout << \"" + x.getName() + " finished at \" << sc_time_stamp() << endl;");
                 
         _printStream.println("");
@@ -514,23 +542,25 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("     do {\\");
         _printStreamFunc.println("        unsigned int i;\\");
         _printStreamFunc.println("        for( i = 0; i < len; i++ ) { \\");
-        _printStreamFunc.println("            wr.write(true);\\");
+        _printStreamFunc.println("            wr.write(sc_logic_X);\\");
         _printStreamFunc.println("            fifo->write( ((int *) &value)[i] );\\");
+        _printStreamFunc.println("            wr.write(sc_logic_1);\\");
         _printStreamFunc.println("            waitcycles(latWrite);\\");
-        _printStreamFunc.println("            wr.write(false);\\");
+        _printStreamFunc.println("            wr.write(sc_logic_0);\\");
         _printStreamFunc.println("        }\\");
         _printStreamFunc.println("     } while(0)");
         _printStreamFunc.println("");
      
         _printStreamFunc.println("#define readFSL( rd, fifo, value, len ) \\");
         _printStreamFunc.println("    do {\\");
-        _printStreamFunc.println("        unsigned int i;\\");
-        _printStreamFunc.println("        for( i = 0; i < len; i++ ) { \\");
-        _printStreamFunc.println("           rd.write(true);\\");
+        _printStreamFunc.println("       unsigned int i;\\");
+        _printStreamFunc.println("       for( i = 0; i < len; i++ ) { \\");
+        _printStreamFunc.println("           rd.write(sc_logic_X);\\");
         _printStreamFunc.println("           fifo->read( ((int *) &value)[i] );\\");
+        _printStreamFunc.println("           rd.write(sc_logic_1);\\");
         _printStreamFunc.println("           waitcycles(latRead);\\");
-        _printStreamFunc.println("           rd.write(false);\\");
-        _printStreamFunc.println("        }\\");
+        _printStreamFunc.println("           rd.write(sc_logic_0);\\");
+        _printStreamFunc.println("       }\\");
         _printStreamFunc.println("    } while(0)");    
         _printStreamFunc.println("");
 
@@ -548,6 +578,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "std::vector<double> iter_finish_time;");
         _printStream.println(_prefix + "public:");
         _prefixInc();
+        _printStream.println(_prefix + "sc_in<bool> clk;");
 
         //-----------------------
         // declare the read gates
@@ -623,19 +654,27 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
         // Declare common signals
         //-----------------------
         _printStream.println("");
-        _printStream.println(_prefix + "// Common signals");
-        _printStream.println(_prefix + "sc_in<bool> clk;");
-        _printStream.println(_prefix + "sc_out<bool> finish;");
-        _printStream.println("");
+//        _printStream.println(_prefix + "// Common signals");
+//        _printStream.println(_prefix + "sc_in<bool> clk;");
+//        _printStream.println("");
 
         _printStream.println(_prefix + "// Signals for inspection");
-        _printStream.println(_prefix + "sc_signal<bool> rd;");
-        _printStream.println(_prefix + "sc_signal<bool> ex;");
-        _printStream.println(_prefix + "sc_signal<bool> wr;");
+        _printStream.println(_prefix + "sc_out<sc_logic> rd;");
+        _printStream.println(_prefix + "sc_out<sc_logic> ex;");
+        _printStream.println(_prefix + "sc_out<sc_logic> wr;");
+        _printStream.println(_prefix + "sc_out<sc_logic> finish;");
         _printStream.println("");
 
         _printStream.println(_prefix + "SC_HAS_PROCESS(" + x.getName() + ");");
-        _printStream.println(_prefix + x.getName() + "(sc_module_name mn, sc_trace_file *tf);");
+
+        String paramString = "";
+        Iterator i = _pn.getAdg().getParameterList().iterator();
+        while( i.hasNext() ) {
+          ADGParameter parameter = (ADGParameter) i.next();
+          paramString += ", int value_" + parameter.getName();
+        }        
+
+        _printStream.println(_prefix + x.getName() + "(sc_module_name mn, sc_trace_file *tf" + paramString + ");");
         _printStream.println("");
 
         _printStream.println(_prefix + "~" + x.getName() + "();");
@@ -928,6 +967,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 	String funcName = "";
         String csl = "";
 	String t = "";
+        String returnValue = "";
 
         //------------------------------- 
         // Write func wrapper in aux file
@@ -985,6 +1025,10 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
+			if( arg.getPassType().equals("return_value") ) {
+                           returnValue = arg.getName() + " = ";
+                        }
+
 	                t = "char";
 		        if (dataType != null) {
 		          if (!dataType.equals("") ) {
@@ -1010,18 +1054,24 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
                    _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
 
 		   //-------- print the initial function call in the wrapper -----------------------
-                    csl = funcName + "( ";
+                    csl = returnValue + funcName + "( ";
 
                     j2 = function1.getInArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
- 		        csl += "&" + arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+ 		              csl += "&" + arg.getName() + ", ";
+                        } else {
+ 		              csl += arg.getName() + ", ";
+                        }
                     }
 
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
-			csl += "&" + arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+			      csl += "&" + arg.getName() + ", ";
+                        }
                     }
 
                     _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");

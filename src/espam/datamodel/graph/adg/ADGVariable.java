@@ -28,7 +28,7 @@ import espam.visitor.ADGraphVisitor;
  * This class describes a variable in ADG.
  *
  * @author Todor Stefanov
- * @version  $Id: ADGVariable.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: ADGVariable.java,v 1.2 2012/01/13 15:11:25 nikolov Exp $
  */
 
 public class ADGVariable implements Cloneable {
@@ -127,6 +127,24 @@ public class ADGVariable implements Cloneable {
     }
 
     /**
+     *  Get the propagation type of the ADG variable (function argument).
+     *  
+     * @return  _pass: the way a function argument is propagated
+     */
+    public String getPassType() {
+        return _pass;
+    }
+
+    /**
+     *  Set the propagation type of the ADG variable (function argument).
+     *
+     * @param  pass the way a function argument is propagated
+     */
+    public void setPassType(String pass) {
+        _pass = pass;
+    }
+
+    /**
      *  Return a description of the ADG variable.
      *
      * @return  a description of the ADG variable.
@@ -157,4 +175,10 @@ public class ADGVariable implements Cloneable {
      *  expressions: "2*j+i" and "i+3"
      */
     private Vector _indexList = null;
+
+    /**
+     * Captures how a funtion argument is propagates: passed by "value", "reference"
+     * or it is a left-hand-side "return_value".
+     */
+    private String _pass = "";
 }

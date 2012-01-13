@@ -62,7 +62,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: YapiProcessVisitor.java,v 1.5 2011/10/31 17:17:13 nikolov Exp $
+ * @version  $Id: YapiProcessVisitor.java,v 1.6 2012/01/13 15:11:26 nikolov Exp $
  */
 
 public class YapiProcessVisitor extends CDPNVisitor {
@@ -750,6 +750,7 @@ public class YapiProcessVisitor extends CDPNVisitor {
 	String funcName = "";
         String csl = "";
 	String t = "";
+        String returnValue = "";
 
         //write func wrapper in aux file
         Iterator n = x.getAdgNodeList().iterator();
@@ -807,6 +808,10 @@ public class YapiProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
+			if( arg.getPassType().equals("return_value") ) {
+                           returnValue = arg.getName() + " = ";
+                        }
+
 	                t = "char";
 		        if (dataType != null) {
 		          if (!dataType.equals("") ) {
@@ -827,25 +832,29 @@ public class YapiProcessVisitor extends CDPNVisitor {
 	                      }
                           }
 		        }
-
                         csl += t + " &" + arg.getName() + ", ";
                    }
                    _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
 
 		   //-------- print the initial function call in the wrapper ------------------------
-                    csl = funcName + "( ";
+                    csl = returnValue + funcName + "( ";
 
                     j2 = function1.getInArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
- 		        csl += "&" + arg.getName() + ", ";
-			//csl += arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+ 		              csl += "&" + arg.getName() + ", ";
+                        } else {
+ 		              csl += arg.getName() + ", ";
+                        }
                     }
 
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
-			csl += "&" + arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+			      csl += "&" + arg.getName() + ", ";
+                        }
                    }
 
                    _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");

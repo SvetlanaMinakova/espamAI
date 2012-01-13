@@ -63,7 +63,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.6 2011/10/31 17:17:13 nikolov Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.7 2012/01/13 15:11:26 nikolov Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -561,6 +561,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 	String funcName = "";
         String csl = "";
 	String t = "";
+        String returnValue = "";
 
         //------------------------------- 
         // Write func wrapper in aux file
@@ -618,6 +619,10 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
+			if( arg.getPassType().equals("return_value") ) {
+                           returnValue = arg.getName() + " = ";
+                        }
+
 	                t = "char";
 		        if (dataType != null) {
 		          if (!dataType.equals("") ) {
@@ -643,18 +648,24 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                    _printStreamFunc.println(csl.substring(0, (csl.length() - 2)) + " ) {");
 
 		   //-------- print the initial function call in the wrapper -----------------------
-                    csl = funcName + "( ";
+                    csl = returnValue + funcName + "( ";
 
                     j2 = function1.getInArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
- 		        csl += "&" + arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+ 		              csl += "&" + arg.getName() + ", ";
+                        } else {
+ 		              csl += arg.getName() + ", ";
+                        }
                     }
 
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
-			csl += "&" + arg.getName() + ", ";
+                        if( arg.getPassType().equals("reference") ) {
+			      csl += "&" + arg.getName() + ", ";
+                        }
                     }
 
                     _printStreamFunc.println("    " + csl.substring(0, (csl.length() - 2)) + " );");
