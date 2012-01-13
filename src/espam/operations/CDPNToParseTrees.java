@@ -184,21 +184,8 @@ public class CDPNToParseTrees {
 	                         cs.setParent( root );
 		            }
                         }
-/*
+
                         // In case of dynamic control, we must set the boolean part to zero in the beggining of every iteration
-                        // <ctrlvar name="dc0_ND_6_b" iterator="1"/>
-                        i = node.getFunction().getCtrlVarList().iterator();
-                        while( i.hasNext() ) {
-                            ADGCtrlVariable var = (ADGCtrlVariable)i.next();
-                            if( var.getIterator().equals("1") ) {  // the boolean variable
-                                SimpleAssignStatement sas = new SimpleAssignStatement();
-               			sas.setLHSVarName( var.getName() ); 
-				sas.setRHSVarName( "0" );
-                                root.addChild( sas );
-                                sas.setParent( root );
-  	                    }				
-                        }
-/*/
 			_boolCtrlVarList = _getBoolCtrlVars( node );
                         i = _boolCtrlVarList.iterator();
                         while( i.hasNext() ) {
@@ -209,7 +196,7 @@ public class CDPNToParseTrees {
                             root.addChild( sas );
                             sas.setParent( root );				
                         }
-//*/
+
 			//   (1) Convert the input port domains to parse tree format.
 			_ui.printVerbose("- start step 1");
 			i = node.getInPorts().iterator();
@@ -264,12 +251,6 @@ public class CDPNToParseTrees {
 
 			memoryStatement = InputPort2MemoryStatement.convert( ip, _process );
 
-// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
-			String bndVar = ip.getBindVariables().get(0).getName();
-			if( _isDynamicCtrl( bndVar ) ) {
-				((FifoMemoryStatement)memoryStatement).setNodeName("");
-			}
-
 			Iterator i = ip.getDomain().getLinearBound().iterator();
 			while( i.hasNext() ) {
 			        Polytope polytope = (Polytope) i.next();
@@ -281,8 +262,6 @@ public class CDPNToParseTrees {
                                 stitch.addChild( memoryStatement );
 				memoryStatement.setParent(stitch);
 			}
-
-
 
 		} catch( Exception e ) {
 			e.printStackTrace();
@@ -318,7 +297,6 @@ public class CDPNToParseTrees {
 				//convert the polytope to if-statements
 				ifStatements = Polytope2IfStatements.convert( sPolytope );
 			        stitch = addStatements(ifStatements, parent);
-
 
 				SimpleAssignStatement sas = new SimpleAssignStatement();
 
@@ -372,9 +350,7 @@ public class CDPNToParseTrees {
 			        stitch = addStatements(ifStatements, parent);
 				stitch.addChild(assignStatement);
 				assignStatement.setParent(stitch);
-			}
 
-			if( stitch != null ) {
 				Iterator j = nf.getCtrlVarList().iterator();
 				while( j.hasNext() ) {
 					ADGCtrlVariable cVar = (ADGCtrlVariable) j.next();
@@ -383,14 +359,7 @@ public class CDPNToParseTrees {
 					sas.setLHSVarName( cVar.getName() );
 					sas.setIndexListLHS( cVar.getIndexList() );
 					sas.setRHSVarName( cVar.getIterator() );
-
-// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
-					if( _isDynamicCtrl( sas.getLHSVarName() )) {
-						sas.setNodeName("");
-					} else {				
-						sas.setNodeName( node.getName() );
-					}
-				
+			
 					stitch.addChild(sas);
 					sas.setParent(stitch);
 				}
@@ -404,9 +373,6 @@ public class CDPNToParseTrees {
 					+ ": "
 					+ e.getMessage());
 		}
-
-
-
 	}
 
 	/**
@@ -422,13 +388,11 @@ public class CDPNToParseTrees {
 
 		Vector ifStatements;
 		Vector opdStatements;
-//		OpdStatement opdStatement;
 		ParserNode stitch;
 
 		try {
 		        Polytope ndPolytope = (Polytope) ((ADGNode) op.getNode()).getDomain().getLinearBound().get(0);
 
-//			opdStatement = OutputPort2OpdStatement.convert( op, _process );
 			opdStatements = OutputPort2OpdStatement.convert2list( op, _process );
 
 			Iterator i = op.getDomain().getLinearBound().iterator();
@@ -443,15 +407,9 @@ public class CDPNToParseTrees {
 				Iterator j = opdStatements.iterator();
 				while( j.hasNext() ) {
 					OpdStatement os = (OpdStatement) j.next();
-// Quick hack: Do not concatenate the node name with the binding variable name in case of dynamic control
-					if( _isDynamicCtrl( os.getArgumentName() ) ) {
-						os.setNodeName("");
-					}
 					stitch.addChild( os );
 					os.setParent(stitch);
 				}
-//				stitch.addChild( opdStatement );
-//				opdStatement.setParent(stitch);
 			}
 
 		} catch( Exception e ) {
