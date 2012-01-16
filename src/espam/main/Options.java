@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.8 2011/07/12 08:19:20 tzhai Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.9 2012/01/16 16:00:21 nikolov Exp $ $Name:  $
  */
 
 public class Options {
@@ -157,6 +157,8 @@ public class Options {
                _ui.setDebugFlag();
             } else if( arg.equals("--debugger") ) {
                 _ui.setDebuggerFlag();
+            } else if( arg.equals("--dot-ppn") ) {
+                _ui.setDotFlag();
             } else if( arg.equals("") ) {
                // Ignore blank argument.
             } else {
@@ -208,7 +210,8 @@ public class Options {
                          { "--ipxact    ", "none" },
                          { "--systemc   ", "none" },
                          { "--systemc-timed", "none" },
-			 { "--hdpc     ", "none" },
+			 { "--hdpc      ", "none" },
+			 { "--dot-ppn   ", "none" },
 			 { "--debug     ", "none" },
                          { "--debugger  ", "none" }};
 

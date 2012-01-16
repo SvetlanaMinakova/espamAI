@@ -53,6 +53,7 @@ import espam.parser.xml.mapping.XmlMappingParser;
 import espam.parser.matlab.scheduler.Parser;
 
 import espam.visitor.dot.platform.PlatformDotVisitor;
+import espam.visitor.dot.cdpn.CDPNDotVisitor;
 import espam.visitor.xml.adg.ADGraphXmlVisitor;
 import espam.visitor.xml.cdpn.CDPNXmlVisitor;
 import espam.visitor.yapiPN.YapiNetworkVisitor;
@@ -89,7 +90,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.14 2011/07/12 08:19:20 tzhai Exp $
+ * @version $Id: Main.java,v 1.15 2012/01/16 16:00:21 nikolov Exp $
  */
 
 public class Main {
@@ -248,7 +249,9 @@ public class Main {
 				YmlNetworkVisitor ymlVisitor = new YmlNetworkVisitor(printStream);
 				_cdpn.accept(ymlVisitor);
 				System.out.println(" - Generation [Finished]");
+
 			} else if( _ui.getXpsFlag() ) {
+
 				  System.out.println(" - Generating System in Xps format");
 
 				  //Always this Visitor should be called first!!!
@@ -277,50 +280,58 @@ public class Main {
 				  _platform.accept(crossbarVisitor);
 
 				  System.out.println(" - Generation [Finished]");
+
 			} else if (_ui.getIseFlag()) {
-          System.out.println(" - Generating System in Xilinx ISE format");
 
-          IseNetworkVisitor iseNetworkVisitor = new IseNetworkVisitor(_mapping);
-          _platform.accept(iseNetworkVisitor);
+                                  System.out.println(" - Generating System in Xilinx ISE format");
+                                  IseNetworkVisitor iseNetworkVisitor = new IseNetworkVisitor(_mapping);
+                                 _platform.accept(iseNetworkVisitor);
 
-          // Use a separate visitor to obtain HDL for the HWnodes; this is to make sure we don't get duplicate eval_logic units
-          // etc.
+                                  // Use a separate visitor to obtain HDL for the HWnodes; this is to make sure we don't get duplicate eval_logic units
+                                  // etc.
 				  CompaanHWNodeIseVisitor hwNodeVisitor = new CompaanHWNodeIseVisitor(_mapping);
 				  _platform.accept(hwNodeVisitor);
-
 				  System.out.println(" - Generation [Finished]");
-			} else if (_ui.getIpxactFlag()) {
-          System.out.println(" - Generating System in IP-XACT format");
 
-          IpxactDwarvVisitor ipxactDwarvVisitor = new IpxactDwarvVisitor(_mapping);
-          _platform.accept(ipxactDwarvVisitor);
+			} else if (_ui.getIpxactFlag()) {
+                                  System.out.println(" - Generating System in IP-XACT format");
+
+                                  IpxactDwarvVisitor ipxactDwarvVisitor = new IpxactDwarvVisitor(_mapping);
+                                  _platform.accept(ipxactDwarvVisitor);
 
 				  System.out.println(" - Generation [Finished]");
 			} else if (_ui.getScUntimedFlag()) {
-          System.out.println(" - Generating untimed SystemC model");
 
-          printStream = _openFile(_cdpn.getName() + "_KPN", "h");
-          ScUntimedNetworkVisitor scUntimedVisitor = new ScUntimedNetworkVisitor(printStream);
-          _cdpn.accept(scUntimedVisitor);
-
+                                  System.out.println(" - Generating untimed SystemC model");
+                                  printStream = _openFile(_cdpn.getName() + "_KPN", "h");
+                                  ScUntimedNetworkVisitor scUntimedVisitor = new ScUntimedNetworkVisitor(printStream);
+                                  _cdpn.accept(scUntimedVisitor);
 				  System.out.println(" - Generation [Finished]");
+
 			} else if (_ui.getScTimedFlag()) {
-          System.out.println(" - Generating timed SystemC model");
+                                  System.out.println(" - Generating timed SystemC model");
 	  
-	  boolean _scTimedPeriod = _ui.getScTimedPeriodFlag();
-	  
-          //printStream = _openFile(_cdpn.getName() + "_KPN", "h");
-          ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping, _scTimedPeriod);
-          _cdpn.accept(scTimedVisitor);
-
+	                          boolean _scTimedPeriod = _ui.getScTimedPeriodFlag(); 
+                                  //printStream = _openFile(_cdpn.getName() + "_KPN", "h");
+                                  ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping, _scTimedPeriod);
+                                 _cdpn.accept(scTimedVisitor);
 				  System.out.println(" - Generation [Finished]");
-			} else if( _ui.getHdpcFlag() ) {
-				System.out.println(" - Generating System in HDPC format");
-				HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
-				_cdpn.accept(pnVisitor);
-				System.out.println(" - Generation [Finished]");
-			} else {
 
+			} else if( _ui.getHdpcFlag() ) {
+
+	 			 System.out.println(" - Generating System in HDPC format");
+				 HdpcNetworkVisitor pnVisitor = new HdpcNetworkVisitor( _cdpn );
+				 _cdpn.accept(pnVisitor);
+				 System.out.println(" - Generation [Finished]");
+			} 
+
+			if( _ui.getDotFlag() ) {
+
+                                  System.out.println("\n - Generating CDPN in dot format");
+                                  printStream = _openFile(_cdpn.getName() + "_KPN", "dot");
+		                  CDPNDotVisitor dotVisitor = new CDPNDotVisitor( printStream );
+		                  _cdpn.accept(dotVisitor);
+			          System.out.println(" - Generation [Finished]\n");
 			}
 
 			if( _ui.getDebugFlag() ) {
@@ -331,8 +342,8 @@ public class Main {
 			    _adg.accept(xmlVisitor);
 			    System.out.println(" - Generation [Finished]\n");
 
-			    System.out.println(" - Generating Platform in Dotty format");
-                            printStream = _openFile("dummy", "dot");
+			    System.out.println(" - Generating Platform in dot format");
+                            printStream = _openFile(_cdpn.getName() + "_ESPAM_PLA", "dot");
 		            PlatformDotVisitor dotVisitor = new PlatformDotVisitor( printStream );
 		            _platform.accept(dotVisitor);
 			    System.out.println(" - Generation [Finished]\n");
@@ -349,6 +360,11 @@ public class Main {
 			    _scheduler.accept(schVisitor);
 			    System.out.println(" - Generation [Finished]\n");
 
+                            System.out.println("\n - Generating CDPN in dot format");
+                            printStream = _openFile(_cdpn.getName() + "_ESPAM_KPN", "dot");
+                            CDPNDotVisitor dotVisitor1 = new CDPNDotVisitor( printStream );
+	                    _cdpn.accept(dotVisitor1);
+	   	            System.out.println(" - Generation [Finished]\n");
 			}
 
 		} catch( EspamException e ) {
@@ -379,9 +395,8 @@ public class Main {
 	String fullFileName = "";
 
         if( extension.equals("dot") ) {
-
-	    fullFileName = _ui.getPlatformFileName() + "." + extension;
-
+//	    fullFileName = _ui.getPlatformFileName() + "." + extension;
+	    fullFileName = fileName + "." + extension;
         } else if(extension.equals("adg") ) {
 
 	    fullFileName = fileName + "." + extension;

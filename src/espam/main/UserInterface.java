@@ -465,6 +465,23 @@ public class UserInterface {
      *
      * @return The debuggerFlag value
      */
+    public final boolean getDotFlag() {
+        return _dot;
+    }
+
+    /**
+     * Sets the debugger flag
+     */
+
+    public final void setDotFlag() {
+        _dot = true;
+    }
+
+     /**
+     * Get the status of the Debugger flag
+     *
+     * @return The debuggerFlag value
+     */
     public final boolean getDebuggerFlag() {
         return _debugger;
     }
@@ -665,6 +682,9 @@ public class UserInterface {
 
     //  the debugger flag
     private boolean _debugger = false;
+
+    //  the dot flag
+    private boolean _dot = false;
 
     // the filename
     private String _fileName = "";

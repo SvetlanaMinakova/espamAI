@@ -1,15 +1,11 @@
-#
-# $Id: makefile,v 1.2 2012/01/16 16:00:21 nikolov Exp $
-#
 
-ROOT  = ../../..
+ROOT  = ../../../..
 
 SUBPACKAGES = \
-	platform \
-	cdpn
 
 # Java files in this directory
 JSRCS = \
+	CDPNDotVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk
