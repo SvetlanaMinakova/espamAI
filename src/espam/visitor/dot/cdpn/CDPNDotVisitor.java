@@ -26,6 +26,8 @@ import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGEdge;
 
+import espam.datamodel.LinearizationType;
+
 import espam.visitor.CDPNVisitor;
 
 //////////////////////////////////////////////////////////////////////////
@@ -36,7 +38,7 @@ import espam.visitor.CDPNVisitor;
  *  ".dot" output in order to visualize a CDPN using the DOTTY tool.
  *
  * @author  Hristo Nikolov
- * @version  $Id: CDPNDotVisitor.java,v 1.1 2012/01/16 16:00:21 nikolov Exp $
+ * @version  $Id: CDPNDotVisitor.java,v 1.2 2012/01/16 16:36:53 nikolov Exp $
  */
 
 public class CDPNDotVisitor extends CDPNVisitor {
@@ -121,22 +123,24 @@ public class CDPNDotVisitor extends CDPNVisitor {
  	String color = "dimgray";
         String type = "";
 
-        if( x.getCommunicationModel().toString().equals("fifo") ) {                       /** In-order without Multiplicity. */
+        LinearizationType comModel = x.getCommunicationModel(); 
+
+        if( comModel == LinearizationType.fifo ) {                       /** In-order without Multiplicity. */
 //            color="black";
             type="(fifo)";
-        } else if( x.getCommunicationModel().toString().equals("GenericOutOfOrder") ) {   /** Out-of-order without Multiplicity. */
+        } else if( comModel == LinearizationType.GenericOutOfOrder ) {   /** Out-of-order without Multiplicity. */
             color="firebrick";
             type="(OO)";
-        } else if( x.getCommunicationModel().toString().equals("sticky_fifo") ) {         /** In-order with Multiplicity (special case defined by Sven Verdoolaege).*/
+        } else if( comModel == LinearizationType.sticky_fifo ) {         /** In-order with Multiplicity (special case defined by Sven Verdoolaege).*/
             color="seagreen";
-            type="(sf)";
-        } else if( x.getCommunicationModel().toString().equals("shift_register") ) {      /** In-order (special case defined by Sven Verdoolaege).*/
+            type="(sf)";   
+        } else if( comModel == LinearizationType.shift_register ) {      /** In-order (special case defined by Sven Verdoolaege).*/
             color="royalblue";
             type="(sr)";
-        } else if( x.getCommunicationModel().toString().equals("BroadcastInOrder") ) {    /** In-order with Multiplicity (general case defined by Alex Turjan).*/
+        } else if( comModel == LinearizationType.BroadcastInOrder ) {    /** In-order with Multiplicity (general case defined by Alex Turjan).*/
             color="green";
             type="(IOM)";
-        } else if( x.getCommunicationModel().toString().equals("BroadcastOutOfOrder") ) { /** Out-of-order with Multiplicity.*/
+        } else if( comModel == LinearizationType.BroadcastOutOfOrder ) { /** Out-of-order with Multiplicity.*/
             color="red";
             type="(OOM)";
         } 
