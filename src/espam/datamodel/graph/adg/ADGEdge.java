@@ -38,7 +38,7 @@ import espam.utils.symbolic.matrix.JMatrix;
  * See Definition 2.2.5 on page 40 in [1].
  *
  * @author Todor Stefanov
- * @version  $Id: ADGEdge.java,v 1.2 2011/05/04 15:24:41 nikolov Exp $
+ * @version  $Id: ADGEdge.java,v 1.3 2012/01/20 16:46:42 nikolov Exp $
  */
 
 public class ADGEdge extends Edge {
@@ -186,6 +186,19 @@ public class ADGEdge extends Edge {
 	   }
 	}
 	return null;
+    }
+
+    /**
+     *  Chcck if the edge is a self-edge
+     *
+     * @return  true if the edge is a self-edge, false otherwise
+     */
+    public boolean isSelfEdge() {
+	if ( this.getFromPort().getNode().getName().equals( this.getToPort().getNode().getName() ) ) {
+	    return true;
+	} else {
+	    return false;
+	}
     }
 
     ///////////////////////////////////////////////////////////////////

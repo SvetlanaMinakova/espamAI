@@ -21,6 +21,7 @@ import java.util.Iterator;
 
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.parsetree.statement.AssignStatement;
+import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
 import espam.datamodel.parsetree.statement.ElseStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
@@ -61,7 +62,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.5 2011/11/02 15:06:28 tzhai Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.6 2012/01/20 16:46:42 nikolov Exp $
  *      
  */
 
@@ -90,9 +91,9 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(RootStatement x) {
-        _prefixInc();
+//        _prefixInc();
         _visitChildren(x);
-        _prefixDec();
+//        _prefixDec();
     }
 
     /**
@@ -141,7 +142,7 @@ public class XpsStatementVisitor extends StatementVisitor {
         _printStream.println(_prefix + "if( " +
                     expression.accept( _cExpVisitor ) + str + "0 ) {");
 
-	    _prefixInc();
+	_prefixInc();
         _visitChildren(x);
         _prefixDec();
         _printStream.println(_prefix + "}");
@@ -167,41 +168,30 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(OpdStatement x) {
-    	String gateName = x.getGateName();
-    	CDGate cdGate = (CDGate)_process.getGate(gateName);
+	
+    	CDGate cdGate = (CDGate)_process.getGate(x.getGateName());
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
-	
-	
-	/* in case of self channel, static scheduling, and size equal to 1
-	 * we want to have direct assignment from Opd to Ipd.
-	 * Of course, this should be done cleanly in Parsetree to CDPN */
-	boolean isSelfChSizeOne = false;
-    	
+
+        Iterator i;
+        String funName = "";
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
-
-    	String eName = x.getNodeName() + "_" + 
-    	               x.getGateName() + "_" + t;
+    	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
+        boolean isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() == 1);
     	
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
     	
-    	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-    	    String funName = "";	
-	    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+    	if(fifo.getLevelUpResource() instanceof MultiFifo) {    	    	
+//	    if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+	    if( isDynamicSchedule ) {
 		funName = "writeDynMF(";
 	    } else {
 		funName = "writeMF(";
   	    }
 
-            _printStream.println("");
-            _printStream.println(_prefix + funName + eName + 
-        			 ", " + "&" + x.getArgumentName() +
-        			 x.getNodeName() + ", " + s + ");");
-
-        	_printStream.println("");
     	} else { // fifo is not MultiFifo
-    		Iterator i;
+    		
             i = fifo.getPortList().iterator();
             Port wPort = null;
             while (i.hasNext()) {
@@ -209,8 +199,7 @@ public class XpsStatementVisitor extends StatementVisitor {
                 if ( port instanceof FifoWritePort ) {
                    wPort = port;
                 }
-            }
-            
+            }   
             Link link = wPort.getLink();
         	
             i = link.getPortList().iterator();
@@ -221,32 +210,49 @@ public class XpsStatementVisitor extends StatementVisitor {
                 }
             }
         	
-            String funName;
-            if ( wPort.getResource() instanceof Processor ) {
+            if( wPort.getResource() instanceof Processor ) {
             	funName = "writeFSL("; 
             }
             else {
-		    if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
-			    funName = "writeDyn(";
-		    } else { // static scheduling
-			    if ( cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1 ){
-				isSelfChSizeOne = true;
-			    }
-			    funName = "write(";	
-		    }
+//		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
+		if( isDynamicSchedule ) {
+		    funName = "writeDyn(";
+	        } else { // static scheduling
+		    funName = "write(";	
+		}
 	    }
+        }
+           
+//-------------------------------------------------------------------------------------
+// We can implement the self-channels, in case of static schedule, as local variables.
+// This feature is currently not used because, in oerder to be complete, 
+// we need to remove also the HW implementation of these self-channels.
+//-------------------------------------------------------------------------------------
+/*  
+       if( cdChannel.isSelfChannel() && !isDynamicSchedule ) {
+           if( cdChannel.getMaxSize()==1 ) {
+               _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() );      
+           } else {
+               String wr =  "wr_" + cdChannel.getName();
+               _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() );      
+           }
+           i = x.getIndexList().iterator();
+   	   while( i.hasNext() ) {
+ 	      Expression expression = (Expression) i.next();
+	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+           }
+           _printStream.println( "; // self-channel with size " + cdChannel.getMaxSize() );
 
-            _printStream.println("");
-            if ( isSelfChSizeOne = true ){
-		// print the channel name to allow assignment to Ipd directly
-		_printStream.println(_prefix + "// accessing self channel with size 1: " + cdChannel.getName());
-            }
-            _printStream.println(_prefix + funName + eName + 
-        			 ", " + "&" + x.getArgumentName() +
-        			 x.getNodeName() + ", " + s + ");");
-
-        	_printStream.println("");
-    	}
+        } else {
+*/
+           _printStream.print(_prefix + funName + eName + ", " + "&" + x.getArgumentName() );
+           i = x.getIndexList().iterator();
+   	   while( i.hasNext() ) {
+	      Expression expression = (Expression) i.next();
+	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+           }
+	   _printStream.println(", " + s + ");");
+//        }
     }
 
     /**
@@ -268,9 +274,9 @@ public class XpsStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                     _printStream.print(var.getVariableName() + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
+                     _printStream.print(var.getVariableName() );
                  }
             }
 
@@ -283,9 +289,9 @@ public class XpsStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                   _printStream.print(var.getVariableName() + ", ");
                } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
+                   _printStream.print(var.getVariableName() );
                }
            }
            _printStream.print(");");
@@ -293,16 +299,41 @@ public class XpsStatementVisitor extends StatementVisitor {
 
 	} else {
 
-	       VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
-	       VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
+	     VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
+	     VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
+             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
+	                                 inArg.getVariableName() + ";"           );
              _printStream.println("");
+	}
+    }
 
+
+    /**
+     *  Print an assign statement in the correct format for c++.
+     *
+     * @param  x The simple statement that needs to be rendered.
+     */
+    public void visitStatement(SimpleAssignStatement x) {
+
+        _printStream.print(_prefix + x.getLHSVarName() );
+
+	Iterator i = x.getIndexListLHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
 
+        _printStream.print(" = " + x.getRHSVarName() );
+
+	i = x.getIndexListRHS().iterator();
+	while( i.hasNext() ) {
+		Expression expression = (Expression) i.next();
+		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	}
+
+	_printStream.println(";\n");
     }
 
 
@@ -333,54 +364,29 @@ public class XpsStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(FifoMemoryStatement x) {
 
-       	String gateName = x.getGateName();
-    	CDGate cdGate = (CDGate)_process.getGate(gateName);
+    	CDGate cdGate = (CDGate)_process.getGate(x.getGateName());
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
-	
-	/* in case of self channel, static scheduling, and size equal to 1
-	 * we want to have direct assignment from Opd to Ipd.
-	 * Of course, this should be done cleanly in Parsetree to CDPN */
-	boolean isSelfChSizeOne = false;
 
+        Iterator i;
+        String funName = "";
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
-
-    	String eName = x.getNodeName() + "_" +
-    	               x.getGateName() + "_" + t;
+    	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
+        boolean isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() == 1);
 
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
 
-	String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
-        Iterator i;
-
-    	if (fifo.getLevelUpResource() instanceof MultiFifo) {
-             String funName = "";
-	     if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {
+//	     if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
+	     if( isDynamicSchedule ) {
 		    funName = "readDynMF(";
 	     } else {
 		    funName = "readMF(";	
 	     }
 
-            _printStream.println("");
-
-            _printStream.println(_prefix + funName + eName +
-        			 ", " + "&" + tmp +
-        			 x.getNodeName() + ", " + s + ");");
-
-            i = x.getArgumentList().iterator();
-	    if (i.hasNext()) {
-                 ADGVariable var = (ADGVariable) i.next();
-	    }
-	    while (i.hasNext()) {
-                  ADGVariable var = (ADGVariable) i.next();
-                 _printStream.println(_prefix + var.getName() + x.getNodeName() +" = "
-	                                                 + tmp + x.getNodeName() + ";");
-	    }
-
-            _printStream.println("");
     	} else { // not MultiFifo
-	
+
             i = fifo.getPortList().iterator();
             Port rPort = null;
             while (i.hasNext()) {
@@ -389,7 +395,6 @@ public class XpsStatementVisitor extends StatementVisitor {
                    rPort = port;
                 }
             }
-
             Link link = rPort.getLink();
 
             i = link.getPortList().iterator();
@@ -400,50 +405,84 @@ public class XpsStatementVisitor extends StatementVisitor {
                 }
             }
 
-            String funName;
-            if ( rPort.getResource() instanceof Processor ) {
+            if( rPort.getResource() instanceof Processor ) {
             	funName = "readFSL(";
             }
-            else if ( rPort.getResource() instanceof Crossbar ) {
-		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
+            else if( rPort.getResource() instanceof Crossbar ) {
+// Why is this here???-----------------------------------------------------------------------------------
+		if( isDynamicSchedule ) { 
 			funName = "readDynMF(";
 		} else {
 			funName = "readMF(";
 		}
-
+//-------------------------------------------------------------------------------------------------------
             } else { // p2p FIFO port
-		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
+//		if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
+		if( isDynamicSchedule ) { 
 			funName = "readDyn(";
 		} else { // static scheduling
-			if ( cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1 ){
-			    isSelfChSizeOne = true;
-			}
 			funName = "read(";
 		}
             }
+	}
 
-            _printStream.println("");
-            if ( isSelfChSizeOne = true ){
-		// print the channel name to allow assignment from Opd directly
-		_printStream.println(_prefix + "// accessing self channel with size 1: " + cdChannel.getName());
-            }
-            _printStream.println(_prefix + funName + eName +
-        			 ", " + "&" + tmp +
-        			 x.getNodeName() + ", " + s + ");");
-	    
-	    
-            i = x.getArgumentList().iterator();
-	    if (i.hasNext()) {
-                 ADGVariable var = (ADGVariable) i.next();
-	    }
-	    while (i.hasNext()) {
-                  ADGVariable var = (ADGVariable) i.next();
-                 _printStream.println(_prefix + var.getName() + x.getNodeName() +" = "
-	                                                 + tmp + x.getNodeName() + ";");
-	    }
+//-------------------------------------------------------------------------------------
+// We can implement the self-channels, in case of static schedule, as local variables.
+// This feature is currently not used because, in oerder to be complete, 
+// we need to remove also the HW implementation of these self-channels.
+//-------------------------------------------------------------------------------------
+/*
+         if( cdChannel.isSelfChannel() && !isDynamicSchedule ) {
+           if( cdChannel.getMaxSize()==1 ) {
 
-            _printStream.println("");
-    	}
+              ADGVariable bindVar = x.getArgumentList().get(0);
+              _printStream.print(_prefix + bindVar.getName() ); 
+     
+              Iterator j = bindVar.getIndexList().iterator();
+	      while( j.hasNext() ) {
+		  Expression expression = (Expression) j.next();
+		  _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	      }
+              _printStream.println(" = var_" + cdChannel.getName() + "; // self-channel with size 1" );
+
+           } else {
+              String rd =  "rd_" + cdChannel.getName();
+              // for every binding variable, we need a read from a fifo
+	      i = x.getArgumentList().iterator();
+	      while( i.hasNext() ) {
+
+		  ADGVariable bindVar = (ADGVariable) i.next();
+                  _printStream.print(_prefix + bindVar.getName() ); 
+
+		  Iterator j = bindVar.getIndexList().iterator();
+		  while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		  }
+                  _printStream.println(" = var_" + cdChannel.getName() + "[" + rd + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + rd + "):(" + rd + "=0)]; // self-channel with size " + cdChannel.getMaxSize() );
+	      }
+          }
+        } else {       
+*/
+            // for every binding variable, we need a read from a fifo
+	    i = x.getArgumentList().iterator();
+	    while( i.hasNext() ) {
+		ADGVariable bindVar = (ADGVariable) i.next();
+
+	       _printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() );
+
+		Iterator j = bindVar.getIndexList().iterator();
+		while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		}
+		_printStream.println(", " + s + ");");
+	    }
+//        }       
+
+        _prefixInc();
+        _visitChildren(x);
+        _prefixDec();
     }
 
     ///////////////////////////////////////////////////////////////////

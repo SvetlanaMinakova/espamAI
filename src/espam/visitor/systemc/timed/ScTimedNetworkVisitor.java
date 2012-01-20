@@ -51,7 +51,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.15 2012/01/13 15:11:25 nikolov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.16 2012/01/20 16:46:42 nikolov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -574,11 +574,17 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
               _getFunctionNames(parserNode);
             } // end processes
             
+
+            String latArray="";
             for(int j=0; j< _functionNames.size();j++){
               String functionName = _functionNames.get(j);
               if( _functionNames.get(j).equals("") )  functionName="CopyPropagate";
               mf.println("extern const int lat_" + functionName + " = 1;     // latency of " + functionName);
+              latArray += "lat_" + functionName + ", ";
             }
+            
+            mf.println("");
+            mf.println( "const int latency[" + _functionNames.size() + "] = {" + latArray.substring(0, (latArray.length() - 2)) + "};" );
             
             mf.println("#endif");
         }

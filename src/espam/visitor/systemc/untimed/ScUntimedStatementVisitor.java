@@ -287,7 +287,7 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
     public void visitStatement(FifoMemoryStatement x) {
 
 	_printStream.println("");
-        // for every binding vazriable, we need a read from a fifo
+        // for every binding variable, we need a read from a fifo
 	Iterator i = x.getArgumentList().iterator();
 	while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
