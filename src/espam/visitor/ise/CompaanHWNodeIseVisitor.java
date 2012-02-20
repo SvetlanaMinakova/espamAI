@@ -62,7 +62,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.6 2011/07/01 12:07:20 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.7 2012/02/20 10:00:13 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -408,14 +408,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			in_arg = (ADGVariable) i.next();
 			//currently default signal width 32
-			hdlPS.println("         " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);");
+			hdlPS.println("         " + _getIpcoreArgName(in_arg) + "  : in  std_logic_vector(31 downto 0);");
 		}
 		hdlPS.println("");
 		
 		i = _outArgList.iterator();
 		while(i.hasNext()){
 			out_arg = (ADGVariable) i.next();
-			hdlPS.println("         " + out_arg.getName() + " : out std_logic_vector(31 downto 0);");
+			hdlPS.println("         " + _getIpcoreArgName(out_arg) + " : out std_logic_vector(31 downto 0);");
 		}
 		
 		hdlPS.println("");
@@ -440,10 +440,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			in_arg = (ADGVariable) i.next();
 			if (index == 0){
-				hdlPS.println("      " + in_arg.getName() + " => IN_PORTS(QUANT-1 downto 0),");
+				hdlPS.println("      " + _getIpcoreArgName(in_arg) + " => IN_PORTS(QUANT-1 downto 0),");
 			}
 			else {
-				hdlPS.println("      " + in_arg.getName() + " => IN_PORTS(" + (index + 1) + "*QUANT-1 downto " + index + "*QUANT),");
+				hdlPS.println("      " + _getIpcoreArgName(in_arg) + " => IN_PORTS(" + (index + 1) + "*QUANT-1 downto " + index + "*QUANT),");
 			}
 			
 			index++;
@@ -455,10 +455,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			out_arg = (ADGVariable) i.next();
 			if (index == 0){
-				hdlPS.println("      " + out_arg.getName() + " => OUT_PORTS(QUANT-1 downto 0),");
+				hdlPS.println("      " + _getIpcoreArgName(out_arg) + " => OUT_PORTS(QUANT-1 downto 0),");
 			}
 			else {
-				hdlPS.println("      " + out_arg.getName() + " => OUT_PORTS(" + (index + 1) + "*QUANT-1 downto " + index + "*QUANT),");
+				hdlPS.println("      " + _getIpcoreArgName(out_arg) + " => OUT_PORTS(" + (index + 1) + "*QUANT-1 downto " + index + "*QUANT),");
 			}
 			
 			index++;
@@ -2022,17 +2022,28 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	}
 
   private boolean _isSource(ADGNode node) {
+//    return false;
     return (node.getInPorts().size() == 0);
   }
   
   private boolean _isSink(ADGNode node) {
+//    return false;
     return (node.getOutPorts().size() == 0);
   }
 
   private boolean _isReusePort(ADGOutPort port) {
     return (port.getBindVariables().get(0).getName().indexOf("in") >= 0);
   }
-  
+
+  /**
+   * Returns name used by the IP core for given argument.
+   * Currently, variable names are of the form "in_0ND_2" for example. To keep
+   * IP cores generic, we do not want to include the node name in the argument
+   * port name, so we strip the ND_* suffix.
+   */
+  private String _getIpcoreArgName(ADGVariable var) {
+    return var.getName().substring(0, var.getName().indexOf("ND_"));
+  }
 
 	// /////////////////////////////////////////////////////////////////
 	// // private variables ///
