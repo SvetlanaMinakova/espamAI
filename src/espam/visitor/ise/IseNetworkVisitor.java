@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.11 2011/07/01 12:07:20 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.12 2012/02/22 11:07:10 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -312,7 +312,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println("end architecture STRUCTURE;");
 
 
-      if (_synth == false) {
+      if (_simul == true) {
         // Add simulation test bench
         PrintStream simtbPS = _openFile("simulationtb.vhd");
         _writeSimulationTB(simtbPS);
@@ -339,7 +339,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
    */
   public void visitComponent(CompaanHWNode x) {
     // Write HDL file
-    if (_omitIONodes && !_isSource(_adgNode) && !_isSink(_adgNode)) {
+    if (!_omitIONodes || !_isSource(_adgNode) && !_isSink(_adgNode)) {
       _writeComponentDef();
       _writeComponentInst();
 
@@ -395,7 +395,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     ADGNode src = (ADGNode) edge.getFromPort().getNode();
     ADGNode dst = (ADGNode) edge.getToPort().getNode();
 
-    if (_isSource(src)) {
+    if (_isSource(src) && _omitIONodes) {
       // Source node
       _externalFifoPorts.addElement(inp.getName());
       _externalFifoDecls += "    -- IN: " + src.getFunction().getName() + "." + inp.getBindVariables().get(0).getName() + "\n";
@@ -404,7 +404,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _externalFifoDecls += "    s_" + inp.getName() + "_Exist  : in  std_logic;\n";
     }
 
-    if (_isSink(dst)) {
+    if (_isSink(dst) && _omitIONodes) {
       // Sink node
       _externalFifoPorts.addElement(outp.getName());
       _externalFifoDecls += "    -- OUT: " + dst.getFunction().getName() + "." + outp.getBindVariables().get(0).getName() + "\n";
@@ -420,7 +420,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     _siglistS += "  signal s_" + outp.getName() + "_CLK   : std_logic;\n";
     _siglistS += "  signal s_" + outp.getName() + "_CTRL  : std_logic;\n";
 
-    if (!_isSource(src) && !_isSink(dst)) {
+    if (!_omitIONodes || !_isSource(src) && !_isSink(dst)) {
       _siglistS += "  signal s_" + outp.getName() + "_Wr    : std_logic;\n";
       _siglistS += "  signal s_" + outp.getName() + "_Dout  : std_logic_vector(QUANT-1 downto 0);\n";
       _siglistS += "  signal s_" + outp.getName() + "_Full  : std_logic;\n";
@@ -842,11 +842,13 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
 
   private boolean _isSource(ADGNode node) {
-    return (node.getInPorts().size() == 0);
+    return false;
+//    return (node.getInPorts().size() == 0);
   }
   
   private boolean _isSink(ADGNode node) {
-    return (node.getOutPorts().size() == 0);
+    return false;
+//    return (node.getOutPorts().size() == 0);
   }
   
   
@@ -905,6 +907,8 @@ public class IseNetworkVisitor extends PlatformVisitor {
   ////////////////////////////////////
 
   private boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
-  private boolean _synth = false;   // Make output suitable for synthesis (true) or simulation (false)
+//  private boolean _omitIOEdges = false; // omit FIFOs connecting to input and output nodes (only keep the internal FIFOs of a network)
+  private boolean _simul = false;   // Generate simulation files
+  private boolean _synth = !_simul;   // Make output suitable for synthesis
   private int _resetHigh = 0;       // Active reset level
 }
