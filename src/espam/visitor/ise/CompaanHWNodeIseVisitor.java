@@ -62,7 +62,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.7 2012/02/20 10:00:13 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.8 2012/02/22 10:36:41 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -1562,27 +1562,27 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("--======================================================================================--");
 		hdlPS.println("");
 
-		hdlPS.println("   DEMUX : WRITE_DEMUX");
-		hdlPS.println("   generic map (");
-		hdlPS.println("      N_PORTS => c_OUT_PORTS");
-		hdlPS.println("   )");
-
-		hdlPS.println("   port map (");
-		hdlPS.println("      WRITES  => sl_WRITES,");
-		hdlPS.println("      WRITE   => sl_write,");
-		hdlPS.println("");
-		hdlPS.println("      FULLS   => sl_fulls,");
-		hdlPS.println("      FULL    => sl_full,");
-		hdlPS.println("");
-		hdlPS.println("      CONTROL => sl_control_wr");
-		hdlPS.println("   );");
-		hdlPS.println("");
-		
 		if(_adgOutPorts.size() == 0){
-			hdlPS.println("   sl_full    <= '0';");
-			hdlPS.println("");	
+			hdlPS.println("   sl_full       <= '0';");
+			hdlPS.println("");
 		}
 		else{
+			hdlPS.println("   DEMUX : WRITE_DEMUX");
+			hdlPS.println("   generic map (");
+			hdlPS.println("      N_PORTS => c_OUT_PORTS");
+			hdlPS.println("   )");
+
+			hdlPS.println("   port map (");
+			hdlPS.println("      WRITES  => sl_WRITES,");
+			hdlPS.println("      WRITE   => sl_write,");
+			hdlPS.println("");
+			hdlPS.println("      FULLS   => sl_fulls,");
+			hdlPS.println("      FULL    => sl_full,");
+			hdlPS.println("");
+			hdlPS.println("      CONTROL => sl_control_wr");
+			hdlPS.println("   );");
+			hdlPS.println("");
+
 			i = _adgOutPorts.iterator();
 			int index = 0;
 			
