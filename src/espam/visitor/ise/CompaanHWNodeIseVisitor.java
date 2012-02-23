@@ -62,7 +62,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.8 2012/02/22 10:36:41 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.9 2012/02/23 16:12:37 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -155,27 +155,29 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 					}
 
 
-          if (_adgNode != null && !_isSource(_adgNode) && !_isSink(_adgNode)) {
-            // create the subdirectories
-            _moduleName = _coreName + "_v1_00_a";
-            _moduleDir = "pcores/" + _moduleName;
-            _hdlFile = _coreName + ".vhd";
+          if (_adgNode != null) {
+            if (!IseConfig.omitIONodes() || !_isSource(_adgNode) && !_isSink(_adgNode)) {
+              // create the subdirectories
+              _moduleName = _coreName + "_v1_00_a";
+              _moduleDir = "pcores/" + _moduleName;
+              _hdlFile = _coreName + ".vhd";
 
-            _currentCodeDir = _codeDir + "/" + _moduleDir;
-            File dir = new File(_currentCodeDir);
-            dir.mkdirs();
-            dir = new File(_currentCodeDir + "/" + _hdlDir);
-            dir.mkdirs();
+              _currentCodeDir = _codeDir + "/" + _moduleDir;
+              File dir = new File(_currentCodeDir);
+              dir.mkdirs();
+              dir = new File(_currentCodeDir + "/" + _hdlDir);
+              dir.mkdirs();
 
-            if (_optimizeCounters == true)
-              _analyzeCounters();
+              if (_optimizeCounters == true)
+                _analyzeCounters();
 
-            _writeHdlFuncFile();
-            _writeHdlExUnitFile();
-            _writeHdlEvalLogRdFile();
-            _writeHdlEvalLogWrFile();
-            _writeHdlHWNodeFile();
-            // HWNodePack,RdMux,WrMux,CtrlUnit,GenCounter,Param are copied from the vhdl library
+              _writeHdlFuncFile();
+              _writeHdlExUnitFile();
+              _writeHdlEvalLogRdFile();
+              _writeHdlEvalLogWrFile();
+              _writeHdlHWNodeFile();
+              // HWNodePack,RdMux,WrMux,CtrlUnit,GenCounter,Param are copied from the vhdl library
+            }
           }
 				}
 			}
@@ -2022,12 +2024,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	}
 
   private boolean _isSource(ADGNode node) {
-//    return false;
     return (node.getInPorts().size() == 0);
   }
   
   private boolean _isSink(ADGNode node) {
-//    return false;
     return (node.getOutPorts().size() == 0);
   }
 

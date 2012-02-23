@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.2 2011/05/17 15:05:35 svhaastr Exp $
+# $Id: makefile,v 1.3 2012/02/23 16:12:37 svhaastr Exp $
 #
 
 ROOT  = ../../..
@@ -10,7 +10,8 @@ SUBPACKAGES =
 JSRCS = \
 	CompaanHWNodeIseVisitor.java \
 	ReorderMemoryVisitor.java \
-	IseNetworkVisitor.java
+	IseNetworkVisitor.java \
+	IseConfig.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

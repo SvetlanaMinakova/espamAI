@@ -58,13 +58,13 @@ import espam.utils.symbolic.expression.*;
 //// ISE Network Visitor
 
 /**
- * This class is a visitor that is used to generate an ISE project. This
+ * This class is a visitor that generates an ISE project. This
  * visitor is typically used when all nodes of a network are mapped onto
  * CompaanHWNodes. Using this visitor requires specifying the --libxps
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.13 2012/02/23 10:06:58 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.14 2012/02/23 16:12:37 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -129,7 +129,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _iseScriptPS.println("project set speed -2");
       _iseScriptPS.println("");
 
-      if (_synth) {
+      if (IseConfig.genSynth()) {
         // Write a .UCF file if synthesize option is set
         PrintStream ucfPS = _openFile("system.ucf");
         ucfPS.println("NET \"sys_clk_pin\" TNM_NET = \"sys_clk_pin\";");
@@ -180,6 +180,9 @@ public class IseNetworkVisitor extends PlatformVisitor {
       // Copy the common LAURA processor components from the XPS library
       dir = new File(_codeDir + "/" + _commonlauraDir);
       dir.mkdirs();
+      if (_ui.getXpsLibPath().equals("")) {
+        throw new EspamException("Please specify the path to the XPS library using --libxps");
+      }
       File f = new File(_ui.getXpsLibPath() + "/pcores/HWnode_template_v1_00_a");
       File t = new File(_codeDir + "/" + _commonlauraDir);
       Copier.copy(f, t, 1, true);
@@ -303,7 +306,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println(_fifoInst);       // FSL instantiations
 
       _systemPS.println("");
-      _systemPS.println("  -- A cycle counter, useful for e.g. determining performance statistics");
+      _systemPS.println("  -- Cycle counter");
       _systemPS.println("  process (sys_rst_s,sys_clk_s) begin");
       _systemPS.println("    if (sys_rst_s = '0') then");
       _systemPS.println("      cycle_counter <= X\"00000000\";");
@@ -317,7 +320,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _systemPS.println("end architecture STRUCTURE;");
 
 
-      if (_simul == true) {
+      if (IseConfig.genSimul() == true) {
         // Add simulation test bench
         PrintStream simtbPS = _openFile("simulationtb.vhd");
         _writeSimulationTB(simtbPS);
@@ -347,7 +350,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
    */
   public void visitComponent(CompaanHWNode x) {
     // Write HDL file
-    if (!_omitIONodes || !_isSource(_adgNode) && !_isSink(_adgNode)) {
+    if (!IseConfig.omitIONodes() || !_isSource(_adgNode) && !_isSink(_adgNode)) {
       _writeComponentDef();
       _writeComponentInst();
 
@@ -406,7 +409,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     ADGNode src = (ADGNode) edge.getFromPort().getNode();
     ADGNode dst = (ADGNode) edge.getToPort().getNode();
 
-    if (_isSource(src) && _omitIONodes) {
+    if (_isSource(src) && IseConfig.omitIONodes()) {
       // Source node
       _externalFifoPorts.addElement(inp.getName());
       _externalFifoDecls += "    -- IN: " + src.getFunction().getName() + "." + inp.getBindVariables().get(0).getName() + "\n";
@@ -415,7 +418,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       _externalFifoDecls += "    s_" + inp.getName() + "_Exist  : in  std_logic;\n";
     }
 
-    if (_isSink(dst) && _omitIONodes) {
+    if (_isSink(dst) && IseConfig.omitIONodes()) {
       // Sink node
       _externalFifoPorts.addElement(outp.getName());
       _externalFifoDecls += "    -- OUT: " + dst.getFunction().getName() + "." + outp.getBindVariables().get(0).getName() + "\n";
@@ -431,7 +434,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     _siglistS += "  signal s_" + outp.getName() + "_CLK   : std_logic;\n";
     _siglistS += "  signal s_" + outp.getName() + "_CTRL  : std_logic;\n";
 
-    if (!_omitIONodes || !_isSource(src) && !_isSink(dst)) {
+    if (!IseConfig.omitIONodes() || !_isSource(src) && !_isSink(dst)) {
       _siglistS += "  signal s_" + outp.getName() + "_Wr    : std_logic;\n";
       _siglistS += "  signal s_" + outp.getName() + "_Dout  : std_logic_vector(QUANT-1 downto 0);\n";
       _siglistS += "  signal s_" + outp.getName() + "_Full  : std_logic;\n";
@@ -445,7 +448,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       if (commModel == LinearizationType.GenericOutOfOrder) {
         _fifoInst += "  " + x.getName() + " : reorder" + x.getName().substring(4) + "\n";
         _fifoInst += "    generic map (\n";
-        _fifoInst += "      C_EXT_RESET_HIGH => " + _resetHigh + ",\n";
+        _fifoInst += "      C_EXT_RESET_HIGH => " + IseConfig.getResetHigh() + ",\n";
         _fifoInst += "      C_DWIDTH         => 32\n";
         _fifoInst += "    )\n";
         _fifoInst += "    port map (\n";
@@ -478,7 +481,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
         _fifoInst += "  " + x.getName() + " : fsl_v20\n";
         _fifoInst += "    generic map (\n";
-        _fifoInst += "      C_EXT_RESET_HIGH => " + _resetHigh + ",\n";
+        _fifoInst += "      C_EXT_RESET_HIGH => " + IseConfig.getResetHigh() + ",\n";
         _fifoInst += "      C_ASYNC_CLKS     => 0,\n";
         _fifoInst += "      C_IMPL_STYLE     => " + implstyle + ",\n";
         _fifoInst += "      C_USE_CONTROL    => 0,\n";
@@ -543,7 +546,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simscriptPS.println("");
     simscriptPS.println("# Run the executable produced by fuse.");
     simscriptPS.println("puts \"Running simulation...\"");
-    simscriptPS.println("set tbstatus [catch {exec ./tb.exe -tclbatch simtb.cmd} simresult]");
+    simscriptPS.println("set tbstatus [catch {exec ./tb.exe -tclbatch simtb.cmd >@stdout 2>@stderr} simresult]");
     simscriptPS.println("puts $simresult");
     simscriptPS.println("");
     simscriptPS.println("puts \"Simulation ended.\"");
@@ -576,9 +579,15 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("    );");
     simtbPS.println("  end component;");
     simtbPS.println("");
+
     String signaldecls = _externalFifoDecls.replaceAll("  s_", "signal s_");
     signaldecls = signaldecls.replaceAll(": in  ", ": ");
     signaldecls = signaldecls.replaceAll(": out ", ": ");
+    if (!IseConfig.genTracing()) {
+      // Initialize signals if we don't generate traces
+      signaldecls = signaldecls.replaceAll("Exist  : std_logic;", "Exist  : std_logic := '1';");
+      signaldecls = signaldecls.replaceAll("Full   : std_logic;", "Full   : std_logic := '0';");
+    }
     simtbPS.println(signaldecls);
 
     simtbPS.println("  signal sys_clk_pin : std_logic := '0';");
@@ -586,7 +595,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("  signal done        : std_logic;");
     simtbPS.println("  signal cycle_counter : unsigned(31 downto 0);");
     simtbPS.println("");
-    if (_tbTracing) {
+    if (IseConfig.genTracing()) {
       for (int i = 0; i < _externalFifoPorts.size(); i++) {
         String fifoName = _externalFifoPorts.get(i);
         if (fifoName.indexOf("IP") > 0) {
@@ -626,7 +635,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("    );");
     simtbPS.println("");
     simtbPS.println("");
-    if (_tbTracing) {
+    if (IseConfig.genTracing()) {
       simtbPS.println("  -- Trace I/O handling");
       simtbPS.println("");
 
@@ -676,8 +685,10 @@ public class IseNetworkVisitor extends PlatformVisitor {
           simtbPS.println("  s_" + fifoName + "_Full <= '0';");
         }
       }
+      simtbPS.println("");
     }
-    simtbPS.println("");
+
+    simtbPS.println("  -- Cycle counter.");
     simtbPS.println("  process (sys_rst_pin,sys_clk_pin) begin");
     simtbPS.println("    if (sys_rst_pin = '0') then");
     simtbPS.println("      cycle_counter <= X\"00000000\";");
@@ -686,8 +697,19 @@ public class IseNetworkVisitor extends PlatformVisitor {
     simtbPS.println("    end if;");
     simtbPS.println("  end process;");
     simtbPS.println("");
+
+    simtbPS.println("  -- Simulation progress printing.");
+    simtbPS.println("  process (cycle_counter) begin");
+    simtbPS.println("    if (cycle_counter(15 downto 0) = \"0000\") then");
+    simtbPS.println("      report \"Cycle \" & integer'image(to_integer(cycle_counter)) severity note;");
+    simtbPS.println("    end if;");
+    simtbPS.println("  end process;");
+    simtbPS.println("");
+
+    simtbPS.println("  -- Stops simulation if all processes have finished.");
     simtbPS.println("  process (done) begin");
     simtbPS.println("    if (done = '1') then");
+    simtbPS.println("      -- Actually this is not really a failure, but it's apparently the only way to stop a simulation.");
     simtbPS.println("      report \"Process network finished at cycle \" & integer'image(to_integer(cycle_counter)) severity failure;");
     simtbPS.println("    end if;");
     simtbPS.println("  end process;");
@@ -859,7 +881,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
     _modinstS += "  -- Component instantiation of node " + _adgNode.getName() + " (" + _adgNode.getFunction().getName() + ")\n";
     _modinstS += "  " + _coreName + "_0 : " + _coreName + "\n";
     _modinstS += "    generic map (\n";
-    _modinstS += "      RESET_HIGH => " + _resetHigh + ",\n";
+    _modinstS += "      RESET_HIGH => " + IseConfig.getResetHigh() + ",\n";
     _modinstS += "      PAR_WIDTH => 16,\n";
     _modinstS += "      QUANT => 32\n";
     _modinstS += "    )\n";
@@ -900,13 +922,11 @@ public class IseNetworkVisitor extends PlatformVisitor {
 
 
   private boolean _isSource(ADGNode node) {
-    return false;
-//    return (node.getInPorts().size() == 0);
+    return (node.getInPorts().size() == 0);
   }
   
   private boolean _isSink(ADGNode node) {
-    return false;
-//    return (node.getOutPorts().size() == 0);
+    return (node.getOutPorts().size() == 0);
   }
   
   
@@ -960,15 +980,4 @@ public class IseNetworkVisitor extends PlatformVisitor {
   
   private Vector _adgOutPorts ;     //out ports of the ADG node
 
-
-  ////////////////////////////////////
-  // Experimental & hardcoded options:
-  ////////////////////////////////////
-
-  private boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
-//  private boolean _omitIOEdges = false; // omit FIFOs connecting to input and output nodes (only keep the internal FIFOs of a network)
-  private boolean _tbTracing = false;  // Let simulation testbench handle input and output traces
-  private boolean _simul = true;   // Generate simulation files
-  private boolean _synth = !_simul;   // Make output suitable for synthesis
-  private int _resetHigh = 0;       // Active reset level
 }
