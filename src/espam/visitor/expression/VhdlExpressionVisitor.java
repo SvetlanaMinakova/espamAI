@@ -35,7 +35,7 @@ import espam.datamodel.domain.*;
  * specific way for VHDL.
  *
  * @author Ying Tao
- * @version $Id: VhdlExpressionVisitor.java,v 1.2 2011/06/09 13:18:31 svhaastr Exp $
+ * @version $Id: VhdlExpressionVisitor.java,v 1.3 2012/02/24 14:58:17 svhaastr Exp $
  *           
  * @stereotype Visitor Design Pattern
  */
@@ -117,8 +117,16 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 		}
     if (x.getDenominator() != 1) {
       assert(x.getDenominator() > 0);
-      // Assuming ceiled division
-      R += " +" + (x.getDenominator()-1) + ")/" + x.getDenominator();
+      // XXX DIRT ALERT: we choose between ceil/floor by looking at the "flag"; this flag is intended to switch between
+      // reg/non-reg iterator names, and not necessarily between lower/upper bound.
+      if (flag == 0) {
+        // Assuming ceiled division
+        R += " +" + (x.getDenominator()-1) + ")/" + x.getDenominator();
+      }
+      else {
+        // Assuming floored division
+        R += ")/" + x.getDenominator();
+      }
     }
 
 		return R;
@@ -160,17 +168,15 @@ public class VhdlExpressionVisitor implements ExpressionVisitor {
 		
 		if (x.getDenominator() == 1) {
 			if (x.getNumerator() == 1) {
-				R += "div(" + x.getExpression().accept(this) + ","
-						+ x.getDivider() + ")";
+				R += "(" + x.getExpression().accept(this) + ")/"
+						+ x.getDivider();
 			} else {
-				R += x.getNumerator() + "*div("
-						+ x.getExpression().accept(this) + "," + x.getDivider()
-						+ ")";
+				R += x.getNumerator() + "*("
+						+ x.getExpression().accept(this) + ")/" + x.getDivider();
 			}
 		} else {
-			R += x.getNumerator() + "/" + x.getDenominator() + "*div("
-					+ x.getExpression().accept(this) + "," + x.getDivider()
-					+ ")";
+			R += x.getNumerator() + "/" + x.getDenominator() + "*("
+					+ x.getExpression().accept(this) + ")/" + x.getDivider();
 		}
 		return R;
 	}
