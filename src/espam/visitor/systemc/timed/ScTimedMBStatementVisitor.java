@@ -176,7 +176,12 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
 
-        _printStream.print(_prefix + "writeFSL( wr, " + gateName );
+        if( cdChannel.isSelfChannel() ) {
+// quick hack to determine the sinks (in the monitor)
+             _printStream.print(_prefix + "writeFSL( ex, " + gateName );
+        } else {
+             _printStream.print(_prefix + "writeFSL( wr, " + gateName );
+        }
 
 	Iterator i = x.getIndexList().iterator();
 	while( i.hasNext() ) {
@@ -316,7 +321,12 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
 	while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
 
-               _printStream.print(_prefix + "readFSL( rd, " + gateName + ", " + bindVar.getName() );
+                if( cdChannel.isSelfChannel() ) {
+// quick hack to determine the sinks (in the monitor)
+                    _printStream.print(_prefix + "readFSL( ex, " + gateName + ", " + bindVar.getName() );
+                } else {
+                    _printStream.print(_prefix + "readFSL( rd, " + gateName + ", " + bindVar.getName() );
+                }
 
 		Iterator j = bindVar.getIndexList().iterator();
 		while( j.hasNext() ) {

@@ -28,7 +28,7 @@ import espam.visitor.PlatformVisitor;
  * This class describes a ML605 communication component.
  *
  * @author Mohamed Bamakhrama
- * @version  $Id: ML605.java,v 1.1 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: ML605.java,v 1.2 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class ML605 extends Resource {
@@ -60,9 +60,29 @@ public class ML605 extends Resource {
      */
     public Object clone() {
             ML605 newObj = (ML605) super.clone();
+            newObj.setCommInterface(_commInterface);
             return( newObj );
     }
 
+    /**
+     *  Get the communication interface.
+     *
+     * @return  the communication interface
+     */
+    public String getCommInterface() {
+        return _commInterface;
+    }
+
+    /**
+     *  Set the communication interface.
+     *
+     * @param  commInterface The new communication interface.
+     */
+    public void setCommInterface(String commInterface) {
+        _commInterface = commInterface;
+    }
+
+    
     /**
      *  Return a description of the ML605.
      *
@@ -71,4 +91,9 @@ public class ML605 extends Resource {
     public String toString() {
         return "ML605 host interface component: " + getName();
     }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+
+    private String _commInterface = "";
 }

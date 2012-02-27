@@ -25,10 +25,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Hashtable;
 
 import espam.datamodel.EspamException;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGEdge;
+import espam.datamodel.graph.adg.ADGPort;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 import espam.datamodel.parsetree.statement.SimpleAssignStatement;
@@ -62,7 +65,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: HdpcStatementVisitor.java,v 1.3 2012/01/13 15:11:25 nikolov Exp $
+ * @version  $Id: HdpcStatementVisitor.java,v 1.4 2012/02/27 11:22:50 nikolov Exp $
  *      
  */
 
@@ -74,11 +77,15 @@ public class HdpcStatementVisitor extends StatementVisitor {
      * @param  printStream Description of the Parameter
      * @param  name Description of the Parameter
      */
-    public HdpcStatementVisitor(PrintStream printStream, CDProcess process) {
-        super();
+    public HdpcStatementVisitor(PrintStream printStream, CDProcess process, boolean selfChannels, Hashtable hashHdpcInPorts, Hashtable hashHdpcOutPorts) {
+        super(); 
         _printStream = printStream;
         _process = process;
         _cExpVisitor = new CExpressionVisitor();
+        _selfChannels = selfChannels;
+        _hashHdpcInPorts = hashHdpcInPorts;
+        _hashHdpcOutPorts = hashHdpcOutPorts;
+//        _cntr=0;
     }
 
 
@@ -169,39 +176,79 @@ public class HdpcStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(OpdStatement x) {
 
-    	String gateName = x.getGateName();
+    	Iterator i;
+        String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
+        int intPort=0;
         String syncType = "LOCK_FREE";
 	// Check whether a channel is a 'self-loop' in order to use lighter communication primitive
-	if( cdChannel.getFromGate().getProcess().getName().equals( cdChannel.getToGate().getProcess().getName() ) ) {
-		syncType = "SYNC_FREE";
+// 	if( cdChannel.getFromGate().getProcess().getName().equals( cdChannel.getToGate().getProcess().getName() ) ) {
+        if( cdChannel.isSelfChannel() ) {
+  	    syncType = "SYNC_FREE";
 	}
-
-	StringBuffer tmpStr = new StringBuffer(x.getGateName());
-	tmpStr.delete(0,3);
-	String port = tmpStr.toString();
-        int intPort = Integer.parseInt(port);
-	intPort--;
-        
         _printStream.println("");
-        /* in case of self channel, static scheduling, and size equal to 1,
-	 * direct assignment from Opd to Ipd is possible without accessing SW FIFO */
-        if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
-	    _printStream.println(_prefix + "// accessing self-loop with size 1: " + cdChannel.getName());
-	}
-//        _printStream.println(_prefix + "proc.writeToPort<" + syncType + ">( " +
-//	        intPort + ", " + x.getArgumentName() + x.getNodeName() + " );");
-        _printStream.print(_prefix + "proc.writeToPort<" + syncType + ">( " +
+
+        if( _selfChannels ) {
+           ADGEdge aedge = (ADGEdge)cdChannel.getAdgEdgeList().get(0);
+           ADGPort aport = (ADGPort)aedge.getPortList().get(0);
+           boolean simple = (aport.getBindVariables().size()==cdChannel.getMaxSize());
+         
+           if( cdChannel.isSelfChannel() ) {
+              if( cdChannel.getMaxSize()==1 ) {
+                 _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() );      
+            
+              } else {  // self-channel with size>1 
+                 String wr =  "wr_" + cdChannel.getName();
+                 if( simple ) { 
+                    if( !cdChannel.getName().equals(_chName) ) {
+                       _chName = cdChannel.getName();
+                       _cntr=0;
+                    }
+                    _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + (_cntr++) + "] = " + x.getArgumentName() );      
+                 } else {
+                    _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() );      
+                 }
+              }
+
+              i = x.getIndexList().iterator();
+   	      while( i.hasNext() ) {
+ 	         Expression expression = (Expression) i.next();
+	         _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+              }
+              _printStream.println( "; // self-channel with size " + cdChannel.getMaxSize() );
+
+           } else { // not a self-channel
+              intPort = (Integer)_hashHdpcOutPorts.get( cdChannel );
+              _printStream.print(_prefix + "proc.writeToPort<" + syncType + ">( " +
+	                         intPort + ", " + x.getArgumentName());
+
+  	      i = x.getIndexList().iterator();
+	      while( i.hasNext() ) {
+		 Expression expression = (Expression) i.next();
+		 _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	      } 
+	      _printStream.println(" );");
+           }
+        } else { // _selfChannels==false
+	     StringBuffer tmpStr = new StringBuffer(x.getGateName());
+	     tmpStr.delete(0,3);
+	     String port = tmpStr.toString();
+             intPort = Integer.parseInt(port);
+ 	     intPort--;
+
+             _printStream.print(_prefix + "proc.writeToPort<" + syncType + ">( " +
 	        intPort + ", " + x.getArgumentName());
 
-	Iterator i = x.getIndexList().iterator();
-	while( i.hasNext() ) {
+  	    i = x.getIndexList().iterator();
+	    while( i.hasNext() ) {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-	}
-	_printStream.println(" );");
+	    } 
+	    _printStream.println(" );");
+        }
+
     }
 
     /**
@@ -223,10 +270,8 @@ public class HdpcStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-//                      _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
                      _printStream.print(var.getVariableName() + ", ");
                  } else {
-//                      _printStream.print(var.getVariableName() + x.getNodeName());
                      _printStream.print(var.getVariableName());
                  }
             }
@@ -240,10 +285,8 @@ public class HdpcStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-//                    _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
                    _printStream.print(var.getVariableName() + ", ");
                } else {
-//                    _printStream.print(var.getVariableName() + x.getNodeName());
                    _printStream.print(var.getVariableName());
                }
            }
@@ -253,12 +296,10 @@ public class HdpcStatementVisitor extends StatementVisitor {
 
 	} else {
 
-	       VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
-	       VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
+	     VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
+	     VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-//              _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-// 	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
              _printStream.print(_prefix + outArg.getVariableName() + " = "  +
 	                                 inArg.getVariableName() + ";"           );
 	     _printStream.println("");
@@ -301,12 +342,10 @@ public class HdpcStatementVisitor extends StatementVisitor {
     public void visitStatement(ControlStatement x) {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-//            _printStream.println(_prefix + "int "
             _printStream.println(_prefix
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
         } else {
-//             _printStream.println(_prefix + "int "
             _printStream.println(_prefix
                     + x.getName() + " = ("
                     + expression.accept(_cExpVisitor) + ")/" +
@@ -322,64 +361,105 @@ public class HdpcStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(FifoMemoryStatement x) {
 
-	String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
+	Iterator i;
+        String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
 
     	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
+        int intPort=0;
         String syncType = "LOCK_FREE";
 	// Check whether a channel is a 'self-loop' in order to use lighter communication primitive
 	if( cdChannel.getFromGate().getProcess().getName().equals( cdChannel.getToGate().getProcess().getName() ) ) {
 		syncType = "SYNC_FREE";
 	}
-
-	StringBuffer tmpStr = new StringBuffer(x.getGateName());
-	tmpStr.delete(0,3);
-	String port = tmpStr.toString();
-        int intPort = Integer.parseInt(port);
-	intPort--;
-	
 	_printStream.println("");
-	/* in case of self channel, static scheduling, and size equal to 1,
-	 * direct assignment from Opd to Ipd is possible without accessing SW FIFO */
-	if (cdChannel.isSelfChannel() && cdChannel.getMaxSize() == 1){
-	    _printStream.println(_prefix + "// acessing self-loop with size 1: " + cdChannel.getName());
-	}
 
-//*
-// for every binding vazriable, we need a read from fifo...
-	Iterator i = x.getArgumentList().iterator();
-	while( i.hasNext() ) {
-		ADGVariable bindVar = (ADGVariable) i.next();
+         //-------------------------------------------------------------------------------------
+         // Implement the self-channels, in case of static schedule, as local variables.
+         //-------------------------------------------------------------------------------------
+         if( _selfChannels ) {
+           if( cdChannel.isSelfChannel() ) {
+              if( cdChannel.getMaxSize()==1 ) {
 
-	       _printStream.print(_prefix + "proc.readFromPort<" + syncType + ">( " +
+                 ADGVariable bindVar = x.getArgumentList().get(0);
+                 _printStream.print(_prefix + bindVar.getName() ); 
+     
+                 Iterator j = bindVar.getIndexList().iterator();
+	         while( j.hasNext() ) {
+		    Expression expression = (Expression) j.next();
+		    _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+	         }
+                 _printStream.println(" = var_" + cdChannel.getName() + "; // self-channel with size 1" );
+ 
+              } else { // self-channel with size >1
+                String rd =  "rd_" + cdChannel.getName();
+                boolean simple = (x.getArgumentList().size()==cdChannel.getMaxSize());
+                int cntr=0;
+                // for every binding variable, we need a read from a fifo
+	        i = x.getArgumentList().iterator();
+	        while( i.hasNext() ) {
+
+		   ADGVariable bindVar = (ADGVariable) i.next();
+                   _printStream.print(_prefix + bindVar.getName() ); 
+
+		   Iterator j = bindVar.getIndexList().iterator();
+		   while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		   } 
+                   if( simple ) {
+                     _printStream.println(" = var_" + cdChannel.getName() + "[" + (cntr++) + "]; // self-channel with size " + cdChannel.getMaxSize() );
+                   } else {
+                     _printStream.println(" = var_" + cdChannel.getName() + "[" + rd + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + rd + "):(" + rd + "=0)]; // self-channel with size " + cdChannel.getMaxSize() );
+                   }
+	        }
+             }
+
+           } else { // not a self-channel
+              intPort = (Integer)_hashHdpcInPorts.get( cdChannel );
+              // for every binding variable, we need a read from fifo...
+	      i = x.getArgumentList().iterator();
+	      while( i.hasNext() ) {
+		  ADGVariable bindVar = (ADGVariable) i.next();
+
+	          _printStream.print(_prefix + "proc.readFromPort<" + syncType + ">( " +
 		        intPort + ", " +
                 	bindVar.getName() );
 
-		Iterator j = bindVar.getIndexList().iterator();
-		while( j.hasNext() ) {
+		  Iterator j = bindVar.getIndexList().iterator();
+		  while( j.hasNext() ) {
 			Expression expression = (Expression) j.next();
 			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-		}
-		_printStream.println(" );");
-	}
+		  }
+		  _printStream.println(" );");
+	      }
+           }
+        } else { // _selfChannels==false
+	      StringBuffer tmpStr = new StringBuffer(x.getGateName());
+	      tmpStr.delete(0,3);
+	      String port = tmpStr.toString();
+              intPort = Integer.parseInt(port);
+	      intPort--;
+              // for every binding variable, we need a read from fifo...
+	      i = x.getArgumentList().iterator();
+	      while( i.hasNext() ) {
+		  ADGVariable bindVar = (ADGVariable) i.next();
 
-/*/
+	          _printStream.print(_prefix + "proc.readFromPort<" + syncType + ">( " +
+		        intPort + ", " +
+                	bindVar.getName() );
 
-        _printStream.println(_prefix + "proc.readFromPort<" + syncType + ">( " +
-                intPort + ", " + tmp + x.getNodeName() + " );");
-		
-        Iterator i = x.getArgumentList().iterator();
-	if (i.hasNext()) {
-            ADGVariable var = (ADGVariable) i.next();
-	}
-	while (i.hasNext()) {
-             ADGVariable var = (ADGVariable) i.next();
-            _printStream.println(_prefix + var.getName() + x.getNodeName() +" = " 
-	                                            + tmp + x.getNodeName() + ";");
-	}
-//*/
+		  Iterator j = bindVar.getIndexList().iterator();
+		  while( j.hasNext() ) {
+			Expression expression = (Expression) j.next();
+			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+		  }
+		  _printStream.println(" );");
+	      }
+        }
+
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
@@ -402,4 +482,14 @@ public class HdpcStatementVisitor extends StatementVisitor {
     private CDProcess _process = null;
 
     private CExpressionVisitor _cExpVisitor = null;
+
+    private static int _cntr=0;
+
+    private static String _chName="";
+
+    private boolean _selfChannels = false;
+
+    private Hashtable _hashHdpcInPorts = null;
+
+    private Hashtable _hashHdpcOutPorts = null;
 }

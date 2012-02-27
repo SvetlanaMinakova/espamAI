@@ -71,7 +71,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Platform.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: Xml2Platform.java,v 1.4 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class Xml2Platform {
@@ -306,29 +306,47 @@ public class Xml2Platform {
 		//System.out.println(" -- Board -- ");
 		String name = (String) attributes.getValue("name");
 		String type = (String) attributes.getValue("type");
+		String commInterface = (String) attributes.getValue("interface");
 
 		if( type.equals("ADM-XRC-II") ) {
 			System.out.println(" -- FPGA Board: ADM-XRC-II");
 			ADMXRCII hostInterface = new ADMXRCII(name);
 //			zbtMemoryController.setSize( Integer.valueOf(size).intValue() );
+                        hostInterface.setCommInterface(commInterface); 
 			return hostInterface;
 		} else if( type.equals("ADM-XPL") ) {
 			System.out.println(" -- FPGA Board: ADM-XPL");
 			ADMXPL hostInterface = new ADMXPL(name);
+                        hostInterface.setCommInterface(commInterface); 
 			return hostInterface;
 		} else if( type.equals("XUPV5-LX110T") ) {
 			System.out.println(" -- FPGA Board: XUPV5-LX110T");
+			if( commInterface.equals("empty") ) {
+			    commInterface = "UART"; // The default communication interface
+			}
+			System.out.println(" -- Communication interface: " + commInterface);
 			XUPV5LX110T hostInterface = new XUPV5LX110T(name);
+                        hostInterface.setCommInterface(commInterface); 
 			return hostInterface;
 		} else if( type.equals("ML505") ) {
 			System.out.println(" -- FPGA Board: ML505");
+			if( commInterface.equals("empty") ) {
+			    commInterface = "UART"; // The default communication interface
+			}
+			System.out.println(" -- Communication interface: " + commInterface);
 			ML505 hostInterface = new ML505(name);
+                        hostInterface.setCommInterface(commInterface); 
 			return hostInterface;
 		} else if ( type.equals("ML605") ) {
-            System.out.println(" -- FPGA Board: ML605");
-            ML605 hostInterface = new ML605(name);
-            return hostInterface;
-        } else {
+			System.out.println(" -- FPGA Board: ML605");
+			if( commInterface.equals("empty") ) {
+			    commInterface = "UART"; // The default communication interface
+			}
+			System.out.println(" -- Communication interface: " + commInterface);
+			ML605 hostInterface = new ML605(name);
+                        hostInterface.setCommInterface(commInterface); 
+			return hostInterface;
+		} else {
 			throw new Error("Unknown Board Type: " + type);
 		}
 	}

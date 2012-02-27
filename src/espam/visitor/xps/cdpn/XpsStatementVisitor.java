@@ -62,7 +62,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.6 2012/01/20 16:46:42 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.7 2012/02/27 11:22:50 nikolov Exp $
  *      
  */
 
@@ -225,7 +225,7 @@ public class XpsStatementVisitor extends StatementVisitor {
            
 //-------------------------------------------------------------------------------------
 // We can implement the self-channels, in case of static schedule, as local variables.
-// This feature is currently not used because, in oerder to be complete, 
+// This feature is currently not used because, in order to be complete, 
 // we need to remove also the HW implementation of these self-channels.
 //-------------------------------------------------------------------------------------
 /*  
@@ -428,7 +428,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 
 //-------------------------------------------------------------------------------------
 // We can implement the self-channels, in case of static schedule, as local variables.
-// This feature is currently not used because, in oerder to be complete, 
+// This feature is currently not used because, in order to be complete, 
 // we need to remove also the HW implementation of these self-channels.
 //-------------------------------------------------------------------------------------
 /*

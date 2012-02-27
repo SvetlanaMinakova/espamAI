@@ -80,7 +80,7 @@ public class ResolveEntityHandler implements EntityResolver {
 			+ "<!ATTLIST memory name CDATA #REQUIRED type CDATA #IMPLIED datawidth CDATA #IMPLIED size CDATA #IMPLIED>"
 
 			+ "<!ELEMENT host_interface (port*)>"
-			+ "<!ATTLIST host_interface name CDATA #REQUIRED type (ADM-XRC-II | ADM-XPL | XUPV5-LX110T | ML505 | ML605 | empty) \"empty\">"
+			+ "<!ATTLIST host_interface name CDATA #REQUIRED type (ADM-XRC-II | ADM-XPL | XUPV5-LX110T | ML505 | ML605 | empty) \"empty\" interface (USB | UART | empty) \"empty\">" 
 
 			+ "<!ELEMENT link (resource*)>"
 			+ "<!ATTLIST link name CDATA #REQUIRED>"

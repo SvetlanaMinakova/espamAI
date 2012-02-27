@@ -48,7 +48,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.4 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: XmpVisitor.java,v 1.5 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -146,7 +146,13 @@ public class XmpVisitor extends CDPNVisitor {
 			_printStream.println("IntStyle: default");
 			_printStream.println("MHS File: system.mhs");
 	
+
+                if( _commInterface.equals("USB") ) {
+			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605_USB.ucf");
+                } else {
 			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605.ucf");
+                }
+
 			_printStream.println("Architecture: virtex6");
 			_printStream.println("Device: xc6vlx240t");
 			_printStream.println("Package: ff1156");
@@ -273,23 +279,28 @@ public class XmpVisitor extends CDPNVisitor {
      *  @param platform
      */
     private String _getBoard( Platform x ) {
-	
+
 	String board = "";
         Iterator j = x.getResourceList().iterator();
     	while (j.hasNext()) {
             Resource resource = (Resource)j.next();
             if( resource instanceof ADMXRCII ) {
                board = "ADM-XRC-II";
+               _commInterface = ((ADMXRCII)resource).getCommInterface();
             } else if( resource instanceof ADMXPL ) {
                board = "ADM-XPL";
+               _commInterface = ((ADMXPL)resource).getCommInterface();
             } else if( resource instanceof XUPV5LX110T ) {
                board = "XUPV5-LX110T";
+               _commInterface = ((XUPV5LX110T)resource).getCommInterface();
             } else if( resource instanceof ML505 ) {
                board = "ML505";
+               _commInterface = ((ML505)resource).getCommInterface();
             } else if( resource instanceof ML605 ) {
                board = "ML605";
+               _commInterface = ((ML605)resource).getCommInterface();
             }
-        }  
+        }
 
 	return board;
     }
@@ -398,4 +409,6 @@ public class XmpVisitor extends CDPNVisitor {
     private Mapping _mapping = null;
 
     private String _targetBoard = "";
+
+    private String _commInterface = "";
 }

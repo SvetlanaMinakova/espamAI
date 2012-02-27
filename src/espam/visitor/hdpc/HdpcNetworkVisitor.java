@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.Hashtable;
 
 import espam.datamodel.graph.adg.ADGParameter;
 import espam.datamodel.graph.adg.ADGEdge;
@@ -79,6 +80,44 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
                 File t = new File(codeDir);
                 Copier.copy(f, t, 1, true);
 
+                // Uncoment the line below to implement self-channels as local variables
+                _selfChannels = true;
+
+                //-----------------------------------------------------------
+                // Create a map from input/output gates to HDPC port numbers
+                //-----------------------------------------------------------
+                if( _selfChannels ) {
+	           _hashHdpcInPorts = new Hashtable();
+	           _hashHdpcOutPorts = new Hashtable();
+
+                   Iterator i = x.getProcessList().iterator();
+                   while( i.hasNext() ) {
+                      CDProcess process = (CDProcess) i.next();
+
+                      int nHdpcPort=0;
+                      Iterator j = process.getInGates().iterator();
+                      while( j.hasNext() ) {
+                         CDGate gate = (CDGate) j.next();
+	                 CDChannel chann = (CDChannel)gate.getChannel();
+                         // Exclude the self-channels from the PPN topology
+                         if( !chann.isSelfChannel() ) {
+                            _hashHdpcInPorts.put( chann, nHdpcPort++ );
+                         }
+                      }
+        
+                      nHdpcPort=0;
+                      j = process.getOutGates().iterator();
+                      while( j.hasNext() ) {
+                         CDGate gate = (CDGate) j.next();
+	                 CDChannel chann = (CDChannel)gate.getChannel();
+                         // Exclude the self-channels from the PPN topology
+                         if( !chann.isSelfChannel() ) {
+                            _hashHdpcOutPorts.put( chann, nHdpcPort++ );
+                         }
+                     }
+                  }
+              }
+
 	} catch( EspamException e ) {
 		System.out.println(" ESPAM Message: " + e.getMessage());
 		e.printStackTrace(System.out);
@@ -113,11 +152,11 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
 	_printStream.println("//#include <hdpc/platforms/cuda.h>");
 	_printStream.println("//#include <hdpc/platforms/disk.h>");
 	_printStream.println(""); 
-	_printStream.println("// include all needed types of channel locking (lock_free, spin, signal, spin_acquire, etc.)"); 
+	_printStream.println("// include all needed types of channel locking (lock_free, spin, semaphore (only Windows), spin_acquire, etc.)"); 
 	_printStream.println("#include <hdpc/channels/lock_free.h> ");
 	_printStream.println("#include <hdpc/channels/sync_free.h> ");
 	_printStream.println("//#include <hdpc/channels/spin_wait.h> ");
-	_printStream.println("//#include <hdpc/channels/signal_wait.h> ");
+	_printStream.println("//#include <hdpc/channels/semaphore_wait.h> ");
 	_printStream.println("//#include <hdpc/channels/spin_acquire_wait.h> ");
 	_printStream.println(""); 
 	_printStream.println("#include \"aux_func.h\"");
@@ -131,8 +170,23 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
             process = (CDProcess) i.next();
 	    Vector inGates  = process.getInGates();
 	    Vector outGates = process.getOutGates();
+
+            int nSelfCh=0;
+//*
+            if( _selfChannels ) {
+                Iterator j = inGates.iterator();
+                while( j.hasNext() ) {
+                    CDGate gate = (CDGate)j.next();
+                    CDChannel chann = (CDChannel)gate.getChannel();
+                    // Exclude the self-channels from the PPN topology
+                    if( chann.isSelfChannel() ) {
+                       nSelfCh++;
+                    }
+                }
+            }
+//*/
 	    _printStream.println(_prefix + 
-		"typedef hdpc::Process<CPU, " + inGates.size() + ", " + outGates.size() + "> "  + process.getName() + "_t;");
+		"typedef hdpc::Process<CPU, " + (inGates.size()-nSelfCh) + ", " + (outGates.size()-nSelfCh) + "> "  + process.getName() + "_t;");
         }
         _printStream.println("");
 
@@ -243,7 +297,8 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
         _printStream.println("};");
 // end main()
 
-        HdpcProcessVisitor pt = new HdpcProcessVisitor();
+//        HdpcProcessVisitor pt = new HdpcProcessVisitor( _selfChannels );
+        HdpcProcessVisitor pt = new HdpcProcessVisitor( _selfChannels, _hashHdpcInPorts, _hashHdpcOutPorts );
         x.accept( pt );
 
         _writeVCProjectFile();
@@ -283,35 +338,53 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
 
 	    CDChannel chann = (CDChannel)gate.getChannel();
 	    String p_name = chann.getToGate().getProcess().getName();
-	    int chSize = ( (ADGEdge) chann.getAdgEdgeList().get(0) ).getSize();
+	    int chSize = chann.getMaxSize();
+//* Check the code below for correct PPN topology
+            if( _selfChannels ) {
+                // Used to implement self channels as local variables
+                String syncType = "LOCK_FREE";
+                if( !chann.isSelfChannel() ) {
+                    int intFromPort = (Integer)_hashHdpcOutPorts.get( chann );
+                    int intToPort = (Integer)_hashHdpcInPorts.get( chann );
 
-// Espam name convention for the gates: IG_1, OG_2, ... HDPC requires port numbers starting from 0. 
-// This is what we 'convert' below
-	    StringBuffer fromStr = new StringBuffer(gate.getName());
-	    fromStr.delete(0,3);
-	    String fromPort = fromStr.toString();
-            int intFromPort = Integer.parseInt(fromPort);
-	    intFromPort--;
+	            if( attach_outputs ) {
+	               _printStream.println(_prefix + "p_" + x.getName() + ".attachoutput<" + syncType + ", t" + chann.getName() +
+	               ">( " + intFromPort + ", p_" + p_name + ".getInPort(" + intToPort + "), " + chSize + " );");
+	            } else {
+	               _printStream.println(_prefix + "p_" + p_name + ".attachinput<" + syncType + ", t" + chann.getName() +
+	               ">( " + intToPort + ", p_" + x.getName() + ".getOutPort(" + intFromPort + "), " + chSize + " );"); 
+	            }
+                }
+            } else {
+//*/
+               // Espam name convention for the gates: IG_1, OG_2, ... HDPC requires port numbers starting from 0. 
+               // This is what we 'convert' below
+	       StringBuffer fromStr = new StringBuffer(gate.getName());
+	       fromStr.delete(0,3);
+	       String fromPort = fromStr.toString();
+               int intFromPort = Integer.parseInt(fromPort);
+	       intFromPort--;
 
-	    StringBuffer toStr = new StringBuffer(chann.getToGate().getName());
-	    toStr.delete(0,3);
-	    String toPort = toStr.toString();
-            int intToPort = Integer.parseInt(toPort);
-	    intToPort--;
+	       StringBuffer toStr = new StringBuffer(chann.getToGate().getName());
+	       toStr.delete(0,3);
+	       String toPort = toStr.toString();
+               int intToPort = Integer.parseInt(toPort);
+	       intToPort--;
 
-	    String syncType = "LOCK_FREE";
-	    // Check whether a channel is a 'self-loop' in order to use lighter communication primitive
-	    if( chann.getFromGate().getProcess().getName().equals( chann.getToGate().getProcess().getName() ) ) {
-		syncType = "SYNC_FREE";
-	    }
+	       String syncType = "LOCK_FREE";
+	       // Check whether a channel is a 'self-loop' in order to use lighter communication primitive
+	       if( chann.getFromGate().getProcess().getName().equals( chann.getToGate().getProcess().getName() ) ) {
+		  syncType = "SYNC_FREE";
+	       }
 
-	    if( attach_outputs ) {
-	       _printStream.println(_prefix + "p_" + x.getName() + ".attachoutput<" + syncType + ", t" + chann.getName() +
-	       ">( " + intFromPort + ", p_" + p_name + ".getInPort(" + intToPort + "), " + chSize + " );");
-	    } else {
-	       _printStream.println(_prefix + "p_" + p_name + ".attachinput<" + syncType + ", t" + chann.getName() +
-	       ">( " + intToPort + ", p_" + x.getName() + ".getOutPort(" + intFromPort + "), " + chSize + " );"); 
-	    }
+	       if( attach_outputs ) {
+	          _printStream.println(_prefix + "p_" + x.getName() + ".attachoutput<" + syncType + ", t" + chann.getName() +
+	          ">( " + intFromPort + ", p_" + p_name + ".getInPort(" + intToPort + "), " + chSize + " );");
+	       } else {
+	          _printStream.println(_prefix + "p_" + p_name + ".attachinput<" + syncType + ", t" + chann.getName() +
+	          ">( " + intToPort + ", p_" + x.getName() + ".getOutPort(" + intFromPort + "), " + chSize + " );"); 
+	       }
+            }
         }
     }
 
@@ -743,5 +816,11 @@ cf.println("</VisualStudioProject>");
     /**
      */
     private CDProcessNetwork _pn = null;
+
+    private Hashtable _hashHdpcInPorts = null;
+
+    private Hashtable _hashHdpcOutPorts = null;
+
+    private boolean _selfChannels = false;
 }
 

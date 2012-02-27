@@ -80,7 +80,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.8 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: MhsVisitor.java,v 1.9 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -204,9 +204,10 @@ public class MhsVisitor extends PlatformVisitor {
 	            " PORT fpga_0_SRAM_CLK = ZBT_CLK_OUT_s, DIR = O\n" +
 	            " PORT fpga_0_SRAM_CLK_FB = ZBT_CLK_FB_s, DIR = I, SIGIS = CLK, CLK_FREQ = 125000000");
 	        }
-		    _printStream.println(
+
+                    _printStream.println(
 	        " PORT fpga_0_RS232_Uart_1_" + sigIn + "_pin = fpga_0_RS232_Uart_1_sin, DIR = I\n" +
-	        " PORT fpga_0_RS232_Uart_1_" + sigOut + "_pin = fpga_0_RS232_Uart_1_sout, DIR = O\n" +
+	        " PORT fpga_0_RS232_Uart_1_" + sigOut + "_pin = fpga_0_RS232_Uart_1_sout, DIR = O" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_ODT_pin = fpga_0_DDR2_SDRAM_DDR2_ODT, DIR = O, VEC = [1:0]\n" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_Addr_pin = fpga_0_DDR2_SDRAM_DDR2_Addr, DIR = O, VEC = [12:0]\n" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_BankAddr_pin = fpga_0_DDR2_SDRAM_DDR2_BankAddr, DIR = O, VEC = [1:0]\n" +
@@ -225,9 +226,20 @@ public class MhsVisitor extends PlatformVisitor {
 	        " PORT sys_rst_pin = sys_rst_s, DIR = I, RST_POLARITY = 0, SIGIS = RST");
 	}
     else if (_targetBoard.equals("ML605")) {
-        _printStream.println(
+//            if(_commInterface.equals("UART") {
+		    _printStream.println(
 			" PORT fpga_0_RS232_Uart_1_RX_pin = fpga_0_RS232_Uart_1_RX_pin, DIR = I\n" +
-			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O\n" +
+			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O\n");
+//            } else 
+            if( _commInterface.equals("USB") ) {
+		    _printStream.println(
+			" PORT PRH_CS_n = xps_epc_0_PRH_CS_n_int, DIR = O\n" +
+			" PORT usb_oen = usb_rdn, DIR = O\n" +
+			" PORT usb_wen = usb_wrn, DIR = O\n" +
+			" PORT usb_d = usb_data_int, VEC = [15:0], DIR = IO\n" +
+			" PORT usb_a = usb_addr, DIR = O, VEC = [0:1]\n");
+            }
+        _printStream.println(
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_pin, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = fpga_0_DDR3_SDRAM_DDR3_CE_pin, DIR = O\n" +
@@ -245,8 +257,7 @@ public class MhsVisitor extends PlatformVisitor {
 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]\n" +
 			" PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
 			" PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
-			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n"
-             );
+			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n");
     }
 
         _printStream.println("");
@@ -1349,6 +1360,10 @@ public class MhsVisitor extends PlatformVisitor {
 
     public void visitComponent(ML605 x) {
 
+    String memorySize = "0x00001fff";
+    if( _commInterface.equals("USB") ) {
+        memorySize = "0x00003fff";
+    }
 
  // Instantiate the control microblaze and the needed peripheral
 	_printStream.println(
@@ -1394,7 +1409,7 @@ public class MhsVisitor extends PlatformVisitor {
 		" PARAMETER INSTANCE = dlmb_cntlr\n" +
 		" PARAMETER HW_VER = 3.00.b\n" +
 		" PARAMETER C_BASEADDR = 0x00000000\n" +
-		" PARAMETER C_HIGHADDR = 0x00001fff\n" +
+		" PARAMETER C_HIGHADDR = " + memorySize + "\n" +
 		" BUS_INTERFACE SLMB = host_if_mb_dlmb\n" +
 		" BUS_INTERFACE BRAM_PORT = dlmb_port\n" +
 		"END\n\n" +
@@ -1403,7 +1418,7 @@ public class MhsVisitor extends PlatformVisitor {
 		" PARAMETER INSTANCE = ilmb_cntlr\n" +
 		" PARAMETER HW_VER = 3.00.b\n" +
 		" PARAMETER C_BASEADDR = 0x00000000\n" +
-		" PARAMETER C_HIGHADDR = 0x00001fff\n" +
+		" PARAMETER C_HIGHADDR = " + memorySize + "\n" +
 		" BUS_INTERFACE SLMB = host_if_mb_ilmb\n" +
 		" BUS_INTERFACE BRAM_PORT = ilmb_port\n" +
 		"END\n\n" +
@@ -1445,6 +1460,61 @@ public class MhsVisitor extends PlatformVisitor {
 		" PORT Irq = Interrupt\n" +
 		" PORT Intr = RS232_Uart_1_IP2INTC_Irpt\n" +
 		"END\n");
+
+        if( _commInterface.equals("USB") ) {
+		  _printStream.println(
+			"BEGIN xps_epc\n" +
+			" PARAMETER INSTANCE = usb_periph_cntlr\n" +
+			" PARAMETER HW_VER = 1.02.a\n" +
+			" PARAMETER C_PRH_MAX_AWIDTH = 4\n" +
+			" PARAMETER C_PRH_MAX_DWIDTH = 16\n" +
+			" PARAMETER C_PRH_MAX_ADWIDTH = 16\n" +
+			" PARAMETER C_PRH0_AWIDTH = 4\n" +
+			" PARAMETER C_PRH0_DWIDTH = 16\n" +
+			" PARAMETER C_PRH0_DWIDTH_MATCH = 1\n" +
+			" PARAMETER C_PRH0_SYNC = 0\n" +
+			" PARAMETER C_PRH0_ADDR_TSU = 6000\n" +
+			" PARAMETER C_PRH0_ADDR_TH = 6000\n" +
+			" PARAMETER C_PRH0_ADS_WIDTH = 10000\n" +
+			" PARAMETER C_PRH0_CSN_TSU = 6000\n" +
+			" PARAMETER C_PRH0_CSN_TH = 6000\n" +
+			" PARAMETER C_PRH0_WRN_WIDTH = 15000\n" +
+			" PARAMETER C_PRH0_WR_CYCLE = 30000\n" +
+			" PARAMETER C_PRH0_DATA_TSU = 10000\n" +
+			" PARAMETER C_PRH0_DATA_TH = 5000\n" +
+			" PARAMETER C_PRH0_RDN_WIDTH = 30000\n" +
+			" PARAMETER C_PRH0_RD_CYCLE = 150000\n" +
+			" PARAMETER C_PRH0_DATA_TOUT = 5000\n" +
+			" PARAMETER C_PRH0_DATA_TINV = 10000\n" +
+			" PARAMETER C_PRH0_RDY_TOUT = 10000\n" +
+			" PARAMETER C_PRH0_RDY_WIDTH = 500000\n" +
+			" PARAMETER C_PRH0_BASEADDR = 0xA5000000\n" +
+			" PARAMETER C_PRH0_HIGHADDR = 0xA500FFFF\n" +
+			" PARAMETER C_SPLB_CLK_PERIOD_PS = 10000\n" +
+			" BUS_INTERFACE SPLB = host_if_mb_plb\n" +
+			" PORT PRH_Rdy = net_vcc\n" +
+			" PORT PRH_Clk = net_vcc\n" +
+			" PORT PRH_Burst = xps_epc_0_PRH_Burst\n" +
+			" PORT PRH_BE = xps_epc_0_PRH_BE\n" +
+			" PORT PRH_ADS = xps_epc_0_PRH_ADS\n" +
+			" PORT PRH_RNW = xps_epc_0_PRH_RNW\n" +
+			" PORT PRH_Addr = usb_addr_split\n" +
+			" PORT PRH_Rd_n = usb_rdn\n" +
+			" PORT PRH_Wr_n = usb_wrn\n" +
+			" PORT PRH_CS_n = xps_epc_0_PRH_CS_n_int\n" +
+			" PORT PRH_Data = usb_data_int\n" +
+			" END\n" +
+			" \n" +
+			"BEGIN util_bus_split\n" +
+			" PARAMETER INSTANCE = usb_periph_addr_split\n" +
+			" PARAMETER HW_VER = 1.00.a\n" +
+			" PARAMETER C_SIZE_IN = 4\n" +
+			" PARAMETER C_SPLIT = 2\n" +
+			" PARAMETER C_LEFT_POS = 0\n" +
+			" PORT Sig = usb_addr_split\n" +
+			" PORT Out1 = usb_addr\n" +
+			"END\n");
+	}
 
 
 // Instantiate the host controller
@@ -2394,14 +2464,19 @@ public class MhsVisitor extends PlatformVisitor {
             Resource resource = (Resource)j.next();
             if( resource instanceof ADMXRCII ) {
                board = "ADM-XRC-II";
+               _commInterface = ((ADMXRCII)resource).getCommInterface();
             } else if( resource instanceof ADMXPL ) {
                board = "ADM-XPL";
+               _commInterface = ((ADMXPL)resource).getCommInterface();
             } else if( resource instanceof XUPV5LX110T ) {
                board = "XUPV5-LX110T";
+               _commInterface = ((XUPV5LX110T)resource).getCommInterface();
             } else if( resource instanceof ML505 ) {
                board = "ML505";
+               _commInterface = ((ML505)resource).getCommInterface();
             } else if( resource instanceof ML605 ) {
-            	board = "ML605";
+               board = "ML605";
+               _commInterface = ((ML605)resource).getCommInterface();
             }
         }
 
@@ -2438,4 +2513,6 @@ public class MhsVisitor extends PlatformVisitor {
     private static UserInterface _ui = null;
 
     private String _targetBoard = "";
+
+    private String _commInterface = "";
 }

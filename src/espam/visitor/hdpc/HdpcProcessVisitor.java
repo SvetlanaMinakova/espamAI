@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import java.util.Hashtable;
 
 import espam.datamodel.graph.adg.ADGVariable;
 import espam.datamodel.graph.adg.ADGInVar;
@@ -62,7 +63,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: HdpcProcessVisitor.java,v 1.4 2012/01/13 17:30:04 nikolov Exp $
+ * @version  $Id: HdpcProcessVisitor.java,v 1.5 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class HdpcProcessVisitor extends CDPNVisitor {
@@ -73,7 +74,10 @@ public class HdpcProcessVisitor extends CDPNVisitor {
     /**
      *  Constructor for the HdpcProcessVisitor object
      */
-    public HdpcProcessVisitor() {
+    public HdpcProcessVisitor( boolean selfChannels, Hashtable hashHdpcInPorts, Hashtable hashHdpcOutPorts ) {
+        _selfChannels = selfChannels;
+        _hashHdpcInPorts = hashHdpcInPorts;
+        _hashHdpcOutPorts = hashHdpcOutPorts;
     }
 
     /**
@@ -204,7 +208,7 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 	_writeLocalVariables( x );
 
         // Print the Parse tree
-        HdpcStatementVisitor hsvisitor = new HdpcStatementVisitor(_printStream, x);
+        HdpcStatementVisitor hsvisitor = new HdpcStatementVisitor( _printStream, x, _selfChannels, _hashHdpcInPorts, _hashHdpcOutPorts );
         hsvisitor.setPrefix( _prefix );
 //        hsvisitor.setOffset( _offset );
 
@@ -233,6 +237,7 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 	Vector inArguments = new Vector();
 	Vector outArguments = new Vector();
 	Vector miscVariables = new Vector();
+	Vector selfEdgeVariables = new Vector();
 	Vector tempVector = new Vector();
 
 	_prefixInc();
@@ -317,9 +322,9 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 
 			}
 
-//-----------------------------------------------
-// add the static control statements (int e0;...)
-//-----------------------------------------------
+                        //-----------------------------------------------
+                        // add the static control statements (int e0;...)
+                        //-----------------------------------------------
 			Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
 			Iterator j = staticCtrl.iterator();
 			while( j.hasNext() ) {
@@ -437,6 +442,42 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 
 	} // while nodes
 
+        //-----------------------------------------------------------
+        // Find the self-channels
+        // print local variables, to be used instead of FIFO channels
+        //-----------------------------------------------------------
+        if( _selfChannels ) {
+            Iterator g = x.getInGates().iterator();
+            while( g.hasNext() ) {
+                CDGate gate = (CDGate) g.next();
+                CDChannel ch = (CDChannel) gate.getChannel();
+                String selfEdgeDeclaration="";
+
+                if( ch.isSelfChannel() ) {
+                    if( ch.getMaxSize()==1 ) {
+                       selfEdgeDeclaration = _prefix + "t" + ch.getName() + " var_" + ch.getName() + ";";
+
+                    } else {
+                       selfEdgeDeclaration = _prefix + "static t" + ch.getName() + " var_" + ch.getName() + "[" + ch.getMaxSize() + "];";
+//                       selfEdgeDeclaration = _prefix + "static boost::array<t" + ch.getName() + ", " + ch.getMaxSize() + "> var_" + ch.getName() + ";";
+
+                       // if the number of binding variables == to the channel size, we do not need write and read counters
+                       // Instead, we use constants in the generated code
+                       ADGEdge aedge = (ADGEdge)ch.getAdgEdgeList().get(0);
+                       ADGPort aport = (ADGPort)aedge.getPortList().get(0);
+                       boolean simple = (aport.getBindVariables().size()==ch.getMaxSize());
+
+                       if( !simple ) {
+                          // we need to declare the read and write counters used as array indexes.
+                          selfEdgeDeclaration += "\n" + _prefix + "int rd_" + ch.getName() + "=-1;";
+                          selfEdgeDeclaration += "\n" + _prefix + "int wr_" + ch.getName() + "=-1;";
+                       }
+                   }
+
+    		   selfEdgeVariables.add( selfEdgeDeclaration );                 
+             }
+           }
+        }
         //-------------------------------
         // print the sorted declarations
         //-------------------------------
@@ -467,6 +508,20 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 		}
 		_printStream.println("");
 	}
+        //-------------------------------------------------------------------------------------
+        // Implement the self-channels, in case of static schedule, as local variables.
+        //-------------------------------------------------------------------------------------
+        if( _selfChannels ) {
+	    if( selfEdgeVariables.size()>0 ) {
+		_printStream.println(_prefix + "// Local variables for self-edges");
+		n = selfEdgeVariables.iterator();
+		while( n.hasNext() ) {
+			String decl = (String) n.next();
+			_printStream.println( decl );
+		}
+		_printStream.println("");
+	    }
+        }
 	_prefixDec();
     }
 
@@ -826,13 +881,6 @@ public class HdpcProcessVisitor extends CDPNVisitor {
      */
     private void _writeIncludes( CDProcess x ) {
 
-//        _printStream.println("#ifndef " + x.getName() + "_H");
-//        _printStream.println("#define " + x.getName() + "_H");
-//        _printStream.println("");
-//
-//        _printStream.println("#include \"../hdpc/process.h\"");
-//        _printStream.println("#include \"aux_func.h\"");
-
         Iterator n = x.getGateList().iterator();
         while( n.hasNext() ) {
             CDGate gate = (CDGate) n.next();
@@ -847,7 +895,6 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 	       System.exit(0);
 	    }
         }
-//        _printStream.println("");
     }
 
     /**
@@ -924,4 +971,9 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 
     private PrintStream _printStreamFunc = null;
 
+    private boolean _selfChannels = false;
+
+    private Hashtable _hashHdpcInPorts = null;
+
+    private Hashtable _hashHdpcOutPorts = null;
 }

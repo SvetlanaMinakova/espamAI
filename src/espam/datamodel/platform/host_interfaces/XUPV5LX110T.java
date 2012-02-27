@@ -28,7 +28,7 @@ import espam.visitor.PlatformVisitor;
  * This class describes a XUPV5LX110T communication component.
  *
  * @author Hristo Nikolov
- * @version  $Id: XUPV5LX110T.java,v 1.1 2010/04/02 12:21:24 nikolov Exp $
+ * @version  $Id: XUPV5LX110T.java,v 1.2 2012/02/27 11:22:50 nikolov Exp $
  */
 
 public class XUPV5LX110T extends Resource {
@@ -60,7 +60,26 @@ public class XUPV5LX110T extends Resource {
      */
     public Object clone() {
             XUPV5LX110T newObj = (XUPV5LX110T) super.clone();
+            newObj.setCommInterface(_commInterface);
             return( newObj );
+    }
+
+    /**
+     *  Get the communication interface.
+     *
+     * @return  the communication interface
+     */
+    public String getCommInterface() {
+        return _commInterface;
+    }
+
+    /**
+     *  Set the communication interface.
+     *
+     * @param  commInterface The new communication interface.
+     */
+    public void setCommInterface(String commInterface) {
+        _commInterface = commInterface;
     }
 
     /**
@@ -71,4 +90,9 @@ public class XUPV5LX110T extends Resource {
     public String toString() {
         return "XUPV5LX110T host interface component: " + getName();
     }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+
+    private String _commInterface = "";
 }
