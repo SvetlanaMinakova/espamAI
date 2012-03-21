@@ -16,9 +16,11 @@ You must not remove this notice, or any other, from this software.
 
 package espam.visitor.ise;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Vector;
@@ -62,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.9 2012/02/23 16:12:37 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.10 2012/03/21 16:23:00 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -167,6 +169,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
               dir.mkdirs();
               dir = new File(_currentCodeDir + "/" + _hdlDir);
               dir.mkdirs();
+
+              _evalLogicRdROMs = "";
+              _evalLogicWrROMs = "";
+              if (IseConfig.useEvalROMs()) {
+                _prepareROMData(_adgNode);
+              }
 
               if (_optimizeCounters == true)
                 _analyzeCounters();
@@ -481,8 +489,9 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	 * write the eval_logic_rd and eval_logic_wr body.
 	 * @throws CodeGenerationException
 	 */
-	private void _writeHdlEvalLogic(PrintStream hdlPS, Vector ports, Vector args) throws FileNotFoundException, CodeGenerationException {
+	private void _writeHdlEvalLogic(PrintStream hdlPS, Vector ports, Vector args, String romData) throws FileNotFoundException, CodeGenerationException {
 		Vector paramNames = _indexList.getParameterVectorNames();
+		boolean useROMs = !romData.isEmpty();
 		
 		int i;
 		// parameter signals
@@ -518,10 +527,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		}
 
 		int ctrlNum = 0;
-		Iterator ADGInIter;
-		ADGInIter = ports.iterator();
-		while (ADGInIter.hasNext()){
-			ADGPort adg_in_port = (ADGPort) ADGInIter.next();
+		Iterator ADGPortIter;
+		ADGPortIter = ports.iterator();
+		while (ADGPortIter.hasNext()){
+			ADGPort adg_in_port = (ADGPort) ADGPortIter.next();
 			
 			Iterator linearBound = adg_in_port.getDomain().getLinearBound().iterator();
 			while(linearBound.hasNext()){
@@ -548,19 +557,25 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 				}
 			}
 		}
-		
-		String ctrlSig = "   signal e0";
-		for(i = 1; i < ctrlNum; i++){
-			ctrlSig = ctrlSig + " ,e" + i;
+
+		if (!useROMs) {
+		  String ctrlSig = "   signal e0";
+		  for(i = 1; i < ctrlNum; i++){
+		    ctrlSig = ctrlSig + " ,e" + i;
+		  }
+
+		  hdlPS.println(ctrlSig + " : boolean;");	
 		}
-		
-		hdlPS.println(ctrlSig + " : boolean;");	
+		else {
+		  // Insert ROM data
+		  hdlPS.print(romData);
+		}
 		hdlPS.println("");
 
-    if (_regEval) {
-      hdlPS.println("   signal sl_done_0 : std_logic;");
-      hdlPS.println("");
-    }
+		if (_regEval) {
+		  hdlPS.println("   signal sl_done_0 : std_logic;");
+		  hdlPS.println("");
+		}
 
 		hdlPS.println("begin");
 		hdlPS.println("");	
@@ -664,39 +679,74 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
 		hdlPS.println("");
 
+    // first get the ordered ADG in ports according to the bounded in arguments order
+    Vector<ADGPort> orderedADGPorts = ports;  // We sorted them in the constructor
+
 		// set the control signals
 		if(ports.size() == 0){
       if (_regEval) {
         System.out.println("WARNING: adding registers to eval_logic w/ empty port list has not been tested!");
       }
-			
 		}
-		else{
-			// first get the ordered ADG in ports according to the bounded in arguments order
-      Vector<ADGPort> orderedADGInPorts = ports;  // We sorted them in the constructor
-			/*Vector<ADGPort> orderedADGInPorts = new Vector<ADGPort>();
-			Iterator inArgIter = args.iterator();
-			while(inArgIter.hasNext()){
-				ADGVariable in_arg = (ADGVariable) inArgIter.next();
-				String arg_name = in_arg.getName();
+    else if (useROMs) {
+      // Generate ROM-based evaluation logic
+      hdlPS.println("  -- ROM Address generator");
+      hdlPS.println("  process (RST,CLK) begin");
+      hdlPS.println("    if (RST = '1') then");
+      hdlPS.println("      rom_addr <= rom_LOW;");
+      hdlPS.println("      outer_i  <= outer_LOW;");
+      hdlPS.println("    elsif (rising_edge(CLK)) then");
+      hdlPS.println("      if (ADVANCE = '1') then");
+      hdlPS.println("        if (rom_addr < rom_HIGH) then");
+      hdlPS.println("          rom_addr <= rom_addr + 1;");
+      hdlPS.println("        else");
+      hdlPS.println("          rom_addr <= rom_LOW;");
+      hdlPS.println("          outer_i <= outer_i + 1;");
+      hdlPS.println("        end if;");
+      hdlPS.println("      end if;");
+      hdlPS.println("    end if;");
+      hdlPS.println("  end process;");
+      hdlPS.println("");
+      hdlPS.println("  rom_data <= ctrl_rom(rom_addr);");
 
-				j = ports.iterator();
-				while (j.hasNext()) {
-					ADGPort adg_port = (ADGPort) j.next();
-					if (adg_port.getBindVariables().get(0).getName().equals(arg_name) == true){
-						orderedADGInPorts.addElement(adg_port);
-					}
-				}
-			}*/
+      String portOrderCheck = "  -- Order:";
+      // Generate control port bit assignments
+      for (int cp = orderedADGPorts.size()-1; cp >= 0; cp--) {
+        ADGPort p = orderedADGPorts.get(cp);
+        hdlPS.println("  CONTROL(" + cp + ") <= rom_data(" + cp + ");  -- " + p.getName());
+        portOrderCheck += " " + p.getName();
+      }
+      // Check if the port order in the ROM words matches the port order used by this visitor.
+      if (!romData.contains(portOrderCheck)) {
+        throw new CodeGenerationException("ERROR: Port order of ROM is incorrect!\n" +
+                                          "ROM Table: " + romData.substring(romData.indexOf("  -- Order:")) +
+                                          "ADG Model: " + portOrderCheck);
+      }
+      hdlPS.println("");
 
+      hdlPS.println("  -- Done signal; delayed by one cycle to make its timing equal to the conventional done signal");
+      hdlPS.println("  sl_done <= '1' when (outer_i = outer_HIGH and rom_addr = rom_HIGH) else '0';");
+      hdlPS.println("  process (RST,CLK) begin");
+      hdlPS.println("    if (RST = '1') then");
+      hdlPS.println("      DONE <= '0';");
+      hdlPS.println("    elsif (rising_edge(CLK)) then");
+      hdlPS.println("      if (ADVANCE = '1') then");
+      hdlPS.println("        DONE <= sl_done;");
+      hdlPS.println("      end if;");
+      hdlPS.println("    end if;");
+      hdlPS.println("  end process;");
+      hdlPS.println("");
+    }
+		else {
+			// Generate "classical" evaluation logic that uses expressions
 			int index = 0;
 			int exprIndex = 0;
 
 			HashMap <Expression, String> hashExpr = new HashMap <Expression, String>();
-			ADGInIter = orderedADGInPorts.iterator();
+			ADGPortIter = orderedADGPorts.iterator();
       String ctrlAssign = "";
-			while (ADGInIter.hasNext()){
-				ADGPort adg_in_port = (ADGPort) ADGInIter.next();
+			while (ADGPortIter.hasNext()){
+				ADGPort adg_in_port = (ADGPort) ADGPortIter.next();
 				String ctrlPerPort = "";
 				
 				Iterator linearBound = adg_in_port.getDomain().getLinearBound().iterator();
@@ -801,6 +851,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	 */
 	private void _writeHdlEvalLogRdFile()throws FileNotFoundException, CodeGenerationException {
 		PrintStream hdlPS = _openFile(_hdlDir + "/" + "eval_logic_rd.vhd");
+		boolean useROMs = !_evalLogicRdROMs.isEmpty();
 
 		hdlPS.println("-- File automatically generated by ESPAM");
 		hdlPS.println("");
@@ -827,6 +878,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           : in  std_logic;");
 		hdlPS.println("      CLK           : in  std_logic;");
 		hdlPS.println("");
+		if (useROMs) {
+		  hdlPS.println("      ADVANCE       : in  std_logic;");
+		  hdlPS.println("      DONE          : out std_logic;");
+		  hdlPS.println("");
+		}
 		hdlPS.println("      PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("      LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
@@ -848,7 +904,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("architecture RTL of EVAL_LOGIC_RD_" + _coreName + " is");	
 		hdlPS.println("");
 		
-    _writeHdlEvalLogic(hdlPS, _adgInPorts, _inArgList);
+		_writeHdlEvalLogic(hdlPS, _adgInPorts, _inArgList, _evalLogicRdROMs);
 		
 		hdlPS.println("end RTL;");
 	}
@@ -859,6 +915,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	 */
 	private void _writeHdlEvalLogWrFile()throws FileNotFoundException, CodeGenerationException {
 		PrintStream hdlPS = _openFile(_hdlDir + "/" + "eval_logic_wr.vhd");
+		boolean useROMs = !_evalLogicWrROMs.isEmpty();
 		
 		hdlPS.println("-- File automatically generated by ESPAM");
 		hdlPS.println("");
@@ -885,6 +942,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           : in  std_logic;");
 		hdlPS.println("      CLK           : in  std_logic;");
 		hdlPS.println("");  
+		if (useROMs) {
+		  hdlPS.println("      ADVANCE       : in  std_logic;");
+		  hdlPS.println("      DONE          : out std_logic;");
+		  hdlPS.println("");
+		}
 		hdlPS.println("      PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");	  
 		hdlPS.println("      LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
@@ -905,7 +967,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		
 		hdlPS.println("architecture RTL of EVAL_LOGIC_WR_" + _coreName + " is	");
 
-    _writeHdlEvalLogic(hdlPS, _adgOutPorts, _outArgList);
+		_writeHdlEvalLogic(hdlPS, _adgOutPorts, _outArgList, _evalLogicWrROMs);
 
 		hdlPS.println("end RTL;");
 	}
@@ -1101,7 +1163,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      port (");
 		hdlPS.println("         RST           : in  std_logic;");
 		hdlPS.println("         CLK           : in  std_logic;");
-		hdlPS.println("");  
+		hdlPS.println("");
+		if (!_evalLogicRdROMs.isEmpty()) {
+		  hdlPS.println("         ADVANCE       : in  std_logic;");
+		  hdlPS.println("         DONE          : out std_logic;");
+		  hdlPS.println("");
+		}
 		hdlPS.println("         PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");	  
 		hdlPS.println("         LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
@@ -1134,6 +1201,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("         RST           : in  std_logic;");
 		hdlPS.println("         CLK           : in  std_logic;");
 		hdlPS.println("");
+		if (!_evalLogicWrROMs.isEmpty()) {
+		  hdlPS.println("         ADVANCE       : in  std_logic;");
+		  hdlPS.println("         DONE          : out std_logic;");
+		  hdlPS.println("");
+		}
 		hdlPS.println("         PARAMETERS    : in  std_logic_vector(N_PAR*PAR_WIDTH-1 downto 0);");
 		hdlPS.println("");
 		hdlPS.println("         LOWER_BND_OUT : out std_logic_vector(N_CNTRS*QUANT-1 downto 0);");
@@ -1512,6 +1584,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           => sl_RST,");
 		hdlPS.println("      CLK           => CLK,");
 		hdlPS.println("");
+		if (!_evalLogicRdROMs.isEmpty()) {
+		  hdlPS.println("      ADVANCE       => sl_read,");
+		  hdlPS.println("      DONE          => sl_done_rd,");
+		  hdlPS.println("");
+		}
 		hdlPS.println("      PARAMETERS    => sl_parameters,");
 		hdlPS.println("");
 		hdlPS.println("      LOWER_BND_OUT => sl_LOW_BND_RD,");
@@ -1529,36 +1606,38 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   );");
 		hdlPS.println("");
 		
-		hdlPS.println("   ITER_RD : GEN_COUNTER");
-		hdlPS.println("   generic map(");
-		hdlPS.println("      N_CNTRS       => c_COUNTERS,");
-		hdlPS.println("      QUANT         => c_CNTR_QUANT,");
-		hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS");
-		hdlPS.println("   )");
+		if (_evalLogicRdROMs.isEmpty()) {
+			hdlPS.println("   ITER_RD : GEN_COUNTER");
+			hdlPS.println("   generic map(");
+			hdlPS.println("      N_CNTRS       => c_COUNTERS,");
+			hdlPS.println("      QUANT         => c_CNTR_QUANT,");
+			hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS");
+			hdlPS.println("   )");
 
-		hdlPS.println("   port map(");
-		hdlPS.println("      RST           => sl_RST,");
-		hdlPS.println("      CLK           => CLK,");
-		hdlPS.println("");
-    if (_regEval) {
-      hdlPS.println("      ENABLE        => sl_cntr_rd_en,");
-    }
-    else {
-      hdlPS.println("      ENABLE        => sl_read,");
-    }
-		hdlPS.println("");
-		hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_RD,");
-		hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_RD,");
-		hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
-		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
-		hdlPS.println("");
-    if (_regEval) {
-		  hdlPS.println("      DONE          => sl_cntr_rd_done");
-    }
-    else {
-		  hdlPS.println("      DONE          => sl_done_rd");
-    }
-		hdlPS.println("   );");
+			hdlPS.println("   port map(");
+			hdlPS.println("      RST           => sl_RST,");
+			hdlPS.println("      CLK           => CLK,");
+			hdlPS.println("");
+			if (_regEval) {
+				hdlPS.println("      ENABLE        => sl_cntr_rd_en,");
+			}
+			else {
+				hdlPS.println("      ENABLE        => sl_read,");
+			}
+			hdlPS.println("");
+			hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_RD,");
+			hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_RD,");
+			hdlPS.println("      ITERATORS     => sl_ITERATORS_RD,");
+			hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_RD,");
+			hdlPS.println("");
+			if (_regEval) {
+				hdlPS.println("      DONE          => sl_cntr_rd_done");
+			}
+			else {
+				hdlPS.println("      DONE          => sl_done_rd");
+			}
+			hdlPS.println("   );");
+		}
 
 		hdlPS.println("");
 		hdlPS.println("--======================================================================================--");
@@ -1675,6 +1754,11 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("      RST           => sl_RST,");
 		hdlPS.println("      CLK           => CLK,");
 		hdlPS.println("");
+		if (!_evalLogicWrROMs.isEmpty()) {
+			hdlPS.println("      ADVANCE       => sl_write,");
+			hdlPS.println("      DONE          => sl_done_wr,");
+			hdlPS.println("");
+		}
 		hdlPS.println("      PARAMETERS    => sl_parameters,");
 		hdlPS.println("");
 		hdlPS.println("      LOWER_BND_OUT => sl_LOW_BND_WR,");
@@ -1708,6 +1792,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       hdlPS.println("      RST           => sl_RST,");
       hdlPS.println("      CLK           => CLK,");
       hdlPS.println("");
+      if (!_evalLogicWrROMs.isEmpty()) {
+        hdlPS.println("      ADVANCE       => sl_read,");
+        // We leave DONE of the EVAL_REUSE unconnected
+        hdlPS.println("      DONE          => open,");
+        hdlPS.println("");
+      }
       hdlPS.println("      PARAMETERS    => sl_parameters,");
       hdlPS.println("");
       hdlPS.println("      LOWER_BND_OUT => open,");
@@ -1728,36 +1818,38 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       hdlPS.println("");
     }
 
-		hdlPS.println("   ITER_WR : GEN_COUNTER");
-		hdlPS.println("   generic map (");
-		hdlPS.println("      N_CNTRS       => c_COUNTERS,");
-		hdlPS.println("      QUANT         => c_CNTR_QUANT,");
-		hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS");
-		hdlPS.println("   )");
+		if (_evalLogicWrROMs.isEmpty()) {
+			hdlPS.println("   ITER_WR : GEN_COUNTER");
+			hdlPS.println("   generic map (");
+			hdlPS.println("      N_CNTRS       => c_COUNTERS,");
+			hdlPS.println("      QUANT         => c_CNTR_QUANT,");
+			hdlPS.println("      CNTR_WIDTH    => c_CNTR_WIDTHS");
+			hdlPS.println("   )");
 
-		hdlPS.println("   port map (");
-		hdlPS.println("      RST           => sl_RST,");
-		hdlPS.println("      CLK           => CLK,");
-		hdlPS.println("");
-    if (_regEval) {
-      hdlPS.println("      ENABLE        => sl_cntr_wr_en,");
-    }
-    else {
-      hdlPS.println("      ENABLE        => sl_write,");
-    }
-		hdlPS.println("");
-		hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_WR,");
-		hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_WR,");
-		hdlPS.println("      ITERATORS     => sl_ITERATORS_WR,");
-		hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_WR,");
-		hdlPS.println("");
-    if (_regEval) {
-      hdlPS.println("      DONE          => sl_cntr_wr_done");
-    }
-    else {
-      hdlPS.println("      DONE          => sl_done_wr");
-    }
-		hdlPS.println("   );");
+			hdlPS.println("   port map (");
+			hdlPS.println("      RST           => sl_RST,");
+			hdlPS.println("      CLK           => CLK,");
+			hdlPS.println("");
+			if (_regEval) {
+				hdlPS.println("      ENABLE        => sl_cntr_wr_en,");
+			}
+			else {
+				hdlPS.println("      ENABLE        => sl_write,");
+			}
+			hdlPS.println("");
+			hdlPS.println("      LOWER_BND_IN  => sl_LOW_BND_WR,");
+			hdlPS.println("      UPPER_BND_IN  => sl_UP_BND_WR,");
+			hdlPS.println("      ITERATORS     => sl_ITERATORS_WR,");
+			hdlPS.println("      REG_CNTRS     => sl_REG_CNTRS_WR,");
+			hdlPS.println("");
+			if (_regEval) {
+				hdlPS.println("      DONE          => sl_cntr_wr_done");
+			}
+			else {
+				hdlPS.println("      DONE          => sl_done_wr");
+			}
+			hdlPS.println("   );");
+		}
 
 		hdlPS.println("");
 		hdlPS.println("--======================================================================================--");
@@ -2023,6 +2115,57 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		return ub;
 	}
 
+  /**
+   * Returns the ROM VHDL code at which the BufferedReader is positioned.
+   */
+  private String _readROM(BufferedReader in) throws Exception {
+    String result = "";
+    String line;
+    // Read the EVAL_LOGIC VHDL code block
+    while ((line = in.readLine()) != null) {
+      if (line.startsWith("  ")) {
+        result += line + "\n";
+      }
+      else {
+        // The first line that doesn't start with two spaces is the end of the ROM VHDL.
+        break;
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Load the ROM data for the given ADG node.
+   */
+  private void _prepareROMData(ADGNode node) {
+    assert(_ui.getADGFileNames().size() == 1);  // We support only 1 ADG file for now
+    String romFile = _ui.getADGFileName(0).replace(".kpn", ".rom");
+    try {
+      FileReader in = new FileReader(romFile);
+      BufferedReader br = new BufferedReader(in);
+
+      String s;
+      // Scan the file for EVAL_LOGIC_RD and _WR blocks that belong to the current ADG node
+      System.out.println(" -- Reading ROMs from " + romFile);
+      while ((s = br.readLine()) != null) {
+        if (s.equals(node.getName() + ".EVAL_LOGIC_RD:")) {
+          _evalLogicRdROMs = _readROM(br);
+        }
+        else if (s.equals(node.getName() + ".EVAL_LOGIC_WR:")) {
+          _evalLogicWrROMs = _readROM(br);
+        }
+      }
+      in.close();
+    }
+    catch (Exception e) {
+      // Apparently we could not read the ROM file. Assume conventional
+      // implementation of eval_logic units.
+      _evalLogicRdROMs = "";
+      _evalLogicWrROMs = "";
+      return;
+    }
+  }
+
   private boolean _isSource(ADGNode node) {
     return (node.getInPorts().size() == 0);
   }
@@ -2095,6 +2238,10 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	protected static HashMap <String, Vector<Integer>> _boundsLinks = new HashMap<String, Vector<Integer>>(); //hash map with index/param names as keys, and lower and upper bounds vector as values.
 	
 	private int _maxCounterWidth = 0;
+
+	// ROMs for EVAL_LOGIC_RD/WR components
+	private String _evalLogicRdROMs;
+	private String _evalLogicWrROMs;
 
 
   ////////////////////////////////////

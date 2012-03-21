@@ -20,7 +20,7 @@ package espam.visitor.ise;
  * ISE Visitor Configuration
  *
  * @author  Sven van Haastregt
- * @version  $Id: IseConfig.java,v 1.1 2012/02/23 16:12:37 svhaastr Exp $
+ * @version  $Id: IseConfig.java,v 1.2 2012/03/21 16:23:00 svhaastr Exp $
  */
 public class IseConfig {
   // Getters and setters for the ISE visitor options.
@@ -61,15 +61,19 @@ public class IseConfig {
     _resetHigh = resetHigh;
   }
 
+  public static boolean useEvalROMs() {
+    return _useEvalROMs;
+  }
 
 
   ////////////////////////////////////////////////////////////////////
   //// Private member variables
 
-  private static boolean _omitIONodes = false; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
+  private static boolean _omitIONodes = true; // omit input and output nodes (only keep the transformer nodes of a network which have >= 1 input and >= 1 output port)
 //  private boolean _omitIOEdges = false; // omit FIFOs connecting to input and output nodes (only keep the internal FIFOs of a network)
-  private static boolean _tbTracing = false;  // Let simulation testbench handle input and output traces
+  private static boolean _tbTracing = true;  // Let simulation testbench handle input and output traces
   private static boolean _simul = true;   // Generate simulation files
   private static boolean _synth = !_simul;   // Make output suitable for synthesis
   private static int _resetHigh = 0;       // Active reset level
+  private static boolean _useEvalROMs = true;   // Use ROM tables for node evaluation logic
 }
