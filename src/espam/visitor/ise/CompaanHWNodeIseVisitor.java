@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.10 2012/03/21 16:23:00 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.11 2012/03/28 12:07:21 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -2146,7 +2146,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 
       String s;
       // Scan the file for EVAL_LOGIC_RD and _WR blocks that belong to the current ADG node
-      System.out.println(" -- Reading ROMs from " + romFile);
+      System.out.println(" -- Reading ROMs for " + node.getName() + " from " + romFile);
       while ((s = br.readLine()) != null) {
         if (s.equals(node.getName() + ".EVAL_LOGIC_RD:")) {
           _evalLogicRdROMs = _readROM(br);
