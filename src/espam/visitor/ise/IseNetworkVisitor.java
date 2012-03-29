@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * parameter to ESPAM.
  *
  * @author Sven van Haastregt
- * @version $Id: IseNetworkVisitor.java,v 1.16 2012/03/28 12:07:21 svhaastr Exp $
+ * @version $Id: IseNetworkVisitor.java,v 1.17 2012/03/29 14:32:18 svhaastr Exp $
  */
 
 public class IseNetworkVisitor extends PlatformVisitor {
@@ -599,7 +599,7 @@ public class IseNetworkVisitor extends PlatformVisitor {
       for (int i = 0; i < _externalFifoPorts.size(); i++) {
         String fifoName = _externalFifoPorts.get(i);
         if (fifoName.indexOf("IP") > 0) {
-          simtbPS.println("  file infile" + i + "   : TEXT is IN  \"trcin" + i + ".txt\";      -- " + fifoName);
+          simtbPS.println("  file infile" + i + "   : TEXT is IN  \"../trcin" + i + ".txt\";      -- " + fifoName);
         }
         else {
           simtbPS.println("  file outfile" + i + "  : TEXT is OUT \"trcout" + i + ".txt\";     -- " + fifoName);
