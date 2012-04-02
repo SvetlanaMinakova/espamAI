@@ -43,6 +43,7 @@ import espam.datamodel.mapping.MFifo;
 
 import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.memories.MultiFifo;
+import espam.datamodel.platform.memories.CM_AXI;
 import espam.datamodel.platform.communication.Crossbar;
 import espam.datamodel.platform.Port;
 import espam.datamodel.platform.Link;
@@ -62,7 +63,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.7 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.8 2012/04/02 16:25:40 nikolov Exp $
  *      
  */
 
@@ -182,12 +183,15 @@ public class XpsStatementVisitor extends StatementVisitor {
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
     	
-    	if(fifo.getLevelUpResource() instanceof MultiFifo) {    	    	
+    	if(fifo.getLevelUpResource() instanceof MultiFifo || fifo.getLevelUpResource() instanceof CM_AXI) {    	    	
 //	    if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
 	    if( isDynamicSchedule ) {
 		funName = "writeDynMF(";
 	    } else {
-		funName = "writeMF(";
+//--------------------------------------- TO DO: if not CM_AXI...
+//		funName = "writeMF(";
+		funName = "writeSWF(";
+//---------------------------------------
   	    }
 
     	} else { // fifo is not MultiFifo
@@ -251,8 +255,11 @@ public class XpsStatementVisitor extends StatementVisitor {
 	      Expression expression = (Expression) i.next();
 	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
            }
-	   _printStream.println(", " + s + ");");
+//--------------------------------------- TO DO: if not CM_AXI...
+// 	   _printStream.println(", " + s + ");");
+	   _printStream.println(", " + s + ", size" + t + ");");
 //        }
+//--------------------------------------- 
     }
 
     /**
@@ -377,12 +384,15 @@ public class XpsStatementVisitor extends StatementVisitor {
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
 
-    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {
+    	if( fifo.getLevelUpResource() instanceof MultiFifo || fifo.getLevelUpResource() instanceof CM_AXI) {
 //	     if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
 	     if( isDynamicSchedule ) {
 		    funName = "readDynMF(";
 	     } else {
-		    funName = "readMF(";	
+//--------------------------------------- TO DO: if not CM_AXI...
+// 		    funName = "readMF(";	
+		    funName = "readSWF(";	
+//--------------------------------------- 
 	     }
 
     	} else { // not MultiFifo
@@ -476,7 +486,10 @@ public class XpsStatementVisitor extends StatementVisitor {
 			Expression expression = (Expression) j.next();
 			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 		}
-		_printStream.println(", " + s + ");");
+//--------------------------------------- TO DO: if not CM_AXI...
+// 		_printStream.println(", " + s + ");");
+		_printStream.println(", " + s + ", size" + t + ");");
+//--------------------------------------- 
 	    }
 //        }       
 

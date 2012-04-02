@@ -63,6 +63,12 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.communication.AXICrossbar;
+import espam.datamodel.platform.ports.AXIPort;
+import espam.datamodel.platform.memories.CM_AXI;
+import espam.datamodel.platform.controllers.CM_CTRL;
+import espam.datamodel.platform.controllers.AXI_CM_CTRL;
+import espam.datamodel.platform.controllers.AXI2AXI_CTRL;
 import espam.main.UserInterface;
 
 import espam.visitor.PlatformVisitor;
@@ -80,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.9 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.10 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -228,8 +234,10 @@ public class MhsVisitor extends PlatformVisitor {
     else if (_targetBoard.equals("ML605")) {
 //            if(_commInterface.equals("UART") {
 		    _printStream.println(
+			" PORT axi_iic_0_Sda_pin = axi_iic_0_Sda, DIR = IO\n" +
+			" PORT axi_iic_0_Scl_pin = axi_iic_0_Scl, DIR = IO\n" +
 			" PORT fpga_0_RS232_Uart_1_RX_pin = fpga_0_RS232_Uart_1_RX_pin, DIR = I\n" +
-			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O\n");
+			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O");
 //            } else 
             if( _commInterface.equals("USB") ) {
 		    _printStream.println(
@@ -239,7 +247,35 @@ public class MhsVisitor extends PlatformVisitor {
 			" PORT usb_d = usb_data_int, VEC = [15:0], DIR = IO\n" +
 			" PORT usb_a = usb_addr, DIR = O, VEC = [0:1]\n");
             }
-        _printStream.println(
+            
+            if( _isAXICrossbar ) {
+
+ 		    _printStream.println(
+			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = ddr_memory_cs_n, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = ddr_memory_odt, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = ddr_memory_ras_n, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = ddr_memory_cas_n, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = ddr_memory_we_n, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = ddr_memory_dm, DIR = O, VEC = [7:0]\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = ddr_memory_ba, DIR = O, VEC = [2:0]\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = ddr_memory_addr, DIR = O, VEC = [12:0]\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = ddr_memory_ddr3_rst, DIR = O\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [63:0]\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [7:0]\n" +
+			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [7:0]\n" +
+// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = ddr_memory_dq, DIR = IO, VEC = [63:0]\n" +
+// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = ddr_memory_dqs, DIR = IO, VEC = [7:0]\n" +
+// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = ddr_memory_dqs_n, DIR = IO, VEC = [7:0]\n" +
+			" PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
+			" PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
+			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n");
+
+
+            } else { 
+		    _printStream.println(
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_pin, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = fpga_0_DDR3_SDRAM_DDR3_CE_pin, DIR = O\n" +
@@ -258,7 +294,10 @@ public class MhsVisitor extends PlatformVisitor {
 			" PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
 			" PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
 			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n");
+             }
     }
+
+
 
         _printStream.println("");
 
@@ -301,10 +340,15 @@ public class MhsVisitor extends PlatformVisitor {
        String iLmbLinkName = "";
        String opbLinkName = "";
        String plbLinkName = "";
+       String axiLinkName = "";
+       String clkSignal = "sys_clk_s";
 
        while (i.hasNext()) {
 	   String activeRST = "";
 	   String rstSignal = "";
+           if( _isAXICrossbar) {
+               clkSignal = x.getName() + "_clk";
+           } 
 	   if( _targetBoard.equals("ADM-XRC-II") || _targetBoard.equals("ADM-XPL") ) {
 		activeRST = "0";
 		rstSignal = "net_design_rst";
@@ -322,7 +366,7 @@ public class MhsVisitor extends PlatformVisitor {
     		       " PARAMETER HW_VER = 2.00.b\n" +
     		       " PARAMETER C_EXT_RESET_HIGH = " + activeRST + "\n" +
     		       " PORT SYS_Rst = " + rstSignal +"\n" +
-    		       " PORT LMB_Clk = sys_clk_s\n" +
+    		       " PORT LMB_Clk = " + clkSignal + "\n" +
     		       "END\n");
            }
            if ( port instanceof ILMBPort ) {
@@ -334,7 +378,7 @@ public class MhsVisitor extends PlatformVisitor {
     		       " PARAMETER HW_VER = 2.00.b\n" +
     		       " PARAMETER C_EXT_RESET_HIGH = " + activeRST +"\n" +
     		       " PORT SYS_Rst = " + rstSignal +"\n" +
-    		       " PORT LMB_Clk = sys_clk_s\n" +
+    		       " PORT LMB_Clk = " + clkSignal + "\n" +
     		       "END\n");
            }
            if ( port instanceof OPBPort ) {
@@ -345,7 +389,7 @@ public class MhsVisitor extends PlatformVisitor {
      		       " PARAMETER HW_VER = 1.10.c\n" +
      		       " PARAMETER C_EXT_RESET_HIGH = 0\n" +
      		       " PORT SYS_Rst = net_design_rst\n" +
-     		       " PORT OPB_Clk = sys_clk_s\n" +
+     		       " PORT OPB_Clk = " + clkSignal + "\n" +
      		       "END\n");
             }
            if ( port instanceof PLBPort && ( _targetBoard.equals("XUPV5-LX110T") ) ) {
@@ -355,7 +399,7 @@ public class MhsVisitor extends PlatformVisitor {
      		       " PARAMETER INSTANCE = " + plbLinkName + "\n" +
      		       " PARAMETER HW_VER = 1.05.a\n" +
      		       " PORT SYS_Rst = sys_bus_reset\n" +
-     		       " PORT PLB_Clk = sys_clk_s\n" +
+     		       " PORT PLB_Clk = " + clkSignal + "\n" +
      		       "END\n");
             }
 
@@ -366,7 +410,7 @@ public class MhsVisitor extends PlatformVisitor {
      		       " PARAMETER INSTANCE = " + plbLinkName + "\n" +
      		       " PARAMETER HW_VER = 1.05.a\n" +
      		       " PORT SYS_Rst = sys_bus_reset\n" +
-     		       " PORT PLB_Clk = sys_clk_s\n" +
+     		       " PORT PLB_Clk = " + clkSignal + "\n" +
      		       "END\n");
             }
 
@@ -377,7 +421,19 @@ public class MhsVisitor extends PlatformVisitor {
      		       " PARAMETER INSTANCE = " + plbLinkName + "\n" +
      		       " PARAMETER HW_VER = 1.05.a\n" +
      		       " PORT SYS_Rst = sys_bus_reset\n" +
-     		       " PORT PLB_Clk = sys_clk_s\n" +
+     		       " PORT PLB_Clk = " + clkSignal + "\n" +
+     		       "END\n");
+            }
+
+           if ( port instanceof AXIPort && ( _targetBoard.equals("ML605") ) ) {
+               axiLinkName = x.getName() + "_axi4lite_DP";
+               _printStream.println(
+       		       "BEGIN axi_interconnect\n" +
+     		       " PARAMETER INSTANCE = " + axiLinkName + "\n" +
+     		       " PARAMETER HW_VER = 1.03.a\n" +
+                       " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+                       " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+                       " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
      		       "END\n");
             }
 
@@ -412,7 +468,7 @@ public class MhsVisitor extends PlatformVisitor {
      		       " PARAMETER C_BASEADDR = 0xf8000000\n" +
      		       " PARAMETER C_HIGHADDR = 0xf8000003\n" +
      		       " BUS_INTERFACE SLMB = " + dLmbLinkName + "\n" +
-     		       " PORT LMB_Clk = sys_clk_s\n" +
+     		       " PORT LMB_Clk = " + clkSignal + "\n" +
      		       "END\n");
 
 		}
@@ -436,7 +492,8 @@ public class MhsVisitor extends PlatformVisitor {
 
            } else if ( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605")) {
 // not completed to support OS...
-		_printStream.println(
+                if( !plbLinkName.equals("") ) {
+		     _printStream.println(
 			"BEGIN xps_timer\n" +
 			" PARAMETER INSTANCE = xps_timer_" + _numTimers + "\n" +
 			" PARAMETER HW_VER = 1.02.a\n" +
@@ -446,9 +503,10 @@ public class MhsVisitor extends PlatformVisitor {
 			" PARAMETER C_HIGHADDR = 0xF100FFFF\n" +
 			" BUS_INTERFACE SPLB = " + plbLinkName + "\n" +
 			" PORT Interrupt = " + x.getName() + "_INTERRUPT\n" +
-			"END\n");
-		_numTimers++;
-      }
+			"END\n\n");
+		     _numTimers++;
+                }
+           }
  	}
       if ( _targetBoard.equals("ADM-XRC-II") || _targetBoard.equals("ADM-XPL") ) {
 
@@ -481,20 +539,32 @@ public class MhsVisitor extends PlatformVisitor {
 			"BEGIN microblaze\n" +
 			" PARAMETER INSTANCE = " + x.getName() + "\n" +
 			" PARAMETER HW_VER = 8.20.a\n" +
-			" PARAMETER C_FAMILY = virtex6\n" +
-			" PARAMETER C_INTERCONNECT = 1\n" +
+			" PARAMETER C_FAMILY = virtex6\n" +		
 			" PARAMETER C_USE_BARREL = 1\n" +
 			" PARAMETER C_USE_FPU = 1\n" +
 			" PARAMETER C_DEBUG_ENABLED = 0\n" +
 			" PARAMETER C_USE_ICACHE = 0\n" +
 			" PARAMETER C_USE_DCACHE = 0\n" +
-			" PARAMETER C_USE_DIV = 1\n" );
+			" PARAMETER C_USE_DIV = 1" );
 
 			if ( !plbLinkName.equals("") ) {
 				_printStream.println(
+                                " PARAMETER C_INTERCONNECT = 1\n" +
 				" BUS_INTERFACE DPLB = " + plbLinkName + "\n" +
 				" BUS_INTERFACE IPLB = " + plbLinkName );
 			}
+			if ( !axiLinkName.equals("") ) {
+				_printStream.println(
+                                " PARAMETER C_INTERCONNECT = 2\n" +
+				" PARAMETER C_INTERCONNECT_M_AXI_DC_AW_REGISTER = 0\n" +
+				" PARAMETER C_INTERCONNECT_M_AXI_DC_W_REGISTER = 0\n" +
+				" PARAMETER C_PVR = 1\n" +
+				" PARAMETER C_PVR_USER1 = 0x01\n" +
+				" BUS_INTERFACE M_AXI_DP = " + axiLinkName + "\n" +
+                                " PORT INTERRUPT = " + x.getName() + "_INTERRUPT");
+			}
+
+
 		}
 
       i = x.getPortList().iterator();
@@ -549,18 +619,83 @@ public class MhsVisitor extends PlatformVisitor {
         }
         _printStream.println(
 			  " PARAMETER C_FSL_LINKS = " + total + "\n" +
-			  " PORT CLK = sys_clk_s");
+			  " PORT CLK = " + clkSignal );
 
         if ( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605")) {
                 _printStream.println(
 			  " PORT MB_RESET = mb_reset");
         }
 	if ( _mapping.getProcessor(x.getName()).getScheduleType() == 1 ) {
+             if( _targetBoard.equals("ML505") ) {
 		_printStream.println(
 			  " PORT INTERRUPT = " + x.getName() + "_INTERRUPT");
+             } 
 
 	}
 	_printStream.println("END\n");
+
+        if( !axiLinkName.equals("") ) {
+                _printStream.println(
+			  "BEGIN axi_timer\n" +
+			  " PARAMETER INSTANCE = " + x.getName() + "_timer\n" +
+			  " PARAMETER HW_VER = 1.02.a\n" +
+			  " PARAMETER C_BASEADDR = 0xF1000000\n" +
+			  " PARAMETER C_HIGHADDR = 0xF100FFFF\n" +
+			  " BUS_INTERFACE S_AXI = " + axiLinkName + "\n" +
+			  " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+			  " PORT Interrupt = " + x.getName() + "_INTERRUPT\n" +
+			  "END\n" );
+
+// clock generation per MicroBlaze
+
+	    if( !_first ) {
+
+                _printStream.println(
+			  "BEGIN clock_generator\n" +
+			  " PARAMETER INSTANCE = " + x.getName() + "_clock_generator\n" +
+			  " PARAMETER HW_VER = 4.02.a\n" +
+			  " PARAMETER C_CLKIN_FREQ = 200000000\n" +
+			  " PARAMETER C_CLKOUT0_FREQ = 100000000\n" +
+			  " PARAMETER C_CLKOUT0_GROUP = MMCM0\n" +
+			  " PARAMETER C_CLKOUT0_BUF = TRUE\n" +
+			  " PORT RST = sys_rst_s\n" +
+			  " PORT CLKIN = CLK_S\n" +
+			  " PORT CLKOUT0 = " + x.getName() + "_clk\n" +
+			  " PORT LOCKED = clock_locked_port_" + ++_cntr + "\n" +
+			  "END\n");
+
+   
+                _printStream.println(
+			  "BEGIN util_vector_logic\n" +
+			  " PARAMETER INSTANCE = dcm_clock_locked_" + (_cntr-2) + "\n" +
+			  " PARAMETER HW_VER = 1.00.a\n" +
+			  " PARAMETER C_OPERATION = and\n" +
+			  " PARAMETER C_SIZE = 1\n" +
+			  " PORT Op1 = clock_locked_port_" + (_cntr-2) + "_" + (_cntr-1) + "\n" +
+			  " PORT Op2 = clock_locked_port_" + _cntr + "\n" +
+			  " PORT Res = clock_locked_port_" + (_cntr-1) + "_" + _cntr + "\n" +
+			  "END\n");
+	    } else {
+		_first = false;
+                _printStream.println(
+			  "BEGIN clock_generator\n" +
+			  " PARAMETER INSTANCE = " + x.getName() + "_clock_generator\n" +
+			  " PARAMETER HW_VER = 4.02.a\n" +
+			  " PARAMETER C_CLKIN_FREQ = 200000000\n" +
+			  " PARAMETER C_CLKOUT0_FREQ = 100000000\n" +
+			  " PARAMETER C_CLKOUT0_GROUP = MMCM0\n" +
+			  " PARAMETER C_CLKOUT0_BUF = TRUE\n" +
+			  " PORT RST = sys_rst_s\n" +
+			  " PORT CLKIN = CLK_S\n" +
+			  " PORT CLKOUT0 = " + x.getName() + "_clk\n" +
+			  " PORT LOCKED = clock_locked_port_" + _cntr++ + "_" + _cntr + "\n" +
+			  "END\n");
+
+	    }
+
+
+
+        }
 
     }
 /*--------------------------------------- CompaanHWNode -------------------------------------------------------*/
@@ -784,9 +919,30 @@ public class MhsVisitor extends PlatformVisitor {
      *
      * @param  x The process that needs to be rendered.
      */
-    public void visitComponent(Memory x) {
+    public void visitComponent(CM_AXI x) {
 
-    }
+            _printStream.println(
+		  "BEGIN bram_block\n" +
+		  " PARAMETER INSTANCE = " + x.getName() + "\n" +
+		  " PARAMETER HW_VER = 1.00.a");
+
+	    Iterator i;
+	    i = x.getPortList().iterator();
+
+	    Port port = (Port) i.next();
+	    String lmbCtrlLinkAName = port.getLink().getName();
+	    _printStream.println(
+		" BUS_INTERFACE PORTA = " + lmbCtrlLinkAName );
+	    if (i.hasNext()) {
+		port = (Port) i.next();
+		String lmbCtrlLinkBName = port.getLink().getName();
+		_printStream.println(
+		" BUS_INTERFACE PORTB = " + lmbCtrlLinkBName );
+	    }
+	    _printStream.println("END\n");
+     }
+
+
 
 /*--------------------------------------- Controllers -------------------------------------------------------*/
     /**
@@ -843,6 +999,136 @@ public class MhsVisitor extends PlatformVisitor {
 		    " BUS_INTERFACE BRAM_PORT = " + memLinkName + "\n" +
 		    "END\n");
 
+    }
+
+
+    /**
+     *  Print a line for a communication memory controller (LMB) in the correct format for MHS.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(CM_CTRL x) {
+
+    	Iterator i = x.getPortList().iterator();
+
+        String procLinkName = "";
+        String memLinkName = "";
+
+        while (i.hasNext()) {
+            Port port = (Port) i.next();
+            Link link = port.getLink();
+
+            Iterator j = link.getPortList().iterator();
+            while (j.hasNext()) {
+            	Port lPort = (Port) j.next();
+            	if ( lPort.getResource() instanceof MicroBlaze ) {
+            		procLinkName = link.getName();
+            	} else if ( lPort.getResource() instanceof CM_AXI ) {
+            		memLinkName = link.getName();
+            	}
+            }
+        }
+
+        _printStream.println(
+                "BEGIN lmb_bram_if_cntlr\n" +
+		" PARAMETER INSTANCE = " + x.getName() + "\n" +
+		" PARAMETER HW_VER = 3.00.b\n" +
+		" PARAMETER C_BASEADDR = 0xe0000000\n" +
+		" PARAMETER C_HIGHADDR = 0xe000FFFF\n" +
+		" BUS_INTERFACE SLMB = " + procLinkName + "\n" +
+   	        " BUS_INTERFACE BRAM_PORT = " + memLinkName + "\n" +
+		"END\n");
+    }
+
+    /**
+     *  Print a line for an AXI communication memory controller in the correct format for MHS.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(AXI_CM_CTRL x) {
+
+
+        String memLinkName = "";
+
+    	Iterator i = x.getPortList().iterator();
+        while (i.hasNext()) {
+            Port port = (Port) i.next();
+            Link link = port.getLink();
+
+            Iterator j = link.getPortList().iterator();
+            while (j.hasNext()) {
+            	Port lPort = (Port) j.next();
+                if ( lPort.getResource() instanceof CM_AXI ) {
+            		memLinkName = link.getName();
+            	}
+            }
+        }
+
+        String pName = "";
+        String strAXI = " PARAMETER C_INTERCONNECT_S_AXI_MASTERS = ";
+
+        Platform platform = (Platform) x.getLevelUpResource();
+        i = platform.getResourceList().iterator();
+        while( i.hasNext() ) {
+            Resource res = (Resource) i.next();
+            if( res instanceof MicroBlaze ) {  
+                 pName = res.getName();
+                 strAXI += pName + "_axi2axi_connector.M_AXI & ";
+            }
+        } 
+        // remove the last 3 characters
+        strAXI = strAXI.substring(0, strAXI.length()-2);
+
+        _printStream.println(
+                "BEGIN axi_bram_ctrl\n" +
+		" PARAMETER INSTANCE = " + x.getName() + "\n" +
+		" PARAMETER HW_VER = 1.02.a\n" +
+                " PARAMETER C_SINGLE_PORT_BRAM = 1\n" +  
+	        " PARAMETER C_S_AXI_BASEADDR = 0x" + _digitToStringHex(_axiCMBaseAddress, 8) + "\n" +
+		" PARAMETER C_S_AXI_HIGHADDR = 0x" + _digitToStringHex(_axiCMBaseAddress + 0xFFFF, 8) + "\n" +
+                strAXI + "\n" +
+                " BUS_INTERFACE S_AXI = CB_axi\n" +
+   	        " BUS_INTERFACE BRAM_PORTA = " + memLinkName + "\n" +
+                " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+		"END\n");
+
+       // update the axi base address of the next communication memory
+       _axiCMBaseAddress += 0x00010000;
+    }
+
+    /**
+     *  Print a line for an AXI2AXI controller in the correct format for MHS.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(AXI2AXI_CTRL x) {
+
+        String pName = "";
+    	Iterator i = x.getPortList().iterator();
+        while (i.hasNext()) {
+            Port port = (Port) i.next();
+            Link link = port.getLink();
+
+            Iterator j = link.getPortList().iterator();
+            while (j.hasNext()) {
+            	Port lPort = (Port) j.next();
+                if ( lPort.getResource() instanceof MicroBlaze ) {
+            		pName = lPort.getResource().getName();
+            	}
+            }
+        }
+        
+        _printStream.println(
+		"BEGIN axi2axi_connector\n" +
+		" PARAMETER INSTANCE = " + pName + "_axi2axi_connector\n" +
+		" PARAMETER HW_VER = 1.00.a\n" +
+		" PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
+		" PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
+		" PARAMETER C_S_AXI_RNG00_BASEADDR = 0x80000000\n" +
+		" PARAMETER C_S_AXI_RNG00_HIGHADDR = 0x8FFFFFFF\n" +
+		" BUS_INTERFACE S_AXI = " + pName + "_axi4lite_DP\n" +
+		" BUS_INTERFACE M_AXI = CB_axi\n" +
+		"END\n");
     }
 
     /**
@@ -1062,6 +1348,22 @@ public class MhsVisitor extends PlatformVisitor {
 	    _printStream.println(" BUS_INTERFACE " + port.getName() + " = " + port.getLink().getName());
         }
 	 _printStream.println("END\n");
+    }
+
+    /**
+     *  Print a line for the AXI Crossbar in the correct format for MHS.
+     *
+     * @param  x The process that needs to be rendered.
+     */
+    public void visitComponent(AXICrossbar x) {
+
+        _printStream.println(
+        		"BEGIN axi_interconnect\n" +
+			" PARAMETER INSTANCE = CB_axi\n" +
+			" PARAMETER HW_VER = 1.03.a\n" +
+			" PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
+			" PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+			"END\n");
     }
 /*---------------------------------------- Link --------------------------------------------------------------*/
     /**
@@ -1358,12 +1660,22 @@ public class MhsVisitor extends PlatformVisitor {
     }
 
 
+
+    /**
+     *  Print a line for the Host interface component in the correct format for MHS.
+     *
+     * @param  x The process that needs to be rendered.
+     */
     public void visitComponent(ML605 x) {
 
-    String memorySize = "0x00001fff";
-    if( _commInterface.equals("USB") ) {
-        memorySize = "0x00003fff";
-    }
+    if( _isAXICrossbar ) {
+        _visit_ML605_AXI( x );
+    } else {
+
+        String memorySize = "0x00001fff";
+        if( _commInterface.equals("USB") ) {
+           memorySize = "0x00003fff";
+        }
 
  // Instantiate the control microblaze and the needed peripheral
 	_printStream.println(
@@ -1371,7 +1683,7 @@ public class MhsVisitor extends PlatformVisitor {
 		" PARAMETER INSTANCE = host_if_mb\n" +
 		" PARAMETER C_INSTANCE = host_if_mb\n" +
 		" PARAMETER HW_VER = 8.20.a\n" +
-		" PARAMETER C_FAMILY = virtex5\n" +
+		" PARAMETER C_FAMILY = virtex6\n" +
 		" PARAMETER C_DEBUG_ENABLED = 0\n" +
 		" PARAMETER C_INTERCONNECT = 1\n" +
 		" BUS_INTERFACE DPLB = host_if_mb_plb\n" +
@@ -1703,7 +2015,7 @@ public class MhsVisitor extends PlatformVisitor {
 		 " PORT DDR3_DQS = fpga_0_DDR3_SDRAM_DDR3_DQS_pin\n" +
 		 " PORT DDR3_DQS_n = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin\n" +
 		"END\n");
-
+      }
     }
 
     /**
@@ -2477,11 +2789,324 @@ public class MhsVisitor extends PlatformVisitor {
             } else if( resource instanceof ML605 ) {
                board = "ML605";
                _commInterface = ((ML605)resource).getCommInterface();
+            } else if( resource instanceof AXICrossbar ) {
+               _isAXICrossbar = true;
             }
         }
 
 	return board;
     }
+
+    /**
+     *  Generates the host interface subsystem using an AXI BUS
+     *  @param host_interface
+     */    
+    private void _visit_ML605_AXI( ML605 x ) {
+
+
+	_printStream.println(
+	      "BEGIN microblaze\n" +
+	      " PARAMETER INSTANCE = host_if_mb\n" +
+	      " PARAMETER HW_VER = 8.20.a\n" +
+	      " PARAMETER C_INTERCONNECT = 2\n" +
+	      " PARAMETER C_INTERCONNECT_M_AXI_DC_AW_REGISTER = 0\n" +
+	      " PARAMETER C_INTERCONNECT_M_AXI_DC_W_REGISTER = 0\n" +
+	      " BUS_INTERFACE M_AXI_DP = host_if_mb_axi4lite_DP\n" +
+// 	      " BUS_INTERFACE M_AXI_DC = DDR3_axi4_DC\n" +
+	      " BUS_INTERFACE DLMB = host_if_mb_dlmb\n" +
+	      " BUS_INTERFACE ILMB = host_if_mb_ilmb\n" +
+	      " PORT MB_RESET = mb_reset\n" +
+	      " PORT CLK = sys_clk_100_MHz\n" +  // sys_cls_s
+	      " PORT Interrupt = host_if_mb_timer_int\n" +
+	      "END\n\n" +
+
+	      "BEGIN lmb_v10\n" +
+	      " PARAMETER INSTANCE = host_if_mb_ilmb\n" +
+	      " PARAMETER HW_VER = 2.00.b\n" +
+	      " PORT SYS_RST = sys_bus_reset\n" +
+	      " PORT LMB_CLK = sys_clk_100_MHz\n" +
+	      "END\n\n" +
+
+	      "BEGIN lmb_v10\n" +
+	      " PARAMETER INSTANCE = host_if_mb_dlmb\n" +
+	      " PARAMETER HW_VER = 2.00.b\n" +
+	      " PORT SYS_RST = sys_bus_reset\n" +
+	      " PORT LMB_CLK = sys_clk_100_MHz\n" +
+	      "END\n\n" +
+
+	      "BEGIN lmb_bram_if_cntlr\n" +
+	      " PARAMETER INSTANCE = host_if_mb_ilmb_ctrl_bram_0\n" +
+	      " PARAMETER HW_VER = 3.00.b\n" +
+	      " PARAMETER C_BASEADDR = 0x00000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x00003FFF\n" +
+	      " BUS_INTERFACE SLMB = host_if_mb_ilmb\n" +
+	      " BUS_INTERFACE BRAM_PORT = host_if_mb_ilmb_ctrl_bram_PORT\n" +
+	      "END\n\n" +
+
+	      "BEGIN lmb_bram_if_cntlr\n" +
+	      " PARAMETER INSTANCE = host_if_mb_dlmb_ctrl_bram_0\n" +
+	      " PARAMETER HW_VER = 3.00.b\n" +
+	      " PARAMETER C_BASEADDR = 0x00000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x00003FFF\n" +
+	      " BUS_INTERFACE SLMB = host_if_mb_dlmb\n" +
+	      " BUS_INTERFACE BRAM_PORT = host_if_mb_dlmb_ctrl_bram_PORT\n" +
+	      "END\n\n" +
+
+	      "BEGIN bram_block\n" +
+	      " PARAMETER INSTANCE = host_if_mb_bram_0\n" +
+	      " PARAMETER HW_VER = 1.00.a\n" +
+	      " BUS_INTERFACE PORTA = host_if_mb_ilmb_ctrl_bram_PORT\n" +
+	      " BUS_INTERFACE PORTB = host_if_mb_dlmb_ctrl_bram_PORT\n" +
+	      "END\n\n" +
+/*
+"BEGIN clock_cycle_counter
+" PARAMETER INSTANCE = clock_cycle_counter_host_if_mb
+" PARAMETER HW_VER = 1.00.a
+" PARAMETER C_BASEADDR = 0xB0000000
+" PARAMETER C_HIGHADDR = 0xB0000003
+" BUS_INTERFACE SLMB = host_if_mb_dlmb
+" PORT LMB_Clk = sys_clk_100_MHz
+"END
+*/
+	      "BEGIN axi_interconnect\n" +
+	      " PARAMETER INSTANCE = host_if_mb_axi4lite_DP\n" +
+	      " PARAMETER HW_VER = 1.03.a\n" +
+	      " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+	      " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+	      " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
+	      "END\n\n" +
+
+	      "BEGIN axi_timer\n" +
+	      " PARAMETER INSTANCE = host_if_mb_timer\n" +
+	      " PARAMETER HW_VER = 1.02.a\n" +
+	      " PARAMETER C_BASEADDR = 0x40000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x4000FFFF\n" +
+	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+	      " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+	      " PORT Interrupt = host_if_mb_timer_int\n" +
+	      "END\n\n" +
+
+	      "BEGIN axi_uartlite\n" +
+	      " PARAMETER INSTANCE = host_if_mb_RS232_Uart\n" +
+	      " PARAMETER HW_VER = 1.02.a\n" +
+	      " PARAMETER C_BAUDRATE = 115200\n" +
+	      " PARAMETER C_DATA_BITS = 8\n" +
+	      " PARAMETER C_USE_PARITY = 0\n" +
+	      " PARAMETER C_ODD_PARITY = 1\n" +
+	      " PARAMETER C_BASEADDR = 0x50000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x5000FFFF\n" +
+	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+	      " PORT TX = fpga_0_RS232_Uart_1_TX_pin\n" +
+	      " PORT RX = fpga_0_RS232_Uart_1_RX_pin\n" +
+	      " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+	      "END\n\n" +
+
+	      "BEGIN axi_iic\n" +
+	      " PARAMETER INSTANCE = host_if_mb_axi_iic_0\n" +
+	      " PARAMETER HW_VER = 1.01.a\n" +
+	      " PARAMETER C_BASEADDR = 0x60000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x6000FFFF\n" +
+	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+	      " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+	      " PORT Sda = axi_iic_0_Sda\n" +
+	      " PORT Scl = axi_iic_0_Scl\n" +
+	      "END\n");
+
+// Instantiate the host controller
+	_printStream.println(
+	      "BEGIN lmb_host_ctrl\n" +
+	      " PARAMETER INSTANCE = lmb_host_interface_ctrl\n" +
+	      " PARAMETER HW_VER = 1.00.a\n" +
+	      " PARAMETER C_BASEADDR = 0x0A000000\n" +
+	      " PARAMETER C_HIGHADDR = 0x0A00000f\n" +
+	      " PARAMETER C_AB = 8\n" +
+	      " PARAMETER N_FIN = " + (_numMb + _numHWNode) + "\n" +
+	      " BUS_INTERFACE SLMB = host_if_mb_dlmb");
+
+	      if( _numHWNode > 0 ) {
+		  _printStream.println(
+			" BUS_INTERFACE PAR_BUS = PARBUS\n" +
+			" PORT RST_OUT = reset_IP");
+	      }
+
+        _printStream.println(
+	      " PORT ENABLE_MB = net_enable_MBs");
+
+	for (int i = 1; i <= _numMb; i++) {
+	      _printStream.println(
+		  " PORT FIN_" + ( i - 1 ) + " = net_fin_signal_P" + i);
+	}
+
+	for (int i = _numMb ; i < _numMb + _numHWNode; i++) {
+    	      _printStream.println(
+		  " PORT FIN_" + i + " = net_fin_signal_IP_" + (i - _numMb + 1));
+	}
+	_printStream.println("END\n");
+
+//------------------------------------
+// DDR3
+//------------------------------------
+/*
+        String pName = "";
+        String strAXI = " PARAMETER C_INTERCONNECT_S_AXI_MASTERS = MB_Master.M_AXI_DC";
+
+        Platform platform = (Platform) x.getLevelUpResource();
+        Iterator i = platform.getResourceList().iterator();
+        while( i.hasNext() ) {
+            Resource res = (Resource) i.next();
+            if( res instanceof MicroBlaze ) {  
+                 pName = res.getName();
+                 strAXI += " & " + pName + ".M_AXI_DC";
+            }
+        } 
+*/
+	_printStream.println(
+	      "BEGIN axi_v6_ddrx\n" +
+	      " PARAMETER INSTANCE = DDR3_SDRAM\n" +
+	      " PARAMETER HW_VER = 1.03.a\n" +
+	      " PARAMETER C_MEM_PARTNO = MT4JSF6464HY-1G1\n" +
+	      " PARAMETER C_INTERCONNECT_S_AXI_AR_REGISTER = 1\n" +
+	      " PARAMETER C_INTERCONNECT_S_AXI_AW_REGISTER = 1\n" +
+	      " PARAMETER C_INTERCONNECT_S_AXI_R_REGISTER = 1\n" +
+	      " PARAMETER C_INTERCONNECT_S_AXI_W_REGISTER = 1\n" +
+	      " PARAMETER C_INTERCONNECT_S_AXI_B_REGISTER = 1\n" +
+	      " PARAMETER C_DM_WIDTH = 8\n" +
+	      " PARAMETER C_DQS_WIDTH = 8\n" +
+	      " PARAMETER C_DQ_WIDTH = 64\n" +
+	      " PARAMETER C_MMCM_EXT_LOC = MMCM_ADV_X0Y8\n" +
+// 	      strAXI + "\n" +
+	      " PARAMETER C_S_AXI_BASEADDR = 0x90000000\n" +
+	      " PARAMETER C_S_AXI_HIGHADDR = 0x9fffffff\n" +
+	      " BUS_INTERFACE S_AXI = DDR_axi\n" +
+	      " PORT ddr_ck_p = ddr_memory_clk\n" +
+	      " PORT ddr_ck_n = ddr_memory_clk_n\n" +
+	      " PORT ddr_cke = ddr_memory_cke\n" +
+	      " PORT ddr_cs_n = ddr_memory_cs_n\n" +
+	      " PORT ddr_odt = ddr_memory_odt\n" +
+	      " PORT ddr_ras_n = ddr_memory_ras_n\n" +
+	      " PORT ddr_cas_n = ddr_memory_cas_n\n" +
+	      " PORT ddr_we_n = ddr_memory_we_n\n" +
+	      " PORT ddr_dm = ddr_memory_dm\n" +
+	      " PORT ddr_ba = ddr_memory_ba\n" +
+	      " PORT ddr_addr = ddr_memory_addr\n" +
+	      " PORT ddr_reset_n = ddr_memory_ddr3_rst\n" +
+	      " PORT ddr_dq = fpga_0_DDR3_SDRAM_DDR3_DQ_pin\n" +
+	      " PORT ddr_dqs_p = fpga_0_DDR3_SDRAM_DDR3_DQS_pin\n" +
+	      " PORT ddr_dqs_n = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin\n" +
+	      " PORT clk = sys_clk_200_MHz\n" +
+	      " PORT clk_ref = sys_clk_200_MHz\n" +
+	      " PORT clk_mem = sys_clk_400_MHz\n" +
+	      " PORT clk_rd_base = sys_clk_400_MHz_nobuf_varphase\n" +
+	      " PORT PD_PSEN = psen\n" +
+	      " PORT PD_PSINCDEC = psincdec\n" +
+	      " PORT PD_PSDONE = psdone\n" +
+	      "END\n\n" +
+
+	      "BEGIN axi_interconnect\n" +
+	      " PARAMETER INSTANCE = DDR_axi\n" +
+	      " PARAMETER HW_VER = 1.03.a\n" +
+	      " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+	      " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+	      " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
+	      "END\n\n" +
+
+	      "BEGIN axi2axi_connector\n" +
+	      " PARAMETER INSTANCE = host_if_mb_ddr_axi2axi_connector\n" +
+	      " PARAMETER HW_VER = 1.00.a\n" +
+	      " PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
+	      " PARAMETER C_S_AXI_RNG00_BASEADDR = 0x90000000\n" +
+	      " PARAMETER C_S_AXI_RNG00_HIGHADDR = 0x9FFFFFFF\n" +
+	      " PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
+	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+	      " BUS_INTERFACE M_AXI = DDR_axi\n" +
+	      "END\n");
+
+        Platform platform = (Platform) x.getLevelUpResource();
+        Iterator i = platform.getResourceList().iterator();
+        while( i.hasNext() ) {
+            Resource res = (Resource) i.next();
+            if( res instanceof MicroBlaze ) {  
+                 String pName = res.getName();
+                 _printStream.println(
+			"BEGIN axi2axi_connector\n" +
+			" PARAMETER INSTANCE = " + pName + "_ddr_axi2axi_connector\n" +
+			" PARAMETER HW_VER = 1.00.a\n" +
+			" PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
+			" PARAMETER C_S_AXI_RNG00_BASEADDR = 0x90000000\n" +
+			" PARAMETER C_S_AXI_RNG00_HIGHADDR = 0x9FFFFFFF\n" +
+			" PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
+			" BUS_INTERFACE S_AXI = " + pName + "_axi4lite_DP\n" +
+			" BUS_INTERFACE M_AXI = DDR_axi\n" +
+			"END\n");
+            }
+        } 
+
+
+//----------------------------
+// CLK & RST
+//----------------------------
+
+	_printStream.println(
+	      "BEGIN clock_generator\n" +
+	      " PARAMETER INSTANCE = sys_clock_generator\n" +
+	      " PARAMETER HW_VER = 4.02.a\n" +
+	      " PARAMETER C_CLKIN_FREQ = 200000000\n" +
+	      " PARAMETER C_CLKOUT0_FREQ = 100000000\n" +
+	      " PARAMETER C_CLKOUT0_GROUP = MMCM0\n" +
+	      " PARAMETER C_CLKOUT1_FREQ = 200000000\n" +
+	      " PARAMETER C_CLKOUT1_GROUP = MMCM0\n" +
+	      " PARAMETER C_CLKOUT2_FREQ = 400000000\n" +
+	      " PARAMETER C_CLKOUT2_GROUP = MMCM0\n" +
+	      " PARAMETER C_CLKOUT3_FREQ = 400000000\n" +
+	      " PARAMETER C_CLKOUT3_GROUP = MMCM0\n" +
+	      " PARAMETER C_CLKOUT3_BUF = FALSE\n" +
+	      " PARAMETER C_CLKOUT3_VARIABLE_PHASE = TRUE\n" +
+	      " PARAMETER C_CLKOUT4_FREQ = 50000000\n" +
+	      " PARAMETER C_CLKOUT4_GROUP = MMCM0\n" +
+	      " PORT RST = sys_rst_s\n" +
+	      " PORT CLKIN = CLK_S\n" +
+	      " PORT CLKOUT0 = sys_clk_100_MHz\n" +
+	      " PORT CLKOUT1 = sys_clk_200_MHz\n" +
+	      " PORT CLKOUT2 = sys_clk_400_MHz\n" +
+	      " PORT CLKOUT3 = sys_clk_400_MHz_nobuf_varphase\n" +
+	      " PORT CLKOUT4 = sys_clk_50_MHz\n" +
+	      " PORT LOCKED = sys_dcm_locked_port\n" +
+	      " PORT PSCLK = sys_clk_100_MHz\n" +
+	      " PORT PSEN = psen\n" +
+	      " PORT PSINCDEC = psincdec\n" +
+	      " PORT PSDONE = psdone\n" +
+	      "END\n\n" +
+
+
+// CHECK THE CLOCK GENERATION SCHEME!!!!!!!!!
+
+	      "BEGIN util_vector_logic\n" +
+	      " PARAMETER INSTANCE = dcm_clock_locked_last\n" +
+	      " PARAMETER HW_VER = 1.00.a\n" +
+	      " PARAMETER C_OPERATION = and\n" +
+	      " PARAMETER C_SIZE = 1\n" +
+	      " PORT Op1 = sys_dcm_locked_port\n" +
+//               " PORT Op2 = mb_1_mb_2_mb_3_clock_locked_port\n" + // ????????????????????????
+              " PORT Op2 = clock_locked_port_" + (_numMb-1) + "_" + _numMb +"\n" + 
+	      " PORT Res = rst_dcm_locked_port\n" +
+	      "END\n\n" +
+
+	      "BEGIN proc_sys_reset\n" +
+	      " PARAMETER INSTANCE = sys_reset_circuit\n" +
+	      " PARAMETER HW_VER = 3.00.a\n" +
+	      " PARAMETER C_EXT_RESET_HIGH = 1\n" +
+	      " PORT Ext_Reset_In = sys_rst_s\n" +
+	      " PORT MB_Reset = mb_reset\n" +
+	      " PORT Slowest_sync_clk = sys_clk_50_MHz\n" +  // sys_clk_s ?!?!?!??!
+	      " PORT Interconnect_aresetn = sys_Interconnect_aresetn\n" +
+	      " PORT Dcm_locked = rst_dcm_locked_port\n" +
+	      " PORT BUS_STRUCT_RESET = sys_bus_reset\n" +
+	      "END\n");
+
+
+    }
+   
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
@@ -2515,4 +3140,11 @@ public class MhsVisitor extends PlatformVisitor {
     private String _targetBoard = "";
 
     private String _commInterface = "";
+
+    private static int _axiCMBaseAddress = 0x80010000;
+
+    private boolean _isAXICrossbar = false;
+
+    private static int _cntr = 0;
+    private static boolean _first = true;
 }

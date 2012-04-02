@@ -38,11 +38,20 @@ import espam.datamodel.platform.ports.CompaanOutPort;
 import espam.datamodel.platform.ports.PLBPort;
 import espam.datamodel.platform.ports.LMBPort;
 import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
+import espam.datamodel.platform.controllers.Controller;
 import espam.datamodel.platform.controllers.MemoryController;
 import espam.datamodel.platform.controllers.FifosController;
 import espam.datamodel.platform.controllers.MultiFifoController;
 import espam.datamodel.platform.controllers.ReadCrossbarController;
 import espam.datamodel.platform.peripherals.ZBTMemoryController;
+import espam.datamodel.platform.communication.AXICrossbar;
+import espam.datamodel.platform.controllers.CM_CTRL;
+import espam.datamodel.platform.controllers.AXI_CM_CTRL;
+import espam.datamodel.platform.controllers.AXI2AXI_CTRL;
+import espam.datamodel.platform.memories.CM_AXI;
+import espam.datamodel.platform.ports.AXIPort;
+import espam.datamodel.platform.host_interfaces.ML605;
+
 
 import espam.visitor.PlatformVisitor;
 
@@ -54,7 +63,7 @@ import espam.visitor.PlatformVisitor;
  *  ".dot" output in order to visualize a Platform using the DOTTY tool.
  *
  * @author  Hristo Nikolov
- * @version  $Id: PlatformDotVisitor.java,v 1.1 2007/12/07 22:07:25 stefanov Exp $
+ * @version  $Id: PlatformDotVisitor.java,v 1.2 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class PlatformDotVisitor extends PlatformVisitor {
@@ -98,6 +107,7 @@ public class PlatformDotVisitor extends PlatformVisitor {
         i = x.getResourceList().iterator();
         while( i.hasNext() ) {
             resource = (Resource) i.next();
+//              System.out.println( resource );
             resource.accept(this);
         }
 
@@ -114,6 +124,14 @@ public class PlatformDotVisitor extends PlatformVisitor {
         _prefixDec();
         _printStream.println("");
         _printStream.println("}");
+    }
+
+
+
+    public void visitComponent(Resource x) {
+    }
+
+    public void visitComponent(Controller x) {
     }
 /*---------------------------------------- Processors --------------------------------------------------------*/
     /**
@@ -179,6 +197,22 @@ public class PlatformDotVisitor extends PlatformVisitor {
      *
      * @param  x The process that needs to be rendered.
      */
+    public void visitComponent(CM_AXI x) {
+
+    	if( x.getFifoList().size() > 0 ) {
+	    _printStream.println( _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() +
+	                          " \\n" + x.getFifoList().size() + " FIFOs\", shape=box, width=0.7, color=beige ];");
+        } else {
+	    _printStream.println( _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() +
+	                         "\", shape=box, width=0.7, color=beige ];");
+        }
+    }
+
+    /**
+     *  Print a line for the process in the correct format for DOTTY.
+     *
+     * @param  x The process that needs to be rendered.
+     */
     public void visitComponent(Fifo x) {
 
         Port port1 = (Port)(x.getPortList().get(0));
@@ -228,7 +262,7 @@ public class PlatformDotVisitor extends PlatformVisitor {
 
 	if( x.getSize() > 0 ) {
   	    _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
-	                          " \\n" + x.getSize() + " Bytes\", shape=box, regular=true, color=mintcream ]; }");
+	                          " \\n" + x.getSize() + " Bytes\", shape=box, regular=true, color=khaki3 ]; }");
 	} else {
   	    _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
 	                          "\", shape=box, regular=true, color=black ]; }");
@@ -258,13 +292,18 @@ public class PlatformDotVisitor extends PlatformVisitor {
      */
     public void visitComponent(Memory x) {
 
-	if( x.getSize() > 0 ) {
-	    _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
+        if( x instanceof CM_AXI ) { // BUT WHY?
+            visitComponent( (CM_AXI) x );
+        } else {
+
+	    if( x.getSize() > 0 ) {
+	       _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
 	                          " \\n" + x.getSize() + " Bytes\", shape=box, regular=true, color=white ]; }");
-	} else {
-	    _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
+	    } else {
+	       _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
 	                          "\", shape=box, regular=true, color=black ]; }");
-	}
+	   }
+        }
     }
 
 /*--------------------------------------- Controllers -------------------------------------------------------*/
@@ -293,11 +332,47 @@ public class PlatformDotVisitor extends PlatformVisitor {
     }
 
     /**
+     *  Print a line for a ReadCrossbar controller in the correct format for DOTTY.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(AXI_CM_CTRL x) {
+
+        _printStream.println(
+             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", color=papayawhip ];");
+
+    }
+
+    /**
+     *  Print a line for a ReadCrossbar controller in the correct format for DOTTY.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(AXI2AXI_CTRL x) {
+
+        _printStream.println(
+             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", color=papayawhip ];");
+
+    }
+
+    /**
      *  Print a line for a multi-fifo controller in the correct format for DOTTY.
      *
      * @param  x The controller that needs to be rendered.
      */
     public void visitComponent(MultiFifoController x) {
+
+        _printStream.println(
+             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", color=papayawhip ];");
+
+    }
+
+    /**
+     *  Print a line for a multi-fifo controller in the correct format for DOTTY.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(CM_CTRL x) {
 
         _printStream.println(
              _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", color=papayawhip ];");
@@ -332,7 +407,18 @@ public class PlatformDotVisitor extends PlatformVisitor {
              //_prefix + "{ rank=sink; \"" + x.getName() + "\" [ label=\"" + x.getName() + "\", regular=true, color=lightgoldenrod ]; }");
             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", regular=true, color=lightgoldenrod ];");
     }
-    
+
+    /**
+     *  Print a line for the process in the correct format for DOTTY.
+     *
+     * @param  x The process that needs to be rendered.
+     */
+    public void visitComponent(AXICrossbar x) {
+
+	_printStream.println(
+            _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", regular=true, color=lightgoldenrod ];");
+    }
+        
 /*--------------------------------------- Peripherals -------------------------------------------------------*/
     /**
      *  Print a line for a ZBT memory controller in the correct format for DOTTY.
@@ -341,13 +427,24 @@ public class PlatformDotVisitor extends PlatformVisitor {
      */
     public void visitComponent(ZBTMemoryController x) {
 
-    if( x.getSize() > 0 ) {
-    	_printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
+       if( x.getSize() > 0 ) {
+    	  _printStream.println( _prefix + "{ rank=source; \"" + x.getName() + "\" [ label=\"" + x.getName() +
     	                          " \\n" + x.getSize() + " Bytes\", shape=box, regular=true, color=white ]; }");
-    } else {
-        _printStream.println(
+       } else {
+          _printStream.println(
              _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", color=papayawhip ];");
+       }
     }
+/*---------------------------------------- Host Interface --------------------------------------------------*/
+    /**
+     *  Print a line for a ML605 host interface in the correct format for DOTTY.
+     *
+     * @param  x The controller that needs to be rendered.
+     */
+    public void visitComponent(ML605 x) {
+
+       _printStream.println(
+             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + "\", shape=box, regular=true, color=linen ];");
     }
 
 /*---------------------------------------- Link --------------------------------------------------------------*/
@@ -366,9 +463,13 @@ public class PlatformDotVisitor extends PlatformVisitor {
 
 	port = (Port) i.next();
 
-	if( port instanceof LMBPort  || port instanceof PLBPort )
+	if( port instanceof LMBPort  || port instanceof PLBPort || port instanceof AXIPort )
 	{
 	    color="firebrick";
+	}
+	if( port instanceof AXIPort )
+	{
+	    color="lightseagreen";
 	}
 	if( port instanceof FifoWritePort || port instanceof CompaanOutPort )
 	{

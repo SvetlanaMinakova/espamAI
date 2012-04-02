@@ -65,6 +65,12 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.communication.AXICrossbar;
+import espam.datamodel.platform.controllers.CM_CTRL;
+import espam.datamodel.platform.controllers.AXI_CM_CTRL;
+import espam.datamodel.platform.controllers.AXI2AXI_CTRL;
+import espam.datamodel.platform.memories.CM_AXI;
+import espam.datamodel.platform.ports.AXIPort;
 
 import espam.main.UserInterface;
 import espam.datamodel.EspamException;
@@ -77,7 +83,7 @@ import espam.datamodel.EspamException;
  *  Platform description.
  *
  * @author  Hristo Nikolov, Todor Stefanov
- * @version  $Id: PlatformVisitor.java,v 1.3 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: PlatformVisitor.java,v 1.4 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class PlatformVisitor implements Visitor {
@@ -94,35 +100,11 @@ public class PlatformVisitor implements Visitor {
 	}
 
 	/**
-	 *  Visit a Resource component.
-	 *
-	 * @param  x A Visitor Object.
-	 */
-	public void visitComponent(Resource x) {
-	}
-
-	/**
-	 *  Visit a Port component.
-	 *
-	 * @param  x A Visitor Object.
-	 */
-	public void visitComponent(Port x) {
-	}
-
-	/**
 	 *  Visit a Link component.
 	 *
 	 * @param  x A Visitor Object.
 	 */
 	public void visitComponent(Link x) {
-	}
-
-	/**
-	 *  Visit a Processor component.
-	 *
-	 * @param  x A Visitor Object.
-	 */
-	public void visitComponent(Processor x) {
 	}
 
 	/**
@@ -166,6 +148,54 @@ public class PlatformVisitor implements Visitor {
 	}
 
 	/**
+	 *  Visit an AXI Crossbar component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(AXICrossbar x) {
+	}
+
+	/**
+	 *  Visit an AXIPort component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(AXIPort x) {
+	}
+
+	/**
+	 *  Visit an AXI Communication memory component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(CM_AXI x) {
+	}
+
+	/**
+	 *  Visit an AXI CM CTRL component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(AXI_CM_CTRL x) {
+	}
+
+	/**
+	 *  Visit a CM CTRL component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(CM_CTRL x) {
+	}
+
+	/**
+	 *  Visit an AXI2AXI CTRL Crossbar component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(AXI2AXI_CTRL x) {
+	}
+
+	/**
 	 *  Visit a PLBBus component.
 	 *
 	 * @param  x A Visitor Object.
@@ -203,14 +233,6 @@ public class PlatformVisitor implements Visitor {
 	 * @param  x A Visitor Object.
 	 */
 	public void visitComponent(WriteFifoBus x) {
-	}
-
-	/**
-	 *  Visit a Memory component.
-	 *
-	 * @param  x A Visitor Object.
-	 */
-	public void visitComponent(Memory x) {
 	}
 
 	/**
@@ -430,6 +452,37 @@ public class PlatformVisitor implements Visitor {
 	public void visitComponent(ML605 x) {
 	}
 
+	/**
+	 *  Visit a Resource component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(Resource x) {
+	}
+
+	/**
+	 *  Visit a Port component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(Port x) {
+	}
+
+	/**
+	 *  Visit a Processor component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(Processor x) {
+	}
+
+	/**
+	 *  Visit a Memory component.
+	 *
+	 * @param  x A Visitor Object.
+	 */
+	public void visitComponent(Memory x) {
+	}
 
 /******************************************************************************/
 	/**

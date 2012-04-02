@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:09:07 stefanov Exp $
+# $Id: makefile,v 1.2 2012/04/02 16:25:40 nikolov Exp $
 #
 
 ROOT  = ../../../..
@@ -8,6 +8,7 @@ SUBPACKAGES = \
 
 # Java files in this directory
 JSRCS = \
+	AXIPort.java \
 	PLBPort.java \
 	OPBPort.java \
 	IPLBPort.java \

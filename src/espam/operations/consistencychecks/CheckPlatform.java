@@ -34,6 +34,7 @@ import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.PowerPC;
 import espam.datamodel.platform.communication.Crossbar;
+import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
 import espam.datamodel.platform.memories.Memory;
 import espam.datamodel.platform.memories.BRAM;
@@ -168,7 +169,7 @@ public class CheckPlatform {
 			    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) && 
 			    !(resource instanceof ADMXRCII) && !(resource instanceof ADMXPL) &&
 			    !(resource instanceof XUPV5LX110T) && !(resource instanceof ML505) && 
-			    !(resource instanceof ML605)) {
+			    !(resource instanceof ML605) && !(resource instanceof AXICrossbar)) {
 			    System.err.println("[Espam]ERROR: Resource " + resource + " cannot be used in the describtion of the platform. \n ");
 			    _error++;
 			}
@@ -182,7 +183,7 @@ public class CheckPlatform {
 			} else if( resource instanceof CompaanHWNode ) {
 			    _hwn++; // count the number of Compaan hardware nodes in the platform
 
-			} else if( resource instanceof Crossbar ) {
+			} else if( resource instanceof Crossbar || resource instanceof AXICrossbar ) {
 			    _cb++; // count the number of Crossbars in the platform
 			
 			} else if( resource instanceof ZBTMemoryController ) {

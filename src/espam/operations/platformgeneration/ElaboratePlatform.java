@@ -33,6 +33,7 @@ import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.PowerPC;
 import espam.datamodel.platform.communication.Crossbar;
+import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
 import espam.datamodel.platform.memories.Memory;
 import espam.datamodel.platform.memories.BRAM;
@@ -43,6 +44,7 @@ import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.mapping.Mapping;
 
 import espam.operations.ConsistencyCheck;
+import espam.operations.platformgeneration.elaborate.ElaborateMany2OneCrossbarAXI;
 import espam.operations.platformgeneration.elaborate.ElaborateMany2OneCrossbar;
 import espam.operations.platformgeneration.elaborate.ElaborateMany2One;
 import espam.operations.platformgeneration.elaborate.ElaborateOne2One;
@@ -91,6 +93,7 @@ public class ElaboratePlatform {
 			   // ---------------------------------------------------------------------
 			   
 			   ElaborateOne2One.getInstance().elaborate( platform, mapping );
+                           System.out.println(" -- Elaboration ONE2ONE");
 
 		     	} else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
 			           ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == true ) {
@@ -100,6 +103,7 @@ public class ElaboratePlatform {
 			   // ---------------------------------------------------------------------
 			
 			   ElaborateMany2One.getInstance().elaborate( platform, mapping );
+                           System.out.println(" -- Elaboration MANY2ONE");
 
 			} else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
 			           ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == false ) {
@@ -108,7 +112,29 @@ public class ElaboratePlatform {
 			   // Connections through a communication network component.
 			   // ---------------------------------------------------------------------
 			   
-			   ElaborateMany2OneCrossbar.getInstance().elaborate( platform, mapping );
+			   // find the type of the communication network component
+
+			   if( _getAxiCrossbar( platform ) ) { 
+			          ElaborateMany2OneCrossbarAXI.getInstance().elaborate( platform, mapping );
+                                  System.out.println(" -- Elaboration MANY2ONE AXI Crossbar");
+
+/*
+
+            Iterator i = platform.getResourceList().iterator();
+	    while( i.hasNext() ) {
+
+		Resource resource = (Resource) i.next();
+                System.out.println( resource );
+            }
+
+*/
+
+
+
+                           } else {
+			          ElaborateMany2OneCrossbar.getInstance().elaborate( platform, mapping );
+                                  System.out.println(" -- Elaboration MANY2ONE Crossbar");
+                           }
 			}
 
 			System.out.println(" -- Elaboration [Done]");
@@ -120,6 +146,20 @@ public class ElaboratePlatform {
 	}
 
 
+        private boolean _getAxiCrossbar( Platform platform ) {
+
+            boolean tmp=false;
+            Iterator i = platform.getResourceList().iterator();
+	    while( i.hasNext() ) {
+
+		Resource resource = (Resource) i.next();
+
+		if( resource instanceof AXICrossbar ) {
+                     tmp = true;
+                }
+            }
+            return tmp;
+        }
 	///////////////////////////////////////////////////////////////////
 	////                         private variables                 ////
 
@@ -127,6 +167,6 @@ public class ElaboratePlatform {
 	 *  Create a unique instance of this class to implement a singleton
 	 */
 	private final static ElaboratePlatform _instance = new ElaboratePlatform();
-}
+ }
 
 

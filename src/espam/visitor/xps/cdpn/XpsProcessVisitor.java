@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.7 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.8 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -410,8 +410,52 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	"            while (*isFull) { yield(); };\\\n" +
 	"            *outPort = ((volatile int *) value)[i];\\\n" +
 	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n/////////////////////////////// Primitives for SW FIFOs \n" +
+	"    } while(0)\n\n" +
+	"\n///////////////////////////////////// Primitives for SW FIFOs \n" +
+
+	"#define readSWF(pos, value, len, fifo_size) \\\n" +
+	"    do {\\\n" +
+	"       volatile int *fifo = (int *)pos;\\\n" +
+	"       int r_cnt = fifo[1];\\\n" +
+	"       while (1) {\\\n" +
+	"            int w_cnt = fifo[0];\\\n" +
+	"            if ( w_cnt != r_cnt ) {\\\n" +
+	"                for (int i = 0; i < len; i++) {\\\n" +
+	"                     ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
+	"                }\\\n" +
+	"                r_cnt += len;\\\n" +
+	"                if( (r_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+	"                     r_cnt &= 0x80000000;\\\n" +
+	"                     r_cnt ^= 0x80000000;\\\n" +
+	"                }\\\n" +
+	"                fifo[1] = r_cnt;\\\n" +
+	"                break;\\\n" +
+	"            }\\\n" +
+	"       }\\\n" +
+	"    } while(0)\n\n" +
+
+	"#define writeSWF(pos, value, len, fifo_size) \\\n" +
+	"    do {\\\n" +
+	"       volatile int *fifo = (int *)pos;\\\n" +
+	"       int w_cnt = fifo[0];\\\n" +
+	"       while (1) {\\\n" +
+	"            int r_cnt = fifo[1];\\\n" +
+	"            if ( r_cnt != (w_cnt ^ 0x80000000) ) {\\\n" +
+	"                for (int i = 0; i < len; i++) {\\\n" +
+	"                     fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
+	"                }\\\n" +
+	"                w_cnt += len;\\\n" +
+	"                if( (w_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+	"                     w_cnt &= 0x80000000;\\\n" +
+	"                     w_cnt ^= 0x80000000;\\\n" +
+	"                }\\\n" +
+	"                fifo[0] = w_cnt;\\\n" +
+	"                break;\\\n" +
+	"            }\\\n" +
+	"       }\\\n" +
+	"    } while(0)\n\n" +
+
+	"\n////////// currently not used //////// Primitives for SW FIFOs \n" +
 	"inline volatile void *acquire_write_ptr(int f, int len) {\n" +
 	"	volatile long *fifo = (long *)f;\n" +
 	"	register long fifoSize = fifo[0];\n" +

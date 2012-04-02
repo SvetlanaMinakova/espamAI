@@ -32,6 +32,7 @@ import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.communication.Crossbar;
+import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.communication.PLBBus;
 import espam.datamodel.platform.communication.LMBBus;
 import espam.datamodel.platform.communication.TransparentBus;
@@ -42,6 +43,7 @@ import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.memories.MultiFifo;
 import espam.datamodel.platform.memories.BRAM;
 import espam.datamodel.platform.memories.ZBT;
+import espam.datamodel.platform.ports.AXIPort;
 import espam.datamodel.platform.ports.PLBPort;
 import espam.datamodel.platform.ports.OPBPort;
 import espam.datamodel.platform.ports.LMBPort;
@@ -71,7 +73,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Platform.java,v 1.4 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: Xml2Platform.java,v 1.5 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class Xml2Platform {
@@ -228,6 +230,8 @@ public class Xml2Platform {
 
 		if( type.equals("CrossbarSwitch") ) {
 			network = new Crossbar(name);
+		} else if( type.equals("AXICrossbarSwitch") ) {
+			network = new AXICrossbar(name);
 		} else {
 			throw new Error("Unknown Network Type: " + type);
 		}
@@ -408,6 +412,8 @@ public class Xml2Platform {
 
 		if( type.equals("PLBPort") ) {
 			port = new PLBPort(name);
+		} else if( type.equals("AXIPort") ) {
+			port = new AXIPort(name);
 		} else if( type.equals("LMBPort") ) {
 			port = new LMBPort(name);
 		} else if( type.equals("OPBPort") ) {

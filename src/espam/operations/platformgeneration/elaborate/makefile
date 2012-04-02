@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.1 2007/12/07 22:07:53 stefanov Exp $
+# $Id: makefile,v 1.2 2012/04/02 16:25:40 nikolov Exp $
 #
 
 ROOT  = ../../../..
@@ -9,6 +9,7 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
 	ElaborateMany2OneCrossbar.java \
+	ElaborateMany2OneCrossbarAXI.java \
 	ElaborateMany2One.java \
 	ElaborateOne2One.java \
 	RefineMemories.java \

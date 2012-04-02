@@ -41,6 +41,8 @@ import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
+import espam.datamodel.platform.communication.AXICrossbar;
+
 
 import espam.main.UserInterface;
 
@@ -53,7 +55,7 @@ import espam.visitor.MappingVisitor;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsMemoryMapVisitor.java,v 1.2 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: XpsMemoryMapVisitor.java,v 1.3 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class XpsMemoryMapVisitor extends MappingVisitor {
@@ -100,6 +102,8 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
         try {
 
             _mapping= x;
+
+            _isAXICrossbar = _getAxiCrossbar( _mapping );
             
 	        _printStream.println("#ifndef __MEMORYMAP_H_");
 	    	_printStream.println("#define __MEMORYMAP_H_");
@@ -111,6 +115,15 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
             	Resource resource = (Resource) i.next();
                 
                 if (resource instanceof Processor) {
+
+                    String s_old_rd="";
+                    String s_old_wr="";
+                    String s_old_ch_name_rd="";
+                    String s_old_ch_name_wr="";
+		    String fifoSizeRd="";
+		    String fifoSizeWr="";
+                    boolean firstRd = false;
+                    boolean firstWr = false;
 
                     Processor processor = (Processor) resource;
                     Iterator j = processor.getMemoryMapList().iterator();
@@ -132,11 +145,12 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
                     			ADGEdge adgEdge = (ADGEdge)cdChannel.getAdgEdgeList().get(0);
                     			ADGPort adgPort = (ADGPort)adgEdge.getToPort();
                     			ADGNode adgNode = (ADGNode)adgPort.getNode();
-                    			
+
+                                        int chSize = adgEdge.getSize();                  			
                     			String cdChannelName = cdChannel.getName();
                     			String adgNodeName = adgNode.getName();
                     			String cdGateName = cdGate.getName();
-                    			
+                    		 	
                     			String s = adgNodeName + "_" + cdGateName + "_" + cdChannelName;
                     			String baseAddress;
                     			if (page.getSize() == 0) {
@@ -147,12 +161,37 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
                     			}
                     			
                     			_printStream.println("//" + processor.getName() + " FIFOs");
-                    			_printStream.println("#define " + s + " "
-                    					   + baseAddress + " //read from CDChannel" + cdChannelName + " address for " + processor.getName());
-                    			_printStream.println("");
-                    			
-                    		}
-                    		else if (page.getReadResource().getName() != "") {
+
+                                        //-------------------------------------
+                                        // SW FIFOs mapped into CM_AXI memories
+                                        //-------------------------------------
+					if( _isAXICrossbar ) {
+
+						if( !firstRd ) {
+							_printStream.println("#define " + s + " (volatile int *)"
+								  + baseAddress + " //read from channel " + cdChannelName + " (edge " + adgEdge.getName() + ")");
+							s_old_rd = s;
+							s_old_ch_name_rd = cdChannelName;
+							firstRd = true;
+						} else {
+							_printStream.println("#define " + s + " (volatile int *)((volatile int)" + s_old_rd + " + ((size" + s_old_ch_name_rd + "+2)<<2))"
+								  + " //read from channel " + cdChannelName + " (edge " + adgEdge.getName() + ")");
+							s_old_rd = s;
+							s_old_ch_name_rd = cdChannelName;
+						}
+
+						fifoSizeRd = chSize + "*((sizeof(t" + cdChannel.getName() + ")+(sizeof(t" + cdChannel.getName() + ")%4)+3)>>2)";
+						_printStream.println("#define size" + cdChannelName + " " + fifoSizeRd);
+						_printStream.println("");
+
+					} else { // PLB based system
+
+						_printStream.println("#define " + s + " "
+								  + baseAddress + " //read from CDChannel" + cdChannelName + " address for " + processor.getName());
+						_printStream.println("");  
+					}
+                 			
+                    		} else if (page.getReadResource().getName() != "") { // D/P CTRL
                     			String s = page.getReadResource().getName();
                     			String baseAddress = "0x" + _digitToStringHex(page.getBaseAddress(), 8);
                     			_printStream.println("#define " + s + " "
@@ -168,7 +207,8 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
                     			ADGEdge adgEdge = (ADGEdge)cdChannel.getAdgEdgeList().get(0);
                     			ADGPort adgPort = (ADGPort)adgEdge.getFromPort();
                     			ADGNode adgNode = (ADGNode)adgPort.getNode();
-                    			
+
+                                        int chSize = adgEdge.getSize(); 
                     			String cdChannelName = cdChannel.getName();
                     			String adgNodeName = adgNode.getName();
                     			String cdGateName = cdGate.getName();
@@ -183,10 +223,33 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
                     			}
                     			
                     			_printStream.println("//" + processor.getName() + " FIFOs");
-                    			_printStream.println("#define " + s + " "
-                    					   + baseAddress + " //write to CDChannel" + cdChannelName + " address for " + processor.getName());
-                    			_printStream.println("");
-                    			
+
+                                        //-------------------------------------
+                                        // SW FIFOs mapped into CM_AXI memories
+                                        //-------------------------------------
+					 if( _isAXICrossbar ) {
+ 
+						if( !firstWr ) {
+							_printStream.println("#define " + s + " (volatile int *)"
+								  + baseAddress + " //write to channel " + cdChannelName + " (edge " + adgEdge.getName() + ")");
+							_printStream.println("");  
+							s_old_wr = s;
+							s_old_ch_name_wr = cdChannelName;
+							firstWr = true;
+
+						} else {
+							_printStream.println("#define " + s + " (volatile int *)((volatile int)" + s_old_wr + " + ((size" + s_old_ch_name_wr + "+2)<<2))"
+								  + " //write to channel " + cdChannelName + " (edge " + adgEdge.getName() + ")");
+							_printStream.println("");  
+							s_old_wr = s;
+							s_old_ch_name_wr = cdChannelName;
+						}
+					} else {  // PLB based system
+
+						_printStream.println("#define " + s + " "
+								  + baseAddress + " //write to CDChannel" + cdChannelName + " address for " + processor.getName());
+						_printStream.println("");
+					}
                     		}
                     		else if (page.getWriteResource().getName() != "") {
                     			String s = page.getWriteResource().getName();
@@ -296,6 +359,23 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
         }
         return printStream;
     }
+
+    /**
+     *  Get the AXICrossbar component (in this case, we use SW Fifos mappet to the communication memories)
+     *  @param platform
+     */
+    private boolean _getAxiCrossbar( Mapping x ) {
+
+        Iterator j = x.getPlatform().getResourceList().iterator();
+    	while (j.hasNext()) {
+            Resource resource = (Resource)j.next();
+            if( resource instanceof AXICrossbar ) {
+               return true;
+            }
+        }
+
+	return false;
+    }
     
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
@@ -314,4 +394,5 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
 
     private PrintStream _printStream = null;
 
+    private boolean _isAXICrossbar = false;
 }

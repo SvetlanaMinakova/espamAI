@@ -39,19 +39,21 @@ import espam.datamodel.platform.ports.FifoReadPort;
 import espam.datamodel.platform.ports.FifoWritePort;
 import espam.datamodel.platform.Link;
 import espam.datamodel.platform.controllers.Controller;
+import espam.datamodel.platform.controllers.CM_CTRL;
 import espam.datamodel.platform.controllers.MemoryController;
 import espam.datamodel.platform.controllers.FifosController;
 import espam.datamodel.platform.controllers.MultiFifoController;
 import espam.datamodel.platform.peripherals.Peripheral;
 import espam.datamodel.platform.memories.Fifo;
 import espam.datamodel.platform.memories.MultiFifo;
+import espam.datamodel.platform.memories.CM_AXI;
 
 /**
  *  This class defines the memory map of each processor component in a platform.
  *
  *
  * @author  Todor Stefanov
- * @version  $Id: SetMemoryMaps.java,v 1.2 2010/04/02 12:21:25 nikolov Exp $
+ * @version  $Id: SetMemoryMaps.java,v 1.3 2012/04/02 16:25:40 nikolov Exp $
  *
  */
 public class SetMemoryMaps {
@@ -82,7 +84,7 @@ public class SetMemoryMaps {
 
 	    _initializeMemoryMaps( platform );
 	    
-	    //_printDebugInformation( platform );
+	   // _printDebugInformation( platform );
 	}
 
 	///////////////////////////////////////////////////////////////////
@@ -407,7 +409,83 @@ public class SetMemoryMaps {
 
 		   _crossbarPort++;
 
-		} else if( resource instanceof Peripheral ) {
+		} else if( resource instanceof CM_CTRL ) {
+
+// We use FIFOs implemented in software. At this point we can not compute the start addresses of the FIFOs because we do not know 
+// the 'actual' size of the fifos. The actual addresses are set in the memory map genaration in the MHS visitor.
+// CM_CTRL is used to write to FIFOs and read from self channels
+
+		    CM_CTRL controller = (CM_CTRL) resource;
+		    MemoryMap memMap = _getMemoryMap( controller );
+		    _fifoNumber = 0; // In each virtual buffer the fifos are numbered starting from 0
+
+		    // Create a page which shows the read address from a virtual buffer
+		    Page page = new Page();
+		    page.setReadResource( controller );
+		    page.setSize( 8 ); // A fifo occupies 2 memory locations (x32bits)
+		    page.setBaseAddress( memMap.getVirtualBufferSegment() );
+
+		    // --------------------------------------------------------------------------
+		    // Here we DO NOT modify the virtual buffer segment base address of a memory map.
+ 	            // We compute the addresses for the Software FIFOs during memory map code generation
+		    // --------------------------------------------------------------------------
+// 		    memMap.setVirtualBufferSegment( memMap.getVirtualBufferSegment() + 8 ) ;
+		    memMap.getPageList().add( page );
+		    // Add this page to the controller as well
+		    controller.getPageList().add( page );
+
+		    // -----------------------------------------------------------------------------
+		    // The fifos in a virtual buffer can be accessed for both read and write.
+		    // The fifos for read are specified:
+		    //        - the base address field shows the global read address of the fifo
+		    //        - size = 0
+		    // The SAME fifos for write a specified as we do in the case of FifosController
+		    // -----------------------------------------------------------------------------
+		    Vector fifoList = _getFifoListCM( controller );
+		    Iterator fl = fifoList.iterator();
+		    while( fl.hasNext() ) {
+
+		        Fifo fifo = (Fifo) fl.next();
+
+			// set the write part
+			// For each FIFO a page is created
+			Page fifoPage = new Page();
+		        fifoPage.setWriteResource( fifo );
+		        fifoPage.setSize( 8 ); // A fifo occupies 2 memory locations (x32bits)
+			fifoPage.setBaseAddress( memMap.getVirtualBufferSegment() );
+
+		        // --------------------------------------------------------------------------
+		        // Here we modify the virtual buffer segment base address of a memory map.
+ 	                // We do this in order to know where the next WRITE fifo has to start from
+		        // --------------------------------------------------------------------------
+		        memMap.setVirtualBufferSegment( memMap.getVirtualBufferSegment() + 8 ) ;
+		        memMap.getPageList().add( fifoPage );
+		        // Add this page to the controller as well
+		        controller.getPageList().add( fifoPage );
+
+			// set the read part
+			// again, a page is created...
+			Page page1 = new Page();
+		        page1.setReadResource( fifo );
+		        page1.setSize( -1 ); // Because this is a fake page containing the global read address of a fifo
+
+			// -----------------------------------------------------------------------
+			// The addresses must be unique. We use the following approach:
+			// CB port 1, first fifo: 0x_8001_0000 // Other fifos are offset in the memory map generation
+			// CB port 2, first fifo: 0x_8002_0000 // Other fifos are offset in the memory map generation
+			// CB port 3, first fifo: 0x_8003_0000 // Other fifos are offset in the memory map generation
+			// -----------------------------------------------------------------------
+			int cbPort = _crossbarPort<<16;
+//			page1.setBaseAddress( cbPort + _fifoNumber );
+			page1.setBaseAddress( 0x80000000 + cbPort );
+			memMap.getPageList().add( page1 );
+
+//			_fifoNumber++;
+		   }
+
+		   _crossbarPort++;
+
+		}  else if( resource instanceof Peripheral ) {
 
 		    Peripheral controller = (Peripheral) resource;
 		    MemoryMap memMap = _getMemoryMap( controller );
@@ -497,7 +575,7 @@ public class SetMemoryMaps {
 	*
 	* @param  controller
 	****************************************************************************************************************/
-	private Vector _getFifoList( MultiFifoController controller ) {
+ 	private Vector _getFifoList( MultiFifoController controller ) {
 
 	    Iterator p = controller.getPortList().iterator();
 	    while( p.hasNext() ) {
@@ -512,6 +590,28 @@ public class SetMemoryMaps {
 		   if( port1.getResource() instanceof MultiFifo ) {
 
 		       MultiFifo vb = (MultiFifo) port1.getResource();
+                       return vb.getFifoList();
+		   }
+                }
+	    }
+	    return null;
+	}
+
+ 	private Vector _getFifoListCM( CM_CTRL controller ) {
+
+	    Iterator p = controller.getPortList().iterator();
+	    while( p.hasNext() ) {
+
+	        Port port = (Port) p.next();
+		Link link = port.getLink();
+
+		Iterator pp = link.getPortList().iterator();
+		while( pp.hasNext() ) {
+
+		   Port port1 = (Port) pp.next();
+		   if( port1.getResource() instanceof CM_AXI ) {
+
+		       CM_AXI vb = (CM_AXI) port1.getResource();
                        return vb.getFifoList();
 		   }
                 }

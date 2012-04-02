@@ -87,7 +87,7 @@ public class ResolveEntityHandler implements EntityResolver {
 
 			+ "<!ELEMENT port EMPTY>"
 			//+ "<!ATTLIST port name CDATA #REQUIRED type CDATA #IMPLIED>"
-			+ "<!ATTLIST port name CDATA #REQUIRED type (PLBPort | OPBPort | LMBPort | FifoReadPort | FifoWritePort | CompaanInPort | CompaanOutPort | empty) \"empty\" size CDATA #IMPLIED>"
+			+ "<!ATTLIST port name CDATA #REQUIRED type (AXIPort | PLBPort | OPBPort | LMBPort | FifoReadPort | FifoWritePort | CompaanInPort | CompaanOutPort | empty) \"empty\" size CDATA #IMPLIED>"
 
 			+ "<!ELEMENT vfifo EMPTY>"
 			+ "<!ATTLIST vfifo name CDATA #REQUIRED size CDATA #IMPLIED>"

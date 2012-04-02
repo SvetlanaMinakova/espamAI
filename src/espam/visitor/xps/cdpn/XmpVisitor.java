@@ -31,6 +31,7 @@ import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
 import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
 import espam.main.UserInterface;
@@ -48,7 +49,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.5 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: XmpVisitor.java,v 1.6 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -149,6 +150,8 @@ public class XmpVisitor extends CDPNVisitor {
 
                 if( _commInterface.equals("USB") ) {
 			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605_USB.ucf");
+                } else if( _isAXICrossbar ) {
+			_printStream.println("UcfFile: data" + File.separatorChar + "system.ucf");
                 } else {
 			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605.ucf");
                 }
@@ -299,6 +302,8 @@ public class XmpVisitor extends CDPNVisitor {
             } else if( resource instanceof ML605 ) {
                board = "ML605";
                _commInterface = ((ML605)resource).getCommInterface();
+            } else if( resource instanceof AXICrossbar ) {
+               _isAXICrossbar = true;
             }
         }
 
@@ -411,4 +416,6 @@ public class XmpVisitor extends CDPNVisitor {
     private String _targetBoard = "";
 
     private String _commInterface = "";
+
+    private boolean _isAXICrossbar = false; // We need to distinguish the AXI-based systems somehow because different .ucf file is used
 }

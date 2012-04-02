@@ -50,6 +50,8 @@ import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
 
+import espam.datamodel.platform.communication.AXICrossbar;
+
 import espam.datamodel.parsetree.ParserNode;
 
 import espam.datamodel.domain.Polytope;
@@ -71,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.6 2012/01/20 16:46:42 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.7 2012/04/02 16:25:40 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -103,8 +105,25 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 
 	if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605") ) {
 		_printStream.println("");
-		_printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
-		_printStream.println("");
+
+		if( _getAxiCrossbar(_mapping.getPlatform()) ) {
+		      // Initilaize the WR and RD counters of the SW FIFOs
+		      _printStream.println(_prefix + _prefix + "// Initialize the WR and RD counters of the FIFOs to which the processor writes to");
+		      Iterator g = x.getOutGates().iterator();
+		      while( g.hasNext() ) {
+			  CDGate gate = (CDGate) g.next();
+			  CDChannel cdChannel = (CDChannel) gate.getChannel();
+
+			  ADGEdge edge = (ADGEdge)cdChannel.getAdgEdgeList().get(0);
+			  ADGPort port = edge.getFromPort();
+
+			  String eName = port.getNode().getName() + "_" + gate.getName() + "_" + cdChannel.getName();
+			  _printStream.println(_prefix + _prefix + "*(" + eName + ") = *(" + eName + " + 1) = 0;");
+		      }
+		      _printStream.println("");
+		      _printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
+		      _printStream.println("");
+		}
 	}
 
 	if( _ui.getDebuggerFlag() ) {
@@ -639,11 +658,26 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
             } else if( resource instanceof ML505 ) {
                board = "ML505";
             } else if( resource instanceof ML605 ) {
-                board = "ML605";
+               board = "ML605";
             }
         }  
 
 	return board;
+    }
+
+    private boolean _getAxiCrossbar( Platform platform ) {
+
+            boolean tmp=false;
+            Iterator i = platform.getResourceList().iterator();
+	    while( i.hasNext() ) {
+
+		Resource resource = (Resource) i.next();
+
+		if( resource instanceof AXICrossbar ) {
+                     tmp = true;
+                }
+            }
+            return tmp;
     }
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
