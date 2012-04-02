@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.11 2012/03/28 12:07:21 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.12 2012/04/02 12:02:34 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -1288,6 +1288,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   component CONTROLLER is");
 		hdlPS.println("      generic (");
 		hdlPS.println("         N_STAGES  : natural := 1;");
+		hdlPS.println("         IP_II     : natural := 1;");
 		hdlPS.println("         BLOCKING  : natural := 0");
 		hdlPS.println("      );");
 
@@ -1380,6 +1381,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   constant c_CNTR_WIDTHS  : t_counter_width := ( " + s + "others=>10 );");
 
 		hdlPS.println("   constant c_STAGES       : natural := 1; -- number of pipeline stages or delay");
+		hdlPS.println("   constant c_IP_II        : natural := 1; -- IP core Initiation Interval (II)");
 		hdlPS.println("   constant c_BLOCKING     : natural := 0; -- block (or not) the pipeline if there is no input data");
 		hdlPS.println("   constant c_IP_RESET     : natural := 1; -- active level of the HW IP reset signal");
 		hdlPS.println("");
@@ -1879,6 +1881,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		hdlPS.println("   CTRL : CONTROLLER");
 		hdlPS.println("   generic map (");
 		hdlPS.println("      N_STAGES   => c_STAGES,");
+		hdlPS.println("      IP_II      => c_IP_II,");
 		hdlPS.println("      BLOCKING   => c_BLOCKING");
 		hdlPS.println("   )");
 

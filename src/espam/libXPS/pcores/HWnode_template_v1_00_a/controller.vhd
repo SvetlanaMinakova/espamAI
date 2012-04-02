@@ -21,6 +21,7 @@ use ieee.std_logic_unsigned.all;
 entity CONTROLLER is 
    generic(
       N_STAGES  : natural := 1; -- number of pipeline stages or delay
+      IP_II     : natural := 1; -- Initiation Interval (II) of IP core
       BLOCKING  : natural := 0  -- '1'-block the pipeline if there is no input data
    );
    port (
@@ -48,6 +49,7 @@ architecture RTL of CONTROLLER is
    signal sl_execute : std_logic;
    signal sl_write   : std_logic;
    signal delay_pipe : std_logic_vector(N_STAGES downto 0);
+   signal sl_ii_valid : std_logic;
 
 begin
 
@@ -65,7 +67,12 @@ begin
       end if;
    end process Pipe_Fill;
 
-   sl_read    <= EXIST and not( FULL ) and not( DONE_RD ) and not( RST );
+   -- Indicates when we are at a valid II boundary
+   sl_ii_valid <= '1' when IP_II = 1 else
+                  '1' when delay_pipe(IP_II-2 downto 0) = (IP_II-2 downto 0 => '0') else
+                  '0';
+
+   sl_read    <= EXIST and not( FULL ) and not( DONE_RD ) and not( RST ) and sl_ii_valid;
    sl_write   <= delay_pipe(N_STAGES-1) and sl_execute;
    sl_execute <= sl_read when (DONE_RD='0' and BLOCKING > 0) else FULL nor DONE_WR;
 

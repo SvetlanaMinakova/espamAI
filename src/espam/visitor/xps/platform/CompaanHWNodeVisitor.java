@@ -58,7 +58,7 @@ import espam.utils.symbolic.expression.*;
  * This class is a class for a visitor that is used to generate pcores for Xps tool.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov
- * @version $Id: CompaanHWNodeVisitor.java,v 1.2 2008/01/18 11:22:35 nikolov Exp $
+ * @version $Id: CompaanHWNodeVisitor.java,v 1.3 2012/04/02 12:02:05 svhaastr Exp $
  */
 
 public class CompaanHWNodeVisitor extends PlatformVisitor {
@@ -1208,6 +1208,7 @@ public class CompaanHWNodeVisitor extends PlatformVisitor {
 		hdlPS.println("   component CONTROLLER is");
 		hdlPS.println("      generic ( ");
 		hdlPS.println("         N_STAGES  : natural := 1;");
+		hdlPS.println("         IP_II     : natural := 1;");
 		hdlPS.println("         BLOCKING  : natural := 0");
 		hdlPS.println("      ); ");
 
@@ -1306,6 +1307,7 @@ public class CompaanHWNodeVisitor extends PlatformVisitor {
 		hdlPS.println("   constant c_CNTR_WIDTHS  : t_counter_width := ( " + s + "others=>10 );");
 
 		hdlPS.println("   constant c_STAGES       : natural := 1; -- number of pipeline stages or delay");
+		hdlPS.println("   constant c_IP_II        : natural := 1; -- IP core Initiation Interval (II)");
 		hdlPS.println("   constant c_BLOCKING     : natural := 0; -- block (or not) the pipeline if there is no input data");
 		hdlPS.println("   constant c_IP_RESET     : natural := 1; -- active level of the HW IP reset signal");
 		hdlPS.println("");
@@ -1655,6 +1657,7 @@ public class CompaanHWNodeVisitor extends PlatformVisitor {
 		hdlPS.println("   CTRL : CONTROLLER");
 		hdlPS.println("   generic map (");
 		hdlPS.println("      N_STAGES   => c_STAGES,");
+		hdlPS.println("      IP_II      => c_IP_II,");
 		hdlPS.println("      BLOCKING   => c_BLOCKING ");
 		hdlPS.println("   )");
 
