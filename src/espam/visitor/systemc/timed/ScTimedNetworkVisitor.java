@@ -27,6 +27,7 @@ import java.util.Vector;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.graph.adg.ADGParameter;
 import espam.datamodel.graph.adg.ADGEdge;
+import espam.datamodel.graph.adg.ADGNode;
 
 import espam.datamodel.pn.cdpn.CDChannel;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
@@ -51,7 +52,7 @@ import espam.visitor.xps.Copier;
  * visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedNetworkVisitor.java,v 1.16 2012/01/20 16:46:42 nikolov Exp $
+ * @version  $Id: ScTimedNetworkVisitor.java,v 1.17 2012/04/04 13:05:54 nikolov Exp $
  */
 
 public class ScTimedNetworkVisitor extends CDPNVisitor {
@@ -574,18 +575,30 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
               _getFunctionNames(parserNode);
             } // end processes
             
-
-            String latArray="";
             for(int j=0; j< _functionNames.size();j++){
               String functionName = _functionNames.get(j);
               if( _functionNames.get(j).equals("") )  functionName="CopyPropagate";
               mf.println("extern const int lat_" + functionName + " = 1;     // latency of " + functionName);
-              latArray += "lat_" + functionName + ", ";
             }
-            
+
+            // print the latency of function calls in an array used by the pnMonitor
+            String latArray="";
+            int cntr=0;
+            i = _pn.getProcessList().iterator();
+            while( i.hasNext() ) {
+                 CDProcess process = (CDProcess) i.next();
+                 Iterator j = process.getAdgNodeList().iterator();
+                 while( j.hasNext() ) {
+                      ADGNode adgNode = (ADGNode)j.next();
+		      String functionName = adgNode.getFunction().getName();
+		      if( functionName.equals("") )  functionName="CopyPropagate";
+		      latArray += "lat_" + functionName + ", ";
+                      cntr++;
+                 }
+            }            
             mf.println("");
-            mf.println( "const int latency[" + _functionNames.size() + "] = {" + latArray.substring(0, (latArray.length() - 2)) + "};" );
-            
+            mf.println( "const int latency[" + cntr + "] = {" + latArray.substring(0, (latArray.length() - 2)) + "};" );
+       
             mf.println("#endif");
         }
         catch( Exception e ) {
