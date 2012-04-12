@@ -27,6 +27,8 @@ import espam.datamodel.parsetree.statement.MemoryStatement;
 import espam.datamodel.parsetree.statement.FifoMemoryStatement;
 import espam.datamodel.LinearizationType;
 
+import espam.main.UserInterface;
+
 import espam.operations.codegeneration.CodeGenerationException;
 
 //////////////////////////////////////////////////////////////////////////
@@ -73,10 +75,14 @@ public class InputPort2MemoryStatement {
 			}
 		}
 
+		UserInterface ui = UserInterface.getInstance();
+
 		if( comModel == LinearizationType.fifo ||
 		    comModel == LinearizationType.BroadcastInOrder ||
 		    comModel == LinearizationType.sticky_fifo ||
-		    comModel == LinearizationType.shift_register ) {
+		    comModel == LinearizationType.shift_register ||
+		    (comModel == LinearizationType.GenericOutOfOrder &&
+		    ui.getIseFlag() == true) ) {      // for now, we only support out-of-order in the ISE visitor
 			memoryStatement = new FifoMemoryStatement();
 			memoryStatement.setProcessName( process.getName() );
 			memoryStatement.setGateName( gateName );
@@ -84,7 +90,7 @@ public class InputPort2MemoryStatement {
 			memoryStatement.setArgumentList( port.getBindVariables() );
 
 		} else {
-			System.out.println( "ERROR: Out-of-order not supported yet!");
+			System.out.println( "ERROR: unsupported channeltype " + comModel.toString());
 			System.exit(0);
 		}
 
