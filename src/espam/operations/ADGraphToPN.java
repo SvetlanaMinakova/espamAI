@@ -38,12 +38,13 @@ import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.MProcess;
 
 import espam.operations.scheduler.Scheduler;
+import espam.main.UserInterface;
 
 /**
  * This class ...
  *
  * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
- * @version $Id: ADGraphToPN.java,v 1.5 2011/10/05 15:03:46 nikolov Exp $
+ * @version $Id: ADGraphToPN.java,v 1.6 2012/04/12 15:43:40 svhaastr Exp $
  */
 
 public class ADGraphToPN {
@@ -177,6 +178,11 @@ public class ADGraphToPN {
 		*  For edges with the same name a single channel is created.
 		* So, #channels <= #edges
 		*/
+		UserInterface ui = UserInterface.getInstance();  /// XXX
+		boolean retainEdges = ui.getIseFlag();           /// XXX keep all edges for ISE visitor
+		if (retainEdges)
+			System.out.println("WARNING: Since the --ise flag was set, edges will not be combined.");
+
 		Iterator i = adgEdgeList.iterator();
 		while( i.hasNext() ) {
 			ADGEdge adgEdge = (ADGEdge) i.next();
@@ -193,7 +199,7 @@ public class ADGraphToPN {
 
 			String edgeName = adgEdge.getName();
 
-			if ( !_relationEdgeChannel.containsKey( edgeName ) ) {
+			if ( retainEdges || !_relationEdgeChannel.containsKey( edgeName ) ) {
 
 			     // Create a channel
 			     cdChannel = new CDChannel("CH_" + chCounter++);
