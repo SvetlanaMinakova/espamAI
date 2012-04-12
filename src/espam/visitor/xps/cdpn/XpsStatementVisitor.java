@@ -63,7 +63,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.8 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.9 2012/04/12 14:11:06 nikolov Exp $
  *      
  */
 
@@ -183,18 +183,22 @@ public class XpsStatementVisitor extends StatementVisitor {
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
     	
-    	if(fifo.getLevelUpResource() instanceof MultiFifo || fifo.getLevelUpResource() instanceof CM_AXI) {    	    	
+    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {    	    	
 //	    if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
 	    if( isDynamicSchedule ) {
 		funName = "writeDynMF(";
 	    } else {
 //--------------------------------------- TO DO: if not CM_AXI...
-//		funName = "writeMF(";
-		funName = "writeSWF(";
+		funName = "writeMF(";
+// 		funName = "writeSWF(";
 //---------------------------------------
   	    }
 
-    	} else { // fifo is not MultiFifo
+    	} else if( fifo.getLevelUpResource() instanceof CM_AXI ) {
+
+              funName = "writeSWF(";
+
+        } else { // fifo is not MultiFifo
     		
             i = fifo.getPortList().iterator();
             Port wPort = null;
@@ -257,7 +261,13 @@ public class XpsStatementVisitor extends StatementVisitor {
            }
 //--------------------------------------- TO DO: if not CM_AXI...
 // 	   _printStream.println(", " + s + ");");
-	   _printStream.println(", " + s + ", size" + t + ");");
+           _printStream.print(", " + s);
+	   if( fifo.getLevelUpResource() instanceof CM_AXI ) {
+//              _printStream.print(", " + s + ", size" + t + ");");
+              _printStream.print(", size" + t);
+           } 
+           _printStream.println(");");
+
 //        }
 //--------------------------------------- 
     }
@@ -384,18 +394,22 @@ public class XpsStatementVisitor extends StatementVisitor {
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
 
-    	if( fifo.getLevelUpResource() instanceof MultiFifo || fifo.getLevelUpResource() instanceof CM_AXI) {
+    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {
 //	     if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
 	     if( isDynamicSchedule ) {
 		    funName = "readDynMF(";
 	     } else {
 //--------------------------------------- TO DO: if not CM_AXI...
-// 		    funName = "readMF(";	
-		    funName = "readSWF(";	
+		    funName = "readMF(";	
+// 		    funName = "readSWF(";	
 //--------------------------------------- 
 	     }
 
-    	} else { // not MultiFifo
+    	} else if( fifo.getLevelUpResource() instanceof CM_AXI) {
+                    
+                    funName = "readSWF(";
+
+        } else { // not MultiFifo
 
             i = fifo.getPortList().iterator();
             Port rPort = null;
@@ -486,9 +500,15 @@ public class XpsStatementVisitor extends StatementVisitor {
 			Expression expression = (Expression) j.next();
 			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 		}
+
 //--------------------------------------- TO DO: if not CM_AXI...
 // 		_printStream.println(", " + s + ");");
-		_printStream.println(", " + s + ", size" + t + ");");
+ 	        _printStream.print(", " + s);
+                if( fifo.getLevelUpResource() instanceof CM_AXI ) {
+// 		       _printStream.println(", " + s + ", size" + t + ");");
+		       _printStream.print(", size" + t);
+                }
+               _printStream.println(");");
 //--------------------------------------- 
 	    }
 //        }       

@@ -86,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.10 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.11 2012/04/12 14:11:06 nikolov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -234,8 +234,6 @@ public class MhsVisitor extends PlatformVisitor {
     else if (_targetBoard.equals("ML605")) {
 //            if(_commInterface.equals("UART") {
 		    _printStream.println(
-			" PORT axi_iic_0_Sda_pin = axi_iic_0_Sda, DIR = IO\n" +
-			" PORT axi_iic_0_Scl_pin = axi_iic_0_Scl, DIR = IO\n" +
 			" PORT fpga_0_RS232_Uart_1_RX_pin = fpga_0_RS232_Uart_1_RX_pin, DIR = I\n" +
 			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O");
 //            } else 
@@ -251,6 +249,8 @@ public class MhsVisitor extends PlatformVisitor {
             if( _isAXICrossbar ) {
 
  		    _printStream.println(
+			" PORT axi_iic_0_Sda_pin = axi_iic_0_Sda, DIR = IO\n" +
+			" PORT axi_iic_0_Scl_pin = axi_iic_0_Scl, DIR = IO\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
 			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +

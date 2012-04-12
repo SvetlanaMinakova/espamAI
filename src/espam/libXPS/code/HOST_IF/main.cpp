@@ -4,8 +4,6 @@
 #include "xparameters.h"
 #include "xuartns550_l.h"
 
-#include "aux_func.h"
-
 /*==========================================================
 Simple protocol to move data between the FPGA board and
 the host PC using serial (UART) interface. Control packets
@@ -25,8 +23,8 @@ int main (void) {
 	//	volatile Xuint32 *DDR2_MEM = (volatile Xuint32*) 0x90000000;
 	//   volatile Xuint32 *ZBT32 = (volatile Xuint32*) 0x8a400000;
 
-   volatile Xuint8  *BRAM8  = (volatile Xuint8*)  0x00007ff0;
-   volatile Xuint32 *BRAM32 = (volatile Xuint32*) 0x00007ff0;
+   volatile Xuint8  *BRAM8  = (volatile Xuint8*)  0x00001ff0;
+   volatile Xuint32 *BRAM32 = (volatile Xuint32*) 0x00001ff0;
    volatile Xuint32 *TIMER = (volatile Xuint32*) 0xf8000000;
 
    volatile Xuint32 *DONE_SIGNAL = (volatile Xuint32 *)0x0a000000;
