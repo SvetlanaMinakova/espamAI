@@ -86,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.11 2012/04/12 14:11:06 nikolov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.12 2012/04/12 14:18:22 nikolov Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -213,7 +213,7 @@ public class MhsVisitor extends PlatformVisitor {
 
                     _printStream.println(
 	        " PORT fpga_0_RS232_Uart_1_" + sigIn + "_pin = fpga_0_RS232_Uart_1_sin, DIR = I\n" +
-	        " PORT fpga_0_RS232_Uart_1_" + sigOut + "_pin = fpga_0_RS232_Uart_1_sout, DIR = O" +
+	        " PORT fpga_0_RS232_Uart_1_" + sigOut + "_pin = fpga_0_RS232_Uart_1_sout, DIR = O\n" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_ODT_pin = fpga_0_DDR2_SDRAM_DDR2_ODT, DIR = O, VEC = [1:0]\n" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_Addr_pin = fpga_0_DDR2_SDRAM_DDR2_Addr, DIR = O, VEC = [12:0]\n" +
 	        " PORT fpga_0_DDR2_SDRAM_DDR2_BankAddr_pin = fpga_0_DDR2_SDRAM_DDR2_BankAddr, DIR = O, VEC = [1:0]\n" +
