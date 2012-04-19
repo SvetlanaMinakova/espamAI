@@ -46,7 +46,7 @@ import espam.datamodel.EspamException;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: XmlMappingParser.java,v 1.1 2007/12/07 22:07:11 stefanov Exp $
+ * @version  $Id: XmlMappingParser.java,v 1.2 2012/04/19 21:54:19 mohamed Exp $
  */
 
 public class XmlMappingParser implements ContentHandler {
@@ -230,6 +230,8 @@ public class XmlMappingParser implements ContentHandler {
 			val = _xml2Mapping.processProcessor(attributes);
 		} else if( elementName.equals("process") ) {
 			val = _xml2Mapping.processProcess(attributes);
+		} else if( elementName.equals("fifo") ) {
+			val = _xml2Mapping.processFifo(attributes);			
 		} else if( elementName.equals("doc") ) {
 			_currentCharData = new StringBuffer();
 		} else {
@@ -279,7 +281,9 @@ public class XmlMappingParser implements ContentHandler {
 			_xml2Mapping.processProcessor(_stack);
 		} else if( elementName.equals("process") ) {
 			_xml2Mapping.processProcess(_stack);
-                }
+        } else if( elementName.equals("fifo") ) {
+			_xml2Mapping.processFifo(_stack);
+		}        
 	}
 
 	public void endPrefixMapping(String prefix) throws SAXException {

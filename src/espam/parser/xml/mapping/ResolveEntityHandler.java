@@ -61,13 +61,16 @@ public class ResolveEntityHandler implements EntityResolver {
 	*/
 
 	public static String ESPAM_DTD_1 =
-	                  "<!ELEMENT mapping (processor*)>"
+	          "<!ELEMENT mapping (processor*, fifo*)>"
 			+ "<!ATTLIST mapping name CDATA #REQUIRED>"
 
 			+ "<!ELEMENT processor (process*)>"
 			+ "<!ATTLIST processor name CDATA #REQUIRED scheduleType CDATA #IMPLIED>"
 
 			+ "<!ELEMENT process EMPTY>"
-			+ "<!ATTLIST process name CDATA #REQUIRED>";
+			+ "<!ATTLIST process name CDATA #REQUIRED execution CDATA #IMPLIED period CDATA #IMPLIED startTime CDATA #IMPLIED priority CDATA #IMPLIED>"
+
+			+ "<!ELEMENT fifo EMPTY>"
+			+ "<!ATTLIST fifo name CDATA #REQUIRED size CDATA #REQUIRED>";
 
 }

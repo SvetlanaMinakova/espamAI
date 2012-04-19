@@ -25,6 +25,7 @@ import java.util.Vector;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.MProcess;
+import espam.datamodel.mapping.MFifo;
 
 import org.xml.sax.Attributes;
 
@@ -35,7 +36,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Mapping.java,v 1.4 2012/04/19 17:52:58 mohamed Exp $
+ * @version  $Id: Xml2Mapping.java,v 1.5 2012/04/19 21:54:19 mohamed Exp $
  */
 
 public class Xml2Mapping {
@@ -127,6 +128,26 @@ public class Xml2Mapping {
 
 		MProcess process = new MProcess(name);
 
+        if ((String) attributes.getValue("execution") != null) {
+    		int wcet = Integer.parseInt((String) attributes.getValue("execution"));
+    		process.set_wcet(wcet);
+        }
+        
+        if ((String) attributes.getValue("period") != null) {
+    		int period = Integer.parseInt((String) attributes.getValue("period"));
+			process.set_period(period);
+		}
+		
+		if ((String) attributes.getValue("startTime") != null) {
+    		int startTime = Integer.parseInt((String) attributes.getValue("startTime"));
+    		process.set_startTime(startTime);
+    	}
+    	
+    	if ((String) attributes.getValue("priority") != null) {
+    		int priority = Integer.parseInt((String) attributes.getValue("priority"));
+        	process.set_priority(priority);
+        }
+
 		return process;
 	}
 
@@ -141,7 +162,34 @@ public class Xml2Mapping {
 
                 processor.getProcessList().add(process);
 	}
+	
+	/**
+	 *  Process the start of a fifo tag in the XML.
+	 *
+	 * @param  attributes The attributes of the tag.
+	 * @return  a Fifo.
+	 */
+	public Object processFifo(Attributes attributes) {
+		String name = (String) attributes.getValue("name");
+		int size = Integer.parseInt(attributes.getValue("size"));
 
+		MFifo fifo = new MFifo(name);
+		fifo.setSize(size);
+
+		return fifo;
+	}
+
+	/**
+	 * Process the end of a process tag in the XML.
+	 *
+	 * @param  stack Description of the Parameter
+	 */
+	public void processFifo(Stack stack) {
+		MFifo fifo = (MFifo) stack.pop();
+		Mapping mapping = (Mapping) stack.peek();
+
+                mapping.getFifoList().add(fifo);
+	}	
 
 	///////////////////////////////////////////////////////////////////
 	////                         private methods                   ////

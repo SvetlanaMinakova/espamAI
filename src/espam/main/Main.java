@@ -36,9 +36,11 @@ import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGEdge;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.mapping.Mapping;
+import espam.datamodel.mapping.MFifo;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.*;
 
+import espam.datamodel.graph.Edge;
 
 import espam.operations.ConsistencyCheck;
 import espam.operations.SynthesizeCDPN;
@@ -90,7 +92,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.15 2012/01/16 16:00:21 nikolov Exp $
+ * @version $Id: Main.java,v 1.16 2012/04/19 21:54:19 mohamed Exp $
  */
 
 public class Main {
@@ -217,6 +219,19 @@ public class Main {
 			       Scheduler.getInstance().setScheduleTree( _scheduler, "fromSADG" );
 			}
 
+			/* Update the FIFO sizes in the ADGGraph if dynamic scheduling is used */
+			Vector<MFifo> mfifos = _mapping.getFifoList();
+			Iterator<MFifo> mit = mfifos.iterator();
+			while (mit.hasNext()) {
+				MFifo mfifo = mit.next();
+				Iterator<Edge> it = _adg.getEdgeList().iterator();
+				while (it.hasNext()) {
+					ADGEdge e = (ADGEdge)it.next();
+					if (e.getName().equals(mfifo.getName())) {
+						e.setSize(mfifo.getSize());
+					}
+				}
+			}
 
 			// Check for consistency the platform, process network, and mapping specs
 			ConsistencyCheck.getInstance().consistencyCheck( _platform, _adg, _mapping );

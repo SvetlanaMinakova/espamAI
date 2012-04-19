@@ -29,7 +29,7 @@ import java.util.Iterator;
  * This class contains mapping information related to a process.
  *
  * @author Todor Stefanov
- * @version  $Id: MProcess.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: MProcess.java,v 1.2 2012/04/19 21:54:19 mohamed Exp $
  */
 
 public class MProcess implements Cloneable {
@@ -115,9 +115,49 @@ public class MProcess implements Cloneable {
      * @return  a description of the MProcess.
      */
     public String toString() {
-        return "MProcess: " + _name;
+        return "MProcess: " + _name + " with WCET = " + _wcet + ", period = " + _period + ", startTime = " + _startTime + ", priority = " + _priority;
     }
 
+
+	public void set_wcet(int wcet)
+	{
+		_wcet = wcet;
+	}
+
+	public void set_period(int period)
+	{
+		_period = period;
+	}
+
+	public void set_startTime(int startTime)
+	{
+		_startTime = startTime;
+	}
+
+	public void set_priority(int priority)
+	{
+		_priority = priority;
+	}
+
+	public int get_wcet()
+	{
+		return _wcet;
+	}
+
+	public int get_period()
+	{
+		return _period;
+	}
+
+	public int get_startTime()
+	{
+		return _startTime;
+	}
+
+	public int get_priority()
+	{
+		return _priority;
+	}
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
@@ -126,6 +166,26 @@ public class MProcess implements Cloneable {
      *  Name of a MProcess.
      */
     private String _name = null;
+
+	/**
+	 * WCET of the process
+	 */
+	private int _wcet = 0;
+
+	/**
+	 * Period of the process
+	 */
+	private int _period = 0;
+
+	/**
+	 * Start time of the process
+	 */
+	private int _startTime = 0;
+
+	/**
+	 * Priority of the process
+	 */
+	private int _priority = 0;
 
     /**
      *  Node associated with MProcess.

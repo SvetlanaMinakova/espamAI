@@ -33,7 +33,7 @@ import espam.datamodel.platform.memories.Fifo;
  * mapped onto a fifo.
  *
  * @author Todor Stefanov
- * @version  $Id: MFifo.java,v 1.1 2007/12/07 22:09:10 stefanov Exp $
+ * @version  $Id: MFifo.java,v 1.2 2012/04/19 21:54:19 mohamed Exp $
  */
 
 public class MFifo implements Cloneable {
@@ -93,6 +93,22 @@ public class MFifo implements Cloneable {
     public void setName( String name ) {
         _name = name;
     }
+    
+	/**
+	 * Set the size of this MFifo
+	 * @param size The new size value
+	 */
+	public void setSize(int size) {
+		_size = size;
+	}
+
+	/**
+	 * Get the the size of this MFifo
+	 * @return the size
+	 */
+	public int getSize() {
+		return _size;
+	}    
 
     /**
      *  Get the channel of a MFifo.
@@ -137,7 +153,7 @@ public class MFifo implements Cloneable {
      * @return  a description of the MProcessor.
      */
     public String toString() {
-        return "MFifo: " + _name;
+        return "MFifo: " + _name + " with size: " + _size;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -147,6 +163,11 @@ public class MFifo implements Cloneable {
      *  Name of a MFIfo.
      */
     private String _name = null;
+    
+	/**
+	 * Size of a MFifo
+	 */
+	private int _size = 0;    
 
     /**
      *  CDPN channel which is mapped on a fifo

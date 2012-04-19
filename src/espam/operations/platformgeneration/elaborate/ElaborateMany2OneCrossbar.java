@@ -843,10 +843,26 @@ public class ElaborateMany2OneCrossbar {
 	****************************************************************************************************************/
 	private void _addMFifo( Fifo fifo, CDChannel channel, Mapping mapping ) {
 
-		MFifo mFifo = new MFifo( fifo.getName() );
-		mFifo.setChannel( channel );
-		mFifo.setFifo( fifo );
-		mapping.getFifoList().add( mFifo );
+		/* Check if the mapping has a corresponding MFifo */
+		Vector<MFifo> mfifos = mapping.getFifoList();
+		Iterator<MFifo> it = mfifos.iterator();
+		boolean found = false;
+		while (it.hasNext()) {
+			MFifo mfifo = it.next();
+			if (mfifo.getName().equals(((ADGEdge)channel.getAdgEdgeList().get(0)).getName())) {
+				mfifo.setChannel( channel );
+				mfifo.setFifo( fifo );
+				found = true;
+				break;
+			}
+		}
+		
+		if (!found) {
+			MFifo mFifo = new MFifo( fifo.getName());
+			mFifo.setChannel( channel );
+			mFifo.setFifo( fifo );
+			mapping.getFifoList().add( mFifo );
+		}
 	}
 
        /****************************************************************************************************************
