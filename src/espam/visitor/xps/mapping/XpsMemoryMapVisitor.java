@@ -55,7 +55,7 @@ import espam.visitor.MappingVisitor;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsMemoryMapVisitor.java,v 1.3 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: XpsMemoryMapVisitor.java,v 1.4 2012/04/19 15:30:01 nikolov Exp $
  */
 
 public class XpsMemoryMapVisitor extends MappingVisitor {
@@ -272,6 +272,7 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
 //            _printStream.println("#define ZBT_MEM (volatile int *)0xf0000000");
             _printStream.println("#define DDR_MEM (volatile char *)0x90000000");
             _printStream.println("#define FIN_SIGNAL (volatile int *)0xf9000000");
+            _printStream.println("#define START (volatile int *)0xf9000000");
             _printStream.println("");
             _printStream.println("#endif");
 

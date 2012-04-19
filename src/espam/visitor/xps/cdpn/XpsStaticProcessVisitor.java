@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.7 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.8 2012/04/19 15:30:01 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -120,10 +120,10 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 			  String eName = port.getNode().getName() + "_" + gate.getName() + "_" + cdChannel.getName();
 			  _printStream.println(_prefix + _prefix + "*(" + eName + ") = *(" + eName + " + 1) = 0;");
 		      }
-		      _printStream.println("");
-		      _printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
-		      _printStream.println("");
 		}
+		_printStream.println("");
+		_printStream.println(_prefix + _prefix + "while( *START == 0 ) {};");
+		_printStream.println("");
 	}
 
 	if( _ui.getDebuggerFlag() ) {
