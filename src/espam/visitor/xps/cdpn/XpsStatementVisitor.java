@@ -63,7 +63,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.9 2012/04/12 14:11:06 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.10 2012/04/19 17:52:58 mohamed Exp $
  *      
  */
 
@@ -81,6 +81,9 @@ public class XpsStatementVisitor extends StatementVisitor {
         _printStream = printStream;
         _process = process;
         _cExpVisitor = new CExpressionVisitor();
+        _scheduleType = _mapping.getMProcessor( _process ).getScheduleType();
+        _isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() >= 1);
+        
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -92,9 +95,7 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(RootStatement x) {
-//        _prefixInc();
         _visitChildren(x);
-//        _prefixDec();
     }
 
     /**
@@ -115,6 +116,10 @@ public class XpsStatementVisitor extends StatementVisitor {
                 
         _prefixInc();
         _visitChildren(x);
+        if (!_printDelay && _scheduleType == 2) {
+            _printStream.println(_prefix + "vTaskDelayUntil( &xLastWakeTime, xFrequency );");
+            _printDelay = true;
+        }
         _prefixDec();
 
         _printStream.println(_prefix + "} // for " + x.getIterator());
@@ -178,20 +183,15 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
-        boolean isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() == 1);
     	
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
     	
     	if( fifo.getLevelUpResource() instanceof MultiFifo ) {    	    	
-//	    if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
-	    if( isDynamicSchedule ) {
+	    if( _isDynamicSchedule ) {
 		funName = "writeDynMF(";
 	    } else {
-//--------------------------------------- TO DO: if not CM_AXI...
 		funName = "writeMF(";
-// 		funName = "writeSWF(";
-//---------------------------------------
   	    }
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI ) {
@@ -222,8 +222,7 @@ public class XpsStatementVisitor extends StatementVisitor {
             	funName = "writeFSL("; 
             }
             else {
-//		if ( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
-		if( isDynamicSchedule ) {
+		if( _isDynamicSchedule ) {
 		    funName = "writeDyn(";
 	        } else { // static scheduling
 		    funName = "write(";	
@@ -237,7 +236,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 // we need to remove also the HW implementation of these self-channels.
 //-------------------------------------------------------------------------------------
 /*  
-       if( cdChannel.isSelfChannel() && !isDynamicSchedule ) {
+       if( cdChannel.isSelfChannel() && !_isDynamicSchedule ) {
            if( cdChannel.getMaxSize()==1 ) {
                _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() );      
            } else {
@@ -259,17 +258,14 @@ public class XpsStatementVisitor extends StatementVisitor {
 	      Expression expression = (Expression) i.next();
 	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
            }
-//--------------------------------------- TO DO: if not CM_AXI...
-// 	   _printStream.println(", " + s + ");");
            _printStream.print(", " + s);
 	   if( fifo.getLevelUpResource() instanceof CM_AXI ) {
-//              _printStream.print(", " + s + ", size" + t + ");");
               _printStream.print(", size" + t);
+              if (_scheduleType == 2) // FreeRTOS
+                _printStream.print(", xLastWakeTime, xFrequency");
            } 
            _printStream.println(");");
 
-//        }
-//--------------------------------------- 
     }
 
     /**
@@ -389,20 +385,16 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
-        boolean isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() == 1);
 
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
 
     	if( fifo.getLevelUpResource() instanceof MultiFifo ) {
-//	     if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) {
-	     if( isDynamicSchedule ) {
+	     if( _isDynamicSchedule ) {
 		    funName = "readDynMF(";
 	     } else {
-//--------------------------------------- TO DO: if not CM_AXI...
 		    funName = "readMF(";	
-// 		    funName = "readSWF(";	
-//--------------------------------------- 
+
 	     }
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI) {
@@ -434,7 +426,7 @@ public class XpsStatementVisitor extends StatementVisitor {
             }
             else if( rPort.getResource() instanceof Crossbar ) {
 // Why is this here???-----------------------------------------------------------------------------------
-		if( isDynamicSchedule ) { 
+		if( _isDynamicSchedule ) { 
 			funName = "readDynMF(";
 		} else {
 			funName = "readMF(";
@@ -442,7 +434,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 //-------------------------------------------------------------------------------------------------------
             } else { // p2p FIFO port
 //		if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
-		if( isDynamicSchedule ) { 
+		if( _isDynamicSchedule ) { 
 			funName = "readDyn(";
 		} else { // static scheduling
 			funName = "read(";
@@ -456,7 +448,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 // we need to remove also the HW implementation of these self-channels.
 //-------------------------------------------------------------------------------------
 /*
-         if( cdChannel.isSelfChannel() && !isDynamicSchedule ) {
+         if( cdChannel.isSelfChannel() && !_isDynamicSchedule ) {
            if( cdChannel.getMaxSize()==1 ) {
 
               ADGVariable bindVar = x.getArgumentList().get(0);
@@ -501,12 +493,13 @@ public class XpsStatementVisitor extends StatementVisitor {
 			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 		}
 
-//--------------------------------------- TO DO: if not CM_AXI...
 // 		_printStream.println(", " + s + ");");
  	        _printStream.print(", " + s);
                 if( fifo.getLevelUpResource() instanceof CM_AXI ) {
 // 		       _printStream.println(", " + s + ", size" + t + ");");
 		       _printStream.print(", size" + t);
+                 if (_scheduleType == 2) // FreeRTOS
+                    _printStream.print(", xLastWakeTime, xFrequency");
                 }
                _printStream.println(");");
 //--------------------------------------- 
@@ -529,5 +522,11 @@ public class XpsStatementVisitor extends StatementVisitor {
     private Mapping _mapping = null;
     
     private CDProcess _process = null;
+    
+    private int _scheduleType; // Save the schedule type
+    
+    private boolean _isDynamicSchedule;
+    
+    private boolean _printDelay = false; // This is a hack to print vTaskDelayUntil when FreeRTOS is used
         
 }

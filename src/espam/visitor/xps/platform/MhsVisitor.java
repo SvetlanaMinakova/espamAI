@@ -86,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.12 2012/04/12 14:18:22 nikolov Exp $
+ * @version  $Id: MhsVisitor.java,v 1.13 2012/04/19 17:52:58 mohamed Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -561,7 +561,7 @@ public class MhsVisitor extends PlatformVisitor {
 				" PARAMETER C_PVR = 1\n" +
 				" PARAMETER C_PVR_USER1 = 0x01\n" +
 				" BUS_INTERFACE M_AXI_DP = " + axiLinkName + "\n" +
-                                " PORT INTERRUPT = " + x.getName() + "_INTERRUPT");
+                " PORT INTERRUPT = " + x.getName() + "_intc_Irq");
 			}
 
 
@@ -635,6 +635,20 @@ public class MhsVisitor extends PlatformVisitor {
 	_printStream.println("END\n");
 
         if( !axiLinkName.equals("") ) {
+        
+        
+                _printStream.println(
+              "BEGIN axi_intc\n" +
+              " PARAMETER INSTANCE = " + x.getName() + "_intc\n" +
+              " PARAMETER HW_VER = 1.01.a\n" +
+              " PARAMETER C_BASEADDR = 0xF2000000\n" +
+              " PARAMETER C_HIGHADDR = 0xF200FFFF\n" +
+              " BUS_INTERFACE S_AXI = " + axiLinkName + "\n"+
+              " PORT Intr = " + x.getName() + "_INTERRUPT\n" +
+              " PORT Irq = " + x.getName() + "_intc_Irq\n" +
+              " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+              "END\n");
+              
                 _printStream.println(
 			  "BEGIN axi_timer\n" +
 			  " PARAMETER INSTANCE = " + x.getName() + "_timer\n" +

@@ -30,7 +30,7 @@ import java.util.Iterator;
  * mapped onto a processor.
  *
  * @author Todor Stefanov
- * @version  $Id: MProcessor.java,v 1.3 2009/05/20 13:50:55 stefanov Exp $
+ * @version  $Id: MProcessor.java,v 1.4 2012/04/19 17:52:58 mohamed Exp $
  */
 
 public class MProcessor implements Cloneable {
@@ -201,6 +201,7 @@ public class MProcessor implements Cloneable {
      *  The value is one of:
      *  0 : static
      *  1 : dynamic (using xilkernel for threading)
+     *  2 : dynamic (using FreeRTOS with Fixed-Priority Preemptive Scheduling (FPPS))
      */
     private int _scheduleType = 0;
 }

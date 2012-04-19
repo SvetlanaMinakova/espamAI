@@ -35,7 +35,7 @@ import org.xml.sax.Attributes;
  *  This class ...
  *
  * @author  Todor Stefanov
- * @version  $Id: Xml2Mapping.java,v 1.3 2009/05/20 13:51:51 stefanov Exp $
+ * @version  $Id: Xml2Mapping.java,v 1.4 2012/04/19 17:52:58 mohamed Exp $
  */
 
 public class Xml2Mapping {
@@ -91,6 +91,8 @@ public class Xml2Mapping {
 			processor.setScheduleType(0);
 		} else if ( schedule.equals("dynamic-xilkernel")) {
 			processor.setScheduleType(1);
+		} else if ( schedule.equals("dynamic-freertos")) {
+			processor.setScheduleType(2);
 		} else {
 			throw new Error("Unknown Schedule Type: " + schedule);
 		}

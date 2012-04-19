@@ -44,7 +44,7 @@ import espam.main.UserInterface;
  * This class ...
  *
  * @author Hristo Nikolov, Todor Stefanov, Joris Huizer
- * @version $Id: ADGraphToPN.java,v 1.6 2012/04/12 15:43:40 svhaastr Exp $
+ * @version $Id: ADGraphToPN.java,v 1.7 2012/04/19 17:52:58 mohamed Exp $
  */
 
 public class ADGraphToPN {
@@ -387,7 +387,7 @@ public class ADGraphToPN {
 			Vector nodeList = process.getAdgNodeList();
 
 			MProcessor processor = mapping.getMProcessor(process);
-			if( processor != null && processor.getScheduleType() == 1 ) {
+			if( processor != null && processor.getScheduleType() >= 1 ) {
 				Iterator j = nodeList.iterator();
 				while( j.hasNext() ) {
 					Vector container = new Vector();

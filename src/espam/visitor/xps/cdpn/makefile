@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.2 2009/06/11 13:18:14 stefanov Exp $
+# $Id: makefile,v 1.3 2012/04/19 17:52:58 mohamed Exp $
 #
 
 ROOT  = ../../../..
@@ -12,6 +12,7 @@ JSRCS = \
 	XpsProcessVisitor.java \
 	XpsStaticProcessVisitor.java \
 	XpsDynamicXilkernelProcessVisitor.java \
+	XpsDynamicFreeRTOSProcessVisitor.java \
 	XpsStatementVisitor.java \
 	XmpVisitor.java
 

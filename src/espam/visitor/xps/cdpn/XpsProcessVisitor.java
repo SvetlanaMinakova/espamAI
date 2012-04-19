@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.8 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.9 2012/04/19 17:52:58 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -93,7 +93,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#define __AUX_FUNC_H__");
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
-            _printStreamFunc.println("#include \"mb_interface.h\"");
+            _printStreamFunc.println("#include <mb_interface.h>");
             _printStreamFunc.println("#include \"./func_code/" + x.getName() + "_func.h\"");
             _printStreamFunc.println("");
 
@@ -116,6 +116,10 @@ public class XpsProcessVisitor extends CDPNVisitor {
 			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
 			process.accept(pt);
 		    }
+		    else if ( mProcessor.getScheduleType() == 2 ) {
+			XpsDynamicFreeRTOSProcessVisitor pt = new XpsDynamicFreeRTOSProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+			process.accept(pt);
+		    }
 		    else {
 			XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
 			process.accept(pt);
@@ -127,6 +131,13 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _writeOperations();
             _printStreamFunc.println("");
             _printStreamFunc.println("#endif");
+            _printStreamFunc.close();
+            
+            
+            _printStreamPlatform = _openFile("platform", "h");
+            _printPlatformFile();
+            _printStreamPlatform.close();
+            
 
         }
         catch( Exception e ) {
@@ -262,6 +273,11 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
         _printStreamFunc.println(_fifoReadWriteApi);
     }
+    
+    
+    private void _printPlatformFile() {
+        _printStreamPlatform.println(_platformFile);
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
@@ -283,6 +299,8 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private PrintStream _printStream = null;
 
     private PrintStream _printStreamFunc = null;
+    
+    private PrintStream _printStreamPlatform = null;
 
     private Map _relation2 = new HashMap();
 
@@ -290,218 +308,94 @@ public class XpsProcessVisitor extends CDPNVisitor {
      *  Read/Write fifo api
      */
     private String _fifoReadWriteApi = "" +
-	"#define readFSL(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        for (i = 0; i < len; i++) \\\n" +
-	"            microblaze_bread_datafsl(((volatile int *) value)[i], pos);\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define writeFSL(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        for (i = 0; i < len; i++)  \\\n" +
-	"            microblaze_bwrite_datafsl(((volatile int *) value)[i], pos);\\\n"+
-	"    } while(0)\n" +
-	"\n" +
-	"#define read(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isEmpty;\\\n" +
-	"        volatile int *inPort = (volatile int *)pos;\\\n" +
- 	"        isEmpty = inPort + 1;\\\n" +
-	"        for (i = 0; i < len; i++) {\\\n" +
-	"            while (*isEmpty) { };\\\n" +
-	"            ((volatile int *) value)[i] = *inPort;\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define write(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isFull;\\\n" +
-	"        volatile int *outPort = (volatile int *)pos;\\\n" +
-	"        isFull = outPort + 1;\\\n" +
-	"        for (i = 0; i < len; i++) {\\\n" +
-	"            while (*isFull) { };\\\n" +
-	"            *outPort = ((volatile int *) value)[i];\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define readDyn(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isEmpty;\\\n" +
-	"        volatile int *inPort = (volatile int *)pos;\\\n" +
- 	"        isEmpty = inPort + 1;\\\n" +
-	"        for (i = 0; i < len; i++) {\\\n" +
-	"            while (*isEmpty) { yield(); };\\\n" +
-	"            ((volatile int *) value)[i] = *inPort;\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define writeDyn(pos, value, len) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isFull;\\\n" +
-	"        volatile int *outPort = (volatile int *)pos;\\\n" +
-	"        isFull = outPort + 1;\\\n" +
-	"        for (i = 0; i < len; i++) {\\\n" +
-	"            while (*isFull) { yield(); };\\\n" +
-	"            *outPort = ((volatile int *) value)[i];\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define readMF(pos, value, n) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isEmpty;\\\n" +
-	"        int inPort = (int) pos;\\\n" +
-	"        volatile int *dataReg_requestReg = (volatile int *) 0xE0000000;\\\n" +
- 	"        isEmpty = dataReg_requestReg + 1;\\\n" +
- 	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
-	"        for (i = 0; i < n; i++) {\\\n" +
-	"            while (*isEmpty != 2) { };\\\n" +
-	"            ((volatile int *) value)[i] = *dataReg_requestReg;\\\n" +
-	"        }\\\n" +
-	"        *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define writeMF(pos, value, n) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isFull;\\\n" +
-	"        volatile int *outPort = (volatile int *)pos;\\\n" +
-	"        isFull = outPort + 1;\\\n" +
-	"        for (i = 0; i < n; i++) {\\\n" +
-	"            while (*isFull) { };\\\n" +
-	"            *outPort = ((volatile int *) value)[i];\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define readDynMF(pos, value, n) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isEmpty;\\\n" +
-	"        int inPort = (int) pos;\\\n" +
-	"        volatile int *dataReg_requestReg = (volatile int *) 0xE0000000;\\\n" +
- 	"        isEmpty = dataReg_requestReg + 1;\\\n" +
- 	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
-	"        for (i = 0; i < n; i++) {\\\n" +
-	"            while (*isEmpty != 2) {\\\n" +
-	"                if( *isEmpty == 3 ) {\\\n" +
-	"                    *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
-	"                    yield();\\\n" +
-        "                    *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
-	"                }\\\n" +
-	"            }\\\n" +
-	"            ((volatile int *) value)[i] = *dataReg_requestReg;\\\n" +
-	"        }\\\n" +
-	"        *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
-	"    } while(0)\n" +
-	"\n" +
-	"#define writeDynMF(pos, value, n) \\\n" +
-	"    do {\\\n" +
-	"        int i;\\\n" +
-	"        volatile int *isFull;\\\n" +
-	"        volatile int *outPort = (volatile int *)pos;\\\n" +
-	"        isFull = outPort + 1;\\\n" +
-	"        for (i = 0; i < n; i++) {\\\n" +
-	"            while (*isFull) { yield(); };\\\n" +
-	"            *outPort = ((volatile int *) value)[i];\\\n" +
-	"        }\\\n" +
-	"    } while(0)\n\n" +
-	"\n///////////////////////////////////// Primitives for SW FIFOs \n" +
+    " // Read and Write primitives for FreeRTOS \n" +
+    "#define readSWF(pos, value, len, fifo_size, S, T) \\\n" +
+    "do {\\\n" +
+    "   volatile int *fifo = (int *)pos;\\\n" +
+    "   int r_cnt = fifo[1];\\\n" +
+    "   int w_cnt = fifo[0];\\\n" +
+    "   while ( w_cnt == r_cnt ) { vTaskDelayUntil(&S,T); w_cnt = fifo[0]; }\\\n" +
+    "   for (int i = 0; i < len; i++) {\\\n" +
+    "	   ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
+    "   }\\\n" +
+    "   r_cnt += len;\\\n" +
+    "   if( (r_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+    "	   r_cnt &= 0x80000000;\\\n" +
+    "	   r_cnt ^= 0x80000000;\\\n" +
+    "   }\\\n" +
+    "   fifo[1] = r_cnt;\\\n" +
+    "} while(0)\n\n" +
 
-	"#define readSWF(pos, value, len, fifo_size) \\\n" +
-	"    do {\\\n" +
-	"       volatile int *fifo = (int *)pos;\\\n" +
-	"       int r_cnt = fifo[1];\\\n" +
-	"       while (1) {\\\n" +
-	"            int w_cnt = fifo[0];\\\n" +
-	"            if ( w_cnt != r_cnt ) {\\\n" +
-	"                for (int i = 0; i < len; i++) {\\\n" +
-	"                     ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
-	"                }\\\n" +
-	"                r_cnt += len;\\\n" +
-	"                if( (r_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
-	"                     r_cnt &= 0x80000000;\\\n" +
-	"                     r_cnt ^= 0x80000000;\\\n" +
-	"                }\\\n" +
-	"                fifo[1] = r_cnt;\\\n" +
-	"                break;\\\n" +
-	"            }\\\n" +
-	"       }\\\n" +
-	"    } while(0)\n\n" +
+    "#define writeSWF(pos, value, len, fifo_size, S, T) \\\n" +
+    "do {\\\n" +
+    "   volatile int *fifo = (int *)pos;\\\n" +
+    "   int w_cnt = fifo[0];\\\n" +
+    "   int r_cnt = fifo[1];\\\n" +
+    "   while ( r_cnt == (w_cnt ^ 0x80000000) ) { vTaskDelayUntil(&S,T); r_cnt = fifo[1]; }\\\n" +
+    "   for (int i = 0; i < len; i++) {\\\n" +
+    "	   fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
+    "   }\\\n" +
+    "   w_cnt += len;\\\n" +
+    "   if( (w_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+    "	   w_cnt &= 0x80000000;\\\n" +
+    "       w_cnt ^= 0x80000000;\\\n" +
+    "   }\\\n" +
+    "   fifo[0] = w_cnt;\\\n" +
+    "} while(0)\n\n";
+    
+    
+    private String _platformFile  = "" + 
+    "#ifndef PLATFORM_H_\n" +
+    "#define PLATFORM_H_\n\n" +
+    "#include <FreeRTOS.h>\n" +
+    "#include <timers.h>\n" +
+    "#include <xtmrctr.h>\n\n" +
+    "#define mainDONT_BLOCK\t\t\t( portTickType ) 0\n" +
+    "#define TIMER_DEVICE_ID\t\t\tXPAR_TMRCTR_0_DEVICE_ID\n" +
+    "#define TIMER_FREQ_HZ\t\t\tXPAR_TMRCTR_0_CLOCK_FREQ_HZ\n" +
+    "#define TIMER_INTR_ID\t\t\tXPAR_INTC_0_TMRCTR_0_VEC_ID\n\n" +
+    "#if defined __cplusplus\n" +
+    "extern \"C\" {\n" +
+    "#endif\n\n" +
+    "extern void vPortTickISR( void *pvUnused );\n" +
+    "static XTmrCtr xTimer0Instance;\n\n" +
+    "void vApplicationMallocFailedHook( void ) { }\n" +
+    "void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName ) { } \n" +
+    "void vApplicationIdleHook( void ) { } \n" +
+    "void vApplicationTickHook( void ) { } \n" +
+    "void vSoftwareTimerCallback( xTimerHandle xTimer ) { } \n\n" +
+    "void isr(void *args, u8 c)\n" +
+    "{\n" +
+    "	vPortTickISR(args); \n" +
+    "}\n\n" +
+    "void vApplicationSetupTimerInterrupt( void )\n" +
+    "{\n" +
+    "	portBASE_TYPE xStatus;\n" +
+    "	const unsigned char ucTimerCounterNumber = ( unsigned char ) 0U;\n" +
+    "	const unsigned long ulCounterValue = ( ( TIMER_FREQ_HZ / configTICK_RATE_HZ ) - 1UL );\n" +
+    "	xStatus = XTmrCtr_Initialize( &xTimer0Instance, TIMER_DEVICE_ID );\n" +
+    "	if( xStatus == XST_SUCCESS )\n" +
+	"   	xStatus = xPortInstallInterruptHandler( TIMER_INTR_ID, vPortTickISR, NULL );\n" +
+    "	if( xStatus == pdPASS ) { \n" +
+    "		vPortEnableInterrupt( TIMER_INTR_ID );\n" +
+    "		XTmrCtr_SetHandler( &xTimer0Instance, isr, NULL );\n" +
+    "		XTmrCtr_SetResetValue( &xTimer0Instance, ucTimerCounterNumber, ulCounterValue );\n" +
+	"		XTmrCtr_SetOptions( &xTimer0Instance, ucTimerCounterNumber, ( XTC_INT_MODE_OPTION | XTC_AUTO_RELOAD_OPTION | XTC_DOWN_COUNT_OPTION ) );\n" +
+	"		XTmrCtr_Start( &xTimer0Instance, ucTimerCounterNumber );\n" +
+    "	}\n" +
+    "	configASSERT( ( xStatus == pdPASS ) );\n" +
+    "}\n\n" +
+    "void vApplicationClearTimerInterrupt( void )\n" +
+    "{\n" +
+    "	unsigned long ulCSR;\n" +
+    "	ulCSR = XTmrCtr_GetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0 );\n" +
+    "	XTmrCtr_SetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0, ulCSR );\n" +
+    "}\n\n" +
+    "void init_platform() { } \n\n" +
+    "#if defined __cplusplus\n" +
+    "}\n" +
+    "#endif\n" +
+    "#endif\n";
 
-	"#define writeSWF(pos, value, len, fifo_size) \\\n" +
-	"    do {\\\n" +
-	"       volatile int *fifo = (int *)pos;\\\n" +
-	"       int w_cnt = fifo[0];\\\n" +
-	"       while (1) {\\\n" +
-	"            int r_cnt = fifo[1];\\\n" +
-	"            if ( r_cnt != (w_cnt ^ 0x80000000) ) {\\\n" +
-	"                for (int i = 0; i < len; i++) {\\\n" +
-	"                     fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
-	"                }\\\n" +
-	"                w_cnt += len;\\\n" +
-	"                if( (w_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
-	"                     w_cnt &= 0x80000000;\\\n" +
-	"                     w_cnt ^= 0x80000000;\\\n" +
-	"                }\\\n" +
-	"                fifo[0] = w_cnt;\\\n" +
-	"                break;\\\n" +
-	"            }\\\n" +
-	"       }\\\n" +
-	"    } while(0)\n\n" +
-
-	"\n////////// currently not used //////// Primitives for SW FIFOs \n" +
-	"inline volatile void *acquire_write_ptr(int f, int len) {\n" +
-	"	volatile long *fifo = (long *)f;\n" +
-	"	register long fifoSize = fifo[0];\n" +
-	"	register long fifo_2 = fifo[2];\n" +
-	"\n" +
-	"	while( (fifo_2^fifo[5]) == 0x80000000) { }; // full\n" +
-	"\n" +
-	"	void *ptr = (void *)(fifo + 6 + (fifo_2 & 0x7FFFFFFF));\n" +
-	"\n" +
-	"	fifo_2 += len;      // wr index + token size in dwords (32 bits)\n" +
-	"\n" +
-	"	if( (fifo_2 & 0x7FFFFFFF) == fifoSize ) { \n" +
-	"		fifo_2 = fifo_2 & 0x80000000;\n" +
-	"		fifo_2 = fifo_2 ^ 0x80000000; // toggle the flag\n" +
-	"	}\n" +
-	"\n" +
-	"	fifo[2] = fifo_2;\n" +
-	"\n" +
-	"	return ptr;\n" +
-	"}\n" +
-	"\n\ninline void release_write_ptr(int f) {" +
-	"\n	volatile long *fifo = (volatile long *)f;\n" +
-	"	fifo[3] = fifo[2];\n" +
-	"}\n" +
-	"\n\ninline volatile void *acquire_read_ptr(int f, int len) {" +
-	"\n	volatile long *fifo = (long *)f;" +
-	"\n	register long fifoSize = fifo[0];" +
-	"\n	register long fifo_4 = fifo[4];" +
-	"\n" +
-	"\n	while( fifo[3] == fifo_4 ) { }; // empty" +
-	"\n" +
-	"\n	void *ptr = (void *)(fifo + 6 + (fifo_4 & 0x7FFFFFFF));" +
-	"\n" +
-	"\n	fifo_4 += len;      // rd index + token size in dwords (32 bits)" +
-	"\n" +
-	"\n	if( (fifo_4 & 0x7FFFFFFF) == fifoSize ) {" +
-	"\n		fifo_4 = fifo_4 & 0x80000000;" +
-	"\n		fifo_4 = fifo_4 ^ 0x80000000; // toggle the flag" +
-	"\n	}" +
-	"\n	fifo[4] = fifo_4;" +
-	"\n" +
-	"\n	return ptr;" +
-	"\n}" +
-	"\n\ninline void release_read_ptr(int f) {" +
-	"\n	volatile int *fifo = (volatile int *)f;" +
-	"\n	fifo[5] = fifo[4];" +
-	"\n}";
 }
 
