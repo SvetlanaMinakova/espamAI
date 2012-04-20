@@ -40,6 +40,7 @@ import espam.datamodel.pn.cdpn.CDGate;
 
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
+import espam.datamodel.mapping.MProcess;
 
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Resource;
@@ -70,7 +71,7 @@ import espam.datamodel.LinearizationType;
  *  Visitor to generate code scheduled using FreeRTOS 
  *
  * @author  Mohamed Bamakhrama
- * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.1 2012/04/19 17:52:58 mohamed Exp $
+ * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.2 2012/04/20 13:06:46 mohamed Exp $
  */
 
 public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
@@ -380,8 +381,10 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 		_printStream.println("");
 	}
 	
+	 MProcess mp = getMProcess(node);
+	
 	_printStream.println(_prefix + "portTickType xLastWakeTime;");
-	_printStream.println(_prefix + "const portTickType xFrequency = 5;");
+	_printStream.println(_prefix + "const portTickType xFrequency = " + mp.get_period()  + ";");
     _printStream.println(_prefix + "xLastWakeTime = xTaskGetTickCount();\n");
     
     _printStream.println(_prefix + "for (;;) { ");
@@ -606,8 +609,12 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 	}
 
 	_printStream.println("");
-	for (int pos = 0; pos < x.getSchedule().size(); pos++) {
-		_printStream.println(_prefix + "xTaskCreate( thread" + (pos + 1) + ", ( signed char * ) \"thread" + (pos + 1) + "\", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + " + (pos + 1) + ", NULL);");
+
+	
+	for (int pos = 0; pos < x.getAdgNodeList().size(); pos++) {
+	    ADGNode adgNode = (ADGNode)(x.getAdgNodeList().elementAt(pos));
+	    MProcess mp = getMProcess(adgNode);
+		_printStream.println(_prefix + "xTaskCreate( thread" + (pos + 1) + ", ( signed char * ) \"thread" + (pos + 1) + "\", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + " + (mp.get_priority()) + ", NULL);");
 	}
 	
 	_printStream.println("");
@@ -625,6 +632,25 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 	_printStream.println(_prefix + "} // thread_main");
 	
 	_printStream.println("");	
+    }
+    
+    private MProcess getMProcess(ADGNode x)
+    {
+
+        Iterator ii, jj;
+        ii = _mapping.getProcessorList().iterator();
+        while (ii.hasNext()) {
+            MProcessor mProcessor = (MProcessor) ii.next();
+            jj = mProcessor.getProcessList().iterator();
+            while (jj.hasNext()) {
+            	MProcess mProcess = (MProcess) jj.next();
+            	String madgNodeName = mProcess.getNode().getName();
+            	if (madgNodeName.equals(x.getName())) {
+            		return mProcess;
+            	}
+            }
+        }
+        return null;
     }
     
 
