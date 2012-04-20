@@ -63,7 +63,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.10 2012/04/19 17:52:58 mohamed Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.11 2012/04/20 23:00:41 mohamed Exp $
  *      
  */
 
@@ -195,8 +195,12 @@ public class XpsStatementVisitor extends StatementVisitor {
   	    }
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI ) {
-
-              funName = "writeSWF(";
+    	    if (_scheduleType == 2) {
+    	        funName = "writeSWF2(";
+    	    } else {
+        	    funName = "writeSWF(";
+    	    }
+              
 
         } else { // fifo is not MultiFifo
     		
@@ -398,9 +402,11 @@ public class XpsStatementVisitor extends StatementVisitor {
 	     }
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI) {
-                    
+                if (_scheduleType == 2) {
+                    funName = "readSWF2(";
+                } else {
                     funName = "readSWF(";
-
+                }
         } else { // not MultiFifo
 
             i = fifo.getPortList().iterator();

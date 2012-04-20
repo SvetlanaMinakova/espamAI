@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.9 2012/04/19 17:52:58 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.10 2012/04/20 23:00:41 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -308,8 +308,221 @@ public class XpsProcessVisitor extends CDPNVisitor {
      *  Read/Write fifo api
      */
     private String _fifoReadWriteApi = "" +
-    " // Read and Write primitives for FreeRTOS \n" +
-    "#define readSWF(pos, value, len, fifo_size, S, T) \\\n" +
+	"#define readFSL(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        for (i = 0; i < len; i++) \\\n" +
+	"            microblaze_bread_datafsl(((volatile int *) value)[i], pos);\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define writeFSL(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        for (i = 0; i < len; i++)  \\\n" +
+	"            microblaze_bwrite_datafsl(((volatile int *) value)[i], pos);\\\n"+
+	"    } while(0)\n" +
+	"\n" +
+	"#define read(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isEmpty;\\\n" +
+	"        volatile int *inPort = (volatile int *)pos;\\\n" +
+    "        isEmpty = inPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isEmpty) { };\\\n" +
+	"            ((volatile int *) value)[i] = *inPort;\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define write(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isFull;\\\n" +
+	"        volatile int *outPort = (volatile int *)pos;\\\n" +
+	"        isFull = outPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isFull) { };\\\n" +
+	"            *outPort = ((volatile int *) value)[i];\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define readDyn(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isEmpty;\\\n" +
+	"        volatile int *inPort = (volatile int *)pos;\\\n" +
+    "        isEmpty = inPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isEmpty) { yield(); };\\\n" +
+	"            ((volatile int *) value)[i] = *inPort;\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define writeDyn(pos, value, len) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isFull;\\\n" +
+	"        volatile int *outPort = (volatile int *)pos;\\\n" +
+	"        isFull = outPort + 1;\\\n" +
+	"        for (i = 0; i < len; i++) {\\\n" +
+	"            while (*isFull) { yield(); };\\\n" +
+	"            *outPort = ((volatile int *) value)[i];\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define readMF(pos, value, n) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isEmpty;\\\n" +
+	"        int inPort = (int) pos;\\\n" +
+	"        volatile int *dataReg_requestReg = (volatile int *) 0xE0000000;\\\n" +
+	"        isEmpty = dataReg_requestReg + 1;\\\n" +
+	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
+	"        for (i = 0; i < n; i++) {\\\n" +
+	"            while (*isEmpty != 2) { };\\\n" +
+	"            ((volatile int *) value)[i] = *dataReg_requestReg;\\\n" +
+	"        }\\\n" +
+	"        *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define writeMF(pos, value, n) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isFull;\\\n" +
+	"        volatile int *outPort = (volatile int *)pos;\\\n" +
+	"        isFull = outPort + 1;\\\n" +
+	"        for (i = 0; i < n; i++) {\\\n" +
+	"            while (*isFull) { };\\\n" +
+	"            *outPort = ((volatile int *) value)[i];\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define readDynMF(pos, value, n) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isEmpty;\\\n" +
+	"        int inPort = (int) pos;\\\n" +
+	"        volatile int *dataReg_requestReg = (volatile int *) 0xE0000000;\\\n" +
+	"        isEmpty = dataReg_requestReg + 1;\\\n" +
+	"        *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
+	"        for (i = 0; i < n; i++) {\\\n" +
+	"            while (*isEmpty != 2) {\\\n" +
+	"                if( *isEmpty == 3 ) {\\\n" +
+	"                    *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
+	"                    yield();\\\n" +
+    "                    *dataReg_requestReg = 0x80000000|(inPort);\\\n" +
+	"                }\\\n" +
+	"            }\\\n" +
+	"            ((volatile int *) value)[i] = *dataReg_requestReg;\\\n" +
+	"        }\\\n" +
+	"        *dataReg_requestReg = 0x7FFFFFFF&(inPort);\\\n" +
+	"    } while(0)\n" +
+	"\n" +
+	"#define writeDynMF(pos, value, n) \\\n" +
+	"    do {\\\n" +
+	"        int i;\\\n" +
+	"        volatile int *isFull;\\\n" +
+	"        volatile int *outPort = (volatile int *)pos;\\\n" +
+	"        isFull = outPort + 1;\\\n" +
+	"        for (i = 0; i < n; i++) {\\\n" +
+	"            while (*isFull) { yield(); };\\\n" +
+	"            *outPort = ((volatile int *) value)[i];\\\n" +
+	"        }\\\n" +
+	"    } while(0)\n\n" +
+	"\n///////////////////////////////////// Primitives for SW FIFOs \n" +
+
+	"#define readSWF(pos, value, len, fifo_size) \\\n" +
+	"    do {\\\n" +
+	"       volatile int *fifo = (int *)pos;\\\n" +
+	"       int r_cnt = fifo[1];\\\n" +
+	"       while (1) {\\\n" +
+	"            int w_cnt = fifo[0];\\\n" +
+	"            if ( w_cnt != r_cnt ) {\\\n" +
+	"                for (int i = 0; i < len; i++) {\\\n" +
+	"                     ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
+	"                }\\\n" +
+	"                r_cnt += len;\\\n" +
+	"                if( (r_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+	"                     r_cnt &= 0x80000000;\\\n" +
+	"                     r_cnt ^= 0x80000000;\\\n" +
+	"                }\\\n" +
+	"                fifo[1] = r_cnt;\\\n" +
+	"                break;\\\n" +
+	"            }\\\n" +
+	"       }\\\n" +
+	"    } while(0)\n\n" +
+
+	"#define writeSWF(pos, value, len, fifo_size) \\\n" +
+	"    do {\\\n" +
+	"       volatile int *fifo = (int *)pos;\\\n" +
+	"       int w_cnt = fifo[0];\\\n" +
+	"       while (1) {\\\n" +
+	"            int r_cnt = fifo[1];\\\n" +
+	"            if ( r_cnt != (w_cnt ^ 0x80000000) ) {\\\n" +
+	"                for (int i = 0; i < len; i++) {\\\n" +
+	"                     fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
+	"                }\\\n" +
+	"                w_cnt += len;\\\n" +
+	"                if( (w_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+	"                     w_cnt &= 0x80000000;\\\n" +
+	"                     w_cnt ^= 0x80000000;\\\n" +
+	"                }\\\n" +
+	"                fifo[0] = w_cnt;\\\n" +
+	"                break;\\\n" +
+	"            }\\\n" +
+	"       }\\\n" +
+	"    } while(0)\n\n" +
+
+	"\n////////// currently not used //////// Primitives for SW FIFOs \n" +
+	"inline volatile void *acquire_write_ptr(int f, int len) {\n" +
+	"	volatile long *fifo = (long *)f;\n" +
+	"	register long fifoSize = fifo[0];\n" +
+	"	register long fifo_2 = fifo[2];\n" +
+	"\n" +
+	"	while( (fifo_2^fifo[5]) == 0x80000000) { }; // full\n" +
+	"\n" +
+	"	void *ptr = (void *)(fifo + 6 + (fifo_2 & 0x7FFFFFFF));\n" +
+	"\n" +
+	"	fifo_2 += len;      // wr index + token size in dwords (32 bits)\n" +
+	"\n" +
+	"	if( (fifo_2 & 0x7FFFFFFF) == fifoSize ) { \n" +
+	"		fifo_2 = fifo_2 & 0x80000000;\n" +
+	"		fifo_2 = fifo_2 ^ 0x80000000; // toggle the flag\n" +
+	"	}\n" +
+	"\n" +
+	"	fifo[2] = fifo_2;\n" +
+	"\n" +
+	"	return ptr;\n" +
+	"}\n" +
+	"\n\ninline void release_write_ptr(int f) {" +
+	"\n	volatile long *fifo = (volatile long *)f;\n" +
+	"	fifo[3] = fifo[2];\n" +
+	"}\n" +
+	"\n\ninline volatile void *acquire_read_ptr(int f, int len) {" +
+	"\n	volatile long *fifo = (long *)f;" +
+	"\n	register long fifoSize = fifo[0];" +
+	"\n	register long fifo_4 = fifo[4];" +
+	"\n" +
+	"\n	while( fifo[3] == fifo_4 ) { }; // empty" +
+	"\n" +
+	"\n	void *ptr = (void *)(fifo + 6 + (fifo_4 & 0x7FFFFFFF));" +
+	"\n" +
+	"\n	fifo_4 += len;      // rd index + token size in dwords (32 bits)" +
+	"\n" +
+	"\n	if( (fifo_4 & 0x7FFFFFFF) == fifoSize ) {" +
+	"\n		fifo_4 = fifo_4 & 0x80000000;" +
+	"\n		fifo_4 = fifo_4 ^ 0x80000000; // toggle the flag" +
+	"\n	}" +
+	"\n	fifo[4] = fifo_4;" +
+	"\n" +
+	"\n	return ptr;" +
+	"\n}" +
+	"\n\ninline void release_read_ptr(int f) {" +
+	"\n	volatile int *fifo = (volatile int *)f;" +
+	"\n	fifo[5] = fifo[4];" +
+	"\n}" +
+    "\n\n// Read and Write primitives for FreeRTOS \n" +
+    "#define readSWF2(pos, value, len, fifo_size, S, T) \\\n" +
     "do {\\\n" +
     "   volatile int *fifo = (int *)pos;\\\n" +
     "   int r_cnt = fifo[1];\\\n" +
@@ -326,7 +539,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
     "   fifo[1] = r_cnt;\\\n" +
     "} while(0)\n\n" +
 
-    "#define writeSWF(pos, value, len, fifo_size, S, T) \\\n" +
+    "#define writeSWF2(pos, value, len, fifo_size, S, T) \\\n" +
     "do {\\\n" +
     "   volatile int *fifo = (int *)pos;\\\n" +
     "   int w_cnt = fifo[0];\\\n" +

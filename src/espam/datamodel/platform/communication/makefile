@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.2 2012/04/02 16:25:40 nikolov Exp $
+# $Id: makefile,v 1.3 2012/04/20 23:00:41 mohamed Exp $
 #
 
 ROOT  = ../../../..
@@ -12,7 +12,6 @@ JSRCS = \
 	Crossbar.java \
 	LMBBus.java \
 	PLBBus.java \
-	AXIBus.java \
 	TransparentBus.java \
 	ReadFifoBus.java \
 	WriteFifoBus.java
