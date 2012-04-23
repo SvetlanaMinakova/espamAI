@@ -56,6 +56,8 @@ import espam.visitor.StatementVisitor;
 import espam.visitor.expression.CExpressionVisitor;
 import espam.utils.symbolic.expression.Expression;
 
+import espam.main.UserInterface;
+
 //////////////////////////////////////////////////////////////////////////
 //// XpsStatementVisitor
 
@@ -63,7 +65,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.11 2012/04/20 23:00:41 mohamed Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.12 2012/04/23 17:32:55 nikolov Exp $
  *      
  */
 
@@ -83,7 +85,11 @@ public class XpsStatementVisitor extends StatementVisitor {
         _cExpVisitor = new CExpressionVisitor();
         _scheduleType = _mapping.getMProcessor( _process ).getScheduleType();
         _isDynamicSchedule = (_mapping.getMProcessor( _process ).getScheduleType() >= 1);
-        
+
+        _ui = UserInterface.getInstance();
+        if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+        }        
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -183,6 +189,11 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
+
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
     	
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
@@ -242,10 +253,10 @@ public class XpsStatementVisitor extends StatementVisitor {
 /*  
        if( cdChannel.isSelfChannel() && !_isDynamicSchedule ) {
            if( cdChannel.getMaxSize()==1 ) {
-               _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() );      
+               _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() + suffix );      
            } else {
                String wr =  "wr_" + cdChannel.getName();
-               _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() );      
+               _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() + suffix );      
            }
            i = x.getIndexList().iterator();
    	   while( i.hasNext() ) {
@@ -256,7 +267,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 
         } else {
 */
-           _printStream.print(_prefix + funName + eName + ", " + "&" + x.getArgumentName() );
+           _printStream.print(_prefix + funName + eName + ", " + "&" + x.getArgumentName() + suffix );
            i = x.getIndexList().iterator();
    	   while( i.hasNext() ) {
 	      Expression expression = (Expression) i.next();
@@ -282,6 +293,11 @@ public class XpsStatementVisitor extends StatementVisitor {
        	LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
        	RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
 
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
 	if ( !x.getFunctionName().equals("") ) {
 
 	     _printStream.println("");
@@ -291,9 +307,9 @@ public class XpsStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + ", ");
+                     _printStream.print(var.getVariableName() + suffix + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() );
+                     _printStream.print(var.getVariableName() + suffix );
                  }
             }
 
@@ -306,9 +322,9 @@ public class XpsStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + ", ");
+                   _printStream.print(var.getVariableName() + suffix + ", ");
                } else {
-                   _printStream.print(var.getVariableName() );
+                   _printStream.print(var.getVariableName() + suffix );
                }
            }
            _printStream.print(");");
@@ -320,8 +336,8 @@ public class XpsStatementVisitor extends StatementVisitor {
 	     VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
-	                                 inArg.getVariableName() + ";"           );
+             _printStream.print(_prefix + outArg.getVariableName() + suffix + " = "  +
+	                                 inArg.getVariableName() + suffix + ";"           );
              _printStream.println("");
 	}
     }
@@ -333,6 +349,8 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x The simple statement that needs to be rendered.
      */
     public void visitStatement(SimpleAssignStatement x) {
+
+// May not work in case of multiple applications!!!
 
         _printStream.print(_prefix + x.getLHSVarName() );
 
@@ -360,6 +378,9 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x The control statement that needs to be rendered.
      */
     public void visitStatement(ControlStatement x) {
+
+// May not work in case of multiple applications!!!
+
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
             _printStream.println(_prefix + "int "
@@ -389,6 +410,11 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
+
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
 
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
@@ -458,7 +484,7 @@ public class XpsStatementVisitor extends StatementVisitor {
            if( cdChannel.getMaxSize()==1 ) {
 
               ADGVariable bindVar = x.getArgumentList().get(0);
-              _printStream.print(_prefix + bindVar.getName() ); 
+              _printStream.print(_prefix + bindVar.getName() + suffix ); 
      
               Iterator j = bindVar.getIndexList().iterator();
 	      while( j.hasNext() ) {
@@ -474,7 +500,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 	      while( i.hasNext() ) {
 
 		  ADGVariable bindVar = (ADGVariable) i.next();
-                  _printStream.print(_prefix + bindVar.getName() ); 
+                  _printStream.print(_prefix + bindVar.getName() + suffix ); 
 
 		  Iterator j = bindVar.getIndexList().iterator();
 		  while( j.hasNext() ) {
@@ -491,7 +517,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 	    while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
 
-	       _printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() );
+	       _printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() + suffix );
 
 		Iterator j = bindVar.getIndexList().iterator();
 		while( j.hasNext() ) {
@@ -534,5 +560,8 @@ public class XpsStatementVisitor extends StatementVisitor {
     private boolean _isDynamicSchedule;
     
     private boolean _printDelay = false; // This is a hack to print vTaskDelayUntil when FreeRTOS is used
-        
+
+    private UserInterface _ui = null;
+
+    private boolean _bMultiApp = false;        
 }

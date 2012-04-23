@@ -133,6 +133,4 @@ public class OutputPort2OpdStatement {
         }
         return opdStatementList;
     }
-
-
 }

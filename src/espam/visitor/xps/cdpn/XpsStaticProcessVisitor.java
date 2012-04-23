@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.8 2012/04/19 15:30:01 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.9 2012/04/23 17:32:55 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -91,6 +91,11 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 	_relation2 = relation;
     	_ui = UserInterface.getInstance();
 	_targetBoard = _getBoard( mapping.getPlatform() );
+
+        _ui = UserInterface.getInstance();
+        if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+        }
     }
 
     /**
@@ -174,6 +179,11 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
             ADGNode node = (ADGNode) n.next();
 	    ADGFunction function = (ADGFunction) node.getFunction();
 
+	    String suffix = "";
+	    if( _bMultiApp ) {
+		suffix = "_" + node.getName();
+	    }
+
 	    //-------------------------
 	    // Scan the ports of a node
 	    //-------------------------
@@ -235,7 +245,8 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString  + ";" );
+// 					inArguments.add( decString  + ";" );
+					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -245,13 +256,15 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+// 						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
 				miscVariables.add( decString + ";" );
+// 				miscVariables.add( decString + suffix + ";" );
 			   }
 			}
 
@@ -266,7 +279,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 
 				if ( !tmp.containsKey(expName) ) {
 				      tmp.put(expName, "");
-
+// What in case of multiple applications?
 				      String decString = _prefix + "int " + expName + ";"; 
 				      miscVariables.add( decString );
 				}
@@ -318,7 +331,8 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString + ";" );
+// 					inArguments.add( decString + ";" );
+					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -328,13 +342,15 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+// 						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
+// 				miscVariables.add( decString + ";" );
+				miscVariables.add( decString + suffix + ";" );
 			   }
 			}
             } // while 'invars'
@@ -702,4 +718,5 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 
     private String _targetBoard = "";
 
+    private boolean _bMultiApp = false;
 }

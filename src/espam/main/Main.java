@@ -34,6 +34,7 @@ import espam.datamodel.graph.adg.ADGraph;
 import espam.datamodel.graph.adg.ADGParameter;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGEdge;
+import espam.datamodel.graph.adg.ADGPort;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MFifo;
@@ -92,7 +93,7 @@ import espam.datamodel.EspamException;
  * within ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Main.java,v 1.16 2012/04/19 21:54:19 mohamed Exp $
+ * @version $Id: Main.java,v 1.17 2012/04/23 17:32:55 nikolov Exp $
  */
 
 public class Main {
@@ -502,6 +503,15 @@ public class Main {
 		while( j.hasNext() ) {
 			ADGNode adgNode = (ADGNode) j.next();
 			adgNode.setName( adgName + "_" + adgNode.getName() );
+
+                        // Make the names of the ports unique as well
+                        Iterator p = adgNode.getPortList().iterator(); 
+			while( p.hasNext() ) {
+                            ADGPort adgPort = (ADGPort)p.next();
+                            adgPort.setName( adgName + "_" + adgPort.getName() );
+
+
+			}
 			adg.getNodeList().add(adgNode);	
 		}
 

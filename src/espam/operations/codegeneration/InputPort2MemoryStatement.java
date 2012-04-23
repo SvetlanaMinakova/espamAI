@@ -49,7 +49,7 @@ public class InputPort2MemoryStatement {
      * @return  Description of the Return Value
      * @exception  CodeGenerationException
      */
-    public static MemoryStatement convert(ADGInPort port, CDProcess process)
+    public static FifoMemoryStatement convert(ADGInPort port, CDProcess process)
         throws CodeGenerationException {
 
         FifoMemoryStatement memoryStatement = null;
