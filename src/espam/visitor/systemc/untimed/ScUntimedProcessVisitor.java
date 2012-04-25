@@ -55,6 +55,8 @@ import espam.utils.symbolic.expression.Expression;
 
 import espam.visitor.CDPNVisitor;
 
+import espam.main.UserInterface;
+
 //////////////////////////////////////////////////////////////////////////
 //// SystemC Process Visitor
 
@@ -63,7 +65,7 @@ import espam.visitor.CDPNVisitor;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.8 2012/01/13 17:30:04 nikolov Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.9 2012/04/25 11:39:25 nikolov Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -75,6 +77,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
      *  Constructor for the ScUntimedProcessVisitor object
      */
     public ScUntimedProcessVisitor() {
+
+        _ui = UserInterface.getInstance();
+        if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+        }
     }
 
     /**
@@ -310,6 +317,11 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
             ADGNode node = (ADGNode) n.next();
 	    ADGFunction function = (ADGFunction) node.getFunction();
 
+	    String suffix = "";
+	    if( _bMultiApp ) {
+		suffix = "_" + node.getName();
+	    }
+
 	    //-------------------------
 	    // Scan the ports of a node
 	    //-------------------------
@@ -371,7 +383,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString  + ";" );
+					inArguments.add( decString  + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -381,13 +393,40 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
+                                boolean bInVar = false;
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+				    }
+
+				} else {
+				    Iterator jj = node.getInVarList().iterator();
+				    while( jj.hasNext() ) {
+					ADGInVar invar = (ADGInVar) jj.next();
+					String	invarName = invar.getRealName();
+                                        if( invarName.equals( varName ) ) {
+					    bInVar = true;
+					}
+				    }
+
+				    if( bInVar ) {
+					miscVariables.add( decString + suffix + ";" );
+                                    } else { // it is an 'enable' variable
+                                        if ( !tmp.containsKey(varName) ) {
+					   tmp.put(varName, "");
+					   miscVariables.add( decString + ";" );
+                                        }
+				    }
+
+				}
 			   }
 			}
 
@@ -454,7 +493,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString + ";" );
+					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -464,13 +503,21 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+                                    }
+				} else {
+				    miscVariables.add( decString + suffix + ";" );
+				}
 			   }
 			}
             } // while 'invars'
@@ -488,7 +535,14 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 		String dataType = arg.getDataType();
 
 		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+
+		    String funcArgDeclaration;
+		    // Avoid putting suffix to the loop iterators and parameters
+		    if( varName.contains("in") ) {
+			funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
+		    } else {
+			funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+		    }
     		    inArguments.add( funcArgDeclaration );
                 }
 	    }
@@ -506,7 +560,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 		String dataType = arg.getDataType();
 
 		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
     		    outArguments.add( funcArgDeclaration );
                 }
 	    }
@@ -968,5 +1022,9 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
     private PrintStream _printStream = null;
 
     private PrintStream _printStreamFunc = null;
+
+    private UserInterface _ui = null;
+
+    private boolean _bMultiApp = false;
 
 }

@@ -185,7 +185,7 @@ public class CDPNToParseTrees {
 		            }
                         }
 
-                        // In case of dynamic control, we must set the boolean part to zero in the beggining of every iteration
+                        // In case of dynamic control, we must set the boolean part to zero in the beginning of every iteration
 			_boolCtrlVarList = _getBoolCtrlVars( node );
                         i = _boolCtrlVarList.iterator();
                         while( i.hasNext() ) {

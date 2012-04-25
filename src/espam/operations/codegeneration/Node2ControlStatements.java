@@ -26,6 +26,8 @@ import espam.datamodel.domain.Polytope;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.graph.adg.ADGPort;
 
+import espam.main.UserInterface;
+
 //////////////////////////////////////////////////////////////////////////
 //// Node2ControlStatements
 
@@ -45,6 +47,11 @@ public class Node2ControlStatements {
      *      occurs
      */
     public static Vector convert(ADGNode x) {
+
+        boolean bMultiApp = false;
+        if(_ui.getADGFileNames().size() > 1) {
+            bMultiApp = true;
+        }   
 
 	Vector cStatements = new Vector();
 	HashMap  tmp = new HashMap();
@@ -73,6 +80,9 @@ public class Node2ControlStatements {
 	while( j.hasNext() ) {
 		ControlExpression cExp = (ControlExpression) j.next();
                 String expName = cExp.getName();
+                if( bMultiApp ) {
+                     expName += "_" + x.getName();
+                }
 
                 if ( !tmp.containsKey(expName) ) {
 
@@ -85,5 +95,9 @@ public class Node2ControlStatements {
         return cStatements;
     }
 
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                  ///
+
+    private static UserInterface _ui = UserInterface.getInstance();
 }
 

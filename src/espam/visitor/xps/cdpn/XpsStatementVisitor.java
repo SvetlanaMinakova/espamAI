@@ -20,6 +20,9 @@ import java.io.PrintStream;
 import java.util.Iterator;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGInVar;
+import espam.datamodel.graph.adg.ADGInPort;
+import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 import espam.datamodel.parsetree.statement.SimpleAssignStatement;
 import espam.datamodel.parsetree.statement.ControlStatement;
@@ -65,7 +68,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.12 2012/04/23 17:32:55 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.13 2012/04/25 11:39:25 nikolov Exp $
  *      
  */
 
@@ -191,7 +194,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
 
 	String suffix = "";
-        if( _bMultiApp ) {
+        if( _bMultiApp  && !(x.getArgumentName().contains("dc")) ) {
 	    suffix = "_" + x.getNodeName();
         }
     	
@@ -350,9 +353,19 @@ public class XpsStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(SimpleAssignStatement x) {
 
-// May not work in case of multiple applications!!!
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+        // Avoid adding suffix to the control "dc" variables
+        boolean flag = true;
+        if( x.getLHSVarName().contains("dc") ) flag = false;
 
-        _printStream.print(_prefix + x.getLHSVarName() );
+        if( flag ) {
+          _printStream.print(_prefix + x.getLHSVarName() + suffix);
+        } else {
+          _printStream.print(_prefix + x.getLHSVarName());
+        }
 
 	Iterator i = x.getIndexListLHS().iterator();
 	while( i.hasNext() ) {
@@ -360,14 +373,17 @@ public class XpsStatementVisitor extends StatementVisitor {
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
 
-        _printStream.print(" = " + x.getRHSVarName() );
+        if( flag ) {
+             _printStream.print(" = " + x.getRHSVarName() + suffix);
+        } else {
+             _printStream.print(" = " + x.getRHSVarName());
+        }
 
 	i = x.getIndexListRHS().iterator();
 	while( i.hasNext() ) {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
-
 	_printStream.println(";\n");
     }
 
@@ -378,19 +394,17 @@ public class XpsStatementVisitor extends StatementVisitor {
      * @param  x The control statement that needs to be rendered.
      */
     public void visitStatement(ControlStatement x) {
-
-// May not work in case of multiple applications!!!
-
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
-            _printStream.println(_prefix + "int "
+	    _printStream.println(_prefix 
                     + x.getName() + " = "
                     + expression.accept(_cExpVisitor) + ";");
+
         } else {
-            _printStream.println(_prefix + "int "
-                    + x.getName() + " = ("
-                    + expression.accept(_cExpVisitor) + ")/" +
-                    x.getDenominator() + ";");
+	    _printStream.println(_prefix
+			+ x.getName() + " = ("
+			+ expression.accept(_cExpVisitor) + ")/" +
+			x.getDenominator() + ";");
         }
         _visitChildren(x);
     }
@@ -512,10 +526,17 @@ public class XpsStatementVisitor extends StatementVisitor {
           }
         } else {       
 */
+
+            ADGInPort port = (ADGInPort)x.getPort();  
+
             // for every binding variable, we need a read from a fifo
 	    i = x.getArgumentList().iterator();
 	    while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
+
+                if( bindVar.getName().contains("dc") || _isEnableVar(port, bindVar.getName()) ) {
+                  suffix = "";
+                }
 
 	       _printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() + suffix );
 
@@ -541,6 +562,34 @@ public class XpsStatementVisitor extends StatementVisitor {
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                  ///
+
+    /**
+     * Check whether a port binding variable binds to an invar or function argument.
+     * If not, then it is a variable used as 'enable' in case of dynamic PPNs
+     */
+    private boolean _isEnableVar(ADGInPort port, String name) {
+
+        ADGNode node = (ADGNode)port.getNode();
+        Iterator i = node.getInVarList().iterator();
+        while( i.hasNext() ) {
+	    ADGInVar invar = (ADGInVar)i.next();
+            if( name.equals(invar.getRealName())) {
+                return false;
+            }
+        }
+        i = node.getFunction().getInArgumentList().iterator();
+        while( i.hasNext() ) {
+	    ADGVariable arg = (ADGVariable) i.next();
+  	    String funcArgument = arg.getName();
+	    if( funcArgument.equals( name ) ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     ///////////////////////////////////////////////////////////////////

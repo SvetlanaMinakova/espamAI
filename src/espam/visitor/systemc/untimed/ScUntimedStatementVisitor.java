@@ -29,6 +29,9 @@ import java.util.Vector;
 import espam.datamodel.EspamException;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGInVar;
+import espam.datamodel.graph.adg.ADGInPort;
+import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 import espam.datamodel.parsetree.statement.SimpleAssignStatement;
@@ -75,6 +78,11 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
         super();
         _printStream = printStream;
         _cExpVisitor = new CExpressionVisitor();
+
+        _ui = UserInterface.getInstance();
+        if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+        }  
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -163,9 +171,15 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(OpdStatement x) {
+
+	String suffix = "";
+        if( _bMultiApp && !(x.getArgumentName().contains("dc")) ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
         _printStream.println("");
         _printStream.print(_prefix + x.getGateName() + "->write( " +
-                x.getArgumentName() );
+                x.getArgumentName() + suffix);
 
 	Iterator i = x.getIndexList().iterator();
 	while( i.hasNext() ) {
@@ -185,6 +199,11 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
         LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
         RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
 
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
         if ( !x.getFunctionName().equals("") ) {
 
              _printStream.println("");
@@ -194,9 +213,9 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + ", ");
+                     _printStream.print(var.getVariableName() + suffix + ", ");
                  } else {
-                     _printStream.print(var.getVariableName());
+                     _printStream.print(var.getVariableName() +  suffix);
                  }
             }
 
@@ -209,9 +228,9 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + ", ");
+                   _printStream.print(var.getVariableName() +  suffix + ", ");
                } else {
-                   _printStream.print(var.getVariableName());
+                   _printStream.print(var.getVariableName() +  suffix);
                }
            }
            _printStream.println(") ;");
@@ -225,8 +244,8 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
            VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
            _printStream.println("");
-           _printStream.print(_prefix + outArg.getVariableName() + " = "  +
-                                         inArg.getVariableName() + ";");
+           _printStream.print(_prefix + outArg.getVariableName() +  suffix + " = "  +
+                                         inArg.getVariableName() +  suffix + ";");
            _printStream.println("");
            _printStream.println(_prefix + "firings[\"CopyPropagate\"]++;");
            _printStream.println("");
@@ -240,7 +259,20 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(SimpleAssignStatement x) {
 
-        _printStream.print(_prefix + x.getLHSVarName() );
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
+        // Avoid adding suffix to the control "dc" variables
+        boolean flag = true;
+        if( x.getLHSVarName().contains("dc") ) flag = false;
+
+        if( flag ) {
+          _printStream.print(_prefix + x.getLHSVarName() + suffix);
+        } else {
+          _printStream.print(_prefix + x.getLHSVarName());
+        }
 
 	Iterator i = x.getIndexListLHS().iterator();
 	while( i.hasNext() ) {
@@ -248,14 +280,17 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
 
-        _printStream.print(" = " + x.getRHSVarName() );
+        if( flag ) {
+             _printStream.print(" = " + x.getRHSVarName() + suffix);
+        } else {
+             _printStream.print(" = " + x.getRHSVarName());
+        }
 
 	i = x.getIndexListRHS().iterator();
 	while( i.hasNext() ) {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
-
 	_printStream.println(";\n");
     }
 
@@ -286,14 +321,25 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(FifoMemoryStatement x) {
 
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
+        ADGInPort port = (ADGInPort)x.getPort();        
+
 	_printStream.println("");
         // for every binding variable, we need a read from a fifo
 	Iterator i = x.getArgumentList().iterator();
 	while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
 
+                if( bindVar.getName().contains("dc") || _isEnableVar(port, bindVar.getName()) ) {
+                  suffix = "";
+                }
+
 	       _printStream.print(_prefix + x.getGateName() + "->read( " +
-                	bindVar.getName() );
+                	bindVar.getName() + suffix );
 
 		Iterator j = bindVar.getIndexList().iterator();
 		while( j.hasNext() ) {
@@ -354,6 +400,31 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
         return printStream;
     }
 
+    /**
+     * Check whether a port binding variable binds to an invar or function argument.
+     * If not, then it is a variable used as 'enable' in case of dynamic PPNs
+     */
+    private boolean _isEnableVar(ADGInPort port, String name) {
+
+        ADGNode node = (ADGNode)port.getNode();
+        Iterator i = node.getInVarList().iterator();
+        while( i.hasNext() ) {
+	    ADGInVar invar = (ADGInVar)i.next();
+            if( name.equals(invar.getRealName())) {
+                return false;
+            }
+        }
+        i = node.getFunction().getInArgumentList().iterator();
+        while( i.hasNext() ) {
+	    ADGVariable arg = (ADGVariable) i.next();
+  	    String funcArgument = arg.getName();
+	    if( funcArgument.equals( name ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
 
@@ -361,4 +432,8 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
      *  The Expressions visitor.
      */
     private CExpressionVisitor _cExpVisitor = null;
+
+    private UserInterface _ui = null;
+
+    private boolean _bMultiApp = false;
 }

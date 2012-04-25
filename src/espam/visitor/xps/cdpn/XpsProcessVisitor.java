@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.10 2012/04/20 23:00:41 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.11 2012/04/25 11:39:25 nikolov Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -107,6 +107,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
                 CDProcess process = (CDProcess) i.next();
 
                 MProcessor mProcessor = _mapping.getMProcessor(process);
+
                 Resource resource = mProcessor.getResource();
                 if (resource instanceof Processor) {
 

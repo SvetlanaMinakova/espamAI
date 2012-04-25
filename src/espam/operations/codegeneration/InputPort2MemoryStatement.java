@@ -88,6 +88,7 @@ public class InputPort2MemoryStatement {
 			memoryStatement.setGateName( gateName );
 			memoryStatement.setNodeName( port.getNode().getName() );
 			memoryStatement.setArgumentList( port.getBindVariables() );
+			memoryStatement.setPort( port );
 
 		} else {
 			System.out.println( "ERROR: unsupported channeltype " + comModel.toString());

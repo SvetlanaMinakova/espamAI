@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.9 2012/04/23 17:32:55 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.10 2012/04/25 11:39:25 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -232,8 +232,9 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 			// Avoid duplicating declarations 
 			// (unique names for the hash function are needed in case of merging)
                         //-------------------------------------------------------------------
-			if ( !tmp.containsKey(varName+node.getName()) ) {
-			   tmp.put(varName+node.getName(), "");
+ 			if ( !tmp.containsKey(varName+node.getName()) ) {
+ 			   tmp.put(varName+node.getName(), "");
+
 			   String decString = _prefix + t + " " + varName;
 			   
                            //------------------------------------------------------------------------------------  
@@ -245,7 +246,6 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-// 					inArguments.add( decString  + ";" );
 					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
@@ -256,17 +256,55 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-// 						outArguments.add( decString + ";" );
 						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
+// 			   if( counter==0 ) { 
+// 				// Avoid putting suffix to the control "dc.." variables
+// 				if( varName.contains("dc") ) {
+// 				    if ( !tmp.containsKey(varName) ) {
+// 					tmp.put(varName, "");
+// 				        miscVariables.add( decString + ";" );
+// 				    }
+// 
+// 				} else {
+// 				    miscVariables.add( decString + suffix + ";" );
+// 				}
+// 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
-// 				miscVariables.add( decString + suffix + ";" );
+                                boolean bInVar = false;
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+				    }
+
+				} else {
+				    Iterator jj = node.getInVarList().iterator();
+				    while( jj.hasNext() ) {
+					ADGInVar invar = (ADGInVar) jj.next();
+					String	invarName = invar.getRealName();
+                                        if( invarName.equals( varName ) ) {
+					    bInVar = true;
+					}
+				    }
+
+				    if( bInVar ) {
+					miscVariables.add( decString + suffix + ";" );
+                                    } else { // it is an 'enamble' variable
+                                        if ( !tmp.containsKey(varName) ) {
+					   tmp.put(varName, "");
+					   miscVariables.add( decString + ";" );
+                                        }
+				    }
+
+				}
 			   }
 			}
+
 
                         //-----------------------------------------------
                         // add the static control statements (int e0;...)
@@ -279,7 +317,6 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 
 				if ( !tmp.containsKey(expName) ) {
 				      tmp.put(expName, "");
-// What in case of multiple applications?
 				      String decString = _prefix + "int " + expName + ";"; 
 				      miscVariables.add( decString );
 				}
@@ -318,8 +355,9 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 			// Avoid duplicating declarations
 			// (unique names for the hash function are needed in case of merging)
                         //-------------------------------------------------------------------
-			if ( !tmp.containsKey(varName+node.getName()) ) {
-			   tmp.put(varName+node.getName(), "");
+  			if ( !tmp.containsKey(varName+node.getName()) ) {
+  			   tmp.put(varName+node.getName(), "");
+
 			   String decString = _prefix + t + " " + varName;
 			   
                            //------------------------------------------------------------------------------------ 
@@ -331,7 +369,6 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-// 					inArguments.add( decString + ";" );
 					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
@@ -342,22 +379,29 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-// 						outArguments.add( decString + ";" );
 						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-// 				miscVariables.add( decString + ";" );
-				miscVariables.add( decString + suffix + ";" );
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+                                    }
+				} else {
+				    miscVariables.add( decString + suffix + ";" );
+				}
 			   }
 			}
             } // while 'invars'
 
 	    //-----------------------------------------------------------------
 	    // Add an input function argument which is not bound to any port. 
-            // This happens in case loop iterators are propagated to functions.
+            // This happens in case loop iterators are propagated to functions,
+            // or in case of initialization, e.g.., in_0ND_0 = 0
 	    //-----------------------------------------------------------------
 	    Iterator f = function.getInArgumentList().iterator();
             while( f.hasNext() ) {
@@ -368,7 +412,15 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 		String dataType = arg.getDataType();
 
 		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+
+		    String funcArgDeclaration;
+		    // Avoid putting suffix to the loop iterators and parameters
+		    if( varName.contains("in") ) {
+			funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
+		    } else {
+			funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+		    }
+//                     String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
     		    inArguments.add( funcArgDeclaration );
                 }
 	    }
@@ -386,7 +438,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 		String dataType = arg.getDataType();
 
 		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
     		    outArguments.add( funcArgDeclaration );
                 }
 	    }
