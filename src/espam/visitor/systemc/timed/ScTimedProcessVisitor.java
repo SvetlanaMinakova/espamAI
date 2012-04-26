@@ -69,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.17 2012/01/13 17:30:04 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.18 2012/04/26 08:39:42 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -83,6 +83,11 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
     public ScTimedProcessVisitor(Mapping mapping, boolean scTimedPeriod) {
       _mapping = mapping;
       _scTimedPeriod = scTimedPeriod;
+      
+      _ui = UserInterface.getInstance();
+      if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+      }
     }
 
     /**
@@ -724,6 +729,11 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
             ADGNode node = (ADGNode) n.next();
 	    ADGFunction function = (ADGFunction) node.getFunction();
 
+	    String suffix = "";
+	    if( _bMultiApp ) {
+		suffix = "_" + node.getName();
+	    }
+
 	    //-------------------------
 	    // Scan the ports of a node
 	    //-------------------------
@@ -785,7 +795,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString  + ";" );
+					inArguments.add( decString  + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -795,13 +805,39 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
+                                boolean bInVar = false;
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+				    }
+
+				} else {
+				    Iterator jj = node.getInVarList().iterator();
+				    while( jj.hasNext() ) {
+					ADGInVar invar = (ADGInVar) jj.next();
+					String	invarName = invar.getRealName();
+                                        if( invarName.equals( varName ) ) {
+					    bInVar = true;
+					}
+				    }
+
+				    if( bInVar ) {
+					miscVariables.add( decString + suffix + ";" );
+                                    } else { // it is an 'enable' variable
+                                        if ( !tmp.containsKey(varName) ) {
+					   tmp.put(varName, "");
+					   miscVariables.add( decString + ";" );
+                                        }
+				    }
+				}
 			   }
 			}
 
@@ -868,7 +904,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 				ADGVariable arg = (ADGVariable) j4.next();
 				String funcArgument = arg.getName();
 				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString + ";" );
+					inArguments.add( decString + suffix + ";" );
 					counter++;
 				}
 			   }
@@ -878,13 +914,21 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 					ADGVariable arg = (ADGVariable) j4.next();
 					String funcArgument = arg.getName();
 					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
+						outArguments.add( decString + suffix + ";" );
 						counter++;
 					}
 				}
 			   }
 			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
+				// Avoid putting suffix to the control "dc.." variables
+				if( varName.contains("dc") ) {
+				    if ( !tmp.containsKey(varName) ) {
+					tmp.put(varName, "");
+				        miscVariables.add( decString + ";" );
+                                    }
+				} else {
+				    miscVariables.add( decString + suffix + ";" );
+				}
 			   }
 			}
             } // while 'invars'
@@ -1026,10 +1070,11 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
+			returnValue = "";
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
                         } else if( arg.getPassType().equals("reference") ) {
-                           rhsArg = true; 
+                           rhsArg = true;                            
                         }
 
 	                t = "char";
@@ -1148,4 +1193,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 
     private HashMap _relation2 = new HashMap();
 
+    private UserInterface _ui = null;
+
+    private boolean _bMultiApp = false;
 }

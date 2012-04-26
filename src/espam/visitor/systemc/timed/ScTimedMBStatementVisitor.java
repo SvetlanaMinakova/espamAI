@@ -29,6 +29,9 @@ import java.util.Vector;
 import espam.datamodel.EspamException;
 
 import espam.datamodel.graph.adg.ADGVariable;
+import espam.datamodel.graph.adg.ADGInVar;
+import espam.datamodel.graph.adg.ADGInPort;
+import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 import espam.datamodel.parsetree.statement.SimpleAssignStatement;
@@ -80,7 +83,12 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         _printStream = printStream;
         _cExpVisitor = new CExpressionVisitor();
         _process = process;
-    }
+    
+        _ui = UserInterface.getInstance();
+        if(_ui.getADGFileNames().size() > 1) {
+            _bMultiApp = true;
+        } 
+}
 
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
@@ -173,6 +181,11 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
+	String suffix = "";
+        if( _bMultiApp && !(x.getArgumentName().contains("dc")) ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
     	String t = cdChannel.getName();
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
 
@@ -188,7 +201,7 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
-        _printStream.println(", " + x.getArgumentName() + ", " + s + " );");
+        _printStream.println(", " + x.getArgumentName() + suffix + ", " + s + " );");
     }
 
     /**
@@ -200,6 +213,11 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         Statement statement = null;
         LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
         RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
+
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
 
         if ( !x.getFunctionName().equals("") ) {
              _printStream.println("");
@@ -214,9 +232,9 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
             while( i.hasNext() ) {
                  VariableStatement var = (VariableStatement) i.next();
                  if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + ", ");
+                     _printStream.print(var.getVariableName() + suffix + ", ");
                  } else {
-                     _printStream.print(var.getVariableName());
+                     _printStream.print(var.getVariableName() + suffix);
                  }
             }
 
@@ -229,9 +247,9 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
            while( i.hasNext() ) {
                VariableStatement var = (VariableStatement) i.next();
                if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + ", ");
+                   _printStream.print(var.getVariableName() + suffix + ", ");
                } else {
-                   _printStream.print(var.getVariableName());
+                   _printStream.print(var.getVariableName() + suffix);
                }
            }
            _printStream.print(") ;");
@@ -250,8 +268,8 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
              VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
 
              _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + " = "  +
-                                         inArg.getVariableName() + ";");
+             _printStream.print(_prefix + outArg.getVariableName() + suffix + " = "  +
+                                         inArg.getVariableName() + suffix + ";");
              _printStream.println("");
         }
     }
@@ -263,7 +281,20 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
      */
     public void visitStatement(SimpleAssignStatement x) {
 
-        _printStream.print(_prefix + x.getLHSVarName() );
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+
+        // Avoid adding suffix to the control "dc" variables
+        boolean flag = true;
+        if( x.getLHSVarName().contains("dc") ) flag = false;
+
+        if( flag ) {
+          _printStream.print(_prefix + x.getLHSVarName() + suffix);
+        } else {
+          _printStream.print(_prefix + x.getLHSVarName());
+        }
 
 	Iterator i = x.getIndexListLHS().iterator();
 	while( i.hasNext() ) {
@@ -271,16 +302,20 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
 
-        _printStream.print(" = " + x.getRHSVarName() );
+        if( flag ) {
+             _printStream.print(" = " + x.getRHSVarName() + suffix);
+        } else {
+             _printStream.print(" = " + x.getRHSVarName());
+        }
 
 	i = x.getIndexListRHS().iterator();
 	while( i.hasNext() ) {
 		Expression expression = (Expression) i.next();
 		_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
 	}
-
 	_printStream.println(";\n");
     }
+
 
 
     /**
@@ -309,6 +344,13 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
      * @param  x Description of the Parameter
      */
     public void visitStatement(FifoMemoryStatement x) {
+
+	String suffix = "";
+        if( _bMultiApp ) {
+	    suffix = "_" + x.getNodeName();
+        }
+        ADGInPort port = (ADGInPort)x.getPort(); 
+
 	_printStream.println("");
     	String gateName = x.getGateName();
     	CDGate cdGate = (CDGate)_process.getGate(gateName);
@@ -321,11 +363,15 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
 	while( i.hasNext() ) {
 		ADGVariable bindVar = (ADGVariable) i.next();
 
+                if( bindVar.getName().contains("dc") || _isEnableVar(port, bindVar.getName()) ) {
+                  suffix = "";
+                }
+
                 if( cdChannel.isSelfChannel() ) {
 // quick hack to determine the sinks (in the monitor)
-                    _printStream.print(_prefix + "readFSL( ex, " + gateName + ", " + bindVar.getName() );
+                    _printStream.print(_prefix + "readFSL( ex, " + gateName + ", " + bindVar.getName() + suffix );
                 } else {
-                    _printStream.print(_prefix + "readFSL( rd, " + gateName + ", " + bindVar.getName() );
+                    _printStream.print(_prefix + "readFSL( rd, " + gateName + ", " + bindVar.getName() + suffix );
                 }
 
 		Iterator j = bindVar.getIndexList().iterator();
@@ -385,6 +431,30 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
         return printStream;
     }
 
+    /**
+     * Check whether a port binding variable binds to an invar or function argument.
+     * If not, then it is a variable used as 'enable' in case of dynamic PPNs
+     */
+    private boolean _isEnableVar(ADGInPort port, String name) {
+
+        ADGNode node = (ADGNode)port.getNode();
+        Iterator i = node.getInVarList().iterator();
+        while( i.hasNext() ) {
+	    ADGInVar invar = (ADGInVar)i.next();
+            if( name.equals(invar.getRealName())) {
+                return false;
+            }
+        }
+        i = node.getFunction().getInArgumentList().iterator();
+        while( i.hasNext() ) {
+	    ADGVariable arg = (ADGVariable) i.next();
+  	    String funcArgument = arg.getName();
+	    if( funcArgument.equals( name ) ) {
+                return false;
+            }
+        }
+        return true;
+    }
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
 
@@ -394,4 +464,8 @@ public class ScTimedMBStatementVisitor extends StatementVisitor {
     private CExpressionVisitor _cExpVisitor = null;
 
     private CDProcess _process = null;
+
+    private UserInterface _ui = null;
+
+    private boolean _bMultiApp = false;
 }

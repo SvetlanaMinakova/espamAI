@@ -215,7 +215,7 @@ public class ScUntimedStatementVisitor extends StatementVisitor {
                  if( i.hasNext() ) {
                      _printStream.print(var.getVariableName() + suffix + ", ");
                  } else {
-                     _printStream.print(var.getVariableName() +  suffix);
+                     _printStream.print(var.getVariableName() + suffix);
                  }
             }
 
