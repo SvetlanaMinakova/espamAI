@@ -70,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.5 2012/04/27 13:44:10 mohamed Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.6 2012/04/27 14:11:49 mohamed Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -88,6 +88,9 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	_relation2 = relation;
 	_ui = UserInterface.getInstance();
 	_targetBoard = _getBoard( mapping.getPlatform() );
+    if(_ui.getADGFileNames().size() > 1) {
+        _bMultiApp = true;
+    }	
     }
 
     /**
