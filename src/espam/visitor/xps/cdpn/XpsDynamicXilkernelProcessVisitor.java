@@ -70,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.6 2012/04/27 14:11:49 mohamed Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.7 2012/04/27 15:07:25 mohamed Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -590,8 +590,9 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
      */
     private void _writeIncludes( CDProcess x ) {
 	_printStream.println("#include <xmk.h>");
-	_printStream.println("#include <os_config.h>");
-	_printStream.println("#include <sys/process.h>");
+	_printStream.println("#include <sys/ksched.h>");
+	_printStream.println("#include <sys/init.h>");
+	_printStream.println("#include <config/config_param.h>");
 	_printStream.println("#include <pthread.h>");
 	_printStream.println("#include \"MemoryMap.h\"");
 	_printStream.println("#include \"aux_func.h\"");
@@ -683,7 +684,9 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
     private void _writeMain() {
 	_printStream.println("int main() {");
 	_prefixInc();
-	_printStream.println(_prefix + "xilkernel_main();");
+	_printStream.println(_prefix + "xilkernel_init();");
+	_printStream.println(_prefix + "xmk_add_static_thread(thread_main,0);");
+	_printStream.println(_prefix + "xilkernel_start();");	
 	_prefixDec();
 	_printStream.println(_prefix + "} // main");
 	_printStream.println("");
