@@ -48,6 +48,7 @@ import espam.datamodel.platform.host_interfaces.ADMXRCII;
 import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
 
 import espam.datamodel.parsetree.ParserNode;
 
@@ -69,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.4 2012/01/20 16:46:42 nikolov Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.5 2012/04/27 13:44:10 mohamed Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -136,214 +137,278 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	Vector inArguments = new Vector();
 	Vector outArguments = new Vector();
 	Vector miscVariables = new Vector();
+	Vector selfEdgeVariables = new Vector();
 	Vector tempVector = new Vector();
-        Iterator n;
+    Iterator n;
 
 	_prefixInc();
 
 	ADGNode node = (ADGNode) x.getAdgNodeList().get(index);
 	ADGFunction function = (ADGFunction) node.getFunction();
+    String suffix = "";
+    if( _bMultiApp ) {
+		suffix = "_" + node.getName();
+    }
 
-	//-------------------------
-	// Scan the ports of a node
-	//-------------------------
-	Iterator j1 = node.getPortList().iterator();
+        //-------------------------
+        // Scan the ports of a node
+        //-------------------------
+        Iterator j1 = node.getPortList().iterator();
         while( j1.hasNext() ) {
-		ADGPort port = (ADGPort) j1.next();
+	        ADGPort port = (ADGPort) j1.next();
 
-		Iterator j2 = port.getBindVariables().iterator();
-		while( j2.hasNext() ) {
-                	ADGVariable bindVar = (ADGVariable) j2.next();
-			dimension = "";
-                	varName = bindVar.getName();
+	        Iterator j2 = port.getBindVariables().iterator();
+	        while( j2.hasNext() ) {
+            	ADGVariable bindVar = (ADGVariable) j2.next();
+		        dimension = "";
+            	varName = bindVar.getName();
 
-                        //-------------------------------------------------
-			// Find the gate corresponding to this funcArgument
-                        //-------------------------------------------------
-			Iterator g = x.getGateList().iterator();
+                //-------------------------------------------------
+    			// Find the gate corresponding to this funcArgument
+                //-------------------------------------------------
+    			Iterator g = x.getGateList().iterator();
 	        	while ( g.hasNext() ) {
-			    CDGate  gate = (CDGate) g.next();
+    			    CDGate  gate = (CDGate) g.next();
+		            Iterator p = gate.getAdgPortList().iterator();
+    			    while( p.hasNext() ) {
+			            ADGPort tmpPort = (ADGPort) p.next();
+        				if( tmpPort.getName().equals( port.getName() ) ) {
+			                t = "t" + gate.getChannel().getName();
+        				}
+    			    }
+    			}
 
-			    Iterator p = gate.getAdgPortList().iterator();
-			    while( p.hasNext() ) {
-				ADGPort tmpPort = (ADGPort) p.next();
+                //-----------------------------------------------------------
+    			// Find the dimensions in case the local variable is an array
+                //-----------------------------------------------------------
+    			Iterator j3 = bindVar.getIndexList().iterator();
+    			while( j3.hasNext() ) {
+    			   Expression exp = (Expression) j3.next();
+                   //----------------------------------------
+    			   // Do some expression computations here!!!
+                   //---------------------------------------- 
+    			   String arrSize = "";
+    			   dimension += "[" + arrSize + "]";
+    			}
+    			varName += dimension;
+                //-------------------------------------------------------------------
+        		// Avoid duplicating declarations 
+	            // (unique names for the hash function are needed in case of merging)
+                //-------------------------------------------------------------------
+		        if ( !tmp.containsKey(varName+node.getName()) ) {
+     			   tmp.put(varName+node.getName(), "");
+    			   String decString = _prefix + t + " " + varName;
+                   //------------------------------------------------------------------------------------  
+		           // sort the variables into input arguments, output arguments, and additional variables
+                   //------------------------------------------------------------------------------------
+    			   int counter = 0;
+    			   Iterator j4 = function.getInArgumentList().iterator();
+    			   while( j4.hasNext() ) {
+        				ADGVariable arg = (ADGVariable) j4.next();
+        				String funcArgument = arg.getName();
+        				if( funcArgument.equals( varName ) ) {
+        					inArguments.add( decString + suffix + ";" );
+        					counter++;
+        				}
+    			   }
+    			   if( counter==0 ) {
+                       j4 = function.getOutArgumentList().iterator();
+                       while( j4.hasNext() ) {
+                            ADGVariable arg = (ADGVariable) j4.next();
+        					String funcArgument = arg.getName();
+        					if( funcArgument.equals( varName ) ) {
+					            outArguments.add( decString + suffix + ";" );
+					            counter++;
+        					}
+                       }
+    			   }
+    			   if( counter==0 ) { 
+                        boolean bInVar = false;
+			            // Avoid putting suffix to the control "dc.." variables
+			            if( varName.contains("dc") ) {
+			                if ( !tmp.containsKey(varName) ) {
+					            tmp.put(varName, "");
+        				        miscVariables.add( decString + ";" );
+        				    }
+        				} else {
+        				    Iterator jj = node.getInVarList().iterator();
+			                while( jj.hasNext() ) {
+				                ADGInVar invar = (ADGInVar) jj.next();
+				                String	invarName = invar.getRealName();
+                                if( invarName.equals( varName ) ) {
+            					    bInVar = true;
+            					}
+        				    }
 
-				if( tmpPort.getName().equals( port.getName() ) ) {
-				    t = "t" + gate.getChannel().getName();
-				}
-			    }
-			}
+        				    if( bInVar ) {
+            					miscVariables.add( decString + suffix + ";" );
+                            } else { // it is an 'enamble' variable
+                                if ( !tmp.containsKey(varName) ) {
+            					   tmp.put(varName, "");
+            					   miscVariables.add( decString + ";" );
+                                }
+        				    }
 
-                        //-----------------------------------------------------------
-			// Find the dimensions in case the local variable is an array
-                        //-----------------------------------------------------------
-			Iterator j3 = bindVar.getIndexList().iterator();
-			while( j3.hasNext() ) {
-			   Expression exp = (Expression) j3.next();
-                           //----------------------------------------
-			   // Do some expression computations here!!!
-                           //---------------------------------------- 
-			   String arrSize = "";
-			   dimension += "[" + arrSize + "]";
-			}	
-			varName += dimension;
-	
-                        //-------------------------------------------------------------------
-			// Avoid duplicating declarations 
-			// (unique names for the hash function are needed in case of merging)
-                        //-------------------------------------------------------------------
-			if ( !tmp.containsKey(varName+node.getName()) ) {
-			   tmp.put(varName+node.getName(), "");
-			   String decString = _prefix + t + " " + varName;
-			   
-                           //------------------------------------------------------------------------------------  
-			   // sort the variables into input arguments, output arguments, and additional variables
-                           //------------------------------------------------------------------------------------
-			   int counter = 0;
-			   Iterator j4 = function.getInArgumentList().iterator();
-			   while( j4.hasNext() ) {
-				ADGVariable arg = (ADGVariable) j4.next();
-				String funcArgument = arg.getName();
-				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString  + ";" );
-					counter++;
-				}
-			   }
-			   if( counter==0 ) {
-				j4 = function.getOutArgumentList().iterator();
-				while( j4.hasNext() ) {
-					ADGVariable arg = (ADGVariable) j4.next();
-					String funcArgument = arg.getName();
-					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
-						counter++;
-					}
-				}
-			   }
-			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
-			   }
-			}
+        				}
+    			   }
+                }
 
-                        //-----------------------------------------------
-                        // add the static control statements (int e0;...)
-                        //-----------------------------------------------
-			Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
-			Iterator j = staticCtrl.iterator();
-			while( j.hasNext() ) {
-				ControlExpression cExp = (ControlExpression) j.next();
-				String expName = cExp.getName();
 
-				if ( !tmp.containsKey(expName) ) {
-				      tmp.put(expName, "");
+                //-----------------------------------------------
+                // add the static control statements (int e0;...)
+                //-----------------------------------------------
+		        Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
+		        Iterator j = staticCtrl.iterator();
+    			while( j.hasNext() ) {
+			        ControlExpression cExp = (ControlExpression) j.next();
+			        String expName = cExp.getName();
 
-				      String decString = _prefix + "int " + expName + ";"; 
-				      miscVariables.add( decString );
-				}
-			}
-		}
+			        if ( !tmp.containsKey(expName) ) {
+			              tmp.put(expName, "");
+			              String decString = _prefix + "int " + expName + ";"; 
+			              miscVariables.add( decString );
+			        }
+		        }
+	        }
         } // while 'ports'
 
-	//------------------------------
-	// Scan the invar list of a node
-	//------------------------------
-	j1 = node.getInVarList().iterator();
+        //------------------------------
+        // Scan the invar list of a node
+        //------------------------------
+        j1 = node.getInVarList().iterator();
         while( j1.hasNext() ) {
-		ADGInVar invar = (ADGInVar) j1.next();
-
-		ADGVariable bindVar = invar.getBindVariable();
-
+	        ADGInVar invar = (ADGInVar) j1.next();
+	        ADGVariable bindVar = invar.getBindVariable();
  			dimension = "";
-                	varName = bindVar.getName();
+        	varName = bindVar.getName();
 			t = bindVar.getDataType();
 
-                        //-----------------------------------------------------------
+            //-----------------------------------------------------------
 			// Find the dimensions in case the local variable is an array
-                        //-----------------------------------------------------------
+            //-----------------------------------------------------------
 			Iterator j3 = bindVar.getIndexList().iterator();
 			while( j3.hasNext() ) {
-			   Expression exp = (Expression) j3.next();
-                           //----------------------------------------  
-			   // Do some expression computations here!!!
-                           //----------------------------------------
-			   String arrSize = "";
-			   dimension += "[" + arrSize + "]";
-			}	
+                Expression exp = (Expression) j3.next();
+                //----------------------------------------  
+                // Do some expression computations here!!!
+                //----------------------------------------
+		        String arrSize = "";
+		        dimension += "[" + arrSize + "]";
+            }	
 			varName += dimension;
-		
-                        //-------------------------------------------------------------------
-			// Avoid duplicating declarations
-			// (unique names for the hash function are needed in case of merging)
-                        //-------------------------------------------------------------------
-			if ( !tmp.containsKey(varName+node.getName()) ) {
-			   tmp.put(varName+node.getName(), "");
-			   String decString = _prefix + t + " " + varName;
-			   
-                           //------------------------------------------------------------------------------------ 
-			   // sort the variables into input arguments, output arguments, and additional variables
-                           //------------------------------------------------------------------------------------
-			   int counter = 0;
-			   Iterator j4 = function.getInArgumentList().iterator();
-			   while( j4.hasNext() ) {
-				ADGVariable arg = (ADGVariable) j4.next();
-				String funcArgument = arg.getName();
-				if( funcArgument.equals( varName ) ) {
-					inArguments.add( decString + ";" );
-					counter++;
-				}
-			   }
+            //-------------------------------------------------------------------
+		    // Avoid duplicating declarations
+		    // (unique names for the hash function are needed in case of merging)
+            //-------------------------------------------------------------------
+  			if ( !tmp.containsKey(varName+node.getName()) ) {
+  			   tmp.put(varName+node.getName(), "");
+		       String decString = _prefix + t + " " + varName;
+		       
+               //------------------------------------------------------------------------------------ 
+		       // sort the variables into input arguments, output arguments, and additional variables
+               //------------------------------------------------------------------------------------
+		       int counter = 0;
+		       Iterator j4 = function.getInArgumentList().iterator();
+		       while( j4.hasNext() ) {
+                    ADGVariable arg = (ADGVariable) j4.next();
+                    String funcArgument = arg.getName();
+				    if( funcArgument.equals( varName ) ) {
+       				    inArguments.add( decString + suffix + ";" );
+		    		    counter++;
+		    	    }
+		       }
 			   if( counter==0 ) {
-				j4 = function.getOutArgumentList().iterator();
-				while( j4.hasNext() ) {
-					ADGVariable arg = (ADGVariable) j4.next();
-					String funcArgument = arg.getName();
-					if( funcArgument.equals( varName ) ) {
-						outArguments.add( decString + ";" );
-						counter++;
-					}
-				}
-			   }
-			   if( counter==0 ) { 
-				miscVariables.add( decString + ";" );
-			   }
-			}
+        			j4 = function.getOutArgumentList().iterator();
+        			while( j4.hasNext() ) {
+        				ADGVariable arg = (ADGVariable) j4.next();
+        				String funcArgument = arg.getName();
+        				if( funcArgument.equals( varName ) ) {
+        					outArguments.add( decString + suffix + ";" );
+        					counter++;
+        				}
+        			}
+    		   }
+    		   if( counter==0 ) { 
+				// Avoid putting suffix to the control "dc.." variables
+        			if( varName.contains("dc") ) {
+        			    if ( !tmp.containsKey(varName) ) {
+            				tmp.put(varName, "");
+        			        miscVariables.add( decString + ";" );
+                        }
+        			} else {
+        			    miscVariables.add( decString + suffix + ";" );
+        			}
+    		   }
+    		}
         } // while 'invars'
 
-	//-----------------------------------------------------------------
-	// Add an input function argument which is not bound to any port. 
-        // This happens in case loop iterators are propagated to functions.
-	//-----------------------------------------------------------------
-	Iterator f = function.getInArgumentList().iterator();
-        while( f.hasNext() ) {
+        //-----------------------------------------------------------------
+        // Add an input function argument which is not bound to any port. 
+            // This happens in case loop iterators are propagated to functions,
+            // or in case of initialization, e.g.., in_0ND_0 = 0
+        //-----------------------------------------------------------------
+        Iterator f = function.getInArgumentList().iterator();
+            while( f.hasNext() ) {
                 ADGVariable arg = (ADGVariable) f.next();
 
-		dimension = "";
-               	varName = arg.getName();
-		String dataType = arg.getDataType();
+	    dimension = "";
+       	varName = arg.getName();
+	    String dataType = arg.getDataType();
 
-		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
-    		    inArguments.add( funcArgDeclaration );
-                }
-	}
+	    if ( !tmp.containsKey(varName+node.getName()) ) {
 
-	//----------------------------------------------------------------
-	// Add an output function argument which is not bound to any port.
-        // This happens in case of a sink node. 
-	//----------------------------------------------------------------
-	f = function.getOutArgumentList().iterator();
-        while( f.hasNext() ) {
+	        String funcArgDeclaration;
+	        // Avoid putting suffix to the loop iterators and parameters
+	        if( varName.contains("in") ) {
+        		funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
+	        } else {
+        		funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+	        }
+    //                     String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
+	        inArguments.add( funcArgDeclaration );
+            }
+        }
+
+        //----------------------------------------------------------------
+        // Add an output function argument which is not bound to any port.
+            // This happens in case of a sink node. 
+        //----------------------------------------------------------------
+        f = function.getOutArgumentList().iterator();
+            while( f.hasNext() ) {
                 ADGVariable arg = (ADGVariable) f.next();
 
-		dimension = "";
+	    dimension = "";
                	varName = arg.getName();
-		String dataType = arg.getDataType();
+	    String dataType = arg.getDataType();
 
-		if ( !tmp.containsKey(varName+node.getName()) ) {
-                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + ";";
-    		    outArguments.add( funcArgDeclaration );
+	    if ( !tmp.containsKey(varName+node.getName()) ) {
+                    String funcArgDeclaration = _prefix + dataType + " " + arg.getName() + suffix + ";";
+		        outArguments.add( funcArgDeclaration );
                 }
-	}
+        }
+
+        //-----------------------------------------------------------
+        // Find the self-channels
+        // print local variables, to be used instead of FIFO channels
+        //-----------------------------------------------------------
+        Iterator g = x.getInGates().iterator();
+        while( g.hasNext() ) {
+            CDGate gate = (CDGate) g.next();
+            CDChannel ch = (CDChannel) gate.getChannel();
+            String selfEdgeDeclaration="";
+
+            if( ch.isSelfChannel() ) {
+                if( ch.getMaxSize()==1 ) {
+                     selfEdgeDeclaration = _prefix + "t" + ch.getName() + " var_" + ch.getName() + ";";
+                } else {
+                     selfEdgeDeclaration = _prefix + "t" + ch.getName() + " var_" + ch.getName() + "[" + ch.getMaxSize() + "];";
+                     // we need to declare also the read and write counters used as array indexes.
+                     selfEdgeDeclaration += "\n" + _prefix + "int rd_" + ch.getName() + "=-1;";
+                     selfEdgeDeclaration += "\n" + _prefix + "int wr_" + ch.getName() + "=-1;";
+                }
+    		selfEdgeVariables.add( selfEdgeDeclaration );                 
+            } 
+        }
 
         //-------------------------------
         // print the sorted declarations
@@ -375,7 +440,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 		}
 		_printStream.println("");
 	}
-
+	
 	_prefixDec();
     }
 
@@ -521,7 +586,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
      * @param  x Description of the Parameter
      */
     private void _writeIncludes( CDProcess x ) {
-	_printStream.println("#include \"xmk.h\"");
+	_printStream.println("#include <xmk.h>");
 	_printStream.println("#include <os_config.h>");
 	_printStream.println("#include <sys/process.h>");
 	_printStream.println("#include <pthread.h>");
@@ -639,6 +704,8 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
                board = "XUPV5-LX110T";
             } else if( resource instanceof ML505 ) {
                board = "ML505";
+            } else if( resource instanceof ML605 ) {
+               board = "ML605";
             }
         }  
 
@@ -667,4 +734,6 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
     private Map _relation2 = null;
 
     private String _targetBoard = "";
+    
+    private boolean _bMultiApp = false;    
 }
