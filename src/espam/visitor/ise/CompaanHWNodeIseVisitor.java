@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.14 2012/04/18 13:31:57 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.15 2012/04/27 09:38:52 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -343,14 +343,14 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 		while(i.hasNext()){
 			in_arg = (ADGVariable) i.next();
 			//currently default vector length 32.
-			hdlPS.println("      " + in_arg.getName() + "  : in  std_logic_vector(31 downto 0);");
+			hdlPS.println("      " + _getIpcoreArgName(in_arg) + "  : in  std_logic_vector(31 downto 0);");
 		}
 		hdlPS.println("");
 
 		i = _outArgList.iterator();
 		while(i.hasNext()){
 			out_arg = (ADGVariable) i.next();
-			hdlPS.println("      " + out_arg.getName() + " : out std_logic_vector(31 downto 0);");
+			hdlPS.println("      " + _getIpcoreArgName(out_arg) + " : out std_logic_vector(31 downto 0);");
 		}
 		
 		hdlPS.println("");
