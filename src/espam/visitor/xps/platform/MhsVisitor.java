@@ -86,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.13 2012/04/19 17:52:58 mohamed Exp $
+ * @version  $Id: MhsVisitor.java,v 1.14 2012/04/27 11:36:47 mohamed Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -2907,9 +2907,9 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PARAMETER C_DATA_BITS = 8\n" +
 	      " PARAMETER C_USE_PARITY = 0\n" +
 	      " PARAMETER C_ODD_PARITY = 1\n" +
-	      " PARAMETER C_BASEADDR = 0x50000000\n" +
-	      " PARAMETER C_HIGHADDR = 0x5000FFFF\n" +
-	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+	      " PARAMETER C_BASEADDR = 0xB1000000\n" +
+	      " PARAMETER C_HIGHADDR = 0xB100FFFF\n" +
+	      " BUS_INTERFACE S_AXI = DDR_axi\n" +
 	      " PORT TX = fpga_0_RS232_Uart_1_TX_pin\n" +
 	      " PORT RX = fpga_0_RS232_Uart_1_RX_pin\n" +
 	      " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
@@ -2989,8 +2989,8 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PARAMETER C_DQ_WIDTH = 64\n" +
 	      " PARAMETER C_MMCM_EXT_LOC = MMCM_ADV_X0Y8\n" +
 // 	      strAXI + "\n" +
-	      " PARAMETER C_S_AXI_BASEADDR = 0x90000000\n" +
-	      " PARAMETER C_S_AXI_HIGHADDR = 0x9fffffff\n" +
+	      " PARAMETER C_S_AXI_BASEADDR = 0xA0000000\n" +
+	      " PARAMETER C_S_AXI_HIGHADDR = 0xAfffffff\n" +
 	      " BUS_INTERFACE S_AXI = DDR_axi\n" +
 	      " PORT ddr_ck_p = ddr_memory_clk\n" +
 	      " PORT ddr_ck_n = ddr_memory_clk_n\n" +
@@ -3028,8 +3028,8 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PARAMETER INSTANCE = host_if_mb_ddr_axi2axi_connector\n" +
 	      " PARAMETER HW_VER = 1.00.a\n" +
 	      " PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
-	      " PARAMETER C_S_AXI_RNG00_BASEADDR = 0x90000000\n" +
-	      " PARAMETER C_S_AXI_RNG00_HIGHADDR = 0x9FFFFFFF\n" +
+	      " PARAMETER C_S_AXI_RNG00_BASEADDR = 0xA0000000\n" +
+	      " PARAMETER C_S_AXI_RNG00_HIGHADDR = 0xBFFFFFFF\n" +
 	      " PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
 	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
 	      " BUS_INTERFACE M_AXI = DDR_axi\n" +
@@ -3046,8 +3046,8 @@ public class MhsVisitor extends PlatformVisitor {
 			" PARAMETER INSTANCE = " + pName + "_ddr_axi2axi_connector\n" +
 			" PARAMETER HW_VER = 1.00.a\n" +
 			" PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
-			" PARAMETER C_S_AXI_RNG00_BASEADDR = 0x90000000\n" +
-			" PARAMETER C_S_AXI_RNG00_HIGHADDR = 0x9FFFFFFF\n" +
+			" PARAMETER C_S_AXI_RNG00_BASEADDR = 0xA0000000\n" +
+			" PARAMETER C_S_AXI_RNG00_HIGHADDR = 0xBFFFFFFF\n" +
 			" PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
 			" BUS_INTERFACE S_AXI = " + pName + "_axi4lite_DP\n" +
 			" BUS_INTERFACE M_AXI = DDR_axi\n" +
