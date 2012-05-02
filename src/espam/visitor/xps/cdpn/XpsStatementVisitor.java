@@ -68,7 +68,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.13 2012/04/25 11:39:25 nikolov Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.14 2012/05/02 14:29:15 mohamed Exp $
  *      
  */
 
@@ -210,8 +210,11 @@ public class XpsStatementVisitor extends StatementVisitor {
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI ) {
     	    if (_scheduleType == 2) {
-    	        funName = "writeSWF2(";
-    	    } else {
+    	        funName = "writeSWF_Dyn2(";
+    	    } else if (_scheduleType == 1) {
+    	        funName = "writeSWF_Dyn1(";
+    	    } 
+    	    else {
         	    funName = "writeSWF(";
     	    }
               
@@ -443,7 +446,9 @@ public class XpsStatementVisitor extends StatementVisitor {
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI) {
                 if (_scheduleType == 2) {
-                    funName = "readSWF2(";
+                    funName = "readSWF_Dyn2(";
+                } else if( _scheduleType == 1) {
+                    funName = "readSWF_Dyn1(";
                 } else {
                     funName = "readSWF(";
                 }

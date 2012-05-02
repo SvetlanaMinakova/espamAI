@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.11 2012/04/25 11:39:25 nikolov Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.12 2012/05/02 14:29:15 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -522,8 +522,43 @@ public class XpsProcessVisitor extends CDPNVisitor {
 	"\n	volatile int *fifo = (volatile int *)f;" +
 	"\n	fifo[5] = fifo[4];" +
 	"\n}" +
+    "\n\n// Read and Write primitives for Xilkernel \n" +
+    "#define readSWF_Dyn1(pos, value, len, fifo_size) \\\n" +
+    "do {\\\n" +
+    "   volatile int *fifo = (int *)pos;\\\n" +
+    "   int r_cnt = fifo[1];\\\n" +
+    "   int w_cnt = fifo[0];\\\n" +
+    "   while ( w_cnt == r_cnt ) { yield(); w_cnt = fifo[0]; }\\\n" +
+    "   for (int i = 0; i < len; i++) {\\\n" +
+    "	   ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
+    "   }\\\n" +
+    "   r_cnt += len;\\\n" +
+    "   if( (r_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+    "	   r_cnt &= 0x80000000;\\\n" +
+    "	   r_cnt ^= 0x80000000;\\\n" +
+    "   }\\\n" +
+    "   fifo[1] = r_cnt;\\\n" +
+    "} while(0)\n\n" +
+    
+    "#define writeSWF_Dyn1(pos, value, len, fifo_size) \\\n" +
+    "do {\\\n" +
+    "   volatile int *fifo = (int *)pos;\\\n" +
+    "   int w_cnt = fifo[0];\\\n" +
+    "   int r_cnt = fifo[1];\\\n" +
+    "   while ( r_cnt == (w_cnt ^ 0x80000000) ) { yield(); r_cnt = fifo[1]; }\\\n" +
+    "   for (int i = 0; i < len; i++) {\\\n" +
+    "	   fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
+    "   }\\\n" +
+    "   w_cnt += len;\\\n" +
+    "   if( (w_cnt & 0x7FFFFFFF) == fifo_size ) {\\\n" +
+    "	   w_cnt &= 0x80000000;\\\n" +
+    "       w_cnt ^= 0x80000000;\\\n" +
+    "   }\\\n" +
+    "   fifo[0] = w_cnt;\\\n" +
+    "} while(0)\n\n" +
+    
     "\n\n// Read and Write primitives for FreeRTOS \n" +
-    "#define readSWF2(pos, value, len, fifo_size, S, T) \\\n" +
+    "#define readSWF_Dyn2(pos, value, len, fifo_size, S, T) \\\n" +
     "do {\\\n" +
     "   volatile int *fifo = (int *)pos;\\\n" +
     "   int r_cnt = fifo[1];\\\n" +
@@ -540,7 +575,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
     "   fifo[1] = r_cnt;\\\n" +
     "} while(0)\n\n" +
 
-    "#define writeSWF2(pos, value, len, fifo_size, S, T) \\\n" +
+    "#define writeSWF_Dyn2(pos, value, len, fifo_size, S, T) \\\n" +
     "do {\\\n" +
     "   volatile int *fifo = (int *)pos;\\\n" +
     "   int w_cnt = fifo[0];\\\n" +

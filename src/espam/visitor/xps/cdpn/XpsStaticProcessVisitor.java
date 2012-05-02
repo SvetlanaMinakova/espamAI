@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.11 2012/04/26 08:39:42 nikolov Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.12 2012/05/02 14:29:15 mohamed Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -235,7 +235,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
  			if ( !tmp.containsKey(varName+node.getName()) ) {
  			   tmp.put(varName+node.getName(), "");
 
-			   String decString = _prefix + t + " " + varName;
+			   String decString = _prefix + "static " + t + " " + varName;
 			   
                            //------------------------------------------------------------------------------------  
 			   // sort the variables into input arguments, output arguments, and additional variables
@@ -358,7 +358,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
   			if ( !tmp.containsKey(varName+node.getName()) ) {
   			   tmp.put(varName+node.getName(), "");
 
-			   String decString = _prefix + t + " " + varName;
+			   String decString = _prefix + "static " + t + " " + varName;
 			   
                            //------------------------------------------------------------------------------------ 
 			   // sort the variables into input arguments, output arguments, and additional variables

@@ -70,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.7 2012/04/27 15:07:25 mohamed Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.8 2012/05/02 14:29:15 mohamed Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -200,7 +200,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
                 //-------------------------------------------------------------------
 		        if ( !tmp.containsKey(varName+node.getName()) ) {
      			   tmp.put(varName+node.getName(), "");
-    			   String decString = _prefix + t + " " + varName;
+    			   String decString = _prefix + "static " + t + " " + varName;
                    //------------------------------------------------------------------------------------  
 		           // sort the variables into input arguments, output arguments, and additional variables
                    //------------------------------------------------------------------------------------
@@ -305,7 +305,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
             //-------------------------------------------------------------------
   			if ( !tmp.containsKey(varName+node.getName()) ) {
   			   tmp.put(varName+node.getName(), "");
-		       String decString = _prefix + t + " " + varName;
+		       String decString = _prefix + "static " + t + " " + varName;
 		       
                //------------------------------------------------------------------------------------ 
 		       // sort the variables into input arguments, output arguments, and additional variables
