@@ -41,7 +41,7 @@ import espam.main.UserInterface;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.2 2012/05/02 20:02:12 mohamed Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.3 2012/05/02 20:03:20 mohamed Exp $
  */
 
 public class XpsSDKVisitor {
@@ -93,7 +93,7 @@ public class XpsSDKVisitor {
         }	
     }
 
-    private static void copySystemMss (String folder, String processorName){
+    private void copySystemMss (String folder, String processorName){
 	    /*
 	     * Copy the System.mms into the correct folder.
 	     * BE CAREFULL: This method needs the PATHSAVE directory to take the "mss"s files!
