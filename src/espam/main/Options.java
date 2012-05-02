@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.9 2012/01/16 16:00:21 nikolov Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.10 2012/05/02 19:47:39 mohamed Exp $ $Name:  $
  */
 
 public class Options {
@@ -88,6 +88,8 @@ public class Options {
                            _ui.setSchedulerFileName(args[++i]);
                         } else if( arg.equals("--libxps") || arg.equals("-l") ) {
                         	_ui.setXpsLibPath(args[++i]);
+                        } else if( arg.equals("--libsdk")) {
+                        	_ui.setSDKLibPath(args[++i]);
                         } else if( arg.equals("--libhdpc") ) {
                         	_ui.setHdpcLibPath(args[++i]);
                         } else if( arg.equals("--libsystemc") ) {
@@ -137,6 +139,8 @@ public class Options {
                _ui.setYmlFlag();
             } else if( arg.equals("--xps") || arg.equals("-X") ) {
                 _ui.setXpsFlag();
+            } else if( arg.equals("--sdk")) {
+                _ui.setSDKFlag();
             } else if( arg.equals("--ise") || arg.equals("-I") ) {
                 _ui.setIseFlag();
             } else if( arg.equals("--ipxact") ) {
@@ -206,13 +210,14 @@ public class Options {
                          { "--yapi      ", "-Y" },
                          { "--yml       ", "-M" },
                          { "--xps       ", "-X" },
+                         { "--sdk       ", "none" },
                          { "--ise       ", "-I" },
                          { "--ipxact    ", "none" },
                          { "--systemc   ", "none" },
                          { "--systemc-timed", "none" },
-			 { "--hdpc      ", "none" },
-			 { "--dot-ppn   ", "none" },
-			 { "--debug     ", "none" },
+			             { "--hdpc      ", "none" },
+			             { "--dot-ppn   ", "none" },
+			             { "--debug     ", "none" },
                          { "--debugger  ", "none" }};
 
 	/**
@@ -225,6 +230,7 @@ public class Options {
 			{ "--mapping  ", "-m", "<FileName>" },
 			{ "--scheduler", "-s", "<FileName>" },
 			{ "--libxps", "-l", "<LibraryPath>" },
+			{ "--libsdk", "none", "<LibraryPath>" },
 			{ "--libhdpc", "none", "<LibraryPath>" },
 			{ "--libsystemc", "none", "<LibraryPath>" } };
 

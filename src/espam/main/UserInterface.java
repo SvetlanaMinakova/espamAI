@@ -200,6 +200,25 @@ public class UserInterface {
     }
 
     /**
+     * Get the path of the sdk template files
+     *
+     * @return The sdkLibPath value
+     */
+    public final String getSDKLibPath() {
+        return _sdkLibPath;
+    }
+
+    /**
+     * Set the path of the sdk library file.
+     *
+     * @param sdkLibPath
+     *            The new sdkLibPath value
+     */
+    public final void setSDKLibPath(String sdkLibPath) {
+        _sdkLibPath = sdkLibPath;
+    }
+
+    /**
      * Get the path of the hdpc library file.
      *
      * @return The hdpcLibPath value
@@ -339,6 +358,23 @@ public class UserInterface {
     public final void setXpsFlag() {
         _xps = true;
     }
+    
+    /**
+     * Get the status of the SDK flag
+     *
+     * @return The sdkFlag value
+     */
+    public final boolean getSDKFlag() {
+        return _sdk;
+    }
+
+    /**
+     * Sets the SDK flag
+     */
+
+    public final void setSDKFlag() {
+        _sdk = true;
+    }    
 
     /**
      * Get the status of the ISE flag
@@ -634,6 +670,9 @@ public class UserInterface {
 
     // the path of the xps library file
     private String _xpsLibPath = "";
+    
+    // the path of the sdk template files
+    private String _sdkLibPath = "";
 
     // the path of the hdpc library file
     private String _hdpcLibPath = "";
@@ -652,6 +691,9 @@ public class UserInterface {
 
     // the xps flag
     private boolean _xps = false;
+    
+    // the sdk flag
+    private boolean _sdk = false;
 
     // the ise flag
     private boolean _ise = false;

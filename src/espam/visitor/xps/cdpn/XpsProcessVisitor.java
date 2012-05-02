@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.14 2012/05/02 16:31:20 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.15 2012/05/02 19:47:39 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -71,11 +71,25 @@ public class XpsProcessVisitor extends CDPNVisitor {
     public XpsProcessVisitor( Mapping mapping ) {
     	_mapping = mapping;
     	_ui = UserInterface.getInstance();
+
+    	String sdk_project_name;
+    	
         if (_ui.getOutputFileName() == "") {
-	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
+    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
+    	    sdk_project_name = _ui.getFileName();
         } else {
-	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
+    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
+    	    sdk_project_name = _ui.getOutputFileName();
         }
+        
+        _sdk_enabled = _ui.getSDKFlag();
+        
+        if (_sdk_enabled) {
+            _sdk = new XpsSDKVisitor(_codeDir, sdk_project_name);
+            
+        }
+            
+        
 	    File dir = new File(_codeDir);
 	    dir.mkdirs();
     }
@@ -133,6 +147,9 @@ public class XpsProcessVisitor extends CDPNVisitor {
                 _printStreamFunc.println("");
                 _printStreamFunc.println("#endif");
                 _printStreamFunc.close();
+                
+                if (_sdk_enabled)
+                    _sdk.visitProcessor(process.getName());
                 
                 
                 _printStreamPlatform = _openFile(process.getName(), "platform", "h");
@@ -302,6 +319,10 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private PrintStream _printStreamFunc = null;
     
     private PrintStream _printStreamPlatform = null;
+    
+    private boolean _sdk_enabled = false;
+    
+    private XpsSDKVisitor _sdk = null;
 
     private Map _relation2 = new HashMap();
 
