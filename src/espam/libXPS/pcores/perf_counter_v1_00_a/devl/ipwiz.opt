@@ -1,0 +1,12 @@
+-batch 
+-create perf_counter 
+-ver 1.00.a 
+-dir /home/mohamed/workspace/codeplex/clock_muxing/ 
+-lang vhdl 
+-bus fsl ms 
+-xps 
+-totalin 1
+-totalout 1
+-argin 1
+-argout 1
+-desc "Performance counter for MicroBlaze"

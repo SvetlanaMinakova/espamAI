@@ -1,0 +1,7 @@
+##############################################################################
+## Filename:          /home/mohamed/workspace/codeplex/clock_muxing/pcores/perf_counter_v1_00_a/data/perf_counter_v2_1_0.pao
+## Description:       Peripheral Analysis Order
+## Date:              Mon Jul 19 18:21:03 2010 (by Create and Import Peripheral Wizard)
+##############################################################################
+
+lib perf_counter_v1_00_a perf_counter vhdl
