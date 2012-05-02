@@ -1,5 +1,5 @@
 #
-# $Id: makefile,v 1.3 2012/04/19 17:52:58 mohamed Exp $
+# $Id: makefile,v 1.4 2012/05/02 16:25:45 tzhai Exp $
 #
 
 ROOT  = ../../../..
@@ -8,7 +8,8 @@ SUBPACKAGES =
 
 # Java files in this directory
 JSRCS = \
-	XpsNetworkVisitor.java \
+	Options.java          \
+    XpsNetworkVisitor.java \
 	XpsProcessVisitor.java \
 	XpsStaticProcessVisitor.java \
 	XpsDynamicXilkernelProcessVisitor.java \
