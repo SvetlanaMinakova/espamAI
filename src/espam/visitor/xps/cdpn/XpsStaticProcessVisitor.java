@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.13 2012/05/02 15:16:08 mohamed Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.14 2012/05/02 16:26:55 tzhai Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -497,22 +497,24 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 		}
 		_printStream.println("");
 	}
-//-------------------------------------------------------------------------------------
-// We can implement the self-channels, in case of static schedule, as local variables.
-// This feature is currently not used because, in oerder to be complete, 
-// we need to remove also the HW implementation of these self-channels.
-//-------------------------------------------------------------------------------------
-/*
-	if( selfEdgeVariables.size()>0 ) {
-		_printStream.println(_prefix + "// Local variables for self-edges");
-		n = selfEdgeVariables.iterator();
-		while( n.hasNext() ) {
-			String decl = (String) n.next();
-			_printStream.println( decl );
+	
+	//-------------------------------------------------------------------------------------
+	// We can implement the self-channels, in case of static schedule, as local variables.
+	// This feature is currently not used because, in oerder to be complete, 
+	// we need to remove also the HW implementation of these self-channels.
+	//-------------------------------------------------------------------------------------
+	if (Options.USE_LOCAL_VAR_FIFO == true){
+		if( selfEdgeVariables.size()>0 ) {
+			_printStream.println(_prefix + "// Local variables for self-edges");
+			n = selfEdgeVariables.iterator();
+			while( n.hasNext() ) {
+				String decl = (String) n.next();
+				_printStream.println( decl );
+			}
+			_printStream.println("");
 		}
-		_printStream.println("");
 	}
-*/
+	
 	_prefixDec();
     }
 
@@ -763,7 +765,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
      */
     private UserInterface _ui = null;
 
-    private Mapping _mapping = null;
+    private Mapping _mapping = null;  
 
     private PrintStream _printStream = null;
 

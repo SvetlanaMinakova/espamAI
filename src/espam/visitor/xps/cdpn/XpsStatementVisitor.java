@@ -68,7 +68,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.14 2012/05/02 14:29:15 mohamed Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.15 2012/05/02 16:26:55 tzhai Exp $
  *      
  */
 
@@ -182,9 +182,9 @@ public class XpsStatementVisitor extends StatementVisitor {
      *
      * @param  x Description of the Parameter
      */
-    public void visitStatement(OpdStatement x) {
-	
-    	CDGate cdGate = (CDGate)_process.getGate(x.getGateName());
+	public void visitStatement(OpdStatement x) {
+		
+		CDGate cdGate = (CDGate)_process.getGate(x.getGateName());
     	CDChannel cdChannel = (CDChannel)cdGate.getChannel();
 
         Iterator i;
@@ -193,7 +193,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
 
-	String suffix = "";
+		String suffix = "";
         if( _bMultiApp  && !(x.getArgumentName().contains("dc")) ) {
 	    suffix = "_" + x.getNodeName();
         }
@@ -201,13 +201,12 @@ public class XpsStatementVisitor extends StatementVisitor {
     	MFifo mFifo = _mapping.getMFifo(cdChannel);
     	Fifo fifo = mFifo.getFifo();
     	
-    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {    	    	
-	    if( _isDynamicSchedule ) {
-		funName = "writeDynMF(";
-	    } else {
-		funName = "writeMF(";
-  	    }
-
+    	if( fifo.getLevelUpResource() instanceof MultiFifo ) {
+			if( _isDynamicSchedule ) {
+				funName = "writeDynMF(";
+			} else {
+				funName = "writeMF(";
+			}
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI ) {
     	    if (_scheduleType == 2) {
     	        funName = "writeSWF_Dyn2(";
@@ -217,9 +216,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     	    else {
         	    funName = "writeSWF(";
     	    }
-              
-
-        } else { // fifo is not MultiFifo
+        } else { // fifo is neither MultiFifo, nor AXI
     		
             i = fifo.getPortList().iterator();
             Port wPort = null;
@@ -241,52 +238,48 @@ public class XpsStatementVisitor extends StatementVisitor {
         	
             if( wPort.getResource() instanceof Processor ) {
             	funName = "writeFSL("; 
-            }
-            else {
-		if( _isDynamicSchedule ) {
-		    funName = "writeDyn(";
-	        } else { // static scheduling
-		    funName = "write(";	
-		}
-	    }
-        }
-           
-//-------------------------------------------------------------------------------------
-// We can implement the self-channels, in case of static schedule, as local variables.
-// This feature is currently not used because, in order to be complete, 
-// we need to remove also the HW implementation of these self-channels.
-//-------------------------------------------------------------------------------------
-/*  
-       if( cdChannel.isSelfChannel() && !_isDynamicSchedule ) {
-           if( cdChannel.getMaxSize()==1 ) {
-               _printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() + suffix );      
-           } else {
-               String wr =  "wr_" + cdChannel.getName();
-               _printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() + suffix );      
-           }
-           i = x.getIndexList().iterator();
-   	   while( i.hasNext() ) {
- 	      Expression expression = (Expression) i.next();
-	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-           }
-           _printStream.println( "; // self-channel with size " + cdChannel.getMaxSize() );
-
-        } else {
-*/
-           _printStream.print(_prefix + funName + eName + ", " + "&" + x.getArgumentName() + suffix );
-           i = x.getIndexList().iterator();
-   	   while( i.hasNext() ) {
-	      Expression expression = (Expression) i.next();
-	      _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-           }
-           _printStream.print(", " + s);
-	   if( fifo.getLevelUpResource() instanceof CM_AXI ) {
-              _printStream.print(", size" + t);
-              if (_scheduleType == 2) // FreeRTOS
-                _printStream.print(", xLastWakeTime, xFrequency");
-           } 
-           _printStream.println(");");
-
+            } else {
+				if( _isDynamicSchedule ) {
+					funName = "writeDyn(";
+				} else { // static scheduling
+					funName = "write(";	
+				}
+			}
+        } // end MultiFifo, CM_AXI, ...
+		
+		if (_scheduleType == 0 && Options.USE_LOCAL_VAR_FIFO == true){
+			//-------------------------------------------------------------------------------------
+			// We can implement the self-channels, in case of static schedule, as local variables.
+			// This feature is currently not used because, in order to be complete, 
+			// we need to remove also the HW implementation of these self-channels.
+			//-------------------------------------------------------------------------------------
+			if( cdChannel.getMaxSize()==1 ) {
+				_printStream.print( _prefix + "var_" + cdChannel.getName() + " = " + x.getArgumentName() + suffix );      
+			} else {
+				String wr =  "wr_" + cdChannel.getName();
+				_printStream.print( _prefix + "var_" + cdChannel.getName() + "[" + wr + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + wr + "):(" + wr + "=0)] = " + x.getArgumentName() + suffix );      
+			}
+			i = x.getIndexList().iterator();
+			while( i.hasNext() ) {
+				Expression expression = (Expression) i.next();
+				_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+			}
+			_printStream.println( "; // self-channel with size " + cdChannel.getMaxSize() );
+		} else { // FIFO is just implemented as it is (without using local variable)
+			_printStream.print(_prefix + funName + eName + ", " + "&" + x.getArgumentName() + suffix );
+			i = x.getIndexList().iterator();
+			while( i.hasNext() ) {
+				Expression expression = (Expression) i.next();
+				_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+			}
+			_printStream.print(", " + s);
+			if( fifo.getLevelUpResource() instanceof CM_AXI ) {
+				_printStream.print(", size" + t);
+				if (_scheduleType == 2) // FreeRTOS
+				_printStream.print(", xLastWakeTime, xFrequency");
+			} 
+			_printStream.println(");");
+		}		
     }
 
     /**
@@ -428,7 +421,7 @@ public class XpsStatementVisitor extends StatementVisitor {
     	String s = "(sizeof(t" + t + ")+(sizeof(t" + t + ")%4)+3)/4";
     	String eName = x.getNodeName() + "_" + x.getGateName() + "_" + t;
 
-	String suffix = "";
+		String suffix = "";
         if( _bMultiApp ) {
 	    suffix = "_" + x.getNodeName();
         }
@@ -445,13 +438,13 @@ public class XpsStatementVisitor extends StatementVisitor {
 	     }
 
     	} else if( fifo.getLevelUpResource() instanceof CM_AXI) {
-                if (_scheduleType == 2) {
-                    funName = "readSWF_Dyn2(";
-                } else if( _scheduleType == 1) {
-                    funName = "readSWF_Dyn1(";
-                } else {
-                    funName = "readSWF(";
-                }
+			if (_scheduleType == 2) {
+				funName = "readSWF_Dyn2(";
+			} else if( _scheduleType == 1) {
+				funName = "readSWF_Dyn1(";
+			} else {
+				funName = "readSWF(";
+			}
         } else { // not MultiFifo
 
             i = fifo.getPortList().iterator();
@@ -474,95 +467,93 @@ public class XpsStatementVisitor extends StatementVisitor {
 
             if( rPort.getResource() instanceof Processor ) {
             	funName = "readFSL(";
-            }
-            else if( rPort.getResource() instanceof Crossbar ) {
-// Why is this here???-----------------------------------------------------------------------------------
-		if( _isDynamicSchedule ) { 
-			funName = "readDynMF(";
-		} else {
-			funName = "readMF(";
-		}
-//-------------------------------------------------------------------------------------------------------
+            } else if( rPort.getResource() instanceof Crossbar ) {
+				// Why is this here???-----------------------------------------------------------------------------------
+				if( _isDynamicSchedule ) { 
+					funName = "readDynMF(";
+				} else {
+					funName = "readMF(";
+				}
+				//-------------------------------------------------------------------------------------------------------
             } else { // p2p FIFO port
-//		if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
-		if( _isDynamicSchedule ) { 
-			funName = "readDyn(";
-		} else { // static scheduling
-			funName = "read(";
-		}
+				// if( _mapping.getMProcessor( _process ).getScheduleType() == 1 ) { // dynamic scheduling
+				if( _scheduleType != 0 ) { 
+					funName = "readDyn(";
+				} else { // static scheduling
+					funName = "read(";
+				}
             }
-	}
+		}
+		
+		
+		if (_scheduleType == 0 && Options.USE_LOCAL_VAR_FIFO == true){
+			//-------------------------------------------------------------------------------------
+			// We can implement the self-channels, in case of static schedule, as local variables.
+			// This feature is currently not used because, in order to be complete, 
+			// we need to remove also the HW implementation of these self-channels.
+			//-------------------------------------------------------------------------------------
+			if( cdChannel.getMaxSize()==1 ) {
 
-//-------------------------------------------------------------------------------------
-// We can implement the self-channels, in case of static schedule, as local variables.
-// This feature is currently not used because, in order to be complete, 
-// we need to remove also the HW implementation of these self-channels.
-//-------------------------------------------------------------------------------------
-/*
-         if( cdChannel.isSelfChannel() && !_isDynamicSchedule ) {
-           if( cdChannel.getMaxSize()==1 ) {
-
-              ADGVariable bindVar = x.getArgumentList().get(0);
-              _printStream.print(_prefix + bindVar.getName() + suffix ); 
+				ADGVariable bindVar = x.getArgumentList().get(0);
+				_printStream.print(_prefix + bindVar.getName() + suffix ); 
      
-              Iterator j = bindVar.getIndexList().iterator();
-	      while( j.hasNext() ) {
-		  Expression expression = (Expression) j.next();
-		  _printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-	      }
-              _printStream.println(" = var_" + cdChannel.getName() + "; // self-channel with size 1" );
+				Iterator j = bindVar.getIndexList().iterator();
+				while( j.hasNext() ) {
+					Expression expression = (Expression) j.next();
+					_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+				}
+				_printStream.println(" = var_" + cdChannel.getName() + "; // self-channel with size 1" );
 
-           } else {
-              String rd =  "rd_" + cdChannel.getName();
-              // for every binding variable, we need a read from a fifo
-	      i = x.getArgumentList().iterator();
-	      while( i.hasNext() ) {
+           } else { // channel size not equal to 1
+				String rd =  "rd_" + cdChannel.getName();
+				// for every binding variable, we need a read from a fifo
+				i = x.getArgumentList().iterator();
+				while( i.hasNext() ) {
 
-		  ADGVariable bindVar = (ADGVariable) i.next();
-                  _printStream.print(_prefix + bindVar.getName() + suffix ); 
+					ADGVariable bindVar = (ADGVariable) i.next();
+					_printStream.print(_prefix + bindVar.getName() + suffix ); 
 
-		  Iterator j = bindVar.getIndexList().iterator();
-		  while( j.hasNext() ) {
-			Expression expression = (Expression) j.next();
-			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-		  }
-                  _printStream.println(" = var_" + cdChannel.getName() + "[" + rd + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + rd + "):(" + rd + "=0)]; // self-channel with size " + cdChannel.getMaxSize() );
-	      }
-          }
-        } else {       
-*/
-
-            ADGInPort port = (ADGInPort)x.getPort();  
+					Iterator j = bindVar.getIndexList().iterator();
+					while( j.hasNext() ) {
+						Expression expression = (Expression) j.next();
+						_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+					}
+					_printStream.println(" = var_" + cdChannel.getName() + "[" + rd + "!=" + (cdChannel.getMaxSize()-1) + "?(++" + rd + "):(" + rd + "=0)]; // self-channel with size " + cdChannel.getMaxSize() );
+				}
+			}
+		} else { // FIFO is just implemented as it is (without using local variable)
+			ADGInPort port = (ADGInPort)x.getPort();  
 
             // for every binding variable, we need a read from a fifo
-	    i = x.getArgumentList().iterator();
-	    while( i.hasNext() ) {
-		ADGVariable bindVar = (ADGVariable) i.next();
+			i = x.getArgumentList().iterator();
+			while( i.hasNext() ) {
+				ADGVariable bindVar = (ADGVariable) i.next();
 
                 if( bindVar.getName().contains("dc") || _isEnableVar(port, bindVar.getName()) ) {
                   suffix = "";
                 }
 
-	       _printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() + suffix );
+				_printStream.print(_prefix + funName + eName + ", " + "&" + bindVar.getName() + suffix );
 
-		Iterator j = bindVar.getIndexList().iterator();
-		while( j.hasNext() ) {
-			Expression expression = (Expression) j.next();
-			_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
-		}
+				Iterator j = bindVar.getIndexList().iterator();
+				while( j.hasNext() ) {
+					Expression expression = (Expression) j.next();
+					_printStream.print("[" + expression.accept(_cExpVisitor) + "]");
+				}
 
-// 		_printStream.println(", " + s + ");");
- 	        _printStream.print(", " + s);
+				// _printStream.println(", " + s + ");");
+				_printStream.print(", " + s);
                 if( fifo.getLevelUpResource() instanceof CM_AXI ) {
-// 		       _printStream.println(", " + s + ", size" + t + ");");
-		       _printStream.print(", size" + t);
-                 if (_scheduleType == 2) // FreeRTOS
-                    _printStream.print(", xLastWakeTime, xFrequency");
-                }
-               _printStream.println(");");
-//--------------------------------------- 
-	    }
-//        }       
+				// _printStream.println(", " + s + ", size" + t + ");");
+					_printStream.print(", size" + t);
+					if (_scheduleType == 2) // FreeRTOS
+						_printStream.print(", xLastWakeTime, xFrequency");
+				}
+				_printStream.println(");");
+				//--------------------------------------- 
+			}
+		}
+		
 
         _prefixInc();
         _visitChildren(x);
@@ -609,10 +600,10 @@ public class XpsStatementVisitor extends StatementVisitor {
     
     private CDProcess _process = null;
     
-    private int _scheduleType; // Save the schedule type
+    private int _scheduleType; // Save the schedule type specified in the mapping file
     
-    private boolean _isDynamicSchedule;
-    
+    private boolean _isDynamicSchedule; // Obsolete: now _scheduleType should be used to distinguish static, dynamic Xil-kernel, dynamic FreeRTOS
+        
     private boolean _printDelay = false; // This is a hack to print vTaskDelayUntil when FreeRTOS is used
 
     private UserInterface _ui = null;
