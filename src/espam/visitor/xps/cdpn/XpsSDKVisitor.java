@@ -30,34 +30,7 @@ import java.io.PrintWriter;
 import java.util.Vector;
 import java.util.regex.*;
 
-import espam.datamodel.graph.adg.ADGVariable;
-import espam.datamodel.graph.adg.ADGInVar;
-import espam.datamodel.graph.adg.ADGFunction;
-import espam.datamodel.graph.adg.ADGNode;
-import espam.datamodel.graph.adg.ADGParameter;
-import espam.datamodel.graph.adg.ADGPort;
-import espam.datamodel.graph.adg.ADGEdge;
-
-import espam.datamodel.pn.cdpn.CDChannel;
-import espam.datamodel.pn.cdpn.CDProcess;
-import espam.datamodel.pn.cdpn.CDGate;
-
-import espam.datamodel.mapping.Mapping;
-import espam.datamodel.mapping.MProcessor;
-import espam.datamodel.mapping.MProcess;
-
-import espam.datamodel.platform.Platform;
-import espam.datamodel.platform.Resource;
-import espam.datamodel.platform.processors.Processor;
-import espam.datamodel.platform.host_interfaces.ADMXRCII;
-import espam.datamodel.platform.host_interfaces.ADMXPL;
-import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
-import espam.datamodel.platform.host_interfaces.ML505;
-import espam.datamodel.platform.host_interfaces.ML605;
-
 import espam.main.UserInterface;
-
-import espam.visitor.CDPNVisitor;
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,7 +41,7 @@ import espam.visitor.CDPNVisitor;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.1 2012/05/02 19:47:39 mohamed Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.2 2012/05/02 20:02:12 mohamed Exp $
  */
 
 public class XpsSDKVisitor {
