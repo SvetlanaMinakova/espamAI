@@ -43,7 +43,7 @@ import espam.visitor.CDPNVisitor;
  *  This class .................
  *
  * @author  Wei Zhong, Hristo Nikolov, Todor Stefanov
- * @version  $Id: XpsNetworkVisitor.java,v 1.2 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: XpsNetworkVisitor.java,v 1.3 2012/05/02 15:16:08 mohamed Exp $
  */
 
 public class XpsNetworkVisitor extends CDPNVisitor {
@@ -70,9 +70,9 @@ public class XpsNetworkVisitor extends CDPNVisitor {
     	    UserInterface _ui = UserInterface.getInstance();
     	    String _codeDir;
     	    if (_ui.getOutputFileName() == "") {
-    		_codeDir = _ui.getBasePath() + "/" + _ui.getFileName() + "/";
+    		_codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar;
     	    } else {
-    		_codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName() + "/";
+    		_codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar;
     	    }
             File f = new File(_ui.getXpsLibPath());
             File t = new File(_codeDir);

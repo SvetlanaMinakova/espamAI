@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.12 2012/05/02 14:29:15 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.13 2012/05/02 15:16:08 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -72,9 +72,9 @@ public class XpsProcessVisitor extends CDPNVisitor {
     	_mapping = mapping;
     	_ui = UserInterface.getInstance();
         if (_ui.getOutputFileName() == "") {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getFileName() + "/code";
+	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
         } else {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName() + "/code";
+	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
         }
 	    File dir = new File(_codeDir);
 	    dir.mkdirs();
@@ -94,12 +94,12 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
             _printStreamFunc.println("#include <mb_interface.h>");
-            _printStreamFunc.println("#include \"./func_code/" + x.getName() + "_func.h\"");
+            _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
             _printStreamFunc.println("");
 
             _writeChannelTypes();
             _printStreamFunc.println("");
-	    _writeParameter(x);
+	        _writeParameter(x);
 
             Iterator i = x.getProcessList().iterator();
             while( i.hasNext() ) {
@@ -164,7 +164,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
         System.out.println(" -- OPEN FILE: " + fileName);
 
-        fullFileName = _codeDir + "/" + fileName + "." + extension;
+        fullFileName = _codeDir + File.separatorChar + fileName + "." + extension;
         if (fileName.equals("")) {
             printStream = new PrintStream(System.out);
         } else {
@@ -195,8 +195,8 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
         System.out.println(" -- OPEN FILE: " + fileName);
 
-	    fullDirName = _codeDir + "/" + subDirName;
-	    fullFileName = fullDirName + "/" + fileName + "." + extension;
+	    fullDirName = _codeDir + File.separatorChar + subDirName;
+	    fullFileName = fullDirName + File.separatorChar + fileName + "." + extension;
         if (fileName.equals("")) {
             printStream = new PrintStream(System.out);
         } else {

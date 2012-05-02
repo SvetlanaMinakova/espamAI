@@ -55,7 +55,7 @@ import espam.visitor.MappingVisitor;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsMemoryMapVisitor.java,v 1.5 2012/04/27 11:36:47 mohamed Exp $
+ * @version  $Id: XpsMemoryMapVisitor.java,v 1.6 2012/05/02 15:16:08 mohamed Exp $
  */
 
 public class XpsMemoryMapVisitor extends MappingVisitor {
@@ -71,9 +71,9 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
 
 	    	_ui = UserInterface.getInstance();
 	        if (_ui.getOutputFileName() == "") {
-		    _codeDir = _ui.getBasePath() + "/" + _ui.getFileName() + "/code";
+		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
 	        } else {
-		    _codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName() + "/code";
+		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
 	        }
 	        File dir = new File(_codeDir);
 	        if( !dir.exists() ) {

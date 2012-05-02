@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.12 2012/05/02 14:29:15 mohamed Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.13 2012/05/02 15:16:08 mohamed Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -521,11 +521,11 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
      * @param  x Description of the Parameter
      */
     private void _writeIncludes( CDProcess x ) {
-    	_printStream.println("#include \"xparameters.h\"");
-        _printStream.println("#include \"stdio.h\"");
-        _printStream.println("#include \"stdlib.h\"");
-        _printStream.println("#include \"aux_func.h\"");
-        _printStream.println("#include \"MemoryMap.h\"");
+    	_printStream.println("#include <xparameters.h>");
+        _printStream.println("#include <stdio.h>");
+        _printStream.println("#include <stdlib.h>");
+	    _printStream.println("#include \".." + File.separatorChar + "MemoryMap.h\"");
+    	_printStream.println("#include \".." + File.separatorChar + "aux_func.h\"");
         _printStream.println("");
  
         Iterator n = x.getGateList().iterator();
