@@ -71,7 +71,7 @@ import espam.datamodel.LinearizationType;
  *  Visitor to generate code scheduled using FreeRTOS 
  *
  * @author  Mohamed Bamakhrama
- * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.5 2012/05/02 15:16:08 mohamed Exp $
+ * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.6 2012/05/02 16:31:20 mohamed Exp $
  */
 
 public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
@@ -102,30 +102,30 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
     public void visitComponent( CDProcess x ) {
         _writeIncludes( x );
 
-	int pos = 0;
-	Iterator i = x.getSchedule().iterator();
-	while ( i.hasNext() ) {
-		String threadName = "thread" + (pos + 1);
-		_printStream.println(_prefix + "void " + threadName + "(void *arg) {");
-		_prefixInc();
+    	int pos = 0;
+    	Iterator i = x.getSchedule().iterator();
+    	while ( i.hasNext() ) {
+		    String threadName = "thread" + (pos + 1);
+		    _printStream.println(_prefix + "void " + threadName + "(void *arg) {");
+		    _prefixInc();
 		
 
-        _writeLocalVariables(x, pos++);
-		_writeThread( x, (ParserNode)i.next() );
+            _writeLocalVariables(x, pos++);
+		    _writeThread( x, (ParserNode)i.next() );
 		
-		_prefixDec();
-        _printStream.println(_prefix + "} // for (;;) ");
+		    _prefixDec();
+            _printStream.println(_prefix + "} // for (;;) ");
 
-		_prefixDec();
-		_printStream.println(_prefix + "} // " + threadName);
+		    _prefixDec();
+		    _printStream.println(_prefix + "} // " + threadName);
 
-		_prefixDec();
-		_printStream.println("");
-	}
+		    _prefixDec();
+		    _printStream.println("");
+	    }
 	
-	_writeThreadMain( x );
-	_writeMain();
-       
+	    _writeThreadMain( x );
+	    _writeMain();
+           
         _writeFunctionsInAuxFile( x );
     }
 
@@ -601,9 +601,9 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
     private void _writeIncludes( CDProcess x ) {
 	_printStream.println("#include <FreeRTOS.h>");
 	_printStream.println("#include <task.h>");
-	_printStream.println("#include \".." + File.separatorChar + "platform.h\"");
-	_printStream.println("#include \".." + File.separatorChar + "MemoryMap.h\"");
-	_printStream.println("#include \".." + File.separatorChar + "aux_func.h\"");
+	_printStream.println("#include \"platform.h\"");
+	_printStream.println("#include \"MemoryMap.h\"");
+	_printStream.println("#include \"aux_func.h\"");
 	_printStream.println("");
 	
 	Iterator n = x.getGateList().iterator();

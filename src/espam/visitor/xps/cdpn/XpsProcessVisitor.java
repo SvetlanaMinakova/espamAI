@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.13 2012/05/02 15:16:08 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.14 2012/05/02 16:31:20 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -88,57 +88,57 @@ public class XpsProcessVisitor extends CDPNVisitor {
         try {
 
             _pn = x;
-            _printStreamFunc = _openFile("aux_func", "h");
-            _printStreamFunc.println("#ifndef __AUX_FUNC_H__");
-            _printStreamFunc.println("#define __AUX_FUNC_H__");
-            _printStreamFunc.println("");
-            _printStreamFunc.println("#include <math.h>");
-            _printStreamFunc.println("#include <mb_interface.h>");
-            _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
-            _printStreamFunc.println("");
-
-            _writeChannelTypes();
-            _printStreamFunc.println("");
-	        _writeParameter(x);
 
             Iterator i = x.getProcessList().iterator();
             while( i.hasNext() ) {
 
                 CDProcess process = (CDProcess) i.next();
 
-                MProcessor mProcessor = _mapping.getMProcessor(process);
+                MProcessor mProcessor = _mapping.getMProcessor(process);            
+
+                _printStreamFunc = _openFile(process.getName(), "aux_func", "h");
+                _printStreamFunc.println("#ifndef __AUX_FUNC_H__");
+                _printStreamFunc.println("#define __AUX_FUNC_H__");
+                _printStreamFunc.println("");
+                _printStreamFunc.println("#include <math.h>");
+                _printStreamFunc.println("#include <mb_interface.h>");
+                _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
+                _printStreamFunc.println("");
+
+                _writeChannelTypes();
+                _printStreamFunc.println("");
+	            _writeParameter(x);
+
 
                 Resource resource = mProcessor.getResource();
                 if (resource instanceof Processor) {
 
                     _printStream = _openFile(process.getName(), process.getName(), "cpp");
 
-		    if ( mProcessor.getScheduleType() == 1 ) {
-			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-			process.accept(pt);
-		    }
-		    else if ( mProcessor.getScheduleType() == 2 ) {
-			XpsDynamicFreeRTOSProcessVisitor pt = new XpsDynamicFreeRTOSProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-			process.accept(pt);
-		    }
-		    else {
-			XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-			process.accept(pt);
-		    }
+		            if ( mProcessor.getScheduleType() == 1 ) {
+            			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+            			process.accept(pt);
+		            }
+		            else if ( mProcessor.getScheduleType() == 2 ) {
+			            XpsDynamicFreeRTOSProcessVisitor pt = new XpsDynamicFreeRTOSProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+			            process.accept(pt);
+		            }
+		            else {
+			            XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+			            process.accept(pt);
+		            }
                 }
+                _printStreamFunc.println("");
+                _writeOperations();
+                _printStreamFunc.println("");
+                _printStreamFunc.println("#endif");
+                _printStreamFunc.close();
+                
+                
+                _printStreamPlatform = _openFile(process.getName(), "platform", "h");
+                _printPlatformFile();
+                _printStreamPlatform.close();                
             }
-
-            _printStreamFunc.println("");
-            _writeOperations();
-            _printStreamFunc.println("");
-            _printStreamFunc.println("#endif");
-            _printStreamFunc.close();
-            
-            
-            _printStreamPlatform = _openFile("platform", "h");
-            _printPlatformFile();
-            _printStreamPlatform.close();
-            
 
         }
         catch( Exception e ) {
