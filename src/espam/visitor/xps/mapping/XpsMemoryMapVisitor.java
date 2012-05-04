@@ -55,7 +55,7 @@ import espam.visitor.MappingVisitor;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov
- * @version  $Id: XpsMemoryMapVisitor.java,v 1.6 2012/05/02 15:16:08 mohamed Exp $
+ * @version  $Id: XpsMemoryMapVisitor.java,v 1.7 2012/05/04 14:33:55 mohamed Exp $
  */
 
 public class XpsMemoryMapVisitor extends MappingVisitor {
@@ -70,10 +70,17 @@ public class XpsMemoryMapVisitor extends MappingVisitor {
         throws FileNotFoundException,EspamException { 
 
 	    	_ui = UserInterface.getInstance();
+	    	String code_dir;
+
+	    	if (_ui.getSDKFlag())
+	    	    code_dir = "SDK";
+	    	else
+	    	    code_dir = "code";
+	    	
 	        if (_ui.getOutputFileName() == "") {
-		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
+		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + code_dir;
 	        } else {
-		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
+		    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + code_dir;
 	        }
 	        File dir = new File(_codeDir);
 	        if( !dir.exists() ) {

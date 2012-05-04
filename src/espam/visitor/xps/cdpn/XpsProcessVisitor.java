@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.15 2012/05/02 19:47:39 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.16 2012/05/04 14:33:55 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -72,17 +72,24 @@ public class XpsProcessVisitor extends CDPNVisitor {
     	_mapping = mapping;
     	_ui = UserInterface.getInstance();
 
+        _sdk_enabled = _ui.getSDKFlag();
+
     	String sdk_project_name;
+    	String code_dir;
+    	
+    	if (_sdk_enabled)
+    	    code_dir = "SDK";
+    	else
+    	    code_dir = "code";
     	
         if (_ui.getOutputFileName() == "") {
-    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + "SDK";
+    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + code_dir;
     	    sdk_project_name = _ui.getFileName();
         } else {
-    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + "SDK";
+    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + code_dir;
     	    sdk_project_name = _ui.getOutputFileName();
         }
-        
-        _sdk_enabled = _ui.getSDKFlag();
+       
         
         if (_sdk_enabled) {
             _sdk = new XpsSDKVisitor(_codeDir, sdk_project_name);
@@ -103,26 +110,25 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
             _pn = x;
 
+            _printStreamFunc = _openFile("aux_func", "h");
+            _printStreamFunc.println("#ifndef __AUX_FUNC_H__");
+            _printStreamFunc.println("#define __AUX_FUNC_H__");
+            _printStreamFunc.println("");
+            _printStreamFunc.println("#include <math.h>");
+            _printStreamFunc.println("#include <mb_interface.h>");
+            _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
+            _printStreamFunc.println("");
+
+            _writeChannelTypes();
+            _printStreamFunc.println("");
+            _writeParameter(x);
+
             Iterator i = x.getProcessList().iterator();
             while( i.hasNext() ) {
 
                 CDProcess process = (CDProcess) i.next();
 
-                MProcessor mProcessor = _mapping.getMProcessor(process);            
-
-                _printStreamFunc = _openFile(process.getName(), "aux_func", "h");
-                _printStreamFunc.println("#ifndef __AUX_FUNC_H__");
-                _printStreamFunc.println("#define __AUX_FUNC_H__");
-                _printStreamFunc.println("");
-                _printStreamFunc.println("#include <math.h>");
-                _printStreamFunc.println("#include <mb_interface.h>");
-                _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
-                _printStreamFunc.println("");
-
-                _writeChannelTypes();
-                _printStreamFunc.println("");
-	            _writeParameter(x);
-
+                MProcessor mProcessor = _mapping.getMProcessor(process);  
 
                 Resource resource = mProcessor.getResource();
                 if (resource instanceof Processor) {
@@ -141,21 +147,24 @@ public class XpsProcessVisitor extends CDPNVisitor {
 			            XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
 			            process.accept(pt);
 		            }
+		            
+                    if (_sdk_enabled)
+                        _sdk.visitProcessor(process.getName());
+
                 }
-                _printStreamFunc.println("");
-                _writeOperations();
-                _printStreamFunc.println("");
-                _printStreamFunc.println("#endif");
-                _printStreamFunc.close();
-                
-                if (_sdk_enabled)
-                    _sdk.visitProcessor(process.getName());
-                
-                
-                _printStreamPlatform = _openFile(process.getName(), "platform", "h");
-                _printPlatformFile();
-                _printStreamPlatform.close();                
             }
+            
+            _printStreamFunc.println("");
+            _writeOperations();
+            _printStreamFunc.println("");
+            _printStreamFunc.println("#endif");
+            _printStreamFunc.close();
+            
+            
+            _printStreamPlatform = _openFile("platform", "h");
+            _printPlatformFile();
+            _printStreamPlatform.close();                
+
 
         }
         catch( Exception e ) {
