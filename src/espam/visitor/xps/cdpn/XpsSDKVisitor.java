@@ -28,10 +28,25 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Vector;
+import java.util.Iterator;
 import java.util.regex.*;
 
 import espam.main.UserInterface;
 
+import espam.datamodel.platform.Platform;
+import espam.datamodel.platform.Resource;
+import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.platform.communication.AXICrossbar;
+import espam.datamodel.platform.controllers.AXI_CM_CTRL;
+import espam.datamodel.platform.controllers.MemoryController;
+import espam.datamodel.platform.controllers.CM_CTRL;
+import espam.datamodel.platform.memories.CM_AXI;
+import espam.datamodel.platform.memories.Memory;
+
+import espam.datamodel.mapping.Mapping;
+import espam.datamodel.mapping.MProcessor;
+
+import espam.datamodel.pn.cdpn.CDProcess;
 
 //////////////////////////////////////////////////////////////////////////
 //// XpsSDKVisitor
@@ -41,7 +56,7 @@ import espam.main.UserInterface;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.3 2012/05/02 20:03:20 mohamed Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.4 2012/05/06 22:39:52 mohamed Exp $
  */
 
 public class XpsSDKVisitor {
@@ -49,22 +64,71 @@ public class XpsSDKVisitor {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
-    public XpsSDKVisitor(String sdk_dir, String project_name) {
+    public XpsSDKVisitor(Mapping mapping, String sdk_dir, String project_name) {
 		
 	    UserInterface _ui = UserInterface.getInstance();
 
+        _mapping = mapping;
         _libsdk_dir = _ui.getSDKLibPath();
         _sdk_dir = sdk_dir;
         _project_name = project_name;
+        
+        _axiPlatform = false;
+        
+        Iterator i = _mapping.getPlatform().getResourceList().iterator();
+	    while( i.hasNext() ) {
+    		Resource resource = (Resource) i.next();
+        	if( resource instanceof AXICrossbar ) {
+                     _axiPlatform = true;
+            }
+        }
+        
+        handleHostIF();	
+    }
+    
+    public void handleHostIF() {
+
+        String processorName = "host_if_mb";
+        String processName = "host_if";
+        
+        String bsp_dirname = "BSP_" + processName;
+        String xcp_dirname = processName;
+        
+        String bsp_folder = _sdk_dir + File.separatorChar + bsp_dirname; 
+        String xcp_folder = _sdk_dir + File.separatorChar + xcp_dirname; 
+        
+        boolean dir_if = new File(bsp_folder).mkdir();
+
+        dir_if = new File(xcp_folder).mkdir();
+        
+        //copySystemMss(bsp_folder, process);
+        //makeFile(bsp_folder);
+        Libgen(processorName, bsp_folder);
+        makeProject(bsp_folder, bsp_dirname);
+        //makeCProject(bsp_folder);
+        //makeSdkProject(bsp_folder, processorName);
+			
+        try {
+		        makeXCPCProject(xcp_folder, processorName, processName, 3);
+		        makeXCPProject(xcp_folder, processName);
+        } catch (Exception e) {
+		        System.out.println ("Error making XCP Project/CProject");
+		        e.printStackTrace();
+        }    
     }
 
-    public void visitProcessor(String processorName) {
+    public void visitProcessor(CDProcess process) {
 	    String bsp_dirname, xcp_dirname;
 	    String bsp_folder, xcp_folder;
 	    boolean dir_if;
 	    
-        bsp_dirname = "empty_cpp_bsp_" + processorName;
-        xcp_dirname = processorName;
+	    String processName = process.getName();
+	    MProcessor mProcessor = _mapping.getMProcessor(process); 
+	    String processorName = mProcessor.getName();
+	    int schedulerType = mProcessor.getScheduleType();
+	    
+        bsp_dirname = "BSP_" + processName;
+        xcp_dirname = processName;
         
         bsp_folder = _sdk_dir + File.separatorChar + bsp_dirname; 
         xcp_folder = _sdk_dir + File.separatorChar + xcp_dirname; 
@@ -74,9 +138,11 @@ public class XpsSDKVisitor {
             System.out.println ("ERROR creating " + bsp_dirname + " folder");
 
         dir_if = new File(xcp_folder).mkdir();
+        
+        
 	
         // Generate BSP files
-        copySystemMss(bsp_folder, processorName);
+        copySystemMss(bsp_folder, process);
         makeFile(bsp_folder);
         Libgen(processorName, bsp_folder);
         makeProject(bsp_folder, bsp_dirname);
@@ -85,29 +151,152 @@ public class XpsSDKVisitor {
 			
         // Generate XCP files
         try {
-		        makeXCPCProject(xcp_folder, processorName);
-		        makeXCPProject(xcp_folder, processorName);
+		        makeXCPCProject(xcp_folder, processorName, processName, schedulerType);
+		        makeXCPProject(xcp_folder, processName);
         } catch (Exception e) {
 		        System.out.println ("Error making XCP Project/CProject");
 		        e.printStackTrace();
         }	
     }
 
-    private void copySystemMss (String folder, String processorName){
-	    /*
-	     * Copy the System.mms into the correct folder.
-	     * BE CAREFULL: This method needs the PATHSAVE directory to take the "mss"s files!
-	     */
-	     
-	     // Commented out by Mohamed
-	     // Teddy and Andrea are still figuring out this one
-	     
-	    /*
-	        String systemFileName;
-	
-	        systemFileName = PATHSAVE + "system.mss";
-	        XpsSDKVisitor.copyfile(systemFileName, folder + File.separatorChar + "system.mss");
-	    */
+    private void copySystemMss (String folder, CDProcess process){
+	    
+	    Platform platform = _mapping.getPlatform();
+        String systemFileName = folder + File.separatorChar + "system.mss";
+        
+        try {
+            FileWriter systemFile = new FileWriter(systemFileName);
+            PrintWriter out = new PrintWriter(systemFile);
+
+	        MProcessor mProcessor = _mapping.getMProcessor(process); 
+	        int schedulerType = mProcessor.getScheduleType();
+
+            
+            out.println("\n PARAMETER VERSION = 2.2.0\n");
+
+            if (_axiPlatform) { // AXI
+                // Print the OS type
+                if (schedulerType == 2) { // FreeRTOS
+                    out.println("BEGIN OS\n" + 
+                                " PARAMETER OS_NAME = freertos\n" + 
+                                " PARAMETER OS_VER = 2.00.a\n" + 
+                                " PARAMETER PROC_INSTANCE = " + mProcessor.getName() + "\n" + 
+                                " PARAMETER STDIN = " + "host_if_mb_RS232_Uart" + "\n" + 
+                                " PARAMETER STDOUT = " + "host_if_mb_RS232_Uart" + "\n" + 
+                                " PARAMETER SYSTMR_INTERVAL = 1000\n" + // 1000 Hz
+                                "END\n");
+                } else if (schedulerType == 1) { // Xilkernel
+                    out.println("BEGIN OS\n" +
+                                " PARAMETER OS_NAME = xilkernel\n" +
+                                " PARAMETER OS_VER = 5.00.a\n" +
+                                " PARAMETER PROC_INSTANCE = " + mProcessor.getName() + "\n" +
+                                " PARAMETER STDIN = host_if_mb_RS232_Uart\n" +
+                                " PARAMETER STDOUT = host_if_mb_RS232_Uart\n" +
+                                " PARAMETER SYSTMR_SPEC = true\n" +
+                                " PARAMETER SYSTMR_DEV = " + mProcessor.getName() + "_timer\n" +
+                                " PARAMETER SYSINTC_SPEC = " + mProcessor.getName() + "_intc\n" +
+                                " PARAMETER ENHANCED_FEATURES = true\n" +
+                                " PARAMETER CONFIG_YIELD = true\n" +
+                                "END\n");
+                
+                } else { // Standalone
+                    out.println("BEGIN OS\n" +
+                                " PARAMETER OS_NAME = standalone\n" +
+                                " PARAMETER OS_VER = 3.01.a\n" +
+                                " PARAMETER PROC_INSTANCE = " + mProcessor.getName() + "\n" +
+                                " PARAMETER STDIN = host_if_mb_RS232_Uart\n" +
+                                " PARAMETER STDOUT = host_if_mb_RS232_Uart\n" +
+                                "END\n");
+                }
+                
+                
+                out.println("BEGIN PROCESSOR\n" +
+                            " PARAMETER DRIVER_NAME = cpu\n" +
+                            " PARAMETER DRIVER_VER = 1.13.a\n" +
+                            " PARAMETER HW_INSTANCE = " + mProcessor.getName() + "\n" +
+                            "END\n");
+                
+                // Iterate over all the resources
+                Vector<Resource> resources = (Vector<Resource>)platform.getResourceList();
+                Iterator i = resources.iterator();
+                while (i.hasNext()) {
+                    Resource r = (Resource) i.next();
+                    
+                    if (r instanceof AXI_CM_CTRL) {
+                        out.println("BEGIN DRIVER\n" +
+                        " PARAMETER DRIVER_NAME = bram\n" +
+                        " PARAMETER DRIVER_VER = 3.00.a\n" +
+                        " PARAMETER HW_INSTANCE = " + r.getName() + "\n" +
+                        "END\n");
+                    }
+                    
+                    // The following is a "hack" to determine if the controllers belong to the current processor
+                    if ( r instanceof MemoryController && r.getName().endsWith(mProcessor.getName()) ) {
+                        out.println("BEGIN DRIVER\n" +
+                                    " PARAMETER DRIVER_NAME = bram\n" +
+                                    " PARAMETER DRIVER_VER = 3.00.a\n" +
+                                    " PARAMETER HW_INSTANCE = " + r.getName() + "\n" +
+                                    "END\n");
+                    }
+                    
+                    if (r instanceof CM_CTRL && r.getName().endsWith(mProcessor.getName())) {
+                        out.println("BEGIN DRIVER\n" +
+                                    " PARAMETER DRIVER_NAME = bram\n" +
+                                    " PARAMETER DRIVER_VER = 3.00.a\n" +
+                                    " PARAMETER HW_INSTANCE = " + r.getName() + "\n" +
+                                    "END\n");
+                    }
+                    
+                }
+                
+                // print the stuff not in Platform
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = v6_ddrx\n" +
+                            " PARAMETER DRIVER_VER = 2.00.a\n" +
+                            " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
+                            "END\n");
+                            
+                            
+                // TODO: Find a way to print fin_ctrl
+                // For the time being, skip it here and do it in SDK
+                /*
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = generic\n" +
+                            " PARAMETER DRIVER_VER = 1.00.a\n" +
+                            " PARAMETER HW_INSTANCE = fin_ctrl_P1\n" +
+                            "END\n");
+                */
+                
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = intc\n" +
+                            " PARAMETER DRIVER_VER = 2.02.a\n" +
+                            " PARAMETER HW_INSTANCE = " + mProcessor.getName() + "_intc\n" +
+                            "END\n\n" +
+                            "BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = tmrctr\n" +
+                            " PARAMETER DRIVER_VER = 2.03.a\n" +
+                            " PARAMETER HW_INSTANCE = " + mProcessor.getName() + "_timer\n" +
+                            "END\n");
+                
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = uartlite\n" +
+                            " PARAMETER DRIVER_VER = 2.00.a\n" +
+                            " PARAMETER HW_INSTANCE = host_if_mb_RS232_Uart\n" +
+                            "END\n");
+
+            } 
+            else { // PLB. TODO
+            
+            }
+            
+            
+            out.close();
+            systemFile.close();
+            
+        } catch (IOException exp) {
+		    System.out.println("Error creating file system.mss");
+		    System.out.println("Error:" + exp);
+        }
     }
 
     private void Libgen(String processorName, String dirname){
@@ -118,7 +307,8 @@ public class XpsSDKVisitor {
 	
 		    out = new PrintWriter(libGenFile);
 		    out.println("PROCESSOR=" + processorName);
-		    out.println("REPOSITORIES=");
+		    // TODO: path is hard-coded for now
+		    out.println("REPOSITORIES=-lp /home/mohamed/tools/FreeRTOS/FreeRTOSV7.1.0/Demo/MicroBlaze_Spartan-6_EthernetLite/KernelAwareBSPRepository");
 		    out.println("HWSPEC=.." + File.separatorChar + _project_name + "_hw_platform" + File.separatorChar + "system.xml");
 		    out.close();
 	    } 
@@ -180,6 +370,7 @@ public class XpsSDKVisitor {
     }
 
 
+    // TODO: Comment by Mohamed: I don't like this function. ESPAM has Copier class. See if we can use that class
     private void copyfile(String srFile, String dtFile){
 	    try {
 		    File f1 = new File(srFile);
@@ -207,7 +398,7 @@ public class XpsSDKVisitor {
     }
 
 
-    public void makeXCPProject(String destFolder, String processorName) throws Exception{
+    public void makeXCPProject(String destFolder, String projectName) throws Exception{
 	
         File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Template_FProject");
 	    FileWriter file = new FileWriter (destFolder + File.separatorChar +".project");
@@ -221,12 +412,12 @@ public class XpsSDKVisitor {
             String replace;
             
             while ((st = reader.readLine()) != null) {
-            		replace = processorName;	
-            		
+            		replace = projectName;	
                     Pattern p = Pattern.compile("##PROCESSOR_NAME##");
                     Matcher m = p.matcher(st);
                     st = (m.replaceAll(replace));
-                    replace = "empty_cpp_bsp_" + processorName;
+                    
+                    replace = "BSP_" + projectName;
                     p = Pattern.compile("##CPP_BSP_FOLDER##");
                     m = p.matcher(st);
                     printer.println(m.replaceAll(replace));
@@ -235,8 +426,19 @@ public class XpsSDKVisitor {
         }
     }
 
-    public void makeXCPCProject(String destFolder, String processorName) throws Exception {
-        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Template_CProject");
+    public void makeXCPCProject(String destFolder, String processorName, String projectName, int type) throws Exception {
+        File f;
+        if (type == 0)  // Standalone
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Standalone_Template_CProject");
+        else if (type == 1) // Xilkernel
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Xilkernel_Template_CProject");
+        else if (type == 2) // FreeRTOS
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_FreeRTOS_Template_CProject");
+        else if (type == 3) // Host IF
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_HostIF_Template_CProject");
+        else
+            throw new Exception("Invalid CProject file type specified");
+            
 	    FileWriter file = new FileWriter (destFolder + File.separatorChar + ".cproject");
 	    PrintWriter printer = new PrintWriter(file);
         if (!f.exists() && f.length() < 0) {
@@ -253,8 +455,13 @@ public class XpsSDKVisitor {
                         Matcher m = p.matcher(st);
                         st=(m.replaceAll(replace));
 
-                        replace = "empty_cpp_bsp_" + processorName;
+                        replace = "BSP_" + projectName;
                         p = Pattern.compile("##CPP_BSP_FOLDER##");
+                        m = p.matcher(st);
+                        st=m.replaceAll(replace);
+
+                        replace = _project_name;
+                        p = Pattern.compile("##HW_PROJECT##");
                         m = p.matcher(st);
                         st=m.replaceAll(replace);
 
@@ -262,10 +469,11 @@ public class XpsSDKVisitor {
                         p = Pattern.compile("##FOLDER_PROJECT##");
                         m = p.matcher(st);
                         printer.println(m.replaceAll(replace));
+                                                
                 }
                 printer.close();
         }
-    }
+    } 
 
 
     ///////////////////////////////////////////////////////////////////
@@ -279,5 +487,11 @@ public class XpsSDKVisitor {
     
     // The path to libSDK which contains the BSPTemplate
     private String _libsdk_dir;
+ 
+    // The mapping   
+    private Mapping _mapping;
+    
+    // A flag to indicate whether the platform is AXI-based or not
+    private boolean _axiPlatform;
 
 }

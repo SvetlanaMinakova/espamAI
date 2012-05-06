@@ -71,7 +71,7 @@ import espam.datamodel.LinearizationType;
  *  Visitor to generate code scheduled using FreeRTOS 
  *
  * @author  Mohamed Bamakhrama
- * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.6 2012/05/02 16:31:20 mohamed Exp $
+ * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.7 2012/05/06 22:39:52 mohamed Exp $
  */
 
 public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
@@ -601,9 +601,13 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
     private void _writeIncludes( CDProcess x ) {
 	_printStream.println("#include <FreeRTOS.h>");
 	_printStream.println("#include <task.h>");
-	_printStream.println("#include \"platform.h\"");
-	_printStream.println("#include \"MemoryMap.h\"");
-	_printStream.println("#include \"aux_func.h\"");
+	String parent = "";
+	if (_ui.getSDKFlag()) {
+	    parent = ".." + File.separatorChar;
+    }
+	_printStream.println("#include \"" + parent + "platform.h\"");
+    _printStream.println("#include \"" + parent + "MemoryMap.h\"");
+	_printStream.println("#include \"" + parent + "aux_func.h\"");
 	_printStream.println("");
 	
 	Iterator n = x.getGateList().iterator();

@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.16 2012/05/04 14:33:55 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.17 2012/05/06 22:39:52 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -92,7 +92,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
        
         
         if (_sdk_enabled) {
-            _sdk = new XpsSDKVisitor(_codeDir, sdk_project_name);
+            _sdk = new XpsSDKVisitor(_mapping, _codeDir, sdk_project_name);
             
         }
             
@@ -149,7 +149,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
 		            }
 		            
                     if (_sdk_enabled)
-                        _sdk.visitProcessor(process.getName());
+                        _sdk.visitProcessor(process);
 
                 }
             }
@@ -160,10 +160,11 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#endif");
             _printStreamFunc.close();
             
-            
-            _printStreamPlatform = _openFile("platform", "h");
-            _printPlatformFile();
-            _printStreamPlatform.close();                
+            if (_sdk_enabled) { // platform.h is needed only when using FreeRTOS
+                _printStreamPlatform = _openFile("platform", "h");
+                _printPlatformFile();
+                _printStreamPlatform.close();
+            }
 
 
         }

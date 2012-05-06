@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.15 2012/05/02 16:31:20 mohamed Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.16 2012/05/06 22:39:52 mohamed Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -526,8 +526,12 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
     	_printStream.println("#include <xparameters.h>");
         _printStream.println("#include <stdio.h>");
         _printStream.println("#include <stdlib.h>");
-	    _printStream.println("#include \"MemoryMap.h\"");
-	    _printStream.println("#include \"aux_func.h\"");
+	    String parent = "";
+	    if (_ui.getSDKFlag()) {
+	        parent = ".." + File.separatorChar;
+        }
+        _printStream.println("#include \"" + parent + "MemoryMap.h\"");
+	    _printStream.println("#include \"" + parent + "aux_func.h\"");
         _printStream.println("");
  
         Iterator n = x.getGateList().iterator();

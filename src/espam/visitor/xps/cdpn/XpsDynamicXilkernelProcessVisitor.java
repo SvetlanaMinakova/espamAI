@@ -70,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.10 2012/05/02 16:31:20 mohamed Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.11 2012/05/06 22:39:52 mohamed Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -592,10 +592,15 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
 	_printStream.println("#include <xmk.h>");
 	_printStream.println("#include <sys/ksched.h>");
 	_printStream.println("#include <sys/init.h>");
+	_printStream.println("#include <sys/process.h>");
 	_printStream.println("#include <config/config_param.h>");
 	_printStream.println("#include <pthread.h>");
-	_printStream.println("#include \"MemoryMap.h\"");
-	_printStream.println("#include \"aux_func.h\"");
+	String parent = "";
+	if (_ui.getSDKFlag()) {
+	    parent = ".." + File.separatorChar;
+    }
+    _printStream.println("#include \"" + parent + "MemoryMap.h\"");
+	_printStream.println("#include \"" + parent + "aux_func.h\"");
 	_printStream.println("");
 	
 	Iterator n = x.getGateList().iterator();
