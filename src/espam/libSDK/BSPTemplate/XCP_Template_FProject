@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>##PROCESSOR_NAME##</name>
-	<comment>##CPP_BSP_FOLDER## - ##PROCESSOR_NAME##</comment>
+	<comment></comment>
 	<projects>
 		<project>##CPP_BSP_FOLDER##</project>
 	</projects>

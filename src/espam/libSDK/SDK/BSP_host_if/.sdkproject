@@ -1,0 +1,3 @@
+THIRPARTY=false
+PROCESSOR=host_if_mb
+MSS_FILE=system.mss
