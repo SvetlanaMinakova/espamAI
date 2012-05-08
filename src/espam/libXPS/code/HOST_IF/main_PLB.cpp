@@ -1,8 +1,9 @@
 
 // Located in: microblaze_0/include/xparameters.h
 
-#include "xparameters.h"
-#include "xuartns550_l.h"
+#include <xparameters.h>
+#include <xuartns550_l.h>
+#include <xbasic_types.h>
 
 /*==========================================================
 Simple protocol to move data between the FPGA board and
