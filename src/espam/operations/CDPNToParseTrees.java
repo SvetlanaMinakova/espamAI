@@ -95,6 +95,8 @@ public class CDPNToParseTrees {
 			Vector vectorOfNames = new Vector();
 			Iterator p = pn.getProcessList().iterator();
 			while( p.hasNext() ) {
+
+
 				_process = (CDProcess) p.next();
                                 _numberOfNodes =_process.getAdgNodeList().size();
 
@@ -172,6 +174,7 @@ public class CDPNToParseTrees {
 		root.setDescription(description);
 		ParserNode stitch = root;
 		_functionArgumentList = _getFunctionArguments( node );
+
 
 		try {
 		        if (_numberOfNodes > 1 && _scheduleType == 0 ) {
@@ -554,6 +557,7 @@ public class CDPNToParseTrees {
 		Vector tmpVarList = new Vector();
 	        HashMap  tmp = new HashMap();
 
+
 		Iterator i = node.getInPorts().iterator();
 		while( i.hasNext() ) {
 			ADGInPort adgInPort = (ADGInPort) i.next();
@@ -585,7 +589,6 @@ public class CDPNToParseTrees {
                              }
 			}
 		}
-
 		return tmpVarList;
         }
 
