@@ -71,7 +71,7 @@ import espam.datamodel.LinearizationType;
  *  Visitor to generate code scheduled using FreeRTOS 
  *
  * @author  Mohamed Bamakhrama
- * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.7 2012/05/06 22:39:52 mohamed Exp $
+ * @version  $Id: XpsDynamicFreeRTOSProcessVisitor.java,v 1.8 2012/05/14 13:55:48 nikolov Exp $
  */
 
 public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
@@ -519,12 +519,14 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 		       csl +=  t + " &" + arg.getName() + ", ";
                     }
 
+                    returnValue = "";
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
+                        returnValue = "";
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
                         } else if( arg.getPassType().equals("reference") ) {

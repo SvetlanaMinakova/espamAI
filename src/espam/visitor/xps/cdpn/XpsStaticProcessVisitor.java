@@ -73,7 +73,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsStaticProcessVisitor.java,v 1.16 2012/05/06 22:39:52 mohamed Exp $
+ * @version  $Id: XpsStaticProcessVisitor.java,v 1.17 2012/05/14 13:55:48 nikolov Exp $
  */
 
 public class XpsStaticProcessVisitor extends CDPNVisitor {
@@ -613,6 +613,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
 		       csl +=  t + " &" + arg.getName() + ", ";
                     }
 
+                    returnValue = "";
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();

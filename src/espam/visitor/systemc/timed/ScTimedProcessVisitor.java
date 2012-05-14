@@ -69,7 +69,7 @@ import espam.visitor.CDPNVisitor;
  * This class generates a timed SystemC model from a CDPN process.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Sven van Haastregt, Teddy Zhai
- * @version  $Id: ScTimedProcessVisitor.java,v 1.18 2012/04/26 08:39:42 nikolov Exp $
+ * @version  $Id: ScTimedProcessVisitor.java,v 1.19 2012/05/14 13:55:48 nikolov Exp $
  */
 
 public class ScTimedProcessVisitor extends CDPNVisitor {
@@ -1064,6 +1064,7 @@ public class ScTimedProcessVisitor extends CDPNVisitor {
 		       csl +=  t + " &" + arg.getName() + ", ";
                     }
 
+                    returnValue = "";
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
