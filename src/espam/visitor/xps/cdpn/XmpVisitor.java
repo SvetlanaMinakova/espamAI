@@ -49,7 +49,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.6 2012/04/02 16:25:40 nikolov Exp $
+ * @version  $Id: XmpVisitor.java,v 1.7 2012/05/16 14:36:13 tzhai Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -181,7 +181,7 @@ public class XmpVisitor extends CDPNVisitor {
 		_printStream.println("UserCmd2:"); 
 		_printStream.println("UserCmd2Type: 0");
 		_printStream.println("GenSimTB: 0");
-		_printStream.println("SdkExportBmmBit: 1");
+		_printStream.println("SdkExportBmmBit: 0");
 		_printStream.println("SdkExportDir: SDK" + File.separatorChar + "SDK_Export");
 		_printStream.println("InsertNoPads: 0");
 		_printStream.println("WarnForEAArch: 1");
