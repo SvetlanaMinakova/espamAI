@@ -70,7 +70,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.12 2012/05/14 13:55:48 nikolov Exp $
+ * @version  $Id: XpsDynamicXilkernelProcessVisitor.java,v 1.13 2012/05/16 15:25:50 nikolov Exp $
  */
 
 public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
@@ -516,7 +516,6 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
-                        returnValue = "";
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
                         } else if( arg.getPassType().equals("reference") ) {

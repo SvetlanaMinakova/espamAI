@@ -65,7 +65,7 @@ import espam.main.UserInterface;
  * the YAPI visitor.
  *
  * @author  Hristo Nikolov, Todor Stefanov, Adarsha Rao, Sven van Haastregt
- * @version  $Id: ScUntimedProcessVisitor.java,v 1.11 2012/05/14 13:55:48 nikolov Exp $
+ * @version  $Id: ScUntimedProcessVisitor.java,v 1.12 2012/05/16 15:25:50 nikolov Exp $
  */
 
 public class ScUntimedProcessVisitor extends CDPNVisitor {
@@ -674,7 +674,6 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                         String funcArgument = arg.getName() + node.getName();
 	                String dataType = arg.getDataType();
 
-                        returnValue = "";
 			if( arg.getPassType().equals("return_value") ) {
                            returnValue = arg.getName() + " = ";
                         } else if( arg.getPassType().equals("reference") ) {
