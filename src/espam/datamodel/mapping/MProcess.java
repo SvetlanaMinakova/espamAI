@@ -27,9 +27,11 @@ import java.util.Iterator;
 
 /**
  * This class contains mapping information related to a process.
+ * It is essentially equal to the corresponding ADGNode plus some
+ * mapping specific information.
  *
  * @author Todor Stefanov
- * @version  $Id: MProcess.java,v 1.2 2012/04/19 21:54:19 mohamed Exp $
+ * @version  $Id: MProcess.java,v 1.3 2012/05/17 14:01:04 tzhai Exp $
  */
 
 public class MProcess implements Cloneable {
