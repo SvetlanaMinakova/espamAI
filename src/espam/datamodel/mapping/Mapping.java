@@ -29,6 +29,8 @@ import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.platform.memories.Fifo;
 import espam.visitor.MappingVisitor;
 
+// import espam.datamodel.mapping.MProcess;
+
 
 //////////////////////////////////////////////////////////////////////////
 //// Mapping
@@ -38,7 +40,7 @@ import espam.visitor.MappingVisitor;
  * is mapped onto a platform.
  *
  * @author Todor Stefanov
- * @version  $Id: Mapping.java,v 1.2 2011/10/20 12:08:44 mohamed Exp $
+ * @version  $Id: Mapping.java,v 1.3 2012/05/17 14:32:40 tzhai Exp $
  */
 
 public class Mapping implements Cloneable {
@@ -295,6 +297,26 @@ public class Mapping implements Cloneable {
             }
             return null;
        }
+
+    /**
+     *  Return a CDProcess which is mapped onto the given mProcessor. Return null if
+     *  process cannot be found.
+     *
+     * @param  mProcess.
+     * @return  the CDprocess.
+     */
+    public CDProcess getCDProcess(MProcessor mProcessor) {
+        CDProcess rt;
+                
+        Iterator processIt = mProcessor.getProcessList().iterator();
+        while (processIt.hasNext()) {
+            MProcess mProcess = (MProcess) processIt.next();
+            ADGNode adgNode = mProcess.getNode();
+            rt = _cdpn.getProcess(adgNode);
+            return rt;
+        }
+        return null;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
