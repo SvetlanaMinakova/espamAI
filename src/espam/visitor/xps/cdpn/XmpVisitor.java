@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.File;
 import java.util.Iterator;
+import java.util.Vector;
 
 import espam.datamodel.EspamException;
 import espam.datamodel.platform.Resource;
@@ -38,6 +39,7 @@ import espam.main.UserInterface;
 
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
+import espam.datamodel.mapping.MProcess;
 
 import espam.visitor.CDPNVisitor;
 
@@ -49,7 +51,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.7 2012/05/16 14:36:13 tzhai Exp $
+ * @version  $Id: XmpVisitor.java,v 1.8 2012/05/17 14:34:23 tzhai Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -195,21 +197,27 @@ public class XmpVisitor extends CDPNVisitor {
 		Iterator i;
 		i = _mapping.getPlatform().getResourceList().iterator();
 		while( i.hasNext() ) {
-		resource = (Resource) i.next();
-		if (resource instanceof Processor) {
-			Processor p = (Processor) resource;
-			_printStream.println("Processor: " + p.getName());
-			_printStream.println("ElfImp:");
-			_printStream.println("ElfSim:");
-			//_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
-			//_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
-		}
+            resource = (Resource) i.next();
+            if (resource instanceof Processor) {
+                Processor p = (Processor) resource;
+                _printStream.println("Processor: " + p.getName());
+                _printStream.println("ElfImp:");
+                // in case of SDKVisitor, we have default location for .elf file
+                CDProcess cdProc = _mapping.getCDProcess(_mapping.getProcessor(p.getName()));
+                _printStream.println("#ElfImp: SDK/" + cdProc.getName() + "/Release/" 
+                    + cdProc.getName() + ".elf" );
+                _printStream.println("ElfSim:");
+                //_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
+                //_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
+            }
 		}
 	
-// add the host interface MicroBlaze
-
+        /* add the host interface MicroBlaze */
 		_printStream.println("Processor: host_if_mb");
+		
 		_printStream.println("ElfImp:");
+		// in case of SDKVisitor, we have default location of .elf file for the host interface
+		_printStream.println("#ElfImp: SDK/host_if/Debug/host_if.elf");
 		_printStream.println("ElfSim:");
 		//_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
 		//_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
