@@ -63,7 +63,7 @@ import espam.visitor.CDPNVisitor;
  *  This class ...
  *
  * @author  Hristo Nikolov,Todor Stefanov
- * @version  $Id: HdpcProcessVisitor.java,v 1.5 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: HdpcProcessVisitor.java,v 1.6 2012/05/20 10:20:24 nikolov Exp $
  */
 
 public class HdpcProcessVisitor extends CDPNVisitor {
@@ -587,7 +587,8 @@ public class HdpcProcessVisitor extends CDPNVisitor {
 
 		       csl +=  t + " &" + arg.getName() + ", ";
                     }
-
+                    
+                    returnValue = "";
                     j2 = function1.getOutArgumentList().iterator();
                     while( j2.hasNext() ) {
                         ADGVariable arg = (ADGVariable) j2.next();
