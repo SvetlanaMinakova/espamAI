@@ -86,7 +86,7 @@ import espam.visitor.ymlPN.YmlNetworkVisitor;
  *  Microprocessor Hardware Specification for Xps tool.
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: MhsVisitor.java,v 1.15 2012/05/09 08:06:29 tzhai Exp $
+ * @version  $Id: MhsVisitor.java,v 1.16 2012/05/22 14:24:14 tzhai Exp $
  */
 
 public class MhsVisitor extends PlatformVisitor {
@@ -1474,7 +1474,7 @@ public class MhsVisitor extends PlatformVisitor {
 		"END\n\n" +
 
 		"BEGIN xps_uart16550\n" +
-		" PARAMETER INSTANCE = RS232_Uart_1\n" +
+		" PARAMETER INSTANCE = host_if_mb_RS232_Uart\n" +
 		" PARAMETER HW_VER = 3.00.a\n" +
 		" PARAMETER C_IS_A_16550 = 1\n" +
 		" PARAMETER C_BASEADDR = 0x83e20000\n" +
@@ -1775,7 +1775,7 @@ public class MhsVisitor extends PlatformVisitor {
 		"END\n\n" +
 
 		"BEGIN xps_uart16550\n" +
-		" PARAMETER INSTANCE = RS232_Uart_1\n" +
+		" PARAMETER INSTANCE = host_if_mb_RS232_Uart\n" +
 		" PARAMETER HW_VER = 3.00.a\n" +
 		" PARAMETER C_BASEADDR = 0x83e20000\n" +
 		" PARAMETER C_HIGHADDR = 0x83e2ffff\n" +
