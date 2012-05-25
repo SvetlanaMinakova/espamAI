@@ -18,6 +18,7 @@ package espam.visitor.xps.cdpn;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -25,6 +26,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Vector;
@@ -47,6 +49,7 @@ import espam.datamodel.mapping.Mapping;
 import espam.datamodel.mapping.MProcessor;
 
 import espam.datamodel.pn.cdpn.CDProcess;
+import espam.visitor.xps.Copier;
 
 //////////////////////////////////////////////////////////////////////////
 //// XpsSDKVisitor
@@ -56,7 +59,7 @@ import espam.datamodel.pn.cdpn.CDProcess;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.4 2012/05/06 22:39:52 mohamed Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.5 2012/05/25 00:22:20 mohamed Exp $
  */
 
 public class XpsSDKVisitor {
@@ -66,7 +69,7 @@ public class XpsSDKVisitor {
 
     public XpsSDKVisitor(Mapping mapping, String sdk_dir, String project_name) {
 		
-	    UserInterface _ui = UserInterface.getInstance();
+	UserInterface _ui = UserInterface.getInstance();
 
         _mapping = mapping;
         _libsdk_dir = _ui.getSDKLibPath();
@@ -82,7 +85,26 @@ public class XpsSDKVisitor {
                      _axiPlatform = true;
             }
         }
-        
+
+	// Copy the functional code to SDK
+	String funcCodePath = _ui.getFuncCodePath();
+	if (funcCodePath == "") {
+		// Look for the functional code in "func_code" at the same level where the XPS project is
+		funcCodePath = _sdk_dir + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + "func_code";
+	}
+
+	File funcCode = new File(funcCodePath);
+	String target = _sdk_dir + File.separatorChar + funcCode.getName();
+	_funcCodeDirName = funcCode.getName();
+
+        try {
+		Copier copy = new Copier (funcCodePath, target, 1, true);
+		copy.copy();        
+        } catch (Exception e) {
+	        System.err.println ("Error copying the functional code directory");
+	        e.printStackTrace();
+        } 
+	
         handleHostIF();	
     }
     
@@ -135,7 +157,7 @@ public class XpsSDKVisitor {
         
         dir_if = new File(bsp_folder).mkdir();
         if (!dir_if)
-            System.out.println ("ERROR creating " + bsp_dirname + " folder");
+            System.err.println ("ERROR creating " + bsp_dirname + " folder");
 
         dir_if = new File(xcp_folder).mkdir();
         
@@ -151,12 +173,59 @@ public class XpsSDKVisitor {
 			
         // Generate XCP files
         try {
-		        makeXCPCProject(xcp_folder, processorName, processName, schedulerType);
-		        makeXCPProject(xcp_folder, processName);
+	        makeXCPCProject(xcp_folder, processorName, processName, schedulerType);
+	        makeXCPProject(xcp_folder, processName);
         } catch (Exception e) {
-		        System.out.println ("Error making XCP Project/CProject");
-		        e.printStackTrace();
-        }	
+	        System.err.println ("Error making XCP Project/CProject");
+	        e.printStackTrace();
+        }
+        
+        String sourceDir = _sdk_dir + File.separatorChar + _funcCodeDirName;
+        String destinationDir = xcp_folder;
+        
+        String[] link_cmd;
+        File dir = new File(sourceDir);
+        File destDir = new File(destinationDir);
+        
+        try {
+		
+		File[] files = dir.listFiles(new FilenameFilter() { 
+				public boolean accept(File dir, String filename) { return filename.endsWith(".c"); } } );
+		for (int r  = 0; r < files.length; r++) {
+			link_cmd = new String[4];
+			link_cmd[0] = "/bin/ln";
+			link_cmd[1] = "-s";
+			link_cmd[2] = files[r].getCanonicalPath();
+			link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+			exe(link_cmd);
+		}
+	
+		files = dir.listFiles(new FilenameFilter() { 
+				public boolean accept(File dir, String filename) { return filename.endsWith(".cpp"); } } );
+		for (int r  = 0; r < files.length; r++) {
+			link_cmd = new String[4];
+			link_cmd[0] = "/bin/ln";
+			link_cmd[1] = "-s";
+			link_cmd[2] = files[r].getCanonicalPath();
+			link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+			exe(link_cmd);
+		}
+	
+		files = dir.listFiles(new FilenameFilter() { 
+				public boolean accept(File dir, String filename) { return filename.endsWith(".h"); } } );
+		for (int r  = 0; r < files.length; r++) {
+			link_cmd = new String[4];
+			link_cmd[0] = "/bin/ln";
+			link_cmd[1] = "-s";
+			link_cmd[2] = files[r].getCanonicalPath();
+			link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+			exe(link_cmd);
+		}
+		
+	} catch (Exception e) {
+		System.err.println("Error in making the symbolic links");
+		e.printStackTrace();
+	}
     }
 
     private void copySystemMss (String folder, CDProcess process){
@@ -286,16 +355,14 @@ public class XpsSDKVisitor {
 
             } 
             else { // PLB. TODO
-            
+
             }
-            
-            
             out.close();
             systemFile.close();
             
         } catch (IOException exp) {
-		    System.out.println("Error creating file system.mss");
-		    System.out.println("Error:" + exp);
+		    System.err.println("Error creating file system.mss");
+		    System.err.println("Error:" + exp);
         }
     }
 
@@ -314,8 +381,8 @@ public class XpsSDKVisitor {
 	    } 
 	
 	    catch (IOException exp){
-		    System.out.println("Error creating file libgen.option");
-		    System.out.println("Error:" + exp);
+		    System.err.println("Error creating file libgen.option");
+		    System.err.println("Error:" + exp);
 	    }
 	
     } 
@@ -335,7 +402,7 @@ public class XpsSDKVisitor {
 		    copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "BSP_Template_Project", destFolder + File.separatorChar + ".project");
 		
 	    } catch (IOException e) {
-		    System.out.println("ERROR making project file");
+		    System.err.println("ERROR making project file");
 		    e.printStackTrace();
 	    }
 	
@@ -359,8 +426,8 @@ public class XpsSDKVisitor {
 	    } 
 	
 	    catch (IOException exp){
-		    System.out.println("Error creating file .sdkproject");
-		    System.out.println("Error:" + exp);
+		    System.err.println("Error creating file .sdkproject");
+		    System.err.println("Error:" + exp);
 	    }
     }
 
@@ -370,11 +437,10 @@ public class XpsSDKVisitor {
     }
 
 
-    // TODO: Comment by Mohamed: I don't like this function. ESPAM has Copier class. See if we can use that class
-    private void copyfile(String srFile, String dtFile){
+    private void copyfile(String srcFile, String dstFile){
 	    try {
-		    File f1 = new File(srFile);
-		    File f2 = new File(dtFile);
+		    File f1 = new File(srcFile);
+		    File f2 = new File(dstFile);
 		    InputStream in = new FileInputStream(f1);
 		
 		    //For Append the file.
@@ -388,15 +454,40 @@ public class XpsSDKVisitor {
 		    in.close();
 		    out.close();
 	    }
-	    catch(FileNotFoundException ex){
-		    System.out.println(ex.getMessage() + " in the specified directory.");
-		    System.exit(0);
-	    }
-	    catch(IOException e){
-		    System.out.println(e.getMessage());			
+	    catch(Exception ex){
+		    System.err.println("Error in copying the SDK project files");
+		    ex.printStackTrace();
 	    }
     }
 
+    private int exe(String[] cmd) 
+    {
+    	try {
+    	    Process process = Runtime.getRuntime().exec(cmd);
+	    BufferedReader br = new BufferedReader( new InputStreamReader(process.getInputStream()));
+	    String line;
+    	    while ((line = br.readLine()) != null) {
+//    	    	System.out.println(line);
+    	    }
+    	    br.close();       	    
+    	    
+	    br = new BufferedReader( new InputStreamReader(process.getErrorStream()));
+    	    while ((line = br.readLine()) != null) {
+//    	    	System.out.println(line);
+    	    }
+    	    br.close();       	    
+    	    
+    	    process.waitFor();
+    	    int exitValue = process.exitValue();
+//    	    System.out.println("Exit value: " + exitValue);
+    	    return exitValue;    	    
+    	    
+    	} catch (Exception e) {
+    	    System.err.println("Error in executing the following command: " + cmd);
+    	    e.printStackTrace(System.err);
+    	}
+    	return -1;
+    }
 
     public void makeXCPProject(String destFolder, String projectName) throws Exception{
 	
@@ -468,7 +559,14 @@ public class XpsSDKVisitor {
                         replace = _sdk_dir;
                         p = Pattern.compile("##FOLDER_PROJECT##");
                         m = p.matcher(st);
-                        printer.println(m.replaceAll(replace));
+                        st=m.replaceAll(replace);
+                        
+                        replace = _funcCodeDirName;
+                        p = Pattern.compile("##FUNC_CODE##");
+                        m = p.matcher(st);
+                        st=m.replaceAll(replace);
+                        
+                        printer.println(st);
                                                 
                 }
                 printer.close();
@@ -487,10 +585,13 @@ public class XpsSDKVisitor {
     
     // The path to libSDK which contains the BSPTemplate
     private String _libsdk_dir;
+    
+    // The directory containing the functional code in SDK
+    private String _funcCodeDirName;
  
     // The mapping   
     private Mapping _mapping;
-    
+      
     // A flag to indicate whether the platform is AXI-based or not
     private boolean _axiPlatform;
 

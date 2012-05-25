@@ -34,6 +34,9 @@
 								<option id="xilinx.gnu.compiler.inferred.swplatform.includes.1500567180" name="Software Platform Include Path" superClass="xilinx.gnu.compiler.inferred.swplatform.includes" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../##CPP_BSP_FOLDER##/##PROCESSOR_NAME##/include"/>
 								</option>
+                                <option id="xilinx.gnu.compiler.dircategory.includes.270693116" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+									<listOptionValue builtIn="false" value="SDK/##FUNC_CODE##"/>
+								</option>								
 								<option id="xilinx.gnu.mb.compiler.inferred.usele.1382562618" superClass="xilinx.gnu.mb.compiler.inferred.usele" value="true" valueType="boolean"/>
 								<inputType id="xilinx.gnu.compiler.input.1738954555" name="C source files" superClass="xilinx.gnu.compiler.input"/>
 							</tool>

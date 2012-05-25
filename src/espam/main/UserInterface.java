@@ -216,7 +216,26 @@ public class UserInterface {
      */
     public final void setSDKLibPath(String sdkLibPath) {
         _sdkLibPath = sdkLibPath;
-    }
+    }     
+    
+    /**
+     * Get the path of the directory containing the functional code
+     *
+     * @return The funcCodePath value
+     */
+    public final String getFuncCodePath() {
+        return _funcCodePath;
+    } 
+
+    /**
+     * Set the path of the functional code directory
+     *
+     * @param funcCodePath
+     *            The new funcCodePath value
+     */
+    public final void setFuncCodePath(String funcCodePath) {
+        _funcCodePath = funcCodePath;
+    }      
 
     /**
      * Get the path of the hdpc library file.
@@ -673,6 +692,9 @@ public class UserInterface {
     
     // the path of the sdk template files
     private String _sdkLibPath = "";
+    
+    // the path of the directory containing the functional code
+    private String _funcCodePath = ""; 
 
     // the path of the hdpc library file
     private String _hdpcLibPath = "";

@@ -43,7 +43,7 @@ import espam.visitor.CDPNVisitor;
  *  This class .................
  *
  * @author  Wei Zhong, Hristo Nikolov, Todor Stefanov
- * @version  $Id: XpsNetworkVisitor.java,v 1.4 2012/05/06 22:39:52 mohamed Exp $
+ * @version  $Id: XpsNetworkVisitor.java,v 1.5 2012/05/25 00:22:20 mohamed Exp $
  */
 
 public class XpsNetworkVisitor extends CDPNVisitor {
@@ -82,7 +82,8 @@ public class XpsNetworkVisitor extends CDPNVisitor {
                 // Copy the SDK directory from libSDK
                 String sdk_path = _ui.getSDKLibPath();
                 String sdk_src;
-                if (sdk_path.endsWith("/")) {
+                String sep = "" + File.separatorChar;
+                if (sdk_path.endsWith(sep)) {
                     sdk_src = sdk_path + "SDK";
                 }
                 else {

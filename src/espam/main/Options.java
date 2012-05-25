@@ -28,7 +28,7 @@ import java.util.StringTokenizer;
  * reflect the global setting of ESPAM.
  *
  * @author Todor Stefanov
- * @version $Id: Options.java,v 1.10 2012/05/02 19:47:39 mohamed Exp $ $Name:  $
+ * @version $Id: Options.java,v 1.11 2012/05/25 00:22:20 mohamed Exp $ $Name:  $
  */
 
 public class Options {
@@ -90,6 +90,8 @@ public class Options {
                         	_ui.setXpsLibPath(args[++i]);
                         } else if( arg.equals("--libsdk")) {
                         	_ui.setSDKLibPath(args[++i]);
+                        } else if( arg.equals("--funcCodePath")) {
+                        	_ui.setFuncCodePath(args[++i]);                        	
                         } else if( arg.equals("--libhdpc") ) {
                         	_ui.setHdpcLibPath(args[++i]);
                         } else if( arg.equals("--libsystemc") ) {
@@ -231,6 +233,7 @@ public class Options {
 			{ "--scheduler", "-s", "<FileName>" },
 			{ "--libxps", "-l", "<LibraryPath>" },
 			{ "--libsdk", "none", "<LibraryPath>" },
+			{ "--funcCodePath", "none", "<FunctionalCodePath>" },
 			{ "--libhdpc", "none", "<LibraryPath>" },
 			{ "--libsystemc", "none", "<LibraryPath>" } };
 

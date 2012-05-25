@@ -55,6 +55,9 @@
 									<listOptionValue builtIn="false" value="##FOLDER_PROJECT##code"/>
 								</option>
                                 -->
+                                <option id="xilinx.gnu.compiler.dircategory.includes.270693116" superClass="xilinx.gnu.compiler.dircategory.includes" valueType="includePath">
+									<listOptionValue builtIn="false" value="SDK/##FUNC_CODE##"/>
+								</option>
 								<option id="xilinx.gnu.mb.compiler.inferred.usele.1282797550" superClass="xilinx.gnu.mb.compiler.inferred.usele" value="true" valueType="boolean"/>
 								<option id="xilinx.gnu.mb.compiler.inferred.usebarrel.290008837" superClass="xilinx.gnu.mb.compiler.inferred.usebarrel" value="true" valueType="boolean"/>
 								<option id="xilinx.gnu.mb.compiler.inferred.usediv.1788587971" superClass="xilinx.gnu.mb.compiler.inferred.usediv" value="true" valueType="boolean"/>
