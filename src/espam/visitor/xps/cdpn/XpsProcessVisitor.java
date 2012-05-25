@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.17 2012/05/06 22:39:52 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.18 2012/05/25 14:27:30 mohamed Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -116,7 +116,16 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
             _printStreamFunc.println("#include <mb_interface.h>");
-            _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
+            if (!_ui.getSDKFlag()) {
+                _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
+            } else {
+                Iterator adg_it = _ui.getADGFileNames().iterator();
+                while (adg_it.hasNext()) {
+                    String adg_filename = (String)adg_it.next();
+                    String[] adg_name = adg_filename.split(".kpn");
+                    _printStreamFunc.println("#include \"func_code" + File.separatorChar + adg_name[0] + "_func.h\"");
+                }
+            }
             _printStreamFunc.println("");
 
             _writeChannelTypes();
