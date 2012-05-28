@@ -49,8 +49,7 @@ import espam.visitor.xps.Copier;
  *  This class ...
  *
  * @author  Hristo Nikolov, Todor Stefanov
- * @version  $Id: HdpcNetworkVisitor.java,v 1.3 2002/06/12 18:28:59 sjain
- *      Exp $
+ * @version  $Id: HdpcNetworkVisitor.java,v 1.7 2012/05/28 11:17:29 tzhai Exp $
  */
 
 public class HdpcNetworkVisitor extends CDPNVisitor {
@@ -394,8 +393,8 @@ public class HdpcNetworkVisitor extends CDPNVisitor {
         try {
             PrintStream cf = _openVCProjectFile();
 
-cf.println("<?xml version=\"1.0\" encoding=\"Windows-1252\"?>");
-cf.println("<VisualStudioProject");
+        cf.println("<?xml version=\"1.0\" encoding=\"Windows-1252\"?>");
+        cf.println("<VisualStudioProject");
 	cf.println("\tProjectType=\"Visual C++\"");
 	cf.println("\tVersion=\"9.00\"");
 
@@ -648,7 +647,7 @@ cf.println("<VisualStudioProject");
 		cf.println("\t\t</Filter>");
 	cf.println("\t</Files>");
 	cf.println("\t<Globals> </Globals>");
-cf.println("</VisualStudioProject>");
+        cf.println("</VisualStudioProject>");
 
         }
         catch( Exception e ) {
@@ -764,7 +763,7 @@ cf.println("</VisualStudioProject>");
             cf.println("FILE_NAME = " + x.getName() );
             cf.println("");
             cf.println("exe:"); 
-            cf.println("	g++ ./src/${FILE_NAME}_KPN.cpp ./src/${FILE_NAME}_func.cpp -I. -I${BOOST_DIR}/include -L${BOOST_DIR}/lib -lboost_thread -o run_${FILE_NAME}");
+            cf.println("	g++ ./src/${FILE_NAME}_KPN.cpp ./src/${FILE_NAME}_func.cpp -I. -I${BOOST_DIR}/include -L${BOOST_DIR}/lib -lboost_thread -o run_${FILE_NAME} -O3");
             cf.println("");
             cf.println("clean:"); 
             cf.println("	rm -rf ./run_${FILE_NAME}");
