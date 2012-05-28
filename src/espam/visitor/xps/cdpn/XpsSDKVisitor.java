@@ -59,7 +59,7 @@ import espam.visitor.xps.Copier;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.6 2012/05/28 11:55:21 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.7 2012/05/28 12:00:01 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -91,7 +91,7 @@ public class XpsSDKVisitor {
             String funcCodePath = _ui.getFuncCodePath();
             if (funcCodePath == "") {
                     // Look for the functional code in "func_code" at the same level where the XPS project directory is
-                    funcCodePath = _sdk_dir + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + "func_code";
+                    funcCodePath = _sdk_dir + File.separatorChar + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + "func_code";
             }
 
             File funcCode = new File(funcCodePath);
