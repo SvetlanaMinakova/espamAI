@@ -59,7 +59,7 @@ import espam.visitor.xps.Copier;
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.5 2012/05/25 00:22:20 mohamed Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.6 2012/05/28 11:55:21 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -77,29 +77,29 @@ public class XpsSDKVisitor {
         _project_name = project_name;
         
         _axiPlatform = false;
-        
         Iterator i = _mapping.getPlatform().getResourceList().iterator();
 	    while( i.hasNext() ) {
     		Resource resource = (Resource) i.next();
         	if( resource instanceof AXICrossbar ) {
-                     _axiPlatform = true;
+                _axiPlatform = true;
+                break;
             }
         }
-
-	// Copy the functional code to SDK
-	String funcCodePath = _ui.getFuncCodePath();
-	if (funcCodePath == "") {
-		// Look for the functional code in "func_code" at the same level where the XPS project is
-		funcCodePath = _sdk_dir + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + "func_code";
-	}
-
-	File funcCode = new File(funcCodePath);
-	String target = _sdk_dir + File.separatorChar + funcCode.getName();
-	_funcCodeDirName = funcCode.getName();
-
+        
         try {
-		Copier copy = new Copier (funcCodePath, target, 1, true);
-		copy.copy();        
+            // Copy the functional code to SDK
+            String funcCodePath = _ui.getFuncCodePath();
+            if (funcCodePath == "") {
+                    // Look for the functional code in "func_code" at the same level where the XPS project directory is
+                    funcCodePath = _sdk_dir + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + ".." + File.separatorChar + "func_code";
+            }
+
+            File funcCode = new File(funcCodePath);
+            String target = _sdk_dir + File.separatorChar + funcCode.getName();
+            _funcCodeDirName = funcCode.getName();
+        
+            Copier copy = new Copier (funcCodePath, target, 1, true);
+            copy.copy();        
         } catch (Exception e) {
 	        System.err.println ("Error copying the functional code directory");
 	        e.printStackTrace();
@@ -112,7 +112,7 @@ public class XpsSDKVisitor {
 
         String processorName = "host_if_mb";
         String processName = "host_if";
-        
+                
         String bsp_dirname = "BSP_" + processName;
         String xcp_dirname = processName;
         
@@ -354,9 +354,20 @@ public class XpsSDKVisitor {
                             "END\n");
 
             } 
-            else { // PLB. TODO
+            else { // PLB. 
+                out.println("BEGIN OS\n" +
+                            " PARAMETER OS_NAME = standalone\n" +
+                            " PARAMETER OS_VER = 3.01.a\n" +
+                            " PARAMETER PROC_INSTANCE = mb_1\n" +
+                            "END\n");
+                
+                // TODO: for PROCESSOR
+                
+                // TODO: for 
 
-            }
+            } // end AXI/PLB
+            
+            
             out.close();
             systemFile.close();
             
