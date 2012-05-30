@@ -57,7 +57,7 @@ import espam.datamodel.LinearizationType;
  *  This class ...
  *
  * @author  Wei Zhong, Hristo Nikolov,Todor Stefanov, Joris Huizer
- * @version  $Id: XpsProcessVisitor.java,v 1.18 2012/05/25 14:27:30 mohamed Exp $
+ * @version  $Id: XpsProcessVisitor.java,v 1.19 2012/05/30 10:34:22 tzhai Exp $
  */
 
 public class XpsProcessVisitor extends CDPNVisitor {
@@ -69,36 +69,37 @@ public class XpsProcessVisitor extends CDPNVisitor {
      *  Constructor for the XpsProcessVisitor object
      */
     public XpsProcessVisitor( Mapping mapping ) {
-    	_mapping = mapping;
-    	_ui = UserInterface.getInstance();
+        _mapping = mapping;
+        _ui = UserInterface.getInstance();
 
         _sdk_enabled = _ui.getSDKFlag();
 
-    	String sdk_project_name;
-    	String code_dir;
-    	
-    	if (_sdk_enabled)
-    	    code_dir = "SDK";
-    	else
-    	    code_dir = "code";
-    	
-        if (_ui.getOutputFileName() == "") {
-    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + code_dir;
-    	    sdk_project_name = _ui.getFileName();
-        } else {
-    	    _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + code_dir;
-    	    sdk_project_name = _ui.getOutputFileName();
-        }
-       
+        String sdk_project_name;
+        String code_dir;
         
+        // without using SDK backend, we generate SW code in "code", 
+        // otherwise, the SW code is located in "SDK"
+        if (_sdk_enabled)
+            code_dir = "SDK";
+        else
+            code_dir = "code";
+
+        if (_ui.getOutputFileName() == "") {
+            _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getFileName() + File.separatorChar + code_dir;
+            sdk_project_name = _ui.getFileName();
+        } else {
+            _codeDir = _ui.getBasePath() + File.separatorChar + _ui.getOutputFileName() + File.separatorChar + code_dir;
+            sdk_project_name = _ui.getOutputFileName();
+        }
+
+
         if (_sdk_enabled) {
             _sdk = new XpsSDKVisitor(_mapping, _codeDir, sdk_project_name);
-            
         }
             
-        
-	    File dir = new File(_codeDir);
-	    dir.mkdirs();
+
+        File dir = new File(_codeDir);
+        dir.mkdirs();
     }
 
     /**
@@ -131,7 +132,11 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _writeChannelTypes();
             _printStreamFunc.println("");
             _writeParameter(x);
-
+            
+            // For SDK backend, mProcessor does not contain hostIF, therefore, we handle hostIF explicitly
+            if (_sdk_enabled)
+                _sdk.handleHostIF();
+            
             Iterator i = x.getProcessList().iterator();
             while( i.hasNext() ) {
 
@@ -144,19 +149,20 @@ public class XpsProcessVisitor extends CDPNVisitor {
 
                     _printStream = _openFile(process.getName(), process.getName(), "cpp");
 
-		            if ( mProcessor.getScheduleType() == 1 ) {
-            			XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-            			process.accept(pt);
-		            }
-		            else if ( mProcessor.getScheduleType() == 2 ) {
-			            XpsDynamicFreeRTOSProcessVisitor pt = new XpsDynamicFreeRTOSProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-			            process.accept(pt);
-		            }
-		            else {
-			            XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
-			            process.accept(pt);
-		            }
-		            
+                    if ( mProcessor.getScheduleType() == 1 ) {
+                        XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+                        process.accept(pt);
+                    }
+                    else if ( mProcessor.getScheduleType() == 2 ) {
+                            XpsDynamicFreeRTOSProcessVisitor pt = new XpsDynamicFreeRTOSProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+                            process.accept(pt);
+                    }
+                    else {
+                            XpsStaticProcessVisitor pt = new XpsStaticProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
+                            process.accept(pt);
+                    }
+                    
+                    // generate SW code and SDK projects for procoessors (other than hostIF)
                     if (_sdk_enabled)
                         _sdk.visitProcessor(process);
 
