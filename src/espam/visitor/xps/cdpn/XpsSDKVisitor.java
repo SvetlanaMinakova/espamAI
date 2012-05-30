@@ -55,11 +55,11 @@ import espam.visitor.xps.Copier;
 //// XpsSDKVisitor
 
 /**
- *  Visitor to generate Xilinx SDK project files
+ *  Visitor to generate Xilinx SDK project files for each MicroBlaze
  *
  * @author  Mohamed Bamakhrama
  * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.7 2012/05/28 12:00:01 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.8 2012/05/30 10:33:14 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -87,7 +87,7 @@ public class XpsSDKVisitor {
         }
         
         try {
-            // Copy the functional code to SDK
+            // Copy the functional code to SDK to allow make symbolic links later
             String funcCodePath = _ui.getFuncCodePath();
             if (funcCodePath == "") {
                     // Look for the functional code in "func_code" at the same level where the XPS project directory is
@@ -104,8 +104,6 @@ public class XpsSDKVisitor {
 	        System.err.println ("Error copying the functional code directory");
 	        e.printStackTrace();
         } 
-	
-        handleHostIF();	
     }
     
     public void handleHostIF() {
@@ -131,11 +129,11 @@ public class XpsSDKVisitor {
         //makeSdkProject(bsp_folder, processorName);
 			
         try {
-		        makeXCPCProject(xcp_folder, processorName, processName, 3);
-		        makeXCPProject(xcp_folder, processName);
+            makeXCPCProject(xcp_folder, processorName, processName, 3);
+            makeXCPProject(xcp_folder, processName);
         } catch (Exception e) {
-		        System.out.println ("Error making XCP Project/CProject");
-		        e.printStackTrace();
+            System.out.println ("Error making XCP Project/CProject");
+            e.printStackTrace();
         }    
     }
 
