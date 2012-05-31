@@ -55,11 +55,12 @@ import espam.visitor.xps.Copier;
 //// XpsSDKVisitor
 
 /**
- *  Visitor to generate Xilinx SDK project files for each MicroBlaze
+ *  Visitor to generate Xilinx SDK project files for each MicroBlaze;
+ *  we also generate to makefile to enable compliation of software without
+ *  using SDK.
  *
- * @author  Mohamed Bamakhrama
- * @note Based on the BSP class written by Andrea Ciani and Teddy Zhai
- * @version  $Id: XpsSDKVisitor.java,v 1.8 2012/05/30 10:33:14 tzhai Exp $
+ * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
+ * @version  $Id: XpsSDKVisitor.java,v 1.9 2012/05/31 08:39:17 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -106,8 +107,8 @@ public class XpsSDKVisitor {
         } 
     }
     
+    
     public void handleHostIF() {
-
         String processorName = "host_if_mb";
         String processName = "host_if";
                 
@@ -134,7 +135,25 @@ public class XpsSDKVisitor {
         } catch (Exception e) {
             System.out.println ("Error making XCP Project/CProject");
             e.printStackTrace();
-        }    
+        }
+        
+        // copy mss file from libSDK and rename it according to the platform in use
+        String originMss;   
+        if (_axiPlatform)
+            originMss = "_AXI";
+        else// PLB
+            originMss = "_PLB"; 
+        //private String _libsdk_dir;
+        originMss = _libsdk_dir + File.separatorChar + "SDK" + File.separatorChar + "BSP_host_if" + File.separatorChar +
+                "system"+ originMss+".mss"; // Path with updated filename
+        String destination = bsp_folder + File.separatorChar +"system.mss"; // Destination path 
+        Copier copy = new Copier (originMss,destination,2);    
+        try {
+            copy.copy();
+        } catch (Exception e) {
+            System.err.println ("Error copying the functional code directory");
+            e.printStackTrace();
+        }
     }
 
     public void visitProcessor(CDProcess process) {
@@ -185,6 +204,7 @@ public class XpsSDKVisitor {
         File dir = new File(sourceDir);
         File destDir = new File(destinationDir);
         
+        // make symbolic links to implemenation
         try {
 		
 		File[] files = dir.listFiles(new FilenameFilter() { 
@@ -581,7 +601,16 @@ public class XpsSDKVisitor {
                 printer.close();
         }
     } 
-
+    
+    
+    /**
+     * generation of makefile to compile the software
+     * @note: we assume optimization flag "-O2" and without debug flag
+     * 
+     */
+    public void genMakefile(String destFolder){
+        
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
