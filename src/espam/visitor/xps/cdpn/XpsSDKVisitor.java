@@ -60,7 +60,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.13 2012/06/01 15:35:11 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.14 2012/06/01 15:50:15 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -597,13 +597,13 @@ public class XpsSDKVisitor {
         File f;
         if (_axiPlatform) { // AXI
             if (type == 0)  // Standalone
-                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Standalone_Template_CProject");
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_Standalone_Template_CProject");
             else if (type == 1) // Xilkernel
-                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Xilkernel_Template_CProject");
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_Xilkernel_Template_CProject");
             else if (type == 2) // FreeRTOS
-                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_FreeRTOS_Template_CProject");
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_FreeRTOS_Template_CProject");
             else if (type == 3) // Host IF
-                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_HostIF_Template_CProject");
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_HostIF_Template_CProject");
             else
                 throw new Exception("Invalid CProject file type specified");
                 
