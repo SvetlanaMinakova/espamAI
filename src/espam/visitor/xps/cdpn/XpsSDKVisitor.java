@@ -1,7 +1,7 @@
 /*******************************************************************\
 
 The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
+Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
 All rights reserved.
 
 The use and distribution terms for this software are covered by the 
@@ -60,7 +60,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.12 2012/06/01 15:32:10 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.13 2012/06/01 15:35:11 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -681,6 +681,10 @@ public class XpsSDKVisitor {
             } else if( resource instanceof AXICrossbar ) {
                _axiPlatform = true;
             }
+        }
+        
+        if (_targetBoard != "ML605" || _targetBoard != "XUPV5-LX110T"){
+            System.err.println("Error: unsupported target board in using SDK visitor");
         }
     }
 
