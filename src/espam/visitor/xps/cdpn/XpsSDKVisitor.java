@@ -56,11 +56,11 @@ import espam.visitor.xps.Copier;
 
 /**
  *  Visitor to generate Xilinx SDK project files for each MicroBlaze;
- *  we also generate to makefile to enable compliation of software without
+ *  we also generate makefile to enable compliation of software without
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.9 2012/05/31 08:39:17 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.10 2012/06/01 08:59:01 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -107,7 +107,9 @@ public class XpsSDKVisitor {
         } 
     }
     
-    
+    /**
+     * generation of SDK project for host IF
+     */
     public void handleHostIF() {
         String processorName = "host_if_mb";
         String processName = "host_if";
@@ -157,14 +159,14 @@ public class XpsSDKVisitor {
     }
 
     public void visitProcessor(CDProcess process) {
-	    String bsp_dirname, xcp_dirname;
-	    String bsp_folder, xcp_folder;
-	    boolean dir_if;
-	    
-	    String processName = process.getName();
-	    MProcessor mProcessor = _mapping.getMProcessor(process); 
-	    String processorName = mProcessor.getName();
-	    int schedulerType = mProcessor.getScheduleType();
+        String bsp_dirname, xcp_dirname;
+        String bsp_folder, xcp_folder;
+        boolean dir_if;
+        
+        String processName = process.getName();
+        MProcessor mProcessor = _mapping.getMProcessor(process); 
+        String processorName = mProcessor.getName();
+        int schedulerType = mProcessor.getScheduleType();
 	    
         bsp_dirname = "BSP_" + processName;
         xcp_dirname = processName;
@@ -178,8 +180,7 @@ public class XpsSDKVisitor {
 
         dir_if = new File(xcp_folder).mkdir();
         
-        
-	
+
         // Generate BSP files
         copySystemMss(bsp_folder, process);
         makeFile(bsp_folder);
@@ -203,6 +204,24 @@ public class XpsSDKVisitor {
         String[] link_cmd;
         File dir = new File(sourceDir);
         File destDir = new File(destinationDir);
+
+
+        // create a dummy .elf as placeholder, otherwise, opening xps project gives error;
+        // we assume that they are in the directory "Debug"
+        String dirDebug = xcp_folder + File.separatorChar + "Debug";
+        boolean IsDirDebug = new File(dirDebug).mkdir();
+        if (!IsDirDebug)
+            System.err.println ("ERROR creating " + dirDebug + " folder");
+        
+        try{
+            String elfName = dirDebug + File.separatorChar + processName + ".elf";
+            FileWriter elfFile = new FileWriter(elfName);
+            elfFile.close();
+        } catch (IOException exp) {
+                    System.err.println("Error creating dummy elf file");
+                    System.err.println("Error:" + exp);
+        }
+                
         
         // make symbolic links to implemenation
         try {
@@ -246,9 +265,10 @@ public class XpsSDKVisitor {
 	}
     }
 
+
     private void copySystemMss (String folder, CDProcess process){
 	    
-	    Platform platform = _mapping.getPlatform();
+        Platform platform = _mapping.getPlatform();
         String systemFileName = folder + File.separatorChar + "system.mss";
         
         try {
@@ -392,7 +412,7 @@ public class XpsSDKVisitor {
         } catch (IOException exp) {
 		    System.err.println("Error creating file system.mss");
 		    System.err.println("Error:" + exp);
-        }
+        } // end creating mss
     }
 
     private void Libgen(String processorName, String dirname){
@@ -403,7 +423,7 @@ public class XpsSDKVisitor {
 	
 		    out = new PrintWriter(libGenFile);
 		    out.println("PROCESSOR=" + processorName);
-		    // TODO: path is hard-coded for now
+		    // FIXME: path is hard-coded for now
 		    out.println("REPOSITORIES=-lp /home/mohamed/tools/FreeRTOS/FreeRTOSV7.1.0/Demo/MicroBlaze_Spartan-6_EthernetLite/KernelAwareBSPRepository");
 		    out.println("HWSPEC=.." + File.separatorChar + _project_name + "_hw_platform" + File.separatorChar + "system.xml");
 		    out.close();

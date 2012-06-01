@@ -51,7 +51,7 @@ import espam.visitor.CDPNVisitor;
  *  project file for Xps tool.
  *
  * @author  Wei Zhong
- * @version  $Id: XmpVisitor.java,v 1.8 2012/05/17 14:34:23 tzhai Exp $
+ * @version  $Id: XmpVisitor.java,v 1.9 2012/06/01 08:59:01 tzhai Exp $
  */
 
 public class XmpVisitor extends CDPNVisitor {
@@ -201,10 +201,9 @@ public class XmpVisitor extends CDPNVisitor {
             if (resource instanceof Processor) {
                 Processor p = (Processor) resource;
                 _printStream.println("Processor: " + p.getName());
-                _printStream.println("ElfImp:");
                 // in case of SDKVisitor, we have default location for .elf file
                 CDProcess cdProc = _mapping.getCDProcess(_mapping.getProcessor(p.getName()));
-                _printStream.println("#ElfImp: SDK/" + cdProc.getName() + "/Release/" 
+                _printStream.println("ElfImp: SDK/" + cdProc.getName() + "/Debug/" 
                     + cdProc.getName() + ".elf" );
                 _printStream.println("ElfSim:");
                 //_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
