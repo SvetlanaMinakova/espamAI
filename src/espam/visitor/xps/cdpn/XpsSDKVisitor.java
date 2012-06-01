@@ -38,6 +38,8 @@ import espam.main.UserInterface;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML605;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.controllers.AXI_CM_CTRL;
 import espam.datamodel.platform.controllers.MemoryController;
@@ -60,7 +62,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.14 2012/06/01 15:50:15 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.15 2012/06/01 17:01:15 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -609,6 +611,7 @@ public class XpsSDKVisitor {
                 
         } else { // PLB
             // TODO: create a new file of cproject in libSDK/BSPTemplate and open the file here
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_HostIF_Template_CProject");
         }
         
         FileWriter file = new FileWriter (destFolder + File.separatorChar + ".cproject");
