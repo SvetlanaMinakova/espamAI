@@ -60,7 +60,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.11 2012/06/01 15:18:57 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.12 2012/06/01 15:32:10 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -73,19 +73,12 @@ public class XpsSDKVisitor {
 	UserInterface _ui = UserInterface.getInstance();
 
         _mapping = mapping;
+        _getPlatformCharecteristics( mapping.getPlatform() );
+                
         _libsdk_dir = _ui.getSDKLibPath();
         _sdk_dir = sdk_dir;
         _project_name = project_name;
-        
-        _axiPlatform = false;
-        Iterator i = _mapping.getPlatform().getResourceList().iterator();
-	    while( i.hasNext() ) {
-    		Resource resource = (Resource) i.next();
-        	if( resource instanceof AXICrossbar ) {
-                _axiPlatform = true;
-                break;
-            }
-        }
+               
         
         try {
             // Copy the functional code to SDK to allow make symbolic links later
@@ -670,6 +663,27 @@ public class XpsSDKVisitor {
     public void genMakefile(String destFolder){
         
     }
+    
+    
+    /**
+     *  Get the target FPGA board and interconnection type (AXI/PLB)
+     *  @param platform
+     *  
+     */
+    private void _getPlatformCharecteristics( Platform x ) {
+        Iterator j = x.getResourceList().iterator();
+        while (j.hasNext()) {
+            Resource resource = (Resource)j.next();
+            if( resource instanceof XUPV5LX110T ) {
+               _targetBoard = "XUPV5-LX110T";
+            } else if( resource instanceof ML605 ) {
+               _targetBoard = "ML605";
+            } else if( resource instanceof AXICrossbar ) {
+               _axiPlatform = true;
+            }
+        }
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
@@ -688,8 +702,11 @@ public class XpsSDKVisitor {
  
     // The mapping   
     private Mapping _mapping;
-      
+    
+    // the board in use
+    private String _targetBoard = "";
+    
     // A flag to indicate whether the platform is AXI-based or not
-    private boolean _axiPlatform;
+    private boolean _axiPlatform = false;
 
 }
