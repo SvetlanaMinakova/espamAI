@@ -60,7 +60,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.10 2012/06/01 08:59:01 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.11 2012/06/01 15:18:57 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -396,24 +396,58 @@ public class XpsSDKVisitor {
                 out.println("BEGIN OS\n" +
                             " PARAMETER OS_NAME = standalone\n" +
                             " PARAMETER OS_VER = 3.01.a\n" +
-                            " PARAMETER PROC_INSTANCE = mb_1\n" +
+                            " PARAMETER PROC_INSTANCE = " + mProcessor.getName() + "\n" +
+                            "END\n");
+
+                out.println("BEGIN PROCESSOR\n" +
+                            " PARAMETER DRIVER_NAME = cpu\n" +
+                            " PARAMETER DRIVER_VER = 1.13.a\n" +
+                            " PARAMETER HW_INSTANCE = " + mProcessor.getName() + "\n" +
+                            "END\n");
+                              
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = bram\n" +
+                            " PARAMETER DRIVER_VER = 3.00.a\n" +
+                            " PARAMETER HW_INSTANCE = DCTRL_BRAM1_" + mProcessor.getName() + "\n" +
+                            "END\n");
+ 
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = mpmc\n" +
+                            " PARAMETER DRIVER_VER = 4.01.a\n" +
+                            " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
+                            "END\n");
+
+                out.println("BEGIN DRIVER\n" +
+                            " PARAMETER DRIVER_NAME = bram\n" +
+                            " PARAMETER DRIVER_VER = 3.00.a\n" +
+                            " PARAMETER HW_INSTANCE = PCTRL_BRAM1_" + mProcessor.getName() + "\n" +
                             "END\n");
                 
-                // TODO: for PROCESSOR
-                
-                // TODO: for 
-
+                // TODO: Find a way to print fin_ctrl
+                // For the time being, skip it here and do it in SDK
+                /*   
+                out.println("BEGIN DRIVER\n" +
+                                        " PARAMETER DRIVER_NAME = generic\n" +            } // end AXI/PLB
+                                        " PARAMETER DRIVER_VER = 1.00.a\n" +            
+                                        " PARAMETER HW_INSTANCE = clock_cycle_counter_" + r.getName() + "\n" + //TODO: Not Right!             
+                                        "END\n");            out.close();
+                out.println("BEGIN DRIVER\n" +            systemFile.close();
+                                        " PARAMETER DRIVER_NAME = generic\n" +            
+                                        " PARAMETER DRIVER_VER = 1.00.a\n" +        } catch (IOException exp) {
+                                        " PARAMETER HW_INSTANCE = fin_ctrl_" + r.getName() + "\n" + //TODO: Not Right		    System.err.println("Error creating file system.mss");
+                                        "END\n"); 		    System.err.println("Error:" + exp);
+                */        
             } // end AXI/PLB
-            
             
             out.close();
             systemFile.close();
             
         } catch (IOException exp) {
-		    System.err.println("Error creating file system.mss");
-		    System.err.println("Error:" + exp);
-        } // end creating mss
+            System.err.println("Error creating file system.mss");
+            System.err.println("Error:" + exp);
+        }
     }
+    
 
     private void Libgen(String processorName, String dirname){
 	    PrintWriter out;
@@ -568,19 +602,24 @@ public class XpsSDKVisitor {
 
     public void makeXCPCProject(String destFolder, String processorName, String projectName, int type) throws Exception {
         File f;
-        if (type == 0)  // Standalone
-            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Standalone_Template_CProject");
-        else if (type == 1) // Xilkernel
-            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Xilkernel_Template_CProject");
-        else if (type == 2) // FreeRTOS
-            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_FreeRTOS_Template_CProject");
-        else if (type == 3) // Host IF
-            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_HostIF_Template_CProject");
-        else
-            throw new Exception("Invalid CProject file type specified");
-            
-	    FileWriter file = new FileWriter (destFolder + File.separatorChar + ".cproject");
-	    PrintWriter printer = new PrintWriter(file);
+        if (_axiPlatform) { // AXI
+            if (type == 0)  // Standalone
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Standalone_Template_CProject");
+            else if (type == 1) // Xilkernel
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Xilkernel_Template_CProject");
+            else if (type == 2) // FreeRTOS
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_FreeRTOS_Template_CProject");
+            else if (type == 3) // Host IF
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_HostIF_Template_CProject");
+            else
+                throw new Exception("Invalid CProject file type specified");
+                
+        } else { // PLB
+            // TODO: create a new file of cproject in libSDK/BSPTemplate and open the file here
+        }
+        
+        FileWriter file = new FileWriter (destFolder + File.separatorChar + ".cproject");
+        PrintWriter printer = new PrintWriter(file);
         if (!f.exists() && f.length() < 0) {
                 System.out.println("The specified file does not exist");
         } else {
