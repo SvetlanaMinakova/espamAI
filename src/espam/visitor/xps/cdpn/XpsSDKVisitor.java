@@ -62,7 +62,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.15 2012/06/01 17:01:15 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.16 2012/06/04 14:30:18 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -686,7 +686,7 @@ public class XpsSDKVisitor {
             }
         }
         
-        if (_targetBoard != "ML605" || _targetBoard != "XUPV5-LX110T"){
+        if (_targetBoard != "ML605" && _targetBoard != "XUPV5-LX110T"){
             System.err.println("Error: unsupported target board in using SDK visitor");
         }
     }
