@@ -68,7 +68,7 @@ import espam.main.UserInterface;
  *  This class ...
  *
  * @author  Wei Zhong, Todor Stefanov, Hristo Nikolov, Joris Huizer
- * @version  $Id: XpsStatementVisitor.java,v 1.15 2012/05/02 16:26:55 tzhai Exp $
+ * @version  $Id: XpsStatementVisitor.java,v 1.16 2012/06/05 12:30:17 tzhai Exp $
  *      
  */
 
@@ -247,7 +247,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 			}
         } // end MultiFifo, CM_AXI, ...
 		
-		if (_scheduleType == 0 && Options.USE_LOCAL_VAR_FIFO == true){
+		if (_scheduleType == 0 && cdChannel.isSelfChannel() == true && Options.USE_LOCAL_VAR_FIFO == true){
 			//-------------------------------------------------------------------------------------
 			// We can implement the self-channels, in case of static schedule, as local variables.
 			// This feature is currently not used because, in order to be complete, 
@@ -486,7 +486,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 		}
 		
 		
-		if (_scheduleType == 0 && Options.USE_LOCAL_VAR_FIFO == true){
+		if (_scheduleType == 0 && cdChannel.isSelfChannel() == true && Options.USE_LOCAL_VAR_FIFO == true){
 			//-------------------------------------------------------------------------------------
 			// We can implement the self-channels, in case of static schedule, as local variables.
 			// This feature is currently not used because, in order to be complete, 
