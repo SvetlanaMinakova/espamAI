@@ -62,7 +62,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.16 2012/06/04 14:30:18 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.17 2012/06/05 12:29:30 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -405,11 +405,16 @@ public class XpsSDKVisitor {
                             " PARAMETER DRIVER_VER = 3.00.a\n" +
                             " PARAMETER HW_INSTANCE = DCTRL_BRAM1_" + mProcessor.getName() + "\n" +
                             "END\n");
- 
+                
+                int ddr_type = 3;
+                if (_targetBoard == "XUPV5-LX110T"){
+                    ddr_type = 2;  
+                } 
+                
                 out.println("BEGIN DRIVER\n" +
                             " PARAMETER DRIVER_NAME = mpmc\n" +
                             " PARAMETER DRIVER_VER = 4.01.a\n" +
-                            " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
+                            " PARAMETER HW_INSTANCE = DDR" + ddr_type + "_SDRAM\n" +
                             "END\n");
 
                 out.println("BEGIN DRIVER\n" +
@@ -610,8 +615,13 @@ public class XpsSDKVisitor {
                 throw new Exception("Invalid CProject file type specified");
                 
         } else { // PLB
-            // TODO: create a new file of cproject in libSDK/BSPTemplate and open the file here
-            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_AXI_HostIF_Template_CProject");
+            // TODO: for PLB platform we currently only support standalone 
+            if (type == 0)  // Standalone
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_PLB_Standalone_Template_CProject");
+            else if (type == 3) // Host IF
+                f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_PLB_HostIF_Template_CProject");
+            else
+                throw new Exception("Invalid CProject file type specified");
         }
         
         FileWriter file = new FileWriter (destFolder + File.separatorChar + ".cproject");
