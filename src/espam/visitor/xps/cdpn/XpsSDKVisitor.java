@@ -62,7 +62,7 @@ import espam.visitor.xps.Copier;
  *  using SDK.
  *
  * @author  Mohamed Bamakhrama, Teddy Zhai, Andrea Ciani 
- * @version  $Id: XpsSDKVisitor.java,v 1.17 2012/06/05 12:29:30 tzhai Exp $
+ * @version  $Id: XpsSDKVisitor.java,v 1.18 2012/06/05 15:56:30 tzhai Exp $
  */
 
 public class XpsSDKVisitor {
@@ -151,7 +151,32 @@ public class XpsSDKVisitor {
             System.err.println ("Error copying the functional code directory");
             e.printStackTrace();
         }
+        
+        
+        /* Replacing right DDR type according to the board in use (v5 v6) */
+        String replace = "DDR3";
+        if (_targetBoard == "XUPV5-LX110T")
+            replace = "DDR2";
+        
+        try {
+            FileReader fr = new FileReader(originMss);
+            BufferedReader reader = new BufferedReader(fr);
+            FileWriter file = new FileWriter (destination);
+            PrintWriter printer = new PrintWriter(file);
+            String st = "";
+            while ((st = reader.readLine()) != null) {
+                Pattern p = Pattern.compile("##DDR_TYPE##");
+                Matcher m = p.matcher(st);
+                st=(m.replaceAll(replace));
+                printer.println(st);                        
+            }
+            printer.close();
+        } catch (Exception e) {
+            System.out.println ("Error making host interface mss file");
+            e.printStackTrace();
+        }
     }
+
 
     public void visitProcessor(CDProcess process) {
         String bsp_dirname, xcp_dirname;
