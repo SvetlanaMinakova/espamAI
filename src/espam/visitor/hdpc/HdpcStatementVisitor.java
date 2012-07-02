@@ -65,7 +65,7 @@ import espam.utils.symbolic.expression.Expression;
  *  This class ...
  *
  * @author  Todor Stefanov, Hristo Nikolov
- * @version  $Id: HdpcStatementVisitor.java,v 1.4 2012/02/27 11:22:50 nikolov Exp $
+ * @version  $Id: HdpcStatementVisitor.java,v 1.5 2012/07/02 12:37:05 tzhai Exp $
  *      
  */
 
@@ -291,7 +291,8 @@ public class HdpcStatementVisitor extends StatementVisitor {
                }
            }
            _printStream.println(") ;");
-           _printStream.println(_prefix + "proc.inc_execution_cntr();");
+           // Teddy: For what purpose? causes huge performance degradation, comment for now
+           _printStream.println(_prefix + "//" +"proc.inc_execution_cntr();");
 	   _printStream.println("");
 
 	} else {
