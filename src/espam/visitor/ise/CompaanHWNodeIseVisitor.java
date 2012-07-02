@@ -64,7 +64,7 @@ import espam.utils.symbolic.expression.*;
  * eval_logic_rd unit has a suffix identifying the node it belongs to.
  *
  * @author Ying Tao, Todor Stefanov, Hristo Nikolov, Sven van Haastregt
- * @version $Id: CompaanHWNodeIseVisitor.java,v 1.15 2012/04/27 09:38:52 svhaastr Exp $
+ * @version $Id: CompaanHWNodeIseVisitor.java,v 1.16 2012/07/02 13:16:53 svhaastr Exp $
  */
 
 public class CompaanHWNodeIseVisitor extends PlatformVisitor {
@@ -496,6 +496,7 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
 	private void _writeHdlEvalLogic(PrintStream hdlPS, Vector ports, Vector args, String romData) throws FileNotFoundException, CodeGenerationException {
 		Vector paramNames = _indexList.getParameterVectorNames();
 		boolean useROMs = !romData.equals("");
+		boolean isROMcompressed = (romData.indexOf("Table compression=ON") >= 0);
 		
 		int i;
 		// parameter signals
@@ -696,19 +697,43 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       // Generate ROM-based evaluation logic
       hdlPS.println("  -- ROM Address generator");
       hdlPS.println("  process (RST,CLK) begin");
-      hdlPS.println("    if (RST = '1') then");
-      hdlPS.println("      rom_addr <= rom_LOW;");
-      hdlPS.println("      outer_i  <= outer_LOW;");
-      hdlPS.println("    elsif (rising_edge(CLK)) then");
-      hdlPS.println("      if (ADVANCE = '1') then");
-      hdlPS.println("        if (rom_addr < rom_HIGH) then");
-      hdlPS.println("          rom_addr <= rom_addr + 1;");
-      hdlPS.println("        else");
-      hdlPS.println("          rom_addr <= rom_LOW;");
-      hdlPS.println("          outer_i <= outer_i + 1;");
-      hdlPS.println("        end if;");
-      hdlPS.println("      end if;");
-      hdlPS.println("    end if;");
+      if (!isROMcompressed) {
+        hdlPS.println("    if (RST = '1') then");
+        hdlPS.println("      rom_addr <= rom_LOW;");
+        hdlPS.println("      outer_i  <= outer_LOW;");
+        hdlPS.println("    elsif (rising_edge(CLK)) then");
+        hdlPS.println("      if (ADVANCE = '1') then");
+        hdlPS.println("        if (rom_addr < rom_HIGH) then");
+        hdlPS.println("          rom_addr <= rom_addr + 1;");
+        hdlPS.println("        else");
+        hdlPS.println("          rom_addr <= rom_LOW;");
+        hdlPS.println("          outer_i <= outer_i + 1;");
+        hdlPS.println("        end if;");
+        hdlPS.println("      end if;");
+        hdlPS.println("    end if;");
+      }
+      else {
+        // Compressed ROM, use custom generator
+        hdlPS.println("    if (RST = '1') then");
+        hdlPS.println("      rom_addr <= rom_LOW;");
+        hdlPS.println("      outer_i  <= outer_LOW;");
+        hdlPS.println("      rep <= rep_count(0);");
+        hdlPS.println("    elsif (rising_edge(CLK)) then");
+        hdlPS.println("      if (ADVANCE = '1') then");
+        hdlPS.println("        rep <= rep - 1;");
+        hdlPS.println("        if (rep = 0) then");
+        hdlPS.println("          if (rom_addr < rom_HIGH) then");
+        hdlPS.println("            rom_addr <= rom_addr + 1;");
+        hdlPS.println("            rep <= rep_count(rom_addr + 1);");
+        hdlPS.println("          else");
+        hdlPS.println("            rom_addr <= rom_LOW;");
+        hdlPS.println("            outer_i <= outer_i + 1;");
+        hdlPS.println("            rep <= rep_count(0);");
+        hdlPS.println("          end if;");
+        hdlPS.println("        end if;");
+        hdlPS.println("      end if;");
+        hdlPS.println("    end if;");
+      }
       hdlPS.println("  end process;");
       hdlPS.println("");
       hdlPS.println("  rom_data <= ctrl_rom(rom_addr);");
@@ -729,7 +754,12 @@ public class CompaanHWNodeIseVisitor extends PlatformVisitor {
       hdlPS.println("");
 
       hdlPS.println("  -- Done signal; delayed by one cycle to make its timing equal to the conventional done signal");
-      hdlPS.println("  sl_done <= '1' when (outer_i = outer_HIGH and rom_addr = rom_HIGH) else '0';");
+      if (!isROMcompressed) {
+        hdlPS.println("  sl_done <= '1' when (outer_i = outer_HIGH and rom_addr = rom_HIGH) else '0';");
+      }
+      else {
+        hdlPS.println("  sl_done <= '1' when (outer_i = outer_HIGH and rom_addr = rom_HIGH and rep = 0) else '0';");
+      }
       hdlPS.println("  process (RST,CLK) begin");
       hdlPS.println("    if (RST = '1') then");
       hdlPS.println("      DONE <= '0';");
