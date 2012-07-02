@@ -1,0 +1,10 @@
+*.class
+config.log
+config.status
+confdefs.h
+config/cpinvoke
+config/vars.mk
+src/vars.mk
+bin/espam
+bin/cpinvoke
+
