@@ -16,8 +16,11 @@ You must not remove this notice, or any other, from this software.
 
 package espam.datamodel.platform;
 
+import espam.datamodel.platform.communication.AXICrossbar;
 import java.util.Vector;
 import java.util.Iterator;
+import java.io.IOException;
+
 
 import espam.visitor.PlatformVisitor;
 
@@ -28,11 +31,14 @@ import espam.visitor.PlatformVisitor;
  * This class is a basic platform.
  *
  * @author Todor Stefanov
- * @version  $Id: Platform.java,v 1.1 2007/12/07 22:09:03 stefanov Exp $
+ * @version  $Id: Platform.java,v 1.2 2012/07/02 12:34:03 tzhai Exp $
  */
 
 public class Platform extends Resource {
-
+    ///////////////////////////////////////////////////////////////////
+    ////                         public members                    ////
+    public enum InterconnectionTYPE {AXI, PLB}
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
 
@@ -129,6 +135,26 @@ public class Platform extends Resource {
           }
           return null;
      }
+     
+    /**
+     * Determine the type of interconection:
+     *  TYPE_AXI
+     *
+     * @param  name the name of the resource to search for.
+     * @return  the resource with the specific name.
+     */
+    public boolean getInterconnectionType(){
+        assert _resourceList != null;
+        
+        Iterator i = _resourceList.iterator();
+        while( i.hasNext() ) {
+            Resource resource = (Resource) i.next();
+            if( resource instanceof AXICrossbar ) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
