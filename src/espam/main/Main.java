@@ -182,7 +182,7 @@ public class Main {
 
 // in case of a single application, _ui file name (.kpn) is used as the name of the folder where the output is generated	
 			      if(_ui.getADGFileNames().size() > 1) {
-				   _ui.setFileName("myFileName");
+				   _ui.setFileName("xps_project");
  			           _sadg = _merge( sadg_0 );
 			      } else {
 			      	   _sadg.add(sadg_0.get(0));
