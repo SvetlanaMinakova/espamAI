@@ -385,7 +385,7 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             _printNetwork(maf);
 
             maf.println(_prefix + "sc_start();");
-            maf.println(_prefix + "cout << \"Process network simulation ended.\" << endl << endl;");
+            maf.println(_prefix + "cout << \"Process network simulation ended at \" << sc_time_stamp() << endl << endl;");
             maf.println("");
             maf.println("#ifndef NOTRACE");
             maf.println(_prefix + "sc_close_vcd_trace_file(tf);");
