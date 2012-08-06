@@ -24,6 +24,7 @@ JSRCS = \
 	Copyright.java \
 	UserInterface.java \
 	Options.java \
+	Config.java \
 	Main.java
 
 

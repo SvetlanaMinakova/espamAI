@@ -5,6 +5,7 @@ confdefs.h
 config/cpinvoke
 config/vars.mk
 src/vars.mk
+src/espam/main/Config.java
 bin/espam
 bin/cpinvoke
 

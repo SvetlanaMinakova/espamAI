@@ -29,6 +29,8 @@ AC_CHECKING(" -------- JAVA Stuff --------- ")
 
 AC_ARG_WITH(java, [  --with-java=DIR         Location of JDK installation],
     JAVA_HOME=$withval)
+AC_ARG_WITH(systemc, [  --with-systemc=DIR      Location of SystemC installation],
+    SYSTEMC_HOME=$withval, SYSTEMC_HOME="${HOME}/systemc-2.2.0")
 
 if test -d "$JAVA_HOME"; then
     AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
@@ -105,6 +107,9 @@ AC_SUBST(CLASSPATHSEPARATOR)
 # Location of the JDK
 AC_SUBST(JAVA_HOME)
 
+# Location of SystemC installation
+AC_SUBST(SYSTEMC_HOME)
+
 AC_SUBST(LIBPATH)
 
 # From where to get the library files
@@ -114,7 +119,7 @@ AC_SUBST(LDPATH)
 #AC_OUTPUT(vars.mk)
 
 # Files we substitute in
-AC_OUTPUT(./config/cpinvoke ./config/vars.mk )
+AC_OUTPUT(./config/cpinvoke ./config/vars.mk ./src/espam/main/Config.java)
 chmod -R 755 ./bin
 cp ./config/cpinvoke ./bin
 cp ./config/vars.mk ./src

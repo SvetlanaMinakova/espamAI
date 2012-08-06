@@ -34,6 +34,7 @@ import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.pn.cdpn.CDGate;
 
+import espam.main.Config;
 import espam.main.UserInterface;
 import espam.visitor.CDPNVisitor;
 
@@ -294,13 +295,14 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             if (f.exists() == false) {
                 // Only write the file if it did not exist (so existing config is kept).
                 PrintStream cf = _openFile(configFilename);
+                Config espamConfig = Config.getInstance();
 
                 cf.println("# Makefile config for SystemC Process Networks");
                 cf.println("");
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
+                cf.println("SYSTEMC = " + espamConfig.getSystemCPath());
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);

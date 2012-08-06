@@ -1,0 +1,65 @@
+/*******************************************************************\
+
+The ESPAM Software Tool
+Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
+All rights reserved.
+
+The use and distribution terms for this software are covered by the
+Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+which can be found in the file LICENSE at the root of this distribution.
+By using this software in any fashion, you are agreeing to be bound by
+the terms of this license.
+
+You must not remove this notice, or any other, from this software.
+
+\*******************************************************************/
+
+package espam.main;
+
+
+//////////////////////////////////////////////////////////////////////////
+//// Config
+/**
+ * This class contains variables that are set by the configure script.
+ * @author Sven van Haastregt
+ */
+
+public class Config {
+
+  ////////////////////////////////////////////////////////////////////////
+  //// public methods ////
+
+  /**
+   * Returns singleton instance of this class.
+   */
+  public final static Config getInstance() {
+    return _instance;
+  }
+
+  /**
+   * Returns path to SystemC installation.
+   */
+  public String getSystemCPath() {
+    return _systemcPath;
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////
+  //// private methods ////
+
+  /**
+   * Private constructor.
+   */
+  private Config() {
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////
+  //// private members ////
+
+  private final static Config _instance = new Config();
+
+  // Path to SystemC simulation
+  private String _systemcPath = "@SYSTEMC_HOME@";
+
+}
