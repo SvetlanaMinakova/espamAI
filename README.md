@@ -8,13 +8,15 @@ Compilation Instructions
 ------------------------
 To build ESPAM, you need to execute the following two commands:
 
-	./configure --prefix=`pwd` --with-java=$JAVA_PATH [--with-systemc=$SYSTEMC_HOME]
+	./configure --prefix=`pwd` [--with-java=$JAVA_PATH --with-systemc=$SYSTEMC_HOME]
 	make
 
-where `$JAVA_PATH` is the full path to your Java SDK installation. 
-On Ubuntu machines, SDK installations are usually located under: `/usr/lib/jvm/`
-Optionally, the SystemC installation path can be specified using the `--with-systemc` option.
-If this option is not given, ESPAM assumes SystemC is installed in `$HOME/systemc-2.2.0`.
+The prefix is set to the espam directory.
+Optionally, you can pass `$JAVA_PATH` which is the full path to your Java SDK installation.
+If this option is not given, ESPAM will look for the JDK that corresponds to the javac
+found in /usr/bin/javac. Additionally, you can pass `$SYSTEMC_HOME` which is full path to 
+the SystemC installation on your system.If this option is not given, ESPAM assumes 
+SystemC is installed in `$HOME/systemc-2.2.0`.
 
 
 Running ESPAM
