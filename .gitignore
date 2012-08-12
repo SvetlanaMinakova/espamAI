@@ -9,3 +9,10 @@ src/espam/main/Config.java
 bin/espam
 bin/cpinvoke
 
+autom4te.cache
+src_lib/autom4te.cache
+src_lib/lib
+src_lib/vars.mk
+*.o
+
+
