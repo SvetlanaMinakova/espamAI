@@ -4,7 +4,7 @@ dnl Autoconfigure for ESPAM_LIBs
 AC_INIT(vars.mk.in)
 
 if test $prefix = "NONE"; then
-	AC_MSG_WARN([No prefix is given, Will assume that libraries will be installed in directory "/usr/local". Use "--prefix=path" to change this path])
+	AC_MSG_WARN([No prefix is given, Will assume that libraries will be installed in directory "/usr". Use "--prefix=path" to change this path])
 else
 	AC_MSG_WARN([Libraries will be installed in directory '$prefix'])
 fi
@@ -117,10 +117,10 @@ esac
 
 
 dnl Check where the GMP library is on the system
-AC_ARG_WITH(gmp, [  --with-gmp=DIR Location of the GMP library],GMP_DIR=$withval,GMP_DIR=/usr/local)
+AC_ARG_WITH(gmp, [  --with-gmp=DIR Location of the GMP library],GMP_DIR=$withval,GMP_DIR=/usr)
 
 dnl Check where the PolyLib is on the system
-AC_ARG_WITH(polylib, [  --with-polylib=DIR Location of the PolyLib Distribution],POLYLIB_DIR=$withval,POLYLIB_DIR=/usr/local)
+AC_ARG_WITH(polylib, [  --with-polylib=DIR Location of the PolyLib Distribution],POLYLIB_DIR=$withval,POLYLIB_DIR=/usr)
 
 dnl See if the only goal is to create a 32 bit library
 AC_ARG_ENABLE(32bit,[ --enable-32bit=Enable that only a 32 bit polylib library should be used, otherwise 64 bit library is assumed],twbit=no,twbit=yes)
