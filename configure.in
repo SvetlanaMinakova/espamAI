@@ -10,7 +10,8 @@ dnl Autoconfigure for DIVA
 AC_INIT(./config/cpinvoke.in)
 
 if test $prefix = "NONE"; then
-	AC_MSG_WARN([No prefix is given, Will assume that ESPAM will run from directory "/usr/local". Use "--prefix=path" to change this path])
+	prefix=`dirname $0 | xargs readlink -f `
+	AC_MSG_WARN([No prefix is given, will assume that ESPAM will run from directory "$prefix". Use "--prefix=path" to change this path])
 else
 	AC_MSG_WARN([ESPAM will run from directory '$prefix'])
 fi
@@ -26,22 +27,16 @@ AC_CHECKING(" -------- JAVA Stuff --------- ")
 #	not, check to see if the JAVA_HOME environment variable is set;
 #       if it is not, look for javac on the path.
 #--------------------------------------------------------------------
-
+AC_PATH_PROG(JAVAC, javac)
 AC_ARG_WITH(java, [  --with-java=DIR         Location of JDK installation],
-    JAVA_HOME=$withval, JAVA_HOME=`readlink -f /usr/bin/javac | sed "s:/bin/javac::"`)
+    JAVA_HOME=$withval, JAVA_HOME=`readlink -f $JAVAC | sed "s:/bin/javac::"`)
 AC_ARG_WITH(systemc, [  --with-systemc=DIR      Location of SystemC installation],
     SYSTEMC_HOME=$withval, SYSTEMC_HOME="${HOME}/systemc-2.2.0")
 
 if test -d "$JAVA_HOME"; then
     AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
 else
-    AC_MSG_RESULT([$JAVA_HOME doesn't exist, searching...])
-fi
-
-if test ! -d "$JAVA_HOME"; then
-	AC_MSG_ERROR([Java installation not found, please specify --with-java])
-else
-     	AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
+    AC_MSG_ERROR([Java installation not found, please specify --with-java])
 fi
 
 dnl Check for other stuff
