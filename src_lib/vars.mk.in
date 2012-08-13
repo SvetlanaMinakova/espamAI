@@ -58,7 +58,7 @@ LN_S			= @LN_S@
 # The home of the Java Developer's Kit (JDK)
 # Generating Java documentation uses this makefile variable
 # The line below gets subsituted by the configure script
-PANDAJAVA_DIR = 	@PANDAJAVA_DIR@
+JAVA_HOME = 	@JAVA_HOME@
 
 # JDK Version from the java.version property
 JVERSION =	@JVERSION@
@@ -68,31 +68,13 @@ JVERSION =	@JVERSION@
 # For Cygwin, this would be ;
 CLASSPATHSEPARATOR = @CLASSPATHSEPARATOR@
 
-# The home of the Java Foundation Classes (JFC) aka Swing
-JFCHOME = 	/usr/local/src/jdk1.2.1/swing
-
-# CLASSPATH necessary to find the swing.jar file for JFC
-JFCCLASSPATH = $(JFCHOME)/swing.jar
-
-# The variables below are for the SunTest JavaScope code coverage tool
-# See http://www.suntest.com/JavaScope
-# The 'jsinstr' command, which instruments Java code.
-JSINSTR = 	/home/cserc/adm/projects/JavaScope/bin/jsinstr
-JSINSTRFLAGS = 	-IFLUSHCLASS=true
-
-# The 'jsrestore' command which uninstruments Java code.
-JSRESTORE =	/home/cserc/adm/projects/JavaScope/bin/jsrestore
-
-# The pathname to the JavaScope.zip file
-JSCLASSPATH = 	/home/cserc/adm/projects/JavaScope/JavaScope.zip
-
 ########## You should not have to change anything below this line ######
 
 # The 'javac' compiler.
-JAVAC = 	$(PANDAJAVA_DIR)/bin/javac
+JAVAC = 	$(JAVA_HOME)/bin/javac
 
 # The 'javah' compiler.
-JAVAH = 	$(PANDAJAVA_DIR)/bin/javah
+JAVAH = 	$(JAVA_HOME)/bin/javah
 
 # Flags to pass to javac.  Usually something like '-g'
 # This line gets substituted by configure
@@ -101,41 +83,16 @@ JOPTIMIZE =	#-O
 JFLAGS = 	$(JDEBUG) $(JOPTIMIZE) -source 1.5
 
 # The 'javadoc' program
-JAVADOC = 	$(PANDAJAVA_DIR)/bin/javadoc -source 1.5
+JAVADOC = 	$(JAVA_HOME)/bin/javadoc -source 1.5
 
 # Flags to pass to javadoc.
 JDOCFLAGS = 	-author -version
 
 # The jar command, used to produce jar files, which are similar to tar files
-JAR =		$(PANDAJAVA_DIR)/bin/jar
+JAR =		$(JAVA_HOME)/bin/jar
 
 # The 'java' interpreter.
-JAVA =		$(PANDAJAVA_DIR)/bin/java
-
-# JavaCC is the Java Compiler Compiler which is used by ptolemy.data.expr
-# The default location is $(PTII)/vendors/sun/JavaCC
-JAVACC_DIR = 	@JAVACC_DIR@
-
-# Under Unix:
-# JJTREE =	$(JAVACC_DIR)/bin/jjtree
-# JAVACC =	$(JAVACC_DIR)/bin/javacc
-# Under Cygwin32 NT the following should be used and JavaCC.zip must be in 
-# the CLASSPATH
-# JJTREE = 	$(JAVA) -classpath "$(CLASSPATH)$(CLASSPATHSEPARATOR)$(JAVACC_DIR)/bin/lib/javacc.jar" org.javacc.jjtree.Main
-# JAVACC = 	$(JAVA) -classpath "$(CLASSPATH)$(CLASSPATHSEPARATOR)$(JAVACC_DIR)/bin/lib/javacc.jar" org.javacc.parser.Main 
-JJTREE = 	@JJTREE@
-JAVACC = 	@JAVACC@
-
-# Jar file that contains Jacl
-PTJACL_JAR =	$(ROOT)/lib/ptjacl.jar
-
-# Flags to pass java when we start Jacl.
-PTJACL_JFLAG =  @TCLFLAGS@
-
-# jtclsh script to run Jacl for the test suite.
-# We could use bin/ptjacl here, but instead we start it from within
-# make and avoid problems
-JTCLSH =	CLASSPATH="$(CLASSPATH)$(CLASSPATHSEPARATOR)$(AUXCLASSPATH)$(CLASSPATHSEPARATOR)$(PTJACL_JAR)$(CLASSPATHSEPARATOR)$(JAVASCOPECLASSPATH)" $(JAVA) $(PTJACL_JFLAG) tcl.lang.Shell
+JAVA =		$(JAVA_HOME)/bin/java
 
 # Commands used to install scripts and data
 INSTALL =		$(PANDA)/config/install-sh -c
