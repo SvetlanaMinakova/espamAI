@@ -28,7 +28,7 @@ INCL                    = -I$(JAVA_HOME)/include/$(OSEXT)/ \
 
 # Changed to enable compilation on 64-bit machines
 #LIB                     = $(POLYLIB_LIB)/libpolylib$(BITS).a
-LIB                     = -L$(POLYLIB_LIB) -lpolylib$(BITS)
+LIB                     = -L$(POLYLIB_LIB) -Wl,-Bstatic -lpolylib$(BITS) -Wl,-Bdynamic
 
 
 # Added to enable compilation on 64-bit machines
