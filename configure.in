@@ -120,6 +120,15 @@ cp ./config/cpinvoke ./bin
 cp ./config/vars.mk ./src
 chmod 755 ./bin/cpinvoke
 
+# Select the libpandapolylib.so version that matches the system
+PANDALIB="libpandapolylib.so.`getconf LONG_BIT`"
+if test -x lib/$PANDALIB; then
+  rm -f lib/libpandapolylib.so
+  ln -s $PANDALIB lib/libpandapolylib.so
+else
+  AC_MSG_ERROR([libpandapolylib.so was not precompiled for your platform; please compile it yourself])
+fi
+
 cd ./bin
 rm -rf espam
 ln -s cpinvoke espam

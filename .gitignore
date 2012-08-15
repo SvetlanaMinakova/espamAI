@@ -8,6 +8,7 @@ src/vars.mk
 src/espam/main/Config.java
 bin/espam
 bin/cpinvoke
+lib/libpandapolylib.so
 
 autom4te.cache
 src_lib/autom4te.cache
