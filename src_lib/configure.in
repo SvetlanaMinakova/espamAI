@@ -167,6 +167,23 @@ EXTRA_DEFINE="-DPOLYLIB511";
 CPPFLAGS=$SAVE_CPPFLAGS
 LDFLAGS=$SAVE_LDFLAGS
 
+# Try to build a .so by linking in libpolylib.a
+# This fails if libpolylib.a was compiled without -fPIC
+AC_MSG_CHECKING(whether libpolylib can be used for shared objects)
+if cat <<_END_ | gcc -x c - -shared -fPIC -o /dev/null -I${POLYLIB_INC} -L${POLYLIB_LIB} -Wl,-Bstatic -lpolylib${BITS} -Wl,-Bdynamic 2>/dev/null;
+#include "polylib/polylib${BITS}.h"
+void testfn() {
+  LexSmaller();
+}
+_END_
+then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(failed)
+  AC_MSG_ERROR(Could not link libpolylib into a shared object. Please configure polylib using --with-pic)
+fi
+
+
 dnl Check, when making 64 bit version, if GMP is present
 dnl The location of the gmp distribution
 GMP_INC=$GMP_DIR/include
