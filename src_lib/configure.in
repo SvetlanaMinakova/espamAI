@@ -1,10 +1,9 @@
-AC_REVISION($Id: configure.in,v 1.2 2009/11/25 11:14:03 mohamed Exp $)
-
 dnl Autoconfigure for ESPAM_LIBs
 AC_INIT(vars.mk.in)
 
 if test $prefix = "NONE"; then
-	AC_MSG_WARN([No prefix is given, Will assume that libraries will be installed in directory "/usr/local". Use "--prefix=path" to change this path])
+	prefix=`readlink -f ..`
+	AC_MSG_WARN([No prefix is given, Will assume that libraries will be installed in directory "$prefix". Use "--prefix=path" to change this path])
 else
 	AC_MSG_WARN([Libraries will be installed in directory '$prefix'])
 fi
@@ -20,7 +19,7 @@ AC_CHECKING(" -------- ESPAM Stuff --------- ")
 #--------------------------------------------------------------------
 
 AC_ARG_WITH(espam, [  --with-espam=DIR         Location of ESPAM instalation],
-    ESPAM=$withval, ESPAM=NONE)
+    ESPAM=$withval, ESPAM=`readlink -f ..`)
 
 if test $ESPAM = "NONE"; then
     AC_MSG_WARN([No Espam path  is given. The default path '$prefix' will be used. Use option "--with-espam=path" to change this path])
@@ -117,10 +116,10 @@ esac
 
 
 dnl Check where the GMP library is on the system
-AC_ARG_WITH(gmp, [  --with-gmp=DIR Location of the GMP library],GMP_DIR=$withval,GMP_DIR=/usr/local)
+AC_ARG_WITH(gmp, [  --with-gmp=DIR Location of the GMP library],GMP_DIR=$withval,GMP_DIR=/usr)
 
 dnl Check where the PolyLib is on the system
-AC_ARG_WITH(polylib, [  --with-polylib=DIR Location of the PolyLib Distribution],POLYLIB_DIR=$withval,POLYLIB_DIR=/usr/local)
+AC_ARG_WITH(polylib, [  --with-polylib=DIR Location of the PolyLib Distribution],POLYLIB_DIR=$withval,POLYLIB_DIR=/usr)
 
 dnl See if the only goal is to create a 32 bit library
 AC_ARG_ENABLE(32bit,[ --enable-32bit=Enable that only a 32 bit polylib library should be used, otherwise 64 bit library is assumed],twbit=no,twbit=yes)
@@ -170,26 +169,25 @@ LDFLAGS=$SAVE_LDFLAGS
 
 dnl Check, when making 64 bit version, if GMP is present
 dnl The location of the gmp distribution
-   GMP_INC=$GMP_DIR/include
-   GMP_LIB=$GMP_DIR/lib
+GMP_INC=$GMP_DIR/include
+GMP_LIB=$GMP_DIR/lib
 
-   if test "$BITS" = 64; then
-      AC_CHECK_LIB(gmp,main,gmplib=yes,gmplib=no)
-      if test "$gmplib" = no; then
-	 AC_MSG_CHECKING("The gmp library location")
-         if test -f "$GMP_LIB/libgmp.a"; then
-            AC_MSG_RESULT("ok")
+if test "$BITS" = 64; then
+	AC_CHECK_LIB(gmp,main,gmplib=yes,gmplib=no)
+	if test "$gmplib" = no; then
+		AC_MSG_CHECKING("The gmp library location")
+		if test -f "$GMP_LIB/libgmp.a"; then
+			AC_MSG_RESULT("ok")
+			GMP_LIBS="-L${GMP_LIB} -lgmp"
+			#EXTRA_LIBS="$EXTRA_LIBS -L$GMP_LIB -lgmp"
+		else
+			AC_MSG_WARN(['${GMP_LIB}' does not contain libgmp.a])
+		fi
+	else
 		GMP_LIBS="-L${GMP_LIB} -lgmp"
-            #EXTRA_LIBS="$EXTRA_LIBS -L$GMP_LIB -lgmp"
-         else
-            AC_MSG_WARN(['${GMP_LIB}' does not contain libgmp.a])
-	 fi
-      else
-	GMP_LIBS="-L${GMP_LIB} -lgmp"
-	#EXTRA_LIBS="$EXTRA_LIBS -L$GMP_LIB -lgmp"
-      fi
-   fi
-
+		#EXTRA_LIBS="$EXTRA_LIBS -L$GMP_LIB -lgmp"
+	fi
+fi
 
 
 dnl set a define used in polylib.c
@@ -203,105 +201,20 @@ dnl Check the JAVA STUFF NEXT
 AC_CHECKING(" -------- JAVA Stuff --------- ")
 #--------------------------------------------------------------------
 #	See if there was a command-line option for where Java is;  if
-#	not, check to see if the PTJAVA_DIR environment variable is set;
+#	not, check to see if the JAVA_HOME environment variable is set;
 #       if it is not, look for javac on the path.
 #--------------------------------------------------------------------
-
-AC_ARG_WITH(java, [  --with-java=DIR         use Java binaries from DIR,
-                           defaults to the value of the
-                           PANDAJAVA_DIR environment variable],
-    PANDAJAVA_DIR=$withval)
-
-if test ! -d "$PANDAJAVA_DIR"; then
-    if test -z "$PANDAJAVA_DIR"; then
-	AC_MSG_WARN([PANDAJAVA_DIR environment variable was not set,
-so we search for the java compiler.])
-
-    else
-	AC_MSG_WARN([PANDAJAVA_DIR environment variable is set to
-'${PANDAJAVA_DIR}', which is not a directory,
-so we search for the java compiler.])
-    fi 
-    AC_PATH_PROGS(JAVAC, javac javah)
-    if test -x "$JAVAC"; then	
-	JAVABIN=`dirname $JAVAC`
-	PANDAJAVA_DIR=`dirname $JAVABIN`
-	if test "$PANDAJAVA_DIR" = "/"; then
-	    if test -d /usr/java; then
-		PANDAJAVA_DIR=/usr/java
-	        AC_MSG_WARN([ Found javac in '$JAVABIN', /usr/java exists, so
-  we are setting PANDAJAVA_DIR to '$PANDAJAVA_DIR'])
-	    fi	
-	fi
-
-    else
-        AC_MSG_WARN([ Failed to find javac, perhaps Java is not installed?])
-    fi
-
-    # The default location that we look for the JDK.  This should probably
-    # be a list that includes /usr/local/jdk and /opt/jdk
-    if test ! -d "$PANDAJAVA_DIR"; then
-	DEFAULT_JDK=/opt/jdk1.1.6
-	if test -d "$DEFAULT_JDK"; then
-	    PANDAJAVA_DIR=`cd $DEFAULT_JDK; pwd`	
-	    AC_MSG_WARN(['${PANDAJAVA_DIR}' is not a directory, using the default '${DEFAULT_JDK}'])
-
-	else 
-	    DEFAULT_JDK=/usr/java
-	    if test -d "$DEFAULT_JDK"; then
-		PANDAJAVA_DIR=`cd $DEFAULT_JDK; pwd`	
-		AC_MSG_WARN(['${PANDAJAVA_DIR}' is not a directory, using the default '${DEFAULT_JDK}'])
-	    else
-		AC_MSG_ERROR([
-Java directory $DEFAULT_JDK doesn't exist.
-Try --with-java=DIR, or set the PANDAJAVA_DIR environment variable.])
-	    fi
-	fi	
-    fi	
-fi
-
-#
-# Check that we have the javac that corresponds with PANDAJAVA_DIR in our path
-#
-AC_MSG_CHECKING([for the java runtime in $PANDAJAVA_DIR/bin])
-if test -f $PANDAJAVA_DIR/bin/java; then
-    AC_MSG_RESULT($PANDAJAVA_DIR/bin/java)
-    AC_MSG_CHECKING([that you have the right java in your path.])
-    AC_PATH_PROG(JAVA, java)
-    if test "$PANDAJAVA_DIR/bin/java" = "$JAVA"; then
-	AC_MSG_RESULT([  You have the right java in your path, $PANDAJAVA_DIR/bin/java = $JAVA])
-    else
-	AC_MSG_WARN([$PANDAJAVA_DIR/bin/java is not the same as $JAVA.
-Be sure that you don't have a mismatch in JDK versions.])
-	JAVA=$PANDAJAVA_DIR/bin/java
-    fi
+AC_PATH_PROG(JAVAC,javac)
+AC_ARG_WITH(java, [  --with-java=DIR         Location of JDK installation],
+    JAVA_HOME=$withval, JAVA_HOME=`readlink -f $JAVAC | sed "s:/bin/javac::"`)
+if test -d "$JAVA_HOME"; then
+    AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
 else
-    AC_MSG_ERROR([
-  Cannot find $PANDAJAVA_DIR/bin/java.
-  Try --with-java=DIR, or set the PANDAJAVA_DIR environment variable.]) 
+    AC_MSG_ERROR([Java installation not found, please specify --with-java])
 fi
-
-
-#
-# Check that we have the javac that corresponds with PANDAJAVA_DIR in our path
-#
-AC_MSG_CHECKING([for the java compiler in $PANDAJAVA_DIR/bin])
-if test -f $PANDAJAVA_DIR/bin/javac; then
-    AC_MSG_RESULT($PANDAJAVA_DIR/bin/javac)
-    AC_MSG_CHECKING([that you have the right javac in your path.])
-    AC_PATH_PROG(JAVAC, javac)
-    if test "$PANDAJAVA_DIR/bin/javac" = "$JAVAC"; then
-        AC_MSG_RESULT([  You have the right javac in your path, $PANDAJAVA_DIR/bin/javac = $JAVAC])
-    else
-        AC_MSG_WARN([$PANDAJAVA_DIR/bin/javac is not the same as $JAVAC.
-Be sure that you don't have a mismatch in JDK versions.])
-	JAVAC=$PANDAJAVA_DIR/bin/javac
-    fi
-else
-    AC_MSG_ERROR([
-  Cannot find $PANDAJAVA_DIR/bin/javac.
-  Try --with-java=DIR, or set the PANDAJAVA_DIR environment variable.])
-fi
+JAVA=$JAVA_HOME/bin/java
+JAVAC=$JAVA_HOME/bin/javac
+JAVAH=$JAVA_HOME/bin/javah
 
 #--------------------------------------------------------------------
 #	Figure out which separator to use for CLASSPATH
@@ -317,58 +230,6 @@ case "`uname -s`" in
 esac
 AC_MSG_RESULT(['$CLASSPATHSEPARATOR'])
 
-#--------------------------------------------------------------------
-#	See if there was a command-line option for where javacc is;  if
-#	not, check to see if $PANDA/vendors/sun/JavaCC exists
-#       if it is does not, look for javacc on the path.
-#--------------------------------------------------------------------
-
-AC_MSG_CHECKING([for JavaCC])
-AC_ARG_WITH(javacc, [  --with-javacc=DIR       use JavaCC.zip from DIR,
-                           defaults to \$HOME/JavaCC],
-	JAVACC_DIR=$withval,JAVACC_DIR=$HOME/JavaCC)
-
-if test "`uname -s`" = "CYGWIN_NT-4.0"; then
-	JJTREE='\$(JAVA) COM.sun.labs.jjtree.Main'
-	JAVACC='\$(JAVA) COM.sun.labs.javacc.Main'
-	AC_MSG_WARN([Be sure that your CLASSPATH includes JavaCC.zip]);
-else
-     if test ! -d "$JAVACC_DIR"; then
-	  AC_PATH_PROG(JJTREE, jjtree)
-	  if test -x "$JJTREE"; then	
-		AC_MSG_RESULT([$JJTREE]);
-		JAVACCBIN=`dirname $JJTREE`
-		JAVACC_DIR=`dirname $JAVACCBIN`
-	  else
-	        AC_MSG_WARN([Failed to find jjtree]);	
-          fi
-     fi
-fi
-
-if test -d "$JAVACC_DIR"; then
-    AC_MSG_RESULT([$JAVACC_DIR])
-    AC_MSG_CHECKING([for jjtree])
-    if test -x "$JAVACC_DIR/bin/jjtree"; then
-	# Note that we don't substitute in the $(JAVACC_DIR) here
-	JJTREE='$(JAVACC_DIR)/bin/jjtree'
-	AC_MSG_RESULT([$JJTREE])
-    else    
-	AC_MSG_WARN([Failed to find jjtree in '$JAVACC_DIR/bin']);
-    fi    
-    AC_MSG_CHECKING([for javacc])
-    if test -x "$JAVACC_DIR/bin/javacc"; then
-	# Note that we don't substitute in the $(JAVACC_DIR) here
-	JAVACC='$(JAVACC_DIR)/bin/javacc'
-	AC_MSG_RESULT([$JAVACC])
-    else    
-	AC_MSG_WARN([Failed to find javacc in '$JAVACC_DIR/bin']);
-    fi    
-fi
-
-if test ! -d "$JAVACC_DIR"; then
-	JJTREE=touch
-	JAVACC=touch
-fi
 
 dnl fix to get configure work smoother on CYGWIN systems
 case "`uname -s`" in	
@@ -395,26 +256,14 @@ AC_SUBST(CLASSPATHSEPARATOR)
 # Location of ESPAM sources
 AC_SUBST(ESPAM_SRC)
 
-# javacc binary
-AC_SUBST(JAVACC)
-
-# Directory that contains JavaCC, which is used in ptolemy/data/expr
-AC_SUBST(JAVACC_DIR)
-
 # Arguments to pass to javac.  Usually something like '-g -depend'
 AC_SUBST(JDEPENDFLAG)
-
-# jtclsh script, used for test suites
-AC_SUBST(JTCLSH)
-
-# jtree binary
-AC_SUBST(JTREE)
 
 # JDK Version determined by running confTest.class and getting java.version
 AC_SUBST(JVERSION)
 
 # Location of the JDK
-AC_SUBST(PANDAJAVA_DIR)
+AC_SUBST(JAVA_HOME)
 
 AC_SUBST(EXTRA_DEFINE)
 

@@ -34,6 +34,7 @@ import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.pn.cdpn.CDGate;
 
+import espam.main.Config;
 import espam.main.UserInterface;
 import espam.visitor.CDPNVisitor;
 
@@ -294,13 +295,14 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             if (f.exists() == false) {
                 // Only write the file if it did not exist (so existing config is kept).
                 PrintStream cf = _openFile(configFilename);
+                Config espamConfig = Config.getInstance();
 
                 cf.println("# Makefile config for SystemC Process Networks");
                 cf.println("");
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
+                cf.println("SYSTEMC = " + espamConfig.getSystemCPath());
             }
             else {
                 System.out.println(" -- Preserving " + configFilename);
@@ -360,8 +362,11 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             maf.println(_prefix + "sc_time start_time    (0,   SC_NS);");
             maf.println(_prefix + "sc_time period        (1,   SC_NS);");
             maf.println(_prefix + "sc_clock sysClk(\"Oscillator\", period, 0.5, start_time, true);");
-            maf.println(_prefix + "sc_trace_file *tf = sc_create_vcd_trace_file(\"dump\");");
+            maf.println(_prefix + "sc_trace_file *tf = NULL;");
+            maf.println("#ifndef NOTRACE");
+            maf.println(_prefix + "tf = sc_create_vcd_trace_file(\"dump\");");
             maf.println(_prefix + "sc_trace(tf, sysClk, \"Clock\");");
+            maf.println("#endif");
             maf.println("");
 
             maf.println(_prefix + "// Signals");
@@ -382,9 +387,11 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             _printNetwork(maf);
 
             maf.println(_prefix + "sc_start();");
-            maf.println(_prefix + "cout << \"Process network simulation ended.\" << endl << endl;");
+            maf.println(_prefix + "cout << \"Process network simulation ended at \" << sc_time_stamp() << endl << endl;");
             maf.println("");
+            maf.println("#ifndef NOTRACE");
             maf.println(_prefix + "sc_close_vcd_trace_file(tf);");
+            maf.println("#endif");
             maf.println("");
             maf.println(_prefix + "return 0;");
             _prefixDec();
@@ -473,21 +480,33 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             mf.println("OBJ_DIR=.");
             mf.println("BIN_DIR=.\n");
             mf.println("EXEC= $(BIN_DIR)/sim\n");
+            mf.println("# Set linker path containing SystemC library");
+            mf.println("MACHINE_BITS := $(shell getconf LONG_BIT)");
+            mf.println("ifeq ($(MACHINE_BITS),64)");
+            mf.println("  LIBDIR_SC= $(SYSTEMC)/lib-linux64");
+            mf.println("else");
+            mf.println("  LIBDIR_SC= $(SYSTEMC)/lib-linux");
+            mf.println("endif\n");
             mf.println("COMP_FLAGS= -Wall -c -g -I$(INC_DIR) -I$(SYSTEMC)/include");
-            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux");
-            mf.println("DEFINES= -DPLATFORM_X86\n");
+            mf.println("BUILD_FLAGS= -g -L$(LIBDIR_SC)\n");
             mf.println("HEADER= $(wildcard $(INC_DIR)/*.h)");
             mf.println("SRC=    $(wildcard $(SRC_DIR)/*.cc)"); 
             mf.println("OBJ=    $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o) ");
             mf.println("LIBS=-lsystemc\n");
-            mf.println("default: $(EXEC)\n");
+            mf.println("# Default target: generates a full simulation (including trace)");
+            mf.println("all: $(EXEC)");
+            mf.println("");
+            mf.println("# NOTRACE target: generates a simulation that does not generate a .vcd waveform");
+            mf.println("notrace: $(EXEC)");
+            mf.println("notrace: COMP_FLAGS+=-DNOTRACE");
+            mf.println("");
             mf.println("$(EXEC): $(OBJ) Makefile");
             mf.println("\t$(CXX) $(BUILD_FLAGS) -o $@  $(OBJ) $(LIBS)");
             mf.println("");
-            mf.println("$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc Makefile *.h");
-            mf.println("\t$(CXX) -o $@ $(COMP_FLAGS) $(DEFINES) $<\n");
-            mf.println("run:");
-            mf.println("\t${EXEC}\n");
+            mf.println("$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc Makefile $(HEADER)");
+            mf.println("\t$(CXX) -o $@ $(COMP_FLAGS) $<\n");
+            mf.println("run: $(EXEC)");
+            mf.println("\tLD_LIBRARY_PATH=$(LIBDIR_SC) $(EXEC)\n");
             mf.println("clean:");
             mf.println("\trm -f $(OBJ_DIR)/*.o $(EXEC) ");
 

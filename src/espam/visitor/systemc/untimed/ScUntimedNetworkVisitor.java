@@ -31,6 +31,7 @@ import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDProcess;
 import espam.datamodel.pn.cdpn.CDGate;
 
+import espam.main.Config;
 import espam.main.UserInterface;
 import espam.visitor.CDPNVisitor;
 
@@ -298,13 +299,14 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             if (f.exists() == false) {
                 // Only write the file if it did not exist (so existing config is kept).
                 PrintStream cf = _openFile(configFilename);
+                Config espamConfig = Config.getInstance();
 
                 cf.println("# Makefile config for SystemC Process Networks");
                 cf.println("");
                 cf.println("CC = gcc");
                 cf.println("CXX = g++");
                 cf.println("SYS_LIBS =");
-                cf.println("SYSTEMC = $(HOME)/systemc-2.2.0");
+                cf.println("SYSTEMC = " + espamConfig.getSystemCPath());
             }
             else {
                 System.out.println(" -- Preserving config.mk");
@@ -375,21 +377,27 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             mf.println("OBJ_DIR=.");
             mf.println("BIN_DIR=.\n");
             mf.println("EXEC= $(BIN_DIR)/sim\n");
+            mf.println("# Set linker path containing SystemC library");
+            mf.println("MACHINE_BITS := $(shell getconf LONG_BIT)");
+            mf.println("ifeq ($(MACHINE_BITS),64)");
+            mf.println("  LIBDIR_SC= $(SYSTEMC)/lib-linux64");
+            mf.println("else");
+            mf.println("  LIBDIR_SC= $(SYSTEMC)/lib-linux");
+            mf.println("endif\n");
             mf.println("COMP_FLAGS= -Wall -c -g -I$(INC_DIR) -I$(SYSTEMC)/include");
-            mf.println("BUILD_FLAGS= -g -L$(SYSTEMC)/lib-linux");
-            mf.println("DEFINES= -DPLATFORM_X86\n");
+            mf.println("BUILD_FLAGS= -g -L$(LIBDIR_SC)\n");
             mf.println("HEADER= $(wildcard $(INC_DIR)/*.h)");
             mf.println("SRC=    $(wildcard $(SRC_DIR)/*.cc)"); 
             mf.println("OBJ=    $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o) ");
             mf.println("LIBS=-lsystemc\n");
-            mf.println("default: $(EXEC)\n");
+            mf.println("all: $(EXEC)\n");
             mf.println("$(EXEC): $(OBJ) Makefile");
             mf.println("\t$(CXX) $(BUILD_FLAGS) -o $@  $(OBJ) $(LIBS)");
             mf.println("");
-            mf.println("$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc Makefile *.h");
-            mf.println("\t$(CXX) -o $@ $(COMP_FLAGS) $(DEFINES) $<\n");
-            mf.println("run:");
-            mf.println("\t${EXEC}\n");
+            mf.println("$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc Makefile $(HEADER)");
+            mf.println("\t$(CXX) -o $@ $(COMP_FLAGS) $<\n");
+            mf.println("run: $(EXEC)");
+            mf.println("\tLD_LIBRARY_PATH=$(LIBDIR_SC) $(EXEC)\n");
             mf.println("clean:");
             mf.println("\trm -f $(OBJ_DIR)/*.o $(EXEC) ");
 

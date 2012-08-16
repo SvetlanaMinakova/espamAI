@@ -22,13 +22,13 @@ include $(ROOT)/default_functions.mk
 
 # =========================== C++ Code =====================
 
-INCL                    = -I$(PANDAJAVA_DIR)/include/$(OSEXT)/ \
-                          -I$(PANDAJAVA_DIR)/include \
+INCL                    = -I$(JAVA_HOME)/include/$(OSEXT)/ \
+                          -I$(JAVA_HOME)/include \
 	                  -I$(POLYLIB_INC)
 
 # Changed to enable compilation on 64-bit machines
 #LIB                     = $(POLYLIB_LIB)/libpolylib$(BITS).a
-LIB                     = -L$(POLYLIB_LIB) -lpolylib$(BITS)
+LIB                     = -L$(POLYLIB_LIB) -Wl,-Bstatic -lpolylib$(BITS) -Wl,-Bdynamic
 
 
 # Added to enable compilation on 64-bit machines
