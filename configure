@@ -556,9 +556,9 @@ PACKAGE_URL=
 ac_unique_file="./config/cpinvoke.in"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+SYSTEMC_HOME
 LDPATH
 LIBPATH
-SYSTEMC_HOME
 JAVA_HOME
 CLASSPATHSEPARATOR
 JAVAC
@@ -1718,6 +1718,19 @@ else
   JAVA_HOME=`readlink -f $JAVAC | sed "s:/bin/javac::"`
 fi
 
+if test -d "$JAVA_HOME"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Using Java installation at '$JAVA_HOME'" >&5
+$as_echo "Using Java installation at '$JAVA_HOME'" >&6; }
+else
+    as_fn_error $? "Java installation not found, please specify --with-java" "$LINENO" 5
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking \" -------- OTHER Stuff --------- \"..." >&5
+$as_echo "$as_me: checking \" -------- OTHER Stuff --------- \"..." >&6;}
+#--------------------------------------------------------------------
+# SystemC stuff
+#--------------------------------------------------------------------
 
 # Check whether --with-systemc was given.
 if test "${with_systemc+set}" = set; then :
@@ -1727,15 +1740,13 @@ else
 fi
 
 
-if test -d "$JAVA_HOME"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Using Java installation at '$JAVA_HOME'" >&5
-$as_echo "Using Java installation at '$JAVA_HOME'" >&6; }
-else
-    as_fn_error $? "Java installation not found, please specify --with-java" "$LINENO" 5
+SYSTEMC_HOME_STATUS="OK"
+if test ! -r "${SYSTEMC_HOME}/include/systemc.h"; then
+    SYSTEMC_HOME_STATUS="systemc.h not found"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SystemC header file not found." >&5
+$as_echo "$as_me: WARNING: SystemC header file not found." >&2;}
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking \" -------- OTHER Stuff --------- \"..." >&5
-$as_echo "$as_me: checking \" -------- OTHER Stuff --------- \"..." >&6;}
 #--------------------------------------------------------------------
 #	Figure out which separator to use for CLASSPATH
 #	So much for write once, run everywhere.
@@ -1750,6 +1761,8 @@ case "`uname -s`" in
     *) CLASSPATHSEPARATOR=":";
 		OPT_QUOTE="";;
 esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CLASSPATHSEPARATOR" >&5
+$as_echo "$CLASSPATHSEPARATOR" >&6; }
 
 
 case "`uname -s`" in
@@ -1781,14 +1794,16 @@ $as_echo_n "checking for library path... " >&6; }
 $as_echo "'$LIBPATH'" >&6; }
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Classpath separator  = '$CLASSPATHSEPARATOR'" >&5
-$as_echo "Classpath separator  = '$CLASSPATHSEPARATOR'" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Java Home            = '$JAVA_HOME'" >&5
-$as_echo "Java Home            = '$JAVA_HOME'" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Library Path         = '$LDPATH'" >&5
-$as_echo "Library Path         = '$LDPATH'" >&6; }
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Library Content      = '$LIBPATH'" >&5
-$as_echo "Library Content      = '$LIBPATH'" >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Classpath separator  = '$CLASSPATHSEPARATOR'" >&5
+$as_echo "$as_me: Classpath separator  = '$CLASSPATHSEPARATOR'" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Java Home            = '$JAVA_HOME'" >&5
+$as_echo "$as_me: Java Home            = '$JAVA_HOME'" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Library Path         = '$LDPATH'" >&5
+$as_echo "$as_me: Library Path         = '$LDPATH'" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Library Content      = '$LIBPATH'" >&5
+$as_echo "$as_me: Library Content      = '$LIBPATH'" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)" >&5
+$as_echo "$as_me: SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)" >&6;}
 
 
 #---- Keep these substitutions alphabetical, with a description ----#
@@ -1799,12 +1814,12 @@ $as_echo "Library Content      = '$LIBPATH'" >&6; }
 # Location of the JDK
 
 
-# Location of SystemC installation
-
-
 
 
 # From where to get the library files
+
+
+# Location of SystemC installation
 
 
 # Files we substitute in
