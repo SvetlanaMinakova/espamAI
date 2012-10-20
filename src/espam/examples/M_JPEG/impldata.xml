@@ -1,0 +1,66 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE implementationMetrics PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+
+<!-- Implementation metrics - Example file
+     Sven van Haastregt, LIACS, Leiden University.
+
+     Notes: a function can have multiple implementations. The first implementation
+            in the list is considered the default implementation by most tools.
+-->
+
+<implementationMetrics>
+  <functions>
+
+    <!-- MJPEG -->
+    <function functionName="VideoInInit">
+      <implementation componentName="VideoInInit_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1745" worstcase="1745" bestcase="1745" />
+          <ii value="1747" />
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="VideoInMain">
+      <implementation componentName="VideoInMain_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1745" worstcase="1745" bestcase="1745" />
+          <ii value="1747" />
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="VideoOut">
+      <implementation componentName="VideoOut_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1745" worstcase="1745" bestcase="1745" />
+          <ii value="1747" />
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="DCT">
+      <implementation componentName="DCT_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="56170" worstcase="56170" bestcase="56170" />
+          <ii value="56172" />
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="Q">
+      <implementation componentName="Q_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="19093" worstcase="19093" bestcase="19093" />
+          <ii value="19095" />
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="VLE">
+      <implementation componentName="VLE_MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="36336" worstcase="36336" bestcase="36336" />
+          <ii value="36338" />
+        </performance>
+      </implementation>
+    </function>
+
+  </functions>
+</implementationMetrics>
