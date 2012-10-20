@@ -350,7 +350,7 @@ public class Main {
 	  
 	                          boolean _scTimedPeriod = _ui.getScTimedPeriodFlag(); 
                                   //printStream = _openFile(_cdpn.getName() + "_KPN", "h");
-                                  ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping, _scTimedPeriod);
+                                  ScTimedNetworkVisitor scTimedVisitor = new ScTimedNetworkVisitor(_mapping, implTable, _scTimedPeriod);
                                  _cdpn.accept(scTimedVisitor);
 				  System.out.println(" - Generation [Finished]");
 

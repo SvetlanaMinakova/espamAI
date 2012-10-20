@@ -40,7 +40,8 @@ import espam.visitor.CDPNVisitor;
 
 import espam.datamodel.EspamException;
 
-
+import espam.datamodel.implementationdata.Implementation;
+import espam.datamodel.implementationdata.ImplementationTable;
 import espam.datamodel.parsetree.ParserNode;
 import espam.datamodel.parsetree.statement.AssignStatement;
 
@@ -64,8 +65,9 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
      * @param  printStream Description of the Parameter
      */
     //public ScTimedNetworkVisitor(Mapping mapping, PrintStream printStream) {
-    public ScTimedNetworkVisitor(Mapping mapping, boolean scTimedPeriod) throws EspamException {
+    public ScTimedNetworkVisitor(Mapping mapping, ImplementationTable implTable, boolean scTimedPeriod) throws EspamException {
       _mapping = mapping;
+      _implTable = implTable;
       
       _scTimedPeriod = scTimedPeriod;
       
@@ -584,7 +586,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             // latency for remote communication
 //             mf.println("extern const int latRead_remote  = 1;     // Latency of remote FIFO read operation");
 //             mf.println("extern const int latWrite_remote  = 1;     // Latency of remote FIFO write operation");
-            
+
+            mf.println("// Worst-case latencies of functions");
             // iterate over all processes to write latency of function calls
             _functionNames = new Vector<String>();
             i = _pn.getProcessList().iterator();
@@ -597,7 +600,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
             for(int j=0; j< _functionNames.size();j++){
               String functionName = _functionNames.get(j);
               if( _functionNames.get(j).equals("") )  functionName="CopyPropagate";
-              mf.println("extern const int lat_" + functionName + " = 1;     // latency of " + functionName);
+              int latency = _implTable.getMetric(Implementation.Metric.DELAY_WORST, functionName, 0);
+              mf.println("extern const int lat_" + functionName + " = " + latency + ";     // latency of " + functionName);
             }
 
             // print the latency of function calls in an array used by the pnMonitor
@@ -646,6 +650,8 @@ public class ScTimedNetworkVisitor extends CDPNVisitor {
     /**
      */
     private CDProcessNetwork _pn = null;
+
+    private ImplementationTable _implTable = null;
 
     private Mapping _mapping = null;
     
