@@ -86,6 +86,8 @@ public class Options {
                            _ui.setMappingFileName(args[++i]);
                         } else if( arg.equals("--scheduler") || arg.equals("-s") ) {
                            _ui.setSchedulerFileName(args[++i]);
+                        } else if( arg.equals("--impldata") ) {
+                           _ui.setImplDataFileName(args[++i]);
                         } else if( arg.equals("--libxps") || arg.equals("-l") ) {
                         	_ui.setXpsLibPath(args[++i]);
                         } else if( arg.equals("--libsdk")) {
@@ -231,6 +233,7 @@ public class Options {
 			{ "--adg      ", "-a", "<FileName>"},
 			{ "--mapping  ", "-m", "<FileName>" },
 			{ "--scheduler", "-s", "<FileName>" },
+			{ "--impldata ", "none", "<FileName>" },
 			{ "--libxps", "-l", "<LibraryPath>" },
 			{ "--libsdk", "none", "<LibraryPath>" },
 			{ "--funcCodePath", "none", "<FunctionalCodePath>" },

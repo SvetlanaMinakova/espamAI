@@ -179,7 +179,26 @@ public class UserInterface {
     public final void setSchedulerFileName(String schedulerFileName) {
         _schedulerFileName = schedulerFileName;
     }
-    
+
+    /**
+     * Get the name of the implData file.
+     *
+     * @return The implDataFileName value
+     */
+    public final String getImplDataFileName() {
+        return _implDataFileName;
+    }
+
+    /**
+     * Set the name of the implData file.
+     *
+     * @param implDataFileName
+     *            The new implDataFileName value
+     */
+    public final void setImplDataFileName(String implDataFileName) {
+        _implDataFileName = implDataFileName;
+    }
+
     /**
      * Get the path of the xps library file.
      *
@@ -686,6 +705,9 @@ public class UserInterface {
 
     // the scheduler file name
     private String _schedulerFileName = null;
+
+    // the implementation data file name
+    private String _implDataFileName = null;
 
     // the path of the xps library file
     private String _xpsLibPath = "";

@@ -29,6 +29,7 @@ import java.util.Iterator;
 
 import java.net.URL;
 
+import espam.datamodel.implementationdata.ImplementationTable;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.graph.adg.ADGraph;
 import espam.datamodel.graph.adg.ADGParameter;
@@ -48,6 +49,7 @@ import espam.operations.SynthesizeCDPN;
 import espam.operations.SynthesizePlatform;
 import espam.operations.scheduler.Scheduler;
 
+import espam.parser.xml.implementationdata.XmlImplementationDataParser;
 import espam.parser.xml.platform.XmlPlatformParser;
 import espam.parser.xml.pn.XmlPNParser;
 import espam.parser.xml.adg.XmlADGParser;
@@ -139,6 +141,25 @@ public class Main {
 			System.out.println(e.getMessage());
 			System.exit(-1);
 		}
+
+		// Load the XML file containing the implementation data
+		ImplementationTable implTable = new ImplementationTable();
+		if (_ui.getScTimedFlag()) {
+			try {
+				XmlImplementationDataParser parserImpldata = new XmlImplementationDataParser();
+				if (_ui.getImplDataFileName() != null) {
+					implTable = parserImpldata.doParse(_ui.getImplDataFileName());
+				}
+				else {
+					String userHomeDir = System.getProperty("user.home");
+					implTable = parserImpldata.doParse(userHomeDir + "/.daedalus/impldata.xml");
+				}
+			}
+			catch (Exception e) {
+				System.err.println("Warning: could not load implementation data: " + e.getMessage() + "\n");
+			}
+		}
+
 
                 // the main compilation cycle
 		try {

@@ -11,7 +11,8 @@ SUBPACKAGES = \
 	graph \
 	pn \
 	parsetree \
-	mapping
+	mapping \
+	implementationdata
 
 # Java files in this directory
 JSRCS = \
