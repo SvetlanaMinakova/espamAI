@@ -73,6 +73,9 @@ fsl<T>::~fsl() {
   delete[] write_pipeline;
   delete[] write_queue;
   cout << sc_module::name() << ": Maximum number of tokens simultaneously in FIFO: " << max_tokens << endl;
+  if (flen != 0) {
+    cerr << "Warning: " << sc_module::name() << ": Still " << flen << " tokens remaining in FIFO." << endl;
+  }
 }
 
 
