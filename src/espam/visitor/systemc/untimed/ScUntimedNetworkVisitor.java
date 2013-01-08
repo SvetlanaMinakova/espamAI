@@ -77,6 +77,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
      */
     public void visitComponent( CDProcessNetwork x ) {
         _pn = x;
+        _kpnClassName = x.getName() + "_KPN";
 
         _printStream.println("#ifndef " + x.getName() + "_KPN_H");
         _printStream.println("#define " + x.getName() + "_KPN_H");
@@ -93,7 +94,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
 
         _printStream.println("");
         _printStream.println
-                ("class " + x.getName() + " : public sc_module{");
+                ("class " + _kpnClassName + " : public sc_module{");
         _prefixInc();
         _printStream.println(_prefix + "private:");
         _prefixInc();
@@ -182,7 +183,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
         _printStream.println("};");
 
         _printStream.println("");
-        _printStream.println("#endif /* " + x.getName() + "_H */");
+        _printStream.println("#endif /* " + x.getName() + "_KPN_H */");
 
         ScUntimedProcessVisitor pt = new ScUntimedProcessVisitor();
         x.accept( pt );
@@ -218,7 +219,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
     private void _printConstructor() {
 
         _printStream.println(" public: ");
-        _printStream.println(_prefix + _pn.getName() + "(");
+        _printStream.println(_prefix + _kpnClassName + "(");
 
         String csl = "sc_module_name n, ";
 
@@ -315,7 +316,7 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
         }
         catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
-            System.out.println("Cannt create the default config file");
+            System.out.println("Cannot create the default config file");
             System.out.println("please supply your own config file");
         }
     }
@@ -330,15 +331,12 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
 
             maf.println("//main.cc file for SystemC Process Networks");
             maf.println("//@Author: ESPAM");
-            maf.println(" ");
+            maf.println("");
             maf.println("#include \"" + _pn.getName() + "_KPN.h\"");
-            maf.println("#include <fstream>");
-            maf.println("using namespace std;");
             maf.println("");
             maf.println("int sc_main(int argc , char *argv[])");
             maf.println("{");
-            maf.println(" ");
-            maf.print("   static " + _pn.getName() + " " + _pn.getName() + "( \"" + _pn.getName() + "\"");
+            maf.print("  static " + _kpnClassName + " " + _kpnClassName + "(\"" + _pn.getName() + "\"");
 
             ADGParameter parameter;
             Iterator i = _pn.getAdg().getParameterList().iterator();
@@ -351,15 +349,15 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
             maf.println(");");
             maf.println("");
             maf.println("  sc_start();");
-            maf.println("  " + _pn.getName() + ".dump_statistics();");
-            maf.println("  return 0;");
+            maf.println("  " + _kpnClassName + ".dump_statistics();");
             maf.println("");
+            maf.println("  return 0;");
             maf.println("}");
 
         }
         catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
-            System.out.println("Cannt create the default main.cc file");
+            System.out.println("Cannot create the default main.cc file");
             System.out.println("please supply your own main.cc file");
         }
     }
@@ -436,6 +434,8 @@ public class ScUntimedNetworkVisitor extends CDPNVisitor {
     /**
      */
     private CDProcessNetwork _pn = null;
+
+    private String _kpnClassName = null;
 
     private String _outputDir = null;
 }
