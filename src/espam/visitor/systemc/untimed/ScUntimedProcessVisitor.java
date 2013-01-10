@@ -112,8 +112,14 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
                 _printStream = _openFile(process.getName(), "h");
                 systemcProcess( process );
             }
-
             _printStreamFunc.println("");
+
+            _printStreamFunc.println("// Sets stack size in bytes; default is 65536 bytes.");
+            _printStreamFunc.println("// Remove comments from following macro if you want to tune the stack size of the SystemC process threads.");
+            _printStreamFunc.println("// This is typically needed if your application uses large structs.");
+            _printStreamFunc.println("#define SET_PROCESS_STACK_SIZE() /*set_stack_size(65536)*/");
+            _printStreamFunc.println("");
+
             _writeOperations();
             _printStreamFunc.println("");
             _printStreamFunc.println("#endif");
@@ -250,6 +256,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
 
         _printStream.println("");
         _printStream.println(_prefix + "{");
+        _prefixInc();
                 
         CDGate gate;
         String csl = "";
@@ -269,8 +276,7 @@ public class ScUntimedProcessVisitor extends CDPNVisitor {
         _printStream.println("");
 
         _printStream.println(_prefix + "SC_THREAD(main);");
-
-        _prefixInc();
+        _printStream.println(_prefix + "SET_PROCESS_STACK_SIZE();");
 
         j = x.getGateList().iterator();
         while( j.hasNext() ) {
