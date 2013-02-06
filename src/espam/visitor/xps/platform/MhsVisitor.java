@@ -232,73 +232,106 @@ public class MhsVisitor extends PlatformVisitor {
 	        " PORT sys_rst_pin = sys_rst_s, DIR = I, RST_POLARITY = 0, SIGIS = RST");
 	}
     else if (_targetBoard.equals("ML605")) {
-//            if(_commInterface.equals("UART") {
+
 		    _printStream.println(
+            "# Clock and reset\n" +
+		    " PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
+		    " PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
+		    " PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n" +
+            "# UART\n" +
 			" PORT fpga_0_RS232_Uart_1_RX_pin = fpga_0_RS232_Uart_1_RX_pin, DIR = I\n" +
 			" PORT fpga_0_RS232_Uart_1_TX_pin = fpga_0_RS232_Uart_1_TX_pin, DIR = O");
-//            } else 
+
+            if (_isAXICrossbar) {
+                _printStream.println(
+                "# I2C\n" +
+			    " PORT axi_iic_0_Sda_pin = axi_iic_0_Sda, DIR = IO\n" +
+			    " PORT axi_iic_0_Scl_pin = axi_iic_0_Scl, DIR = IO");
+            }
+
             if( _commInterface.equals("USB") ) {
-		    _printStream.println(
-			" PORT PRH_CS_n = xps_epc_0_PRH_CS_n_int, DIR = O\n" +
-			" PORT usb_oen = usb_rdn, DIR = O\n" +
-			" PORT usb_wen = usb_wrn, DIR = O\n" +
-			" PORT usb_d = usb_data_int, VEC = [15:0], DIR = IO\n" +
-			" PORT usb_a = usb_addr, DIR = O, VEC = [0:1]\n");
+		        _printStream.println(
+                "# USB\n" +
+			    " PORT PRH_CS_n = xps_epc_0_PRH_CS_n_int, DIR = O\n" +
+			    " PORT usb_oen = usb_rdn, DIR = O\n" +
+			    " PORT usb_wen = usb_wrn, DIR = O\n" +
+			    " PORT usb_d = usb_data_int, VEC = [15:0], DIR = IO\n" +
+			    " PORT usb_a = usb_addr, DIR = O, VEC = [0:1]\n");
+            }
+
+            if( _commInterface.equals("Combo") ) {
+		        _printStream.println(
+                "# Ethernet\n" +
+                " PORT Ethernet_Lite_TX_EN = Ethernet_Lite_TX_EN, DIR = O\n" +
+                " PORT Ethernet_Lite_TX_CLK = Ethernet_Lite_TX_CLK, DIR = I\n" +
+                " PORT Ethernet_Lite_TXD = Ethernet_Lite_TXD, DIR = O, VEC = [3:0]\n" +
+                " PORT Ethernet_Lite_RX_ER = Ethernet_Lite_RX_ER, DIR = I\n" +
+                " PORT Ethernet_Lite_RX_DV = Ethernet_Lite_RX_DV, DIR = I\n" +
+                " PORT Ethernet_Lite_RX_CLK = Ethernet_Lite_RX_CLK, DIR = I\n" +
+                " PORT Ethernet_Lite_RXD = Ethernet_Lite_RXD, DIR = I, VEC = [3:0]\n" +
+                " PORT Ethernet_Lite_PHY_RST_N = Ethernet_Lite_PHY_RST_N, DIR = O\n" +
+                " PORT Ethernet_Lite_MDIO = Ethernet_Lite_MDIO, DIR = IO\n" +
+                " PORT Ethernet_Lite_MDC = Ethernet_Lite_MDC, DIR = O\n" +
+                " PORT Ethernet_Lite_CRS = Ethernet_Lite_CRS, DIR = I\n" +
+                " PORT Ethernet_Lite_COL = Ethernet_Lite_COL, DIR = I\n" +
+                "# SysACE\n" +
+                " PORT SysACE_WEN = SysACE_WEN, DIR = O\n" +
+                " PORT SysACE_OEN = SysACE_OEN, DIR = O\n" +
+                " PORT SysACE_MPIRQ = SysACE_MPIRQ, DIR = I\n" +
+                " PORT SysACE_MPD = SysACE_MPD, DIR = IO, VEC = [7:0]\n" +
+                " PORT SysACE_MPA = SysACE_MPA, DIR = O, VEC = [6:0]\n" +
+                " PORT SysACE_CLK = SysACE_CLK, DIR = I\n" +
+                " PORT SysACE_CEN = SysACE_CEN, DIR = O\n" +
+                "# Video\n" +
+                " PORT xps_tft_0_TFT_IIC_SDA = xps_tft_0_TFT_IIC_SDA, DIR = IO\n" +
+                " PORT xps_tft_0_TFT_IIC_SCL = xps_tft_0_TFT_IIC_SCL, DIR = IO\n" +
+                " PORT xps_tft_0_TFT_DVI_DATA_pin = xps_tft_0_TFT_DVI_DATA, DIR = O, VEC = [11:0]\n" +
+                " PORT xps_tft_0_TFT_DVI_CLK_N_pin = xps_tft_0_TFT_DVI_CLK_N, DIR = O\n" +
+                " PORT xps_tft_0_TFT_DVI_CLK_P_pin = xps_tft_0_TFT_DVI_CLK_P, DIR = O\n" +
+                " PORT xps_tft_0_TFT_DE_pin = xps_tft_0_TFT_DE, DIR = O\n" +
+                " PORT xps_tft_0_TFT_VSYNC_pin = xps_tft_0_TFT_VSYNC, DIR = O\n" +
+                " PORT xps_tft_0_TFT_HSYNC_pin = xps_tft_0_TFT_HSYNC, DIR = O\n" +
+                " PORT vga_reset_pin = sys_periph_reset_n, DIR = O, SIGIS = RST, RST_POLARITY = 0");
             }
             
-            if( _isAXICrossbar ) {
-
- 		    _printStream.println(
-			" PORT axi_iic_0_Sda_pin = axi_iic_0_Sda, DIR = IO\n" +
-			" PORT axi_iic_0_Scl_pin = axi_iic_0_Scl, DIR = IO\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = ddr_memory_cs_n, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = ddr_memory_odt, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = ddr_memory_ras_n, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = ddr_memory_cas_n, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = ddr_memory_we_n, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = ddr_memory_dm, DIR = O, VEC = [7:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = ddr_memory_ba, DIR = O, VEC = [2:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = ddr_memory_addr, DIR = O, VEC = [12:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = ddr_memory_ddr3_rst, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [63:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [7:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [7:0]\n" +
-// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = ddr_memory_dq, DIR = IO, VEC = [63:0]\n" +
-// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = ddr_memory_dqs, DIR = IO, VEC = [7:0]\n" +
-// 			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = ddr_memory_dqs_n, DIR = IO, VEC = [7:0]\n" +
-			" PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
-			" PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
-			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n");
-
-
+            if( _isAXICrossbar && !_commInterface.equals("Combo")) {
+                _printStream.println(
+                "# DDR3 over AXI\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = ddr_memory_cs_n, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = ddr_memory_odt, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = ddr_memory_ras_n, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = ddr_memory_cas_n, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = ddr_memory_we_n, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = ddr_memory_dm, DIR = O, VEC = [7:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = ddr_memory_ba, DIR = O, VEC = [2:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = ddr_memory_addr, DIR = O, VEC = [12:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = ddr_memory_ddr3_rst, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [63:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [7:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [7:0]");
             } else { 
-		    _printStream.println(
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = fpga_0_DDR3_SDRAM_DDR3_CE_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CS_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = fpga_0_DDR3_SDRAM_DDR3_ODT_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = fpga_0_DDR3_SDRAM_DDR3_WE_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin, DIR = O, VEC = [2:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = fpga_0_DDR3_SDRAM_DDR3_Addr_pin, DIR = O, VEC = [12:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [31:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = fpga_0_DDR3_SDRAM_DDR3_DM_pin, DIR = O, VEC = [3:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin, DIR = O\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [3:0]\n" +
-			" PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]\n" +
-			" PORT fpga_0_clk_1_sys_clk_p_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = P, CLK_FREQ = 200000000\n" +
-			" PORT fpga_0_clk_1_sys_clk_n_pin = CLK_S, DIR = I, SIGIS = CLK, DIFFERENTIAL_POLARITY = N, CLK_FREQ = 200000000\n" +
-			" PORT fpga_0_rst_1_sys_rst_pin = sys_rst_s, DIR = I, SIGIS = RST, RST_POLARITY = 1\n");
+		        _printStream.println(
+                "# DDR3 over PLB\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = fpga_0_DDR3_SDRAM_DDR3_CE_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CS_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = fpga_0_DDR3_SDRAM_DDR3_ODT_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = fpga_0_DDR3_SDRAM_DDR3_WE_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin, DIR = O, VEC = [2:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = fpga_0_DDR3_SDRAM_DDR3_Addr_pin, DIR = O, VEC = [12:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [31:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = fpga_0_DDR3_SDRAM_DDR3_DM_pin, DIR = O, VEC = [3:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin, DIR = O\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [3:0]\n" +
+			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]");
              }
-    }
-
-
-
+    } 
         _printStream.println("");
 
 	Iterator i;

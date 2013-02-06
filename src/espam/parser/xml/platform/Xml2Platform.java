@@ -62,6 +62,7 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+
 import espam.main.UserInterface;
 
 import org.xml.sax.Attributes;

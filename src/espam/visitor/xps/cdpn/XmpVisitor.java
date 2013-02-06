@@ -150,13 +150,15 @@ public class XmpVisitor extends CDPNVisitor {
 			_printStream.println("MHS File: system.mhs");
 	
 
-                if( _commInterface.equals("USB") ) {
-			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605_USB.ucf");
-                } else if( _isAXICrossbar ) {
-			_printStream.println("UcfFile: data" + File.separatorChar + "system.ucf");
-                } else {
-			_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605.ucf");
-                }
+            if( _commInterface.equals("USB") ) {
+    		    _printStream.println("UcfFile: data" + File.separatorChar + "system_ML605_USB.ucf");
+            } else if (_commInterface.equals("Combo")) {
+                _printStream.println("UcfFile: data" + File.separatorChar + "system_ML605_Combo.ucf");
+            } else if( _isAXICrossbar ) {
+        		_printStream.println("UcfFile: data" + File.separatorChar + "system.ucf");
+            } else {
+        		_printStream.println("UcfFile: data" + File.separatorChar + "system_ML605.ucf");
+            }
 
 			_printStream.println("Architecture: virtex6");
 			_printStream.println("Device: xc6vlx240t");

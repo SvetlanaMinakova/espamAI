@@ -376,13 +376,30 @@ public class XpsSDKVisitor {
                     
                 }
                 
+                if (_commInterface.equals("")) {
+                    out.println("BEGIN DRIVER\n" +
+                                " PARAMETER DRIVER_NAME = mpmc\n" +
+                                " PARAMETER DRIVER_VER = 4.01.a\n" +
+                                " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
+                                "END\n");
+                    out.println("BEGIN DRIVER\n" +
+                                " PARAMETER DRIVER_NAME = emaclite\n" +
+                                " PARAMETER DRIVER_VER = 3.01.a\n" +
+                                " PARAMETER HW_INSTANCE = Ethernet_Lite\n" +
+                                "END\n\n" +
+                                "BEGIN DRIVER\n" +
+                                " PARAMETER DRIVER_NAME = sysace\n" +
+                                " PARAMETER DRIVER_VER = 2.00.a\n" +
+                                " PARAMETER HW_INSTANCE = SysACE_CompactFlash\n" +
+                                "END\n");
+                } else {
                 // print the stuff not in Platform
-                out.println("BEGIN DRIVER\n" +
-                            " PARAMETER DRIVER_NAME = v6_ddrx\n" +
-                            " PARAMETER DRIVER_VER = 2.00.a\n" +
-                            " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
-                            "END\n");
-                            
+                    out.println("BEGIN DRIVER\n" +
+                                " PARAMETER DRIVER_NAME = v6_ddrx\n" +
+                                " PARAMETER DRIVER_VER = 2.00.a\n" +
+                                " PARAMETER HW_INSTANCE = DDR3_SDRAM\n" +
+                                "END\n");
+                }   
                             
                 // TODO: Find a way to print fin_ctrl
                 // For the time being, skip it here and do it in SDK
@@ -482,8 +499,6 @@ public class XpsSDKVisitor {
 	
 		    out = new PrintWriter(libGenFile);
 		    out.println("PROCESSOR=" + processorName);
-		    // FIXME: path is hard-coded for now
-		    out.println("REPOSITORIES=-lp /home/mohamed/tools/FreeRTOS/FreeRTOSV7.1.0/Demo/MicroBlaze_Spartan-6_EthernetLite/KernelAwareBSPRepository");
 		    out.println("HWSPEC=.." + File.separatorChar + _project_name + "_hw_platform" + File.separatorChar + "system.xml");
 		    out.close();
 	    } 
@@ -714,8 +729,10 @@ public class XpsSDKVisitor {
             Resource resource = (Resource)j.next();
             if( resource instanceof XUPV5LX110T ) {
                _targetBoard = "XUPV5-LX110T";
+               _commInterface = ((XUPV5LX110T) resource).getCommInterface();
             } else if( resource instanceof ML605 ) {
                _targetBoard = "ML605";
+               _commInterface = ((ML605) resource).getCommInterface();
             } else if( resource instanceof AXICrossbar ) {
                _axiPlatform = true;
             }
@@ -724,6 +741,7 @@ public class XpsSDKVisitor {
         if (_targetBoard != "ML605" && _targetBoard != "XUPV5-LX110T"){
             System.err.println("Error: unsupported target board in using SDK visitor");
         }
+
     }
 
 
@@ -747,6 +765,9 @@ public class XpsSDKVisitor {
     
     // the board in use
     private String _targetBoard = "";
+
+    // the communication interface
+    private String _commInterface = "";
     
     // A flag to indicate whether the platform is AXI-based or not
     private boolean _axiPlatform = false;

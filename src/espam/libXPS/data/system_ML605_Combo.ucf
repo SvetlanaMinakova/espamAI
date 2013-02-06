@@ -1,0 +1,255 @@
+
+#
+# pin constraints
+#
+NET fpga_0_clk_1_sys_clk_n_pin LOC = "H9"  |  DIFF_TERM = "TRUE"  |  IOSTANDARD = "LVDS_25";
+NET fpga_0_clk_1_sys_clk_p_pin LOC = "J9"  |  DIFF_TERM = "TRUE"  |  IOSTANDARD = "LVDS_25";
+NET fpga_0_rst_1_sys_rst_pin LOC = "H10"  |  IOSTANDARD = "SSTL15"  |  TIG;
+NET fpga_0_RS232_Uart_1_RX_pin LOC = "J24"  |  IOSTANDARD = "LVCMOS25";
+NET fpga_0_RS232_Uart_1_TX_pin LOC = "J25"  |  IOSTANDARD = "LVCMOS25";
+
+
+#
+# Timing constraints
+#
+
+NET "CLK_S" TNM_NET = sys_clk_pin;
+TIMESPEC TS_sys_clk_pin = PERIOD sys_clk_pin 200000 kHz;
+
+
+# PMBUS IIC interface
+Net axi_iic_0_Sda_pin LOC=AB10   |  DRIVE = 6 |   SLEW = SLOW;
+Net axi_iic_0_Scl_pin LOC=AC10   |  DRIVE = 6 |   SLEW = SLOW;
+
+
+# SysACE Flash card
+NET SysACE_CEN LOC = "AJ14"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_CLK LOC = "AE16"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[0] LOC = "AC15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[1] LOC = "AP15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[2] LOC = "AG17"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[3] LOC = "AH17"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[4] LOC = "AG15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[5] LOC = "AF15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPA[6] LOC = "AK14"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[0] LOC = "AM15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[1] LOC = "AJ17"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[2] LOC = "AJ16"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[3] LOC = "AP16"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[4] LOC = "AG16"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[5] LOC = "AH15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[6] LOC = "AF16"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPD[7] LOC = "AN15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_MPIRQ LOC = "L9"  |  IOSTANDARD = "LVCMOS25"  |  TIG;
+NET SysACE_OEN LOC = "AL15"  |  IOSTANDARD = "LVCMOS25";
+NET SysACE_WEN LOC = "AL14"  |  IOSTANDARD = "LVCMOS25";
+
+# Ethernet
+NET Ethernet_Lite_COL LOC = "AK13"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_CRS LOC = "AL13"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_MDC LOC = "AP14"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_MDIO LOC = "AN14"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_PHY_RST_N LOC = "AH13"  |  IOSTANDARD = "LVCMOS25"  |  TIG;
+NET Ethernet_Lite_RXD[0] LOC = "AN13"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RXD[1] LOC = "AF14"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RXD[2] LOC = "AE14"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RXD[3] LOC = "AN12"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RX_CLK LOC = "AP11"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RX_DV LOC = "AM13"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_RX_ER LOC = "AG12"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TXD[0] LOC = "AM11"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TXD[1] LOC = "AL11"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TXD[2] LOC = "AG10"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TXD[3] LOC = "AG11"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TX_CLK LOC = "AD12"  |  IOSTANDARD = "LVCMOS25";
+NET Ethernet_Lite_TX_EN LOC = "AJ10"  |  IOSTANDARD = "LVCMOS25";
+
+#### DVI Constraints
+
+Net xps_tft_0_TFT_DVI_DATA_pin<0> LOC=AJ19;
+Net xps_tft_0_TFT_DVI_DATA_pin<1> LOC=AH19;
+Net xps_tft_0_TFT_DVI_DATA_pin<2> LOC=AM17;
+Net xps_tft_0_TFT_DVI_DATA_pin<3> LOC=AM16;
+Net xps_tft_0_TFT_DVI_DATA_pin<4> LOC=AD17;
+Net xps_tft_0_TFT_DVI_DATA_pin<5> LOC=AE17;
+Net xps_tft_0_TFT_DVI_DATA_pin<6> LOC=AK18;
+Net xps_tft_0_TFT_DVI_DATA_pin<7> LOC=AK17;
+Net xps_tft_0_TFT_DVI_DATA_pin<8> LOC=AE18;
+Net xps_tft_0_TFT_DVI_DATA_pin<9> LOC=AF18;
+Net xps_tft_0_TFT_DVI_DATA_pin<10> LOC=AL16;
+Net xps_tft_0_TFT_DVI_DATA_pin<11> LOC=AK16;
+Net xps_tft_0_TFT_DVI_DATA_pin<*> IOSTANDARD=LVCMOS25 | SLEW = FAST | DRIVE = 8;
+Net xps_tft_0_TFT_DVI_CLK_P_pin LOC=AC18;
+Net xps_tft_0_TFT_DVI_CLK_P_pin IOSTANDARD=LVCMOS25;
+Net xps_tft_0_TFT_DVI_CLK_P_pin DRIVE = 8;
+Net xps_tft_0_TFT_DVI_CLK_P_pin SLEW = FAST;
+Net xps_tft_0_TFT_DVI_CLK_N_pin LOC=AC17;
+Net xps_tft_0_TFT_DVI_CLK_N_pin IOSTANDARD=LVCMOS25;
+Net xps_tft_0_TFT_DVI_CLK_N_pin DRIVE = 8;
+Net xps_tft_0_TFT_DVI_CLK_N_pin SLEW = FAST;
+Net xps_tft_0_TFT_HSYNC_pin LOC=AN17;
+Net xps_tft_0_TFT_HSYNC_pin IOSTANDARD=LVCMOS25 | SLEW = FAST | DRIVE = 8;
+Net xps_tft_0_TFT_VSYNC_pin LOC=AD15;
+Net xps_tft_0_TFT_VSYNC_pin IOSTANDARD=LVCMOS25 | SLEW = FAST | DRIVE = 8;
+Net xps_tft_0_TFT_DE_pin LOC=AD16;
+Net xps_tft_0_TFT_DE_pin IOSTANDARD=LVCMOS25 | SLEW = FAST | DRIVE = 8;
+Net xps_tft_0_TFT_IIC_SCL LOC=AN10;
+Net xps_tft_0_TFT_IIC_SCL SLEW = FAST;
+Net xps_tft_0_TFT_IIC_SCL DRIVE = 24;
+Net xps_tft_0_TFT_IIC_SCL TIG;
+Net xps_tft_0_TFT_IIC_SCL IOSTANDARD=LVCMOS25;
+Net xps_tft_0_TFT_IIC_SCL PULLUP;
+Net xps_tft_0_TFT_IIC_SDA LOC=AP10;
+Net xps_tft_0_TFT_IIC_SDA SLEW = FAST;
+Net xps_tft_0_TFT_IIC_SDA DRIVE = 24;
+Net xps_tft_0_TFT_IIC_SDA TIG;
+Net xps_tft_0_TFT_IIC_SDA IOSTANDARD=LVCMOS25;
+Net xps_tft_0_TFT_IIC_SDA PULLUP;
+Net vga_reset_pin LOC = AP17;
+Net vga_reset_pin IOSTANDARD = LVCMOS25;
+
+
+
+###############################################################################
+# DDR3/Status signals
+###############################################################################
+
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[*]"                               IOSTANDARD = SSTL15_T_DCI;
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[*]"                             IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin[*]"                         IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin"                               IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin"                               IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_WE_n_pin"                                IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin"                             IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_CS_n_pin[*]"                             IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_ODT_pin[*]"                              IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_CE_pin[*]"                               IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_DM_pin[*]"                               IOSTANDARD = SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_pin[*]"                              IOSTANDARD = DIFF_SSTL15_T_DCI;
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin[*]"                            IOSTANDARD = DIFF_SSTL15_T_DCI;
+NET  "fpga_0_DDR3_SDRAM_DDR3_Clk_pin[*]"                              IOSTANDARD = DIFF_SSTL15;
+NET  "fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin[*]"                            IOSTANDARD = DIFF_SSTL15;
+
+##################################################################################
+# Location Constraints
+##################################################################################
+# Banks specified in the comments may no longer be valid
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[0]"                                LOC = "J11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[1]"                                LOC = "E13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[2]"                                LOC = "F13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[3]"                                LOC = "K11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[4]"                                LOC = "L11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[5]"                                LOC = "K13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[6]"                                LOC = "K12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[7]"                                LOC = "D11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[8]"                                LOC = "M13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[9]"                                LOC = "J14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[10]"                               LOC = "B13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[11]"                               LOC = "B12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[12]"                               LOC = "G10" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[13]"                               LOC = "M11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[14]"                               LOC = "C12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[15]"                               LOC = "A11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[16]"                               LOC = "G11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[17]"                               LOC = "F11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[18]"                               LOC = "D14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[19]"                               LOC = "C14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[20]"                               LOC = "G12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[21]"                               LOC = "G13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[22]"                               LOC = "F14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[23]"                               LOC = "H14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[24]"                               LOC = "D26" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[25]"                               LOC = "F26" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[26]"                               LOC = "B26" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[27]"                               LOC = "E26" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[28]"                               LOC = "C24" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[29]"                               LOC = "D25" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[30]"                               LOC = "D27" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQ_pin[31]"                               LOC = "C25" ;          #Bank 36
+
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[12]"                             LOC = "H15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[11]"                             LOC = "M15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[10]"                             LOC = "M16" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[9]"                              LOC = "F15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[8]"                              LOC = "G15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[7]"                              LOC = "B15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[6]"                              LOC = "A15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[5]"                              LOC = "J17" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[4]"                              LOC = "D16" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[3]"                              LOC = "E16" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[2]"                              LOC = "B16" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[1]"                              LOC = "A16" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Addr_pin[0]"                              LOC = "L14" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin[2]"                                LOC = "L15" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin[1]"                                LOC = "J19" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin[0]"                                LOC = "K19" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin"                                LOC = "L19" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin"                                LOC = "C17" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_WE_n_pin"                                 LOC = "B17" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin"                              LOC = "E18" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_CS_n_pin[0]"                              LOC = "K18" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_ODT_pin[0]"                               LOC = "F18" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_CE_pin[0]"                               LOC = "M18" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_DM_pin[0]"                                LOC = "E11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DM_pin[1]"                                LOC = "B11" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DM_pin[2]"                                LOC = "E14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DM_pin[3]"                                LOC = "A26" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_pin[0]"                               LOC = "D12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin[0]"                             LOC = "E12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_pin[1]"                               LOC = "H12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin[1]"                             LOC = "J12" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_pin[2]"                               LOC = "A13" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin[2]"                             LOC = "A14" ;          #Bank 26
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_pin[3]"                               LOC = "B25" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin[3]"                             LOC = "A25" ;          #Bank 36
+NET  "fpga_0_DDR3_SDRAM_DDR3_Clk_pin[0]"                                LOC = "G18" ;          #Bank 25
+NET  "fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin[0]"                              LOC = "H18" ;          #Bank 25
+
+#####################################################################
+# Place RSYNC OSERDES and IODELAY:
+#####################################################################
+
+# CLK_RSYNC[0]: Site M12
+INST "*/u_phy_rdclk_gen/gen_loop_col0.u_oserdes_rsync"  
+  LOC = "OLOGIC_X2Y139";
+INST "*/u_phy_rdclk_gen/gen_loop_col0.u_odelay_rsync"
+  LOC = "IODELAY_X2Y139";
+INST "*/u_phy_rdclk_gen/gen_loop_col0.u_bufr_rsync"
+  LOC = "BUFR_X2Y6";
+
+# CLK_RSYNC[1]: Site C29
+INST "*/u_phy_rdclk_gen/gen_loop_col1.u_oserdes_rsync"  
+  LOC = "OLOGIC_X1Y139";
+INST "*/u_phy_rdclk_gen/gen_loop_col1.u_odelay_rsync"
+  LOC = "IODELAY_X1Y139";
+INST "*/u_phy_rdclk_gen/gen_loop_col1.u_bufr_rsync"
+  LOC = "BUFR_X1Y6";
+
+# Place CPT OSERDES and IODELAY:
+# DQS[0]: Site C13
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[0].u_oserdes_cpt"
+  LOC = "OLOGIC_X2Y137";
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[0].u_odelay_cpt"
+  LOC = "IODELAY_X2Y137";
+# DQS[1]: Site L13
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[1].u_oserdes_cpt"
+  LOC = "OLOGIC_X2Y141";
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[1].u_odelay_cpt"
+  LOC = "IODELAY_X2Y141";
+# DQS[2]: Site K14
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[2].u_oserdes_cpt"
+  LOC = "OLOGIC_X2Y143";
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[2].u_odelay_cpt"
+  LOC = "IODELAY_X2Y143";
+# DQS[3]: Site F25  
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[3].u_oserdes_cpt"
+  LOC = "OLOGIC_X1Y137";
+INST "*/u_phy_rdclk_gen/gen_ck_cpt[3].u_odelay_cpt"
+  LOC = "IODELAY_X1Y137";
+
+###############################################################################
+# DCI Cascading
+###############################################################################
+
+CONFIG DCI_CASCADE = "26 25";
+CONFIG DCI_CASCADE = "36 35";
