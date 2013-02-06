@@ -2507,8 +2507,131 @@ public class MhsVisitor extends PlatformVisitor {
      */    
     private void _visit_ML605_AXI( ML605 x ) {
 
+    if (_commInterface.equals("Combo")) {
+	    _printStream.println(
+            "BEGIN microblaze\n" +
+            " PARAMETER INSTANCE = host_if_mb\n" +
+            " PARAMETER HW_VER = 8.20.a\n" +
+            " PARAMETER C_INTERCONNECT = 2\n" +
+            " PARAMETER C_INTERCONNECT_M_AXI_DC_AW_REGISTER = 0\n" +
+            " PARAMETER C_INTERCONNECT_M_AXI_DC_W_REGISTER = 0\n" +
+            " BUS_INTERFACE M_AXI_DP = host_if_mb_axi4lite_DP\n" +
+            " BUS_INTERFACE DLMB = host_if_mb_dlmb\n" +
+            " BUS_INTERFACE ILMB = host_if_mb_ilmb\n" +
+            " PORT MB_RESET = mb_reset\n" +
+            " PORT CLK = host_if_clk\n" +  // sys_cls_s
+            " PORT Interrupt = host_if_intc_Irq\n" +
+            "END\n\n" +
+            
+            "BEGIN clock_generator\n" +
+            " PARAMETER INSTANCE = host_if_clock_generator\n" +
+            " PARAMETER HW_VER = 4.02.a\n" +
+            " PARAMETER C_CLKIN_FREQ = 200000000\n" +
+            " PARAMETER C_CLKOUT0_FREQ = 100000000\n" +
+            " PARAMETER C_CLKOUT0_GROUP = MMCM0\n" +
+            " PARAMETER C_CLKOUT0_BUF = TRUE\n" +
+            " PORT RST = sys_rst_s\n" +
+            " PORT CLKIN = CLK_S\n" +
+            " PORT CLKOUT0 = host_if_clk\n" +
+            " PORT LOCKED = clock_locked_port_host_if\n" +
+            "END\n\n" +
 
-	_printStream.println(
+            "BEGIN axi_intc\n" +
+            " PARAMETER INSTANCE = host_if_intc\n" +
+            " PARAMETER HW_VER = 1.01.a\n" +
+            " PARAMETER C_BASEADDR = 0xF2000000\n" +
+            " PARAMETER C_HIGHADDR = 0xF200FFFF\n" +
+            " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+            " PORT Intr = host_if_mb_timer_int & Ethernet_Lite_IP2INTC_Irpt\n" +
+            " PORT Irq = host_if_intc_Irq\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            "END\n\n" +
+
+            "BEGIN lmb_v10\n" +
+            " PARAMETER INSTANCE = host_if_mb_ilmb\n" +
+            " PARAMETER HW_VER = 2.00.b\n" +
+            " PORT SYS_RST = sys_bus_reset\n" +
+            " PORT LMB_CLK = host_if_clk\n" +
+            "END\n\n" +
+
+            "BEGIN lmb_v10\n" +
+            " PARAMETER INSTANCE = host_if_mb_dlmb\n" +
+            " PARAMETER HW_VER = 2.00.b\n" +
+            " PORT SYS_RST = sys_bus_reset\n" +
+            " PORT LMB_CLK = host_if_clk\n" +
+            "END\n\n" +
+
+            "BEGIN lmb_bram_if_cntlr\n" +
+            " PARAMETER INSTANCE = host_if_mb_ilmb_ctrl_bram_0\n" +
+            " PARAMETER HW_VER = 3.00.b\n" +
+            " PARAMETER C_BASEADDR = 0x00000000\n" +
+            " PARAMETER C_HIGHADDR = 0x00003FFF\n" +
+            " BUS_INTERFACE SLMB = host_if_mb_ilmb\n" +
+            " BUS_INTERFACE BRAM_PORT = host_if_mb_ilmb_ctrl_bram_PORT\n" +
+            "END\n\n" +
+
+            "BEGIN lmb_bram_if_cntlr\n" +
+            " PARAMETER INSTANCE = host_if_mb_dlmb_ctrl_bram_0\n" +
+            " PARAMETER HW_VER = 3.00.b\n" +
+            " PARAMETER C_BASEADDR = 0x00000000\n" +
+            " PARAMETER C_HIGHADDR = 0x00003FFF\n" +
+            " BUS_INTERFACE SLMB = host_if_mb_dlmb\n" +
+            " BUS_INTERFACE BRAM_PORT = host_if_mb_dlmb_ctrl_bram_PORT\n" +
+            "END\n\n" +
+
+            "BEGIN bram_block\n" +
+            " PARAMETER INSTANCE = host_if_mb_bram_0\n" +
+            " PARAMETER HW_VER = 1.00.a\n" +
+            " BUS_INTERFACE PORTA = host_if_mb_ilmb_ctrl_bram_PORT\n" +
+            " BUS_INTERFACE PORTB = host_if_mb_dlmb_ctrl_bram_PORT\n" +
+            "END\n\n" +
+
+            "BEGIN axi_interconnect\n" +
+            " PARAMETER INSTANCE = host_if_mb_axi4lite_DP\n" +
+            " PARAMETER HW_VER = 1.03.a\n" +
+            " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+            " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+            " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
+            "END\n\n" +
+
+            "BEGIN axi_timer\n" +
+            " PARAMETER INSTANCE = host_if_mb_timer\n" +
+            " PARAMETER HW_VER = 1.02.a\n" +
+            " PARAMETER C_BASEADDR = 0x40000000\n" +
+            " PARAMETER C_HIGHADDR = 0x4000FFFF\n" +
+            " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            " PORT Interrupt = host_if_mb_timer_int\n" +
+            "END\n\n" +
+
+            "BEGIN axi_uartlite\n" +
+            " PARAMETER INSTANCE = host_if_mb_RS232_Uart\n" +
+            " PARAMETER HW_VER = 1.02.a\n" +
+            " PARAMETER C_BAUDRATE = 115200\n" +
+            " PARAMETER C_DATA_BITS = 8\n" +
+            " PARAMETER C_USE_PARITY = 0\n" +
+            " PARAMETER C_ODD_PARITY = 1\n" +
+            " PARAMETER C_BASEADDR = 0xB1000000\n" +
+            " PARAMETER C_HIGHADDR = 0xB100FFFF\n" +
+            " BUS_INTERFACE S_AXI = DDR_axi\n" +
+            " PORT TX = fpga_0_RS232_Uart_1_TX_pin\n" +
+            " PORT RX = fpga_0_RS232_Uart_1_RX_pin\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            "END\n\n" +
+
+            "BEGIN axi_iic\n" +
+            " PARAMETER INSTANCE = host_if_mb_axi_iic_0\n" +
+            " PARAMETER HW_VER = 1.01.a\n" +
+            " PARAMETER C_BASEADDR = 0x60000000\n" +
+            " PARAMETER C_HIGHADDR = 0x6000FFFF\n" +
+            " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            " PORT Sda = axi_iic_0_Sda\n" +
+            " PORT Scl = axi_iic_0_Scl\n" +
+            "END\n");
+
+    } else {
+    	_printStream.println(
 	      "BEGIN microblaze\n" +
 	      " PARAMETER INSTANCE = host_if_mb\n" +
 	      " PARAMETER HW_VER = 8.20.a\n" +
@@ -2516,11 +2639,10 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PARAMETER C_INTERCONNECT_M_AXI_DC_AW_REGISTER = 0\n" +
 	      " PARAMETER C_INTERCONNECT_M_AXI_DC_W_REGISTER = 0\n" +
 	      " BUS_INTERFACE M_AXI_DP = host_if_mb_axi4lite_DP\n" +
-// 	      " BUS_INTERFACE M_AXI_DC = DDR3_axi4_DC\n" +
 	      " BUS_INTERFACE DLMB = host_if_mb_dlmb\n" +
 	      " BUS_INTERFACE ILMB = host_if_mb_ilmb\n" +
 	      " PORT MB_RESET = mb_reset\n" +
-	      " PORT CLK = sys_clk_100_MHz\n" +  // sys_cls_s
+	      " PORT CLK = sys_clk_100_MHz\n" + 
 	      " PORT Interrupt = host_if_mb_timer_int\n" +
 	      "END\n\n" +
 
@@ -2562,16 +2684,7 @@ public class MhsVisitor extends PlatformVisitor {
 	      " BUS_INTERFACE PORTA = host_if_mb_ilmb_ctrl_bram_PORT\n" +
 	      " BUS_INTERFACE PORTB = host_if_mb_dlmb_ctrl_bram_PORT\n" +
 	      "END\n\n" +
-/*
-"BEGIN clock_cycle_counter
-" PARAMETER INSTANCE = clock_cycle_counter_host_if_mb
-" PARAMETER HW_VER = 1.00.a
-" PARAMETER C_BASEADDR = 0xB0000000
-" PARAMETER C_HIGHADDR = 0xB0000003
-" BUS_INTERFACE SLMB = host_if_mb_dlmb
-" PORT LMB_Clk = sys_clk_100_MHz
-"END
-*/
+
 	      "BEGIN axi_interconnect\n" +
 	      " PARAMETER INSTANCE = host_if_mb_axi4lite_DP\n" +
 	      " PARAMETER HW_VER = 1.03.a\n" +
@@ -2615,7 +2728,7 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PORT Sda = axi_iic_0_Sda\n" +
 	      " PORT Scl = axi_iic_0_Scl\n" +
 	      "END\n");
-
+    }
 // Instantiate the host controller
 	_printStream.println(
 	      "BEGIN lmb_host_ctrl\n" +
@@ -2664,66 +2777,193 @@ public class MhsVisitor extends PlatformVisitor {
             }
         } 
 */
-	_printStream.println(
-	      "BEGIN axi_v6_ddrx\n" +
-	      " PARAMETER INSTANCE = DDR3_SDRAM\n" +
-	      " PARAMETER HW_VER = 1.03.a\n" +
-	      " PARAMETER C_MEM_PARTNO = MT4JSF6464HY-1G1\n" +
-	      " PARAMETER C_INTERCONNECT_S_AXI_AR_REGISTER = 1\n" +
-	      " PARAMETER C_INTERCONNECT_S_AXI_AW_REGISTER = 1\n" +
-	      " PARAMETER C_INTERCONNECT_S_AXI_R_REGISTER = 1\n" +
-	      " PARAMETER C_INTERCONNECT_S_AXI_W_REGISTER = 1\n" +
-	      " PARAMETER C_INTERCONNECT_S_AXI_B_REGISTER = 1\n" +
-	      " PARAMETER C_DM_WIDTH = 8\n" +
-	      " PARAMETER C_DQS_WIDTH = 8\n" +
-	      " PARAMETER C_DQ_WIDTH = 64\n" +
-	      " PARAMETER C_MMCM_EXT_LOC = MMCM_ADV_X0Y8\n" +
-// 	      strAXI + "\n" +
-	      " PARAMETER C_S_AXI_BASEADDR = 0xA0000000\n" +
-	      " PARAMETER C_S_AXI_HIGHADDR = 0xAfffffff\n" +
-	      " BUS_INTERFACE S_AXI = DDR_axi\n" +
-	      " PORT ddr_ck_p = ddr_memory_clk\n" +
-	      " PORT ddr_ck_n = ddr_memory_clk_n\n" +
-	      " PORT ddr_cke = ddr_memory_cke\n" +
-	      " PORT ddr_cs_n = ddr_memory_cs_n\n" +
-	      " PORT ddr_odt = ddr_memory_odt\n" +
-	      " PORT ddr_ras_n = ddr_memory_ras_n\n" +
-	      " PORT ddr_cas_n = ddr_memory_cas_n\n" +
-	      " PORT ddr_we_n = ddr_memory_we_n\n" +
-	      " PORT ddr_dm = ddr_memory_dm\n" +
-	      " PORT ddr_ba = ddr_memory_ba\n" +
-	      " PORT ddr_addr = ddr_memory_addr\n" +
-	      " PORT ddr_reset_n = ddr_memory_ddr3_rst\n" +
-	      " PORT ddr_dq = fpga_0_DDR3_SDRAM_DDR3_DQ_pin\n" +
-	      " PORT ddr_dqs_p = fpga_0_DDR3_SDRAM_DDR3_DQS_pin\n" +
-	      " PORT ddr_dqs_n = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin\n" +
-	      " PORT clk = sys_clk_200_MHz\n" +
-	      " PORT clk_ref = sys_clk_200_MHz\n" +
-	      " PORT clk_mem = sys_clk_400_MHz\n" +
-	      " PORT clk_rd_base = sys_clk_400_MHz_nobuf_varphase\n" +
-	      " PORT PD_PSEN = psen\n" +
-	      " PORT PD_PSINCDEC = psincdec\n" +
-	      " PORT PD_PSDONE = psdone\n" +
-	      "END\n\n" +
+    if (_commInterface.equals("Combo")) {
+        // The DDR in case of Combo must be on the same bus where the 
+        // TFT controller is, which is the PLB bus
+        _printStream.println(
+            "BEGIN mpmc\n" +
+            " PARAMETER INSTANCE = DDR3_SDRAM\n" +
+            " PARAMETER HW_VER = 6.04.a\n" +
+            " PARAMETER C_MEM_DATA_WIDTH = 32\n" +
+            " PARAMETER C_MEM_PARTNO = MT4JSF6464HY-1G1\n" +
+            " PARAMETER C_MEM_TYPE = DDR3\n" +
+            " PARAMETER C_MPMC_BASEADDR = 0xA0000000\n" +
+            " PARAMETER C_MPMC_HIGHADDR = 0xAFFFFFFF\n" +
+            " PARAMETER C_MPMC_CLK0_PERIOD_PS = 5000\n" +
+            " PARAMETER C_MEM_NDQS_COL0 = 3\n" +
+            " PARAMETER C_MEM_NDQS_COL1 = 1\n" +
+            " PARAMETER C_MEM_DQS_LOC_COL0 = 0x000000000000000000000000000000020100\n" +
+            " PARAMETER C_MEM_DQS_LOC_COL1 = 0x000000000000000000000000000000000003\n" +
+            " PARAMETER C_MEM_ODT_TYPE = 1\n" +
+            " PARAMETER C_FAMILY = virtex6\n" +
+            " BUS_INTERFACE SPLB0 = mb_plb\n" +
+            " PORT MPMC_Clk_Rd_Base = MPMC_Clk_Rd_Base\n" +
+            " PORT MPMC_DCM_PSEN = MPMC_DCM_PSEN\n" +
+            " PORT MPMC_DCM_PSINCDEC = MPMC_DCM_PSINCDEC\n" +
+            " PORT MPMC_DCM_PSDONE = MPMC_DCM_PSDONE\n" +
+            " PORT MPMC_Clk_Mem = MPMC_Clk_Mem\n" +
+            " PORT MPMC_Clk0 = MPMC_Clk0\n" +
+            " PORT MPMC_Clk_200MHz = MPMC_Clk0\n" +
+            " PORT MPMC_Rst = sys_periph_reset\n" +
+            " PORT DDR3_Clk = fpga_0_DDR3_SDRAM_DDR3_Clk_pin\n" +
+            " PORT DDR3_Clk_n = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin\n" +
+            " PORT DDR3_CE = fpga_0_DDR3_SDRAM_DDR3_CE_pin\n" +
+            " PORT DDR3_CS_n = fpga_0_DDR3_SDRAM_DDR3_CS_n_pin\n" +
+            " PORT DDR3_ODT = fpga_0_DDR3_SDRAM_DDR3_ODT_pin\n" +
+            " PORT DDR3_RAS_n = fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin\n" +
+            " PORT DDR3_CAS_n = fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin\n" +
+            " PORT DDR3_WE_n = fpga_0_DDR3_SDRAM_DDR3_WE_n_pin\n" +
+            " PORT DDR3_BankAddr = fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin\n" +
+            " PORT DDR3_Addr = fpga_0_DDR3_SDRAM_DDR3_Addr_pin\n" +
+            " PORT DDR3_DQ = fpga_0_DDR3_SDRAM_DDR3_DQ_pin\n" +
+            " PORT DDR3_DM = fpga_0_DDR3_SDRAM_DDR3_DM_pin\n" +
+            " PORT DDR3_DQS = fpga_0_DDR3_SDRAM_DDR3_DQS_pin\n" +
+            " PORT DDR3_DQS_n = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin\n" +
+            " PORT DDR3_Reset_n = fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin\n" +
+            "END\n\n" +
 
-	      "BEGIN axi_interconnect\n" +
-	      " PARAMETER INSTANCE = DDR_axi\n" +
-	      " PARAMETER HW_VER = 1.03.a\n" +
-	      " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
-	      " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
-	      " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
-	      "END\n\n" +
+            "BEGIN axi_ethernetlite\n" +
+            " PARAMETER INSTANCE = Ethernet_Lite\n" +
+            " PARAMETER HW_VER = 1.00.a\n" +
+            " PARAMETER C_BASEADDR = 0xB4000000\n" +
+            " PARAMETER C_HIGHADDR = 0xB400ffff\n" +
+            " PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
+            " PARAMETER C_INCLUDE_INTERNAL_LOOPBACK = 0\n" +
+            " BUS_INTERFACE S_AXI = DDR_axi\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            " PORT PHY_tx_en = Ethernet_Lite_TX_EN\n" +
+            " PORT PHY_tx_clk = Ethernet_Lite_TX_CLK\n" +
+            " PORT PHY_tx_data = Ethernet_Lite_TXD\n" +
+            " PORT PHY_rx_er = Ethernet_Lite_RX_ER\n" +
+            " PORT PHY_dv = Ethernet_Lite_RX_DV\n" +
+            " PORT PHY_rx_clk = Ethernet_Lite_RX_CLK\n" +
+            " PORT PHY_rx_data = Ethernet_Lite_RXD\n" +
+            " PORT PHY_rst_n = Ethernet_Lite_PHY_RST_N\n" +
+            " PORT PHY_MDIO = Ethernet_Lite_MDIO\n" +
+            " PORT PHY_MDC = Ethernet_Lite_MDC\n" +
+            " PORT PHY_crs = Ethernet_Lite_CRS\n" +
+            " PORT PHY_col = Ethernet_Lite_COL\n" +
+            " PORT IP2INTC_Irpt = Ethernet_Lite_IP2INTC_Irpt\n" +
+            "END\n\n" +
 
-	      "BEGIN axi2axi_connector\n" +
-	      " PARAMETER INSTANCE = host_if_mb_ddr_axi2axi_connector\n" +
-	      " PARAMETER HW_VER = 1.00.a\n" +
-	      " PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
-	      " PARAMETER C_S_AXI_RNG00_BASEADDR = 0xA0000000\n" +
-	      " PARAMETER C_S_AXI_RNG00_HIGHADDR = 0xBFFFFFFF\n" +
-	      " PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
-	      " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
-	      " BUS_INTERFACE M_AXI = DDR_axi\n" +
-	      "END\n");
+            "BEGIN axi_sysace\n" +
+            " PARAMETER INSTANCE = SysACE_CompactFlash\n" +
+            " PARAMETER HW_VER = 1.01.a\n" +
+            " PARAMETER C_MEM_WIDTH = 8\n" +
+            " PARAMETER C_BASEADDR = 0xB2000000\n" +
+            " PARAMETER C_HIGHADDR = 0xB200FFFF\n" +
+            " BUS_INTERFACE S_AXI = DDR_axi\n" +
+            " PORT S_AXI_ACLK = sys_clk_100_MHz\n" +
+            " PORT SysACE_WEN = SysACE_WEN\n" +
+            " PORT SysACE_OEN = SysACE_OEN\n" +
+            " PORT SysACE_MPIRQ = SysACE_MPIRQ\n" +
+            " PORT SysACE_MPD = SysACE_MPD\n" +
+            " PORT SysACE_MPA = SysACE_MPA\n" +
+            " PORT SysACE_CLK = SysACE_CLK\n" +
+            " PORT SysACE_CEN = SysACE_CEN\n" +
+            "END\n\n" +
+
+            "BEGIN xps_tft\n" +
+            " PARAMETER INSTANCE = display_cntlr\n" +
+            " PARAMETER HW_VER = 2.01.a\n" +
+            " PARAMETER C_DCR_SPLB_SLAVE_IF = 1\n" +
+            " PARAMETER C_TFT_INTERFACE = 1\n" +
+            " PARAMETER C_I2C_SLAVE_ADDR = 0b1110110\n" +
+            " PARAMETER C_DEFAULT_TFT_BASE_ADDR = 0xA0000000\n" +
+            " PARAMETER C_SPLB_BASEADDR = 0xB3000000\n" +
+            " PARAMETER C_SPLB_HIGHADDR = 0xB300FFFF\n" +
+            " BUS_INTERFACE MPLB = mb_plb\n" +
+            " PORT TFT_IIC_SDA = xps_tft_0_TFT_IIC_SDA\n" +
+            " PORT TFT_IIC_SCL = xps_tft_0_TFT_IIC_SCL\n" +
+            " PORT SYS_TFT_Clk = xps_tft_0_SYS_TFT_Clk\n" +
+            " PORT TFT_DVI_DATA = xps_tft_0_TFT_DVI_DATA\n" +
+            " PORT TFT_DVI_CLK_N = xps_tft_0_TFT_DVI_CLK_N\n" +
+            " PORT TFT_DVI_CLK_P = xps_tft_0_TFT_DVI_CLK_P\n" +
+            " PORT TFT_DE = xps_tft_0_TFT_DE\n" +
+            " PORT TFT_VSYNC = xps_tft_0_TFT_VSYNC\n" +
+            " PORT TFT_HSYNC = xps_tft_0_TFT_HSYNC\n" +
+            "END\n\n" +
+
+            "BEGIN axi_plbv46_bridge\n" +
+            " PARAMETER INSTANCE = axi2plb\n" +
+            " PARAMETER HW_VER = 2.01.a\n" +
+            " PARAMETER C_EN_BYTE_SWAP = 0\n" +
+            " PARAMETER C_S_AXI_PROTOCOL = AXI4\n" +
+            " PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
+            " PARAMETER C_S_AXI_RNG1_BASEADDR = 0xA0000000\n" +
+            " PARAMETER C_S_AXI_RNG1_HIGHADDR = 0xAFFFFFFF\n" +
+            " PARAMETER C_S_AXI_ID_WIDTH = 1\n" +
+            " BUS_INTERFACE S_AXI = DDR_axi\n" +
+            " BUS_INTERFACE MPLB = mb_plb\n" +
+            "END\n\n" + 
+
+            "BEGIN plb_v46\n" +
+            " PARAMETER INSTANCE = mb_plb\n" +
+            " PARAMETER HW_VER = 1.05.a\n" +
+            " PORT PLB_Clk = sys_clk_100_MHz\n" +
+            " PORT SYS_Rst = sys_bus_reset\n" +
+            "END\n");
+    } else {
+	    _printStream.println(
+	          "BEGIN axi_v6_ddrx\n" +
+	          " PARAMETER INSTANCE = DDR3_SDRAM\n" +
+	          " PARAMETER HW_VER = 1.03.a\n" +
+	          " PARAMETER C_MEM_PARTNO = MT4JSF6464HY-1G1\n" +
+	          " PARAMETER C_INTERCONNECT_S_AXI_AR_REGISTER = 1\n" +
+	          " PARAMETER C_INTERCONNECT_S_AXI_AW_REGISTER = 1\n" +
+	          " PARAMETER C_INTERCONNECT_S_AXI_R_REGISTER = 1\n" +
+	          " PARAMETER C_INTERCONNECT_S_AXI_W_REGISTER = 1\n" +
+	          " PARAMETER C_INTERCONNECT_S_AXI_B_REGISTER = 1\n" +
+	          " PARAMETER C_DM_WIDTH = 8\n" +
+	          " PARAMETER C_DQS_WIDTH = 8\n" +
+	          " PARAMETER C_DQ_WIDTH = 64\n" +
+	          " PARAMETER C_MMCM_EXT_LOC = MMCM_ADV_X0Y8\n" +
+    // 	      strAXI + "\n" +
+	          " PARAMETER C_S_AXI_BASEADDR = 0xA0000000\n" +
+	          " PARAMETER C_S_AXI_HIGHADDR = 0xAfffffff\n" +
+	          " BUS_INTERFACE S_AXI = DDR_axi\n" +
+	          " PORT ddr_ck_p = ddr_memory_clk\n" +
+	          " PORT ddr_ck_n = ddr_memory_clk_n\n" +
+	          " PORT ddr_cke = ddr_memory_cke\n" +
+	          " PORT ddr_cs_n = ddr_memory_cs_n\n" +
+	          " PORT ddr_odt = ddr_memory_odt\n" +
+	          " PORT ddr_ras_n = ddr_memory_ras_n\n" +
+	          " PORT ddr_cas_n = ddr_memory_cas_n\n" +
+	          " PORT ddr_we_n = ddr_memory_we_n\n" +
+	          " PORT ddr_dm = ddr_memory_dm\n" +
+	          " PORT ddr_ba = ddr_memory_ba\n" +
+	          " PORT ddr_addr = ddr_memory_addr\n" +
+	          " PORT ddr_reset_n = ddr_memory_ddr3_rst\n" +
+	          " PORT ddr_dq = fpga_0_DDR3_SDRAM_DDR3_DQ_pin\n" +
+	          " PORT ddr_dqs_p = fpga_0_DDR3_SDRAM_DDR3_DQS_pin\n" +
+	          " PORT ddr_dqs_n = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin\n" +
+	          " PORT clk = sys_clk_200_MHz\n" +
+	          " PORT clk_ref = sys_clk_200_MHz\n" +
+	          " PORT clk_mem = sys_clk_400_MHz\n" +
+	          " PORT clk_rd_base = sys_clk_400_MHz_nobuf_varphase\n" +
+	          " PORT PD_PSEN = psen\n" +
+	          " PORT PD_PSINCDEC = psincdec\n" +
+	          " PORT PD_PSDONE = psdone\n" +
+	          "END\n");
+        }
+        _printStream.println(
+        "BEGIN axi_interconnect\n" +
+        " PARAMETER INSTANCE = DDR_axi\n" +
+        " PARAMETER HW_VER = 1.03.a\n" +
+        " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+        " PORT INTERCONNECT_ARESETN = sys_Interconnect_aresetn\n" +
+        " PORT INTERCONNECT_ACLK = sys_clk_100_MHz\n" +
+        "END\n\n" +
+        "BEGIN axi2axi_connector\n" +
+        " PARAMETER INSTANCE = host_if_mb_ddr_axi2axi_connector\n" +
+        " PARAMETER HW_VER = 1.00.a\n" +
+        " PARAMETER C_S_AXI_NUM_ADDR_RANGES = 1\n" +
+        " PARAMETER C_S_AXI_RNG00_BASEADDR = 0xA0000000\n" +
+        " PARAMETER C_S_AXI_RNG00_HIGHADDR = 0xBFFFFFFF\n" +
+        " PARAMETER C_S_AXI_PROTOCOL = AXI4LITE\n" +
+        " BUS_INTERFACE S_AXI = host_if_mb_axi4lite_DP\n" +
+        " BUS_INTERFACE M_AXI = DDR_axi\n" +
+        "END\n");
 
         Platform platform = (Platform) x.getLevelUpResource();
         Iterator i = platform.getResourceList().iterator();
@@ -2750,7 +2990,99 @@ public class MhsVisitor extends PlatformVisitor {
 // CLK & RST
 //----------------------------
 
-	_printStream.println(
+    if (_commInterface.equals("Combo")) {
+        _printStream.println(
+        "BEGIN clock_generator\n" +
+        " PARAMETER INSTANCE = sys_clock_generator\n" +
+        " PARAMETER HW_VER = 4.02.a\n" +
+        " PARAMETER C_EXT_RESET_HIGH = 1\n" +
+        " PARAMETER C_CLKIN_FREQ = 200000000\n" +
+        " PARAMETER C_CLKOUT0_FREQ = 400000000\n" +
+        " PARAMETER C_CLKOUT0_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT0_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT0_GROUP = MMCM0\n" +
+        " PARAMETER C_CLKOUT0_VARIABLE_PHASE = FALSE\n" +
+        " PARAMETER C_CLKOUT1_FREQ = 200000000\n" +
+        " PARAMETER C_CLKOUT1_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT1_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT1_GROUP = MMCM0\n" +
+        " PARAMETER C_CLKOUT1_VARIABLE_PHASE = FALSE\n" +
+        " PARAMETER C_CLKOUT2_FREQ = 400000000\n" +
+        " PARAMETER C_CLKOUT2_BUF = FALSE\n" +
+        " PARAMETER C_CLKOUT2_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT2_GROUP = MMCM0\n" +
+        " PARAMETER C_CLKOUT2_VARIABLE_PHASE = TRUE\n" +
+        " PARAMETER C_CLKOUT3_FREQ = 100000000\n" +
+        " PARAMETER C_CLKOUT3_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT3_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT3_GROUP = MMCM0\n" +
+        " PARAMETER C_CLKOUT3_VARIABLE_PHASE = FALSE\n" +
+        " PARAMETER C_CLKOUT4_FREQ = 125000000\n" +
+        " PARAMETER C_CLKOUT4_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT4_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT4_GROUP = NONE\n" +
+        " PARAMETER C_CLKOUT5_FREQ = 25000000\n" +
+        " PARAMETER C_CLKOUT5_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT5_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT5_GROUP = NONE\n" +
+        " PARAMETER C_CLKOUT6_FREQ = 50000000\n" +
+        " PARAMETER C_CLKOUT6_BUF = TRUE\n" +
+        " PARAMETER C_CLKOUT6_PHASE = 0\n" +
+        " PARAMETER C_CLKOUT6_GROUP = MMCM0\n" +
+        " PARAMETER C_PSDONE_GROUP = MMCM0\n" +
+        " PARAMETER C_DEVICE = 6vlx240t\n" +
+        " PARAMETER C_PACKAGE = ff1156\n" +
+        " PARAMETER C_SPEEDGRADE = -1\n" +
+        " PORT CLKOUT0 = MPMC_Clk_Mem\n" +
+        " PORT CLKOUT1 = MPMC_Clk0\n" +
+        " PORT CLKOUT2 = MPMC_Clk_Rd_Base\n" +
+        " PORT CLKOUT3 = sys_clk_100_MHz\n" +
+        " PORT CLKOUT5 = xps_tft_0_SYS_TFT_Clk\n" +
+        " PORT CLKOUT6 = sys_clk_50_MHz\n" +
+        " PORT PSCLK = MPMC_Clk0\n" +
+        " PORT PSDONE = MPMC_DCM_PSDONE\n" +
+        " PORT PSEN = MPMC_DCM_PSEN\n" +
+        " PORT PSINCDEC = MPMC_DCM_PSINCDEC\n" +
+        " PORT CLKIN = CLK_S\n" +
+        " PORT LOCKED = sys_dcm_locked_port\n" +
+        " PORT RST = sys_rst_s\n" +
+        "END\n" +
+
+        "BEGIN proc_sys_reset\n" +
+        " PARAMETER INSTANCE = sys_reset_circuit\n" +
+        " PARAMETER HW_VER = 3.00.a\n" +
+        " PARAMETER C_EXT_RESET_HIGH = 1\n" +
+        " PORT Ext_Reset_In = sys_rst_s\n" +
+        " PORT MB_Reset = mb_reset\n" +
+        " PORT Slowest_sync_clk = sys_clk_50_MHz\n" +
+        " PORT Interconnect_aresetn = sys_Interconnect_aresetn\n" +
+        " PORT Dcm_locked = rst_dcm_locked_port\n" +
+        " PORT BUS_STRUCT_RESET = sys_bus_reset\n" +
+        " PORT Peripheral_Reset = sys_periph_reset\n" +
+        " PORT Peripheral_aresetn = sys_periph_reset_n\n" +
+        "END\n\n" +
+
+        "BEGIN util_vector_logic\n" +
+        " PARAMETER INSTANCE = dcm_clock_locked_host_if\n" +
+        " PARAMETER HW_VER = 1.00.a\n" +
+        " PARAMETER C_OPERATION = and\n" +
+        " PARAMETER C_SIZE = 1\n" +
+        " PORT Op1 = clock_locked_port_" + (_numMb-1) + "_" + _numMb +"\n" + 
+        " PORT Op2 = clock_locked_port_host_if\n" +
+        " PORT Res = clock_locked_port_" + (_numMb) + "_host_if\n" +
+        "END\n\n" +
+
+	    "BEGIN util_vector_logic\n" +
+	    " PARAMETER INSTANCE = dcm_clock_locked_last\n" +
+	    " PARAMETER HW_VER = 1.00.a\n" +
+	    " PARAMETER C_OPERATION = and\n" +
+	    " PARAMETER C_SIZE = 1\n" +
+	    " PORT Op1 = sys_dcm_locked_port\n" +
+        " PORT Op2 = clock_locked_port_" + (_numMb) + "_host_if\n" +
+	    " PORT Res = rst_dcm_locked_port\n" +
+	    "END\n");
+    } else {
+    	_printStream.println(
 	      "BEGIN clock_generator\n" +
 	      " PARAMETER INSTANCE = sys_clock_generator\n" +
 	      " PARAMETER HW_VER = 4.02.a\n" +
@@ -2806,7 +3138,7 @@ public class MhsVisitor extends PlatformVisitor {
 	      " PORT Dcm_locked = rst_dcm_locked_port\n" +
 	      " PORT BUS_STRUCT_RESET = sys_bus_reset\n" +
 	      "END\n");
-
+        }
 
     }
    
