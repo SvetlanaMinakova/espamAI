@@ -28,5 +28,5 @@ package espam.visitor.xps.cdpn;
 
 public class Options {
 	// use local variables for self channels
-	public static boolean USE_LOCAL_VAR_FIFO = false;
+	public static boolean USE_LOCAL_VAR_FIFO = true;
 }
