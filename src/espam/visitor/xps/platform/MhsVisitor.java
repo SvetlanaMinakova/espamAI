@@ -294,24 +294,44 @@ public class MhsVisitor extends PlatformVisitor {
                 " PORT vga_reset_pin = sys_periph_reset_n, DIR = O, SIGIS = RST, RST_POLARITY = 0");
             }
             
-            if( _isAXICrossbar && !_commInterface.equals("Combo")) {
-                _printStream.println(
-                "# DDR3 over AXI\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = ddr_memory_cs_n, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = ddr_memory_odt, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = ddr_memory_ras_n, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = ddr_memory_cas_n, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = ddr_memory_we_n, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = ddr_memory_dm, DIR = O, VEC = [7:0]\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = ddr_memory_ba, DIR = O, VEC = [2:0]\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = ddr_memory_addr, DIR = O, VEC = [12:0]\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = ddr_memory_ddr3_rst, DIR = O\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [63:0]\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [7:0]\n" +
-			    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [7:0]");
+            if( _isAXICrossbar ) {
+                if (_commInterface.equals("Combo")) {
+                    _printStream.println(
+                    "# DDR3 over PLB. This is needed for xps_tft to work\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_pin, DIR = O, VEC = [0:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin, DIR = O, VEC = [0:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = fpga_0_DDR3_SDRAM_DDR3_CE_pin, DIR = O, VEC = [0:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CS_n_pin, DIR = O, VEC = [0:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = fpga_0_DDR3_SDRAM_DDR3_ODT_pin, DIR = O, VEC = [0:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin, DIR = O\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin, DIR = O\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = fpga_0_DDR3_SDRAM_DDR3_WE_n_pin, DIR = O\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin, DIR = O, VEC = [2:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = fpga_0_DDR3_SDRAM_DDR3_Addr_pin, DIR = O, VEC = [12:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [31:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = fpga_0_DDR3_SDRAM_DDR3_DM_pin, DIR = O, VEC = [3:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [3:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]\n" +
+                    " PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin, DIR = O");
+                } else {
+                    _printStream.println(
+                    "# DDR3 over AXI\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_pin = ddr_memory_clk, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_Clk_n_pin = ddr_memory_clk_n, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_CE_pin = ddr_memory_cke, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_CS_n_pin = ddr_memory_cs_n, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_ODT_pin = ddr_memory_odt, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_RAS_n_pin = ddr_memory_ras_n, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_CAS_n_pin = ddr_memory_cas_n, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_WE_n_pin = ddr_memory_we_n, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_DM_pin = ddr_memory_dm, DIR = O, VEC = [7:0]\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_BankAddr_pin = ddr_memory_ba, DIR = O, VEC = [2:0]\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_Addr_pin = ddr_memory_addr, DIR = O, VEC = [12:0]\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_Reset_n_pin = ddr_memory_ddr3_rst, DIR = O\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_DQ_pin = fpga_0_DDR3_SDRAM_DDR3_DQ_pin, DIR = IO, VEC = [63:0]\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [7:0]\n" +
+			        " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [7:0]");
+                }
             } else { 
 		        _printStream.println(
                 "# DDR3 over PLB\n" +
