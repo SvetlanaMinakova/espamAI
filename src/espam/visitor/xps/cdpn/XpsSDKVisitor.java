@@ -376,7 +376,7 @@ public class XpsSDKVisitor {
                     
                 }
                 
-                if (_commInterface.equals("")) {
+                if (_commInterface.equals("Combo")) {
                     out.println("BEGIN DRIVER\n" +
                                 " PARAMETER DRIVER_NAME = mpmc\n" +
                                 " PARAMETER DRIVER_VER = 4.01.a\n" +

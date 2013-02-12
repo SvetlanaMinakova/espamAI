@@ -644,49 +644,70 @@ public class XpsProcessVisitor extends CDPNVisitor {
     "#define PLATFORM_H_\n\n" +
     "#include <FreeRTOS.h>\n" +
     "#include <timers.h>\n" +
-    "#include <xtmrctr.h>\n\n" +
-    "#define mainDONT_BLOCK\t\t\t( portTickType ) 0\n" +
-    "#define TIMER_DEVICE_ID\t\t\tXPAR_TMRCTR_0_DEVICE_ID\n" +
-    "#define TIMER_FREQ_HZ\t\t\tXPAR_TMRCTR_0_CLOCK_FREQ_HZ\n" +
-    "#define TIMER_INTR_ID\t\t\tXPAR_INTC_0_TMRCTR_0_VEC_ID\n\n" +
+    "#include <xtmrctr.h>\n" +
+    "#include <stdio.h>\n\n" +
+    "#define mainDONT_BLOCK   ( portTickType ) 0\n" +
+    "#define TIMER_DEVICE_ID  XPAR_TMRCTR_0_DEVICE_ID\n" +
+    "#define TIMER_FREQ_HZ    XPAR_TMRCTR_0_CLOCK_FREQ_HZ\n" +
+    "#define TIMER_INTR_ID    XPAR_INTC_0_TMRCTR_0_VEC_ID\n\n" +
     "#if defined __cplusplus\n" +
     "extern \"C\" {\n" +
     "#endif\n\n" +
     "extern void vPortTickISR( void *pvUnused );\n" +
     "static XTmrCtr xTimer0Instance;\n\n" +
-    "void vApplicationMallocFailedHook( void ) { }\n" +
-    "void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName ) { } \n" +
+    "void vApplicationMallocFailedHook( void )\n" +
+    "{\n" +
+    "\ttaskDISABLE_INTERRUPTS();\n" +
+    "\txil_printf(\"PANIC: malloc failed! Disabling interrupts...\\n\");\n" +
+    "\tfor( ;; );\n" +
+    "}\n" +
+    "void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )\n" +
+    "{\n" +
+    "\t( void ) pcTaskName;\n" +
+    "\t( void ) pxTask;\n" +
+    "\ttaskDISABLE_INTERRUPTS();\n" +
+    "\txil_printf(\"PANIC: Stack Overflow detected! Disabling interrupts...\\n\");\n" +
+    "\tfor( ;; );\n" +
+    "}\n" +
     "void vApplicationIdleHook( void ) { } \n" +
     "void vApplicationTickHook( void ) { } \n" +
     "void vSoftwareTimerCallback( xTimerHandle xTimer ) { } \n\n" +
-    "void isr(void *args, u8 c)\n" +
-    "{\n" +
-    "	vPortTickISR(args); \n" +
-    "}\n\n" +
     "void vApplicationSetupTimerInterrupt( void )\n" +
     "{\n" +
-    "	portBASE_TYPE xStatus;\n" +
-    "	const unsigned char ucTimerCounterNumber = ( unsigned char ) 0U;\n" +
-    "	const unsigned long ulCounterValue = ( ( TIMER_FREQ_HZ / configTICK_RATE_HZ ) - 1UL );\n" +
-    "	xStatus = XTmrCtr_Initialize( &xTimer0Instance, TIMER_DEVICE_ID );\n" +
-    "	if( xStatus == XST_SUCCESS )\n" +
-	"   	xStatus = xPortInstallInterruptHandler( TIMER_INTR_ID, vPortTickISR, NULL );\n" +
-    "	if( xStatus == pdPASS ) { \n" +
-    "		vPortEnableInterrupt( TIMER_INTR_ID );\n" +
-    "		XTmrCtr_SetHandler( &xTimer0Instance, isr, NULL );\n" +
-    "		XTmrCtr_SetResetValue( &xTimer0Instance, ucTimerCounterNumber, ulCounterValue );\n" +
-	"		XTmrCtr_SetOptions( &xTimer0Instance, ucTimerCounterNumber, ( XTC_INT_MODE_OPTION | XTC_AUTO_RELOAD_OPTION | XTC_DOWN_COUNT_OPTION ) );\n" +
-	"		XTmrCtr_Start( &xTimer0Instance, ucTimerCounterNumber );\n" +
-    "	}\n" +
-    "	configASSERT( ( xStatus == pdPASS ) );\n" +
-    "}\n\n" +
+    "\tportBASE_TYPE xStatus;\n" +
+    "\tconst unsigned char ucTimerCounterNumber = ( unsigned char ) 0U;\n" +
+    "\tconst unsigned long ulCounterValue = ( ( TIMER_FREQ_HZ / configTICK_RATE_HZ ) - 1UL );\n" +
+    "\txStatus = XTmrCtr_Initialize( &xTimer0Instance, TIMER_DEVICE_ID );\n" +
+    "\tif( xStatus == XST_SUCCESS ) {\n" +
+    "\t\txStatus = xPortInstallInterruptHandler( TIMER_INTR_ID, vPortTickISR, NULL );\n" +
+    "\t}\n" +
+    "\tif( xStatus == pdPASS ) { \n" +
+    "\t\tvPortEnableInterrupt( TIMER_INTR_ID );\n" +
+	"\t\tXTmrCtr_SetHandler( &xTimer0Instance, (XTmrCtr_Handler)vPortTickISR, NULL );\n" +
+    "\t\tXTmrCtr_SetResetValue( &xTimer0Instance, ucTimerCounterNumber, ulCounterValue );\n" +
+    "\t\tXTmrCtr_SetOptions( &xTimer0Instance, ucTimerCounterNumber, ( XTC_INT_MODE_OPTION | XTC_AUTO_RELOAD_OPTION | XTC_DOWN_COUNT_OPTION ) );\n" +
+	"\t\tXTmrCtr_Start( &xTimer0Instance, ucTimerCounterNumber );\n" +
+    "\t}\n" +
+    "\tconfigASSERT( ( xStatus == pdPASS ) );\n" +
+    "}\n" +
     "void vApplicationClearTimerInterrupt( void )\n" +
     "{\n" +
-    "	unsigned long ulCSR;\n" +
-    "	ulCSR = XTmrCtr_GetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0 );\n" +
-    "	XTmrCtr_SetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0, ulCSR );\n" +
+    "\tunsigned long ulCSR;\n" +
+    "\tulCSR = XTmrCtr_GetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0 );\n" +
+    "\tXTmrCtr_SetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0, ulCSR );\n" +
+    "}\n" +
+    "void init_platform() { } \n" +
+    "void delayCheckDeadline(portTickType *xLastWakeTime, const portTickType xFrequency)\n" +
+    "{\n" +
+    "\tportTickType ticks;\n" +
+    "\tticks = xTaskGetTickCount();\n" +
+    "\tvTaskDelayUntil( xLastWakeTime, xFrequency );\n" +
+    "\tif (ticks > *xLastWakeTime) {\n" +
+    "\t\ttaskDISABLE_INTERRUPTS();\n" +
+    "\t\txil_printf(\"PANIC! Deadline miss\\n\");\n" +
+    "\t\tfor (;;);\n" +
+    "\t}\n" +
     "}\n\n" +
-    "void init_platform() { } \n\n" +
     "#if defined __cplusplus\n" +
     "}\n" +
     "#endif\n" +

@@ -126,7 +126,8 @@ public class XpsStatementVisitor extends StatementVisitor {
         _prefixInc();
         _visitChildren(x);
         if (!_printDelay && _scheduleType == 2) {
-            _printStream.println(_prefix + "vTaskDelayUntil( &xLastWakeTime, xFrequency );");
+            //_printStream.println(_prefix + "vTaskDelayUntil( &xLastWakeTime, xFrequency );");
+            _printStream.println(_prefix + "delayCheckDeadline( &xLastWakeTime, xFrequency );");
             _printDelay = true;
         }
         _prefixDec();
