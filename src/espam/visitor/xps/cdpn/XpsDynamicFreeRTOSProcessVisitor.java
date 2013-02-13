@@ -672,7 +672,11 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 		_printStream.println("");
 		_printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
 		_printStream.println("");
-	}
+	} else if (_targetBoard.equals("ML605")) {
+		_printStream.println("");
+		_printStream.println(_prefix + _prefix + "while( *START == 0 ) {};");
+		_printStream.println("");
+    }
 
 	if( _ui.getDebuggerFlag() ) {
 		_printStream.println(_prefix + "int clk_num;");
