@@ -697,17 +697,16 @@ public class XpsProcessVisitor extends CDPNVisitor {
     "\tXTmrCtr_SetControlStatusReg( XPAR_TMRCTR_0_BASEADDR, 0, ulCSR );\n" +
     "}\n" +
     "void init_platform() { } \n" +
-    "void delayCheckDeadline(portTickType *xLastWakeTime, const portTickType xFrequency)\n" +
-    "{\n" +
-    "\tportTickType ticks;\n" +
-    "\tticks = xTaskGetTickCount();\n" +
-    "\tvTaskDelayUntil( xLastWakeTime, xFrequency );\n" +
-    "\tif (ticks > *xLastWakeTime) {\n" +
-    "\t\ttaskDISABLE_INTERRUPTS();\n" +
-    "\t\txil_printf(\"PANIC! Deadline miss\\n\");\n" +
-    "\t\tfor (;;);\n" +
-    "\t}\n" +
-    "}\n\n" +
+    "#define delayCheckDeadline(xLastWakeTime, xFrequency) do {\\\n" +
+    "                                                          portTickType ticks;\\\n" +
+    "                                                          ticks = xTaskGetTickCount();\\\n" +
+    "                                                          vTaskDelayUntil( xLastWakeTime, xFrequency );\\\n" +
+    "                                                          if (ticks > *xLastWakeTime) {\\\n" +
+    "                                                              taskDISABLE_INTERRUPTS();\\\n" +
+    "                                                              xil_printf(\"PANIC! Deadline miss\\n\");\\\n" +
+    "                                                              for (;;);\\\n" +
+    "                                                          }\\\n" +
+    "                                                      }while(0);\n" +
     "#if defined __cplusplus\n" +
     "}\n" +
     "#endif\n" +
