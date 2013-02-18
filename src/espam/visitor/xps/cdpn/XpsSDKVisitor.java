@@ -311,6 +311,10 @@ public class XpsSDKVisitor {
                                 " PARAMETER STDIN = " + "host_if_mb_RS232_Uart" + "\n" + 
                                 " PARAMETER STDOUT = " + "host_if_mb_RS232_Uart" + "\n" + 
                                 " PARAMETER SYSTMR_INTERVAL = 1000\n" + // 1000 Hz
+                                " PARAMETER MAX_PRIORITIES = 8\n" +
+                                " PARAMETER MAX_TASK_NAME_LEN = 16\n" +
+                                " PARAMETER TOTAL_HEAP_SIZE = 16384\n" +
+                                " PARAMETER MINIMAL_STACK_SIZE = 500\n" +
                                 "END\n");
                 } else if (schedulerType == 1) { // Xilkernel
                     out.println("BEGIN OS\n" +
