@@ -69,7 +69,7 @@ public class ResolveEntityHandler implements EntityResolver {
 		+ "<!ELEMENT parameter EMPTY>"
 		+ "<!ATTLIST parameter name CDATA #REQUIRED lb CDATA #IMPLIED ub CDATA #IMPLIED value CDATA #IMPLIED>"
 
-		+ "<!ELEMENT node (inport*,invar*,outport*,file*,expression*,function,domain)*>"
+		+ "<!ELEMENT node (inport*,invar*,outport*,invar*,file*,expression*,function,domain)*>"
 		+ "<!ATTLIST node name CDATA #REQUIRED  levelUpNode CDATA #IMPLIED>"
 
 		+ "<!ELEMENT inport (invariable*, bindvariable*,domain)>"
