@@ -3462,8 +3462,8 @@ public class MhsVisitor extends PlatformVisitor {
 
         _printStream.println(
             " PARAMETER C_ALL_PIMS_SHARE_ADDRESSES = 1\n" +
-            " PARAMETER C_MPMC_BASEADDR = 0x90000000\n" +
-            " PARAMETER C_MPMC_HIGHADDR = 0x9FFFFFFF\n" +
+            " PARAMETER C_MPMC_BASEADDR = 0xA0000000\n" +
+            " PARAMETER C_MPMC_HIGHADDR = 0xAFFFFFFF\n" +
 
             " BUS_INTERFACE SPLB0 = host_if_mb_plb");
 
