@@ -122,12 +122,13 @@ public class XpsProcessVisitor extends CDPNVisitor {
             } else {
                 // In case of SDK, include all 
                 String funcCodePath = _ui.getFuncCodePath();
+                File funcCodeDir = new File(funcCodePath);
                 
                 Iterator adg_it = _ui.getADGFileNames().iterator();
                 while (adg_it.hasNext()) {
                     String adg_filename = (String)adg_it.next();
                     String[] adg_name = adg_filename.split(".kpn");
-                    _printStreamFunc.println("#include \"" + funcCodePath + File.separatorChar
+                    _printStreamFunc.println("#include \"./" + funcCodeDir.getName() + File.separatorChar
                                             + adg_name[0] + "_func.h\"");
                 }
             }
