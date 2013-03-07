@@ -120,11 +120,15 @@ public class XpsProcessVisitor extends CDPNVisitor {
             if (!_ui.getSDKFlag()) {
                 _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
             } else {
+                // In case of SDK, include all 
+                String funcCodePath = _ui.getFuncCodePath();
+                
                 Iterator adg_it = _ui.getADGFileNames().iterator();
                 while (adg_it.hasNext()) {
                     String adg_filename = (String)adg_it.next();
                     String[] adg_name = adg_filename.split(".kpn");
-                    _printStreamFunc.println("#include \"func_code" + File.separatorChar + adg_name[0] + "_func.h\"");
+                    _printStreamFunc.println("#include \"" + funcCodePath + File.separatorChar
+                                            + adg_name[0] + "_func.h\"");
                 }
             }
             _printStreamFunc.println("");
@@ -297,7 +301,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private void _writeOperations() {
         _printStreamFunc.println("#define min(a,b) ((a)<=(b))?(a):(b)");
         _printStreamFunc.println("#define max(a,b) ((a)>=(b))?(a):(b)");
-	_printStreamFunc.println("");
+        _printStreamFunc.println("");
 
         _printStreamFunc.println("inline int ddiv(int a, int b ){");
         _printStreamFunc.println("    //return (int)(a/b);");
