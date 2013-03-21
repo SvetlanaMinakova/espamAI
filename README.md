@@ -33,4 +33,9 @@ This tool is released under the license shown in LICENSE
 
 Bugs/Questions
 --------------
-In case of bugs/questions, please contact [Todor Stefanov](mailto:stefanov@liacs.nl)
+In case of bugs/questions, please contact the ESPAM team (mailto:csartem@liacs.nl) with
+a short decription. The decription should include:
+
+        1. Output by the framework and expected ouput
+        2. C code for application specification
+        3. Corresponding platform and mapping specification
