@@ -77,7 +77,8 @@ public class XpsNetworkVisitor extends CDPNVisitor {
             File f = new File(_ui.getXpsLibPath());
             File t = new File(_codeDir);
             Copier.copy(f, t, 1, true);
-            
+
+           /* jelena - This is not needed any more because host_if project and BSP are now generated for selected (AXI or PLB) interconnection
             if (_ui.getSDKFlag()) {
                 // Copy the SDK directory from libSDK
                 String sdk_path = _ui.getSDKLibPath();
@@ -93,7 +94,7 @@ public class XpsNetworkVisitor extends CDPNVisitor {
                 File st = new File(_codeDir + "SDK");
                 Copier.copy(sf, st, 1, true);
             }
-
+            */
         	//Create the software
             XpsProcessVisitor pt = new XpsProcessVisitor( _mapping );
             x.accept( pt );
