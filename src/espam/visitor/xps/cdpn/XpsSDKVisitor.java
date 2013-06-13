@@ -120,11 +120,11 @@ public class XpsSDKVisitor {
         dir_if = new File(xcp_folder).mkdir();
         
         //copySystemMss(bsp_folder, process);
-        //makeFile(bsp_folder);
+        makeFile(bsp_folder);
         Libgen(processorName, bsp_folder);
         makeProject(bsp_folder, bsp_dirname);
-        //makeCProject(bsp_folder);
-        //makeSdkProject(bsp_folder, processorName);
+        makeCProject(bsp_folder);
+        makeSdkProject(bsp_folder, processorName);
 			
         try {
             makeXCPCProject(xcp_folder, processorName, processName, 3);
@@ -151,8 +151,6 @@ public class XpsSDKVisitor {
             System.err.println ("Error copying the functional code directory");
             e.printStackTrace();
         }
-        
-        
         /* Replacing right DDR type according to the board in use (v5 v6) */
         String replace = "DDR3";
         if (_targetBoard == "XUPV5-LX110T")
@@ -175,6 +173,30 @@ public class XpsSDKVisitor {
             System.out.println ("Error making host interface mss file");
             e.printStackTrace();
         }
+
+        String dirDebug = xcp_folder + File.separatorChar + "Debug";
+        boolean IsDirDebug = new File(dirDebug).mkdir();
+        if (!IsDirDebug)
+            System.err.println ("ERROR creating " + dirDebug + " folder");
+        
+        try{
+            String elfName = dirDebug + File.separatorChar + processName + ".elf";
+            FileWriter elfFile = new FileWriter(elfName);
+            elfFile.close();
+        } catch (IOException exp) {
+                    System.err.println("Error creating dummy elf file");
+                    System.err.println("Error:" + exp);
+        }
+
+        if (_axiPlatform)   
+            copyfile(_libsdk_dir + File.separatorChar + "SDK" + File.separatorChar + "host_if" + File.separatorChar + "main_AXI.cpp", xcp_folder + File.separatorChar + "main_AXI.cpp");
+        else
+            copyfile(_libsdk_dir + File.separatorChar + "SDK" + File.separatorChar + "host_if" + File.separatorChar + "main_PLB.cpp", xcp_folder + File.separatorChar + "main_PLB.cpp");
+
+        makeObject(xcp_folder);
+        makeSources(xcp_folder);
+        makeSubdirHost(xcp_folder, bsp_dirname, processorName);
+        makeFileXCPHost(xcp_folder);
     }
 
 
@@ -187,6 +209,7 @@ public class XpsSDKVisitor {
         MProcessor mProcessor = _mapping.getMProcessor(process); 
         String processorName = mProcessor.getName();
         int schedulerType = mProcessor.getScheduleType();
+        Resource resource = mProcessor.getResource();
 	    
         bsp_dirname = "BSP_" + processName;
         xcp_dirname = processName;
@@ -217,7 +240,7 @@ public class XpsSDKVisitor {
 	        System.err.println ("Error making XCP Project/CProject");
 	        e.printStackTrace();
         }
-        
+
         String sourceDir = _sdk_dir + File.separatorChar + _funcCodeDirName;
         String destinationDir = xcp_folder;
         
@@ -283,6 +306,12 @@ public class XpsSDKVisitor {
 		System.err.println("Error in making the symbolic links");
 		e.printStackTrace();
 	}
+
+        makeObject(xcp_folder);
+        makeSources(xcp_folder);
+        makeSubdir(xcp_folder, xcp_dirname, bsp_dirname, processorName);
+        makeFileXCP(xcp_folder, processorName, processName);
+        makeLscript(xcp_folder, processorName, resource);
     }
 
 
@@ -711,16 +740,200 @@ public class XpsSDKVisitor {
         }
     } 
     
+    public void makeObject (String destFolder){
+        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "objects.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "objects.mk");
+    }
     
+    public void makeSources (String destFolder){
+        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "sources.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "sources.mk");
+    }
+
+    public void makeSubdir(String destFolder, String dirnameXCP, String dirnameBSP, String processorName){
+        try {
+            FileWriter file = new FileWriter (destFolder + File.separatorChar + "Debug" + File.separatorChar + "subdir.mk");
+            PrintWriter printer = new PrintWriter(file);
+
+            String dirPath = _sdk_dir + File.separatorChar + _funcCodeDirName;
+            File dir = new File(dirPath);
+            String[] filenames = dir.list(new FilenameFilter() { 
+                public boolean accept(File dir, String filename) { return filename.endsWith(".cpp"); } } );
+
+            printer.println("# Add inputs and outputs from these tool invocations to the build variables");
+            printer.println("CPP_SRCS += \\");
+            printer.println("../" + dirnameXCP + ".cpp \\");
+            for (int i = 0; i < filenames.length - 1; i++) {
+                printer.println("../" + filenames[i] + " \\");
+            }
+            printer.println("../" + filenames[filenames.length - 1]);
+            printer.println("\n");
+            printer.println("LD_SRCS += \\");
+            printer.println("../lscript.ld");
+            printer.println("\n");
+            printer.println("OBJS += \\");
+            printer.println("./" + dirnameXCP + ".o \\");
+            for (int i = 0; i < filenames.length - 1; i++) {
+                printer.println("./" + filenames[i].replace(".cpp", ".o") + " \\");
+            }
+            printer.println("./" + filenames[filenames.length - 1].replace(".cpp", ".o"));
+            printer.println("\n");
+            printer.println("CPP_DEPS += \\");
+            printer.println("./" + dirnameXCP + ".d \\");
+            for (int i = 0; i < filenames.length - 1; i++) {
+                printer.println("./" + filenames[i].replace(".cpp", ".d") + " \\");
+            }
+            printer.println("./" + filenames[filenames.length - 1].replace(".cpp", ".d"));
+            printer.println("\n");
+            printer.println("\n");
+            printer.println("# Each subdirectory must supply rules for building sources it contributes");
+            printer.println("%.o: ../%.cpp");
+            printer.println("\t@echo Building file: $<");
+            printer.println("\t@echo Invoking: MicroBlaze g++ compiler");
+            printer.println("\tmb-g++ -Wall -O2 -ISDK/" + _funcCodeDirName + " -c -fmessage-length=0 -D __XMK__ -I../../" + dirnameBSP + "/" + processorName + "/include -mlittle-endian -mxl-barrel-shift -mxl-pattern-compare -mno-xl-soft-div -mcpu=v8.20.a -mno-xl-soft-mul -mhard-float -MMD -MP -MF\"$(@:%.o=%.d)\" -MT\"$(@:%.o=%.d)\" -o\"$@\" \"$<\"");
+            printer.println("\t@echo Finished building: $<");
+            printer.println("\t@echo ' '");
+            printer.close();
+        } catch (IOException e) {
+        System.err.println("Error making subdir file");
+            e.printStackTrace();
+        }
+    }
+
+    public void makeSubdirHost(String destFolder, String dirnameBSP, String processorName){
+        try {
+            FileWriter file = new FileWriter (destFolder + File.separatorChar + "Debug" + File.separatorChar + "subdir.mk");
+            PrintWriter printer = new PrintWriter(file);
+
+            printer.println("# Add inputs and outputs from these tool invocations to the build variables");
+            printer.println("CPP_SRCS += \\");
+            if (_axiPlatform)
+                printer.println("../main_AXI.cpp");
+            else
+                printer.println("../main_PLB.cpp");
+            printer.println("\n");
+            printer.println("OBJS += \\");
+            if (_axiPlatform)
+                printer.println("./main_AXI.o");
+            else
+                printer.println("./main_PLB.o");
+            printer.println("\n");
+            printer.println("CPP_DEPS += \\");
+            if (_axiPlatform)
+                printer.println("./main_AXI.d");
+            else
+                printer.println("./main_PLB.d");
+            printer.println("\n");
+            printer.println("\n");
+            printer.println("# Each subdirectory must supply rules for building sources it contributes");
+            printer.println("%.o: ../%.cpp");
+            printer.println("\t@echo Building file: $<");
+            printer.println("\t@echo Invoking: MicroBlaze g++ compiler");
+            printer.println("\tmb-g++ -Wall -O0 -g3 -c -fmessage-length=0 -I../../" + dirnameBSP + "/" + processorName + "/include -mlittle-endian -mxl-pattern-compare -mcpu=v8.20.a -mno-xl-soft-mul -MMD -MP -MF\"$(@:%.o=%.d)\" -MT\"$(@:%.o=%.d)\" -o\"$@\" \"$<\"");
+            printer.println("\t@echo Finished building: $<");
+            printer.println("\t@echo ' '");
+            printer.close();
+        } catch (IOException e) {
+        System.err.println("Error making subdir file");
+            e.printStackTrace();
+        }
+    }
+
     /**
      * generation of makefile to compile the software
      * @note: we assume optimization flag "-O2" and without debug flag
      * 
      */
-    public void genMakefile(String destFolder){
-        
+
+    public void makeFileXCP(String destFolder, String processorName, String processName){
+    try{
+        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Template_Makefile");
+        FileWriter file = new FileWriter (destFolder + File.separatorChar + "Debug" + File.separatorChar +"makefile");
+        PrintWriter printer = new PrintWriter(file);
+        FileReader fr = new FileReader(f);
+        BufferedReader reader = new BufferedReader(fr);
+        String st = "";
+        String replace;
+            
+        while ((st = reader.readLine()) != null) {
+            replace = processorName;	
+            Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+            Matcher m = p.matcher(st);
+            st = m.replaceAll(replace);
+                    
+            replace = processName;
+            p = Pattern.compile("##PROCESS_NAME##");
+            m = p.matcher(st);
+            st=m.replaceAll(replace);
+
+            replace = "BSP_" + processName;
+            p = Pattern.compile("##CPP_BSP_FOLDER##");
+            m = p.matcher(st);
+            st=m.replaceAll(replace);
+
+            replace = _project_name;
+            p = Pattern.compile("##HW_PROJECT##");
+            m = p.matcher(st);
+            st=m.replaceAll(replace);
+
+            printer.println(st);
+            }
+            printer.close();
+        } catch (IOException e) {
+        System.err.println("Error making makefile");
+            e.printStackTrace();
+        }
     }
-    
+
+    public void makeFileXCPHost (String destFolder){
+        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Host_IF_Makefile", destFolder + File.separatorChar + "Debug" + File.separatorChar +"makefile");
+    }
+
+    public void makeLscript(String destFolder, String processorName, Resource resource){
+        try {
+            Integer s = _mapping.getProcessorList().size();
+            Integer localMem = 0;
+            FileWriter file = new FileWriter (destFolder + File.separatorChar + "lscript.ld");
+            PrintWriter printer = new PrintWriter(file);
+
+            localMem = ((Processor) resource).getProgMemSize();
+            localMem += ((Processor) resource).getDataMemSize();
+            
+            printer.println("_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 0x400;");
+            printer.println("_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x400;\n");
+            printer.println("/* Define Memories in the system */\n");
+            printer.println("MEMORY");
+            printer.println("{");
+            printer.println("   PCTRL_BRAM1_" + processorName + "_DCTRL_BRAM1_" + processorName + " : ORIGIN = 0x00000050, LENGTH = 0x" + _digitToStringHex(localMem - 80, 8));
+            if (_axiPlatform) {
+                printer.println("   LMB_CTRL_CM_" + processorName + " : ORIGIN = 0xE0000000, LENGTH = 0x00010000");
+                printer.println("   DDR3_SDRAM_S_AXI_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
+                for (int i = 1; i <= s; i++) {
+                    printer.println("   AXI_CTRL_CM_mb_" + i + "_S_AXI_BASEADDR : ORIGIN = 0x800" + i + "0000, LENGTH = 0x00010000");
+                }
+            }
+            else {
+                printer.println("   DDR3_SDRAM_MPMC_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
+            }
+            printer.println("}");
+
+            File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "Linker_Script_Template");
+            FileReader fr = new FileReader(f);
+            BufferedReader reader = new BufferedReader(fr);
+            String st = "";
+            String replace;
+            
+            while ((st = reader.readLine()) != null) {
+                replace = processorName;	
+                Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+                Matcher m = p.matcher(st);
+                st = m.replaceAll(replace);
+                printer.println(st);
+            }
+            printer.close();
+        } catch (IOException e) {
+            System.err.println("ERROR making linker script file");
+            e.printStackTrace();
+        }
+    }
     
     /**
      *  Get the target FPGA board and interconnection type (AXI/PLB)
@@ -741,13 +954,32 @@ public class XpsSDKVisitor {
                _axiPlatform = true;
             }
         }
-        
+
         if (_targetBoard != "ML605" && _targetBoard != "XUPV5-LX110T"){
             System.err.println("Error: unsupported target board in using SDK visitor");
         }
 
     }
 
+    /**
+     *  convert to hexical string
+     *  @param xLong long value to be changed
+     *  @param format length of the digit format
+     */
+    private String _digitToStringHex(int xInt, int format) {
+        String binStr = Integer.toHexString(xInt);
+        int binStrlength = binStr.length();
+        if (format < binStrlength) {
+            System.out.println(
+                "Error!!!!: The value can not be represented as " + format + " digit hex");
+        }
+        String returnStr = new String();
+        for (int i = 0; i < (format - binStrlength); i++) {
+            returnStr = returnStr + '0';
+        }
+        returnStr = returnStr + binStr;
+        return returnStr;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///

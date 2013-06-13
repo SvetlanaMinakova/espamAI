@@ -216,9 +216,9 @@ public class XmpVisitor extends CDPNVisitor {
         /* add the host interface MicroBlaze */
 		_printStream.println("Processor: host_if_mb");
 		
-		_printStream.println("ElfImp:");
+		//_printStream.println("ElfImp:");
 		// in case of SDKVisitor, we have default location of .elf file for the host interface
-		_printStream.println("#ElfImp: SDK/host_if/Debug/host_if.elf");
+		_printStream.println("ElfImp: SDK/host_if/Debug/host_if.elf");
 		_printStream.println("ElfSim:");
 		//_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
 		//_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
