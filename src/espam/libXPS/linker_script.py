@@ -4,7 +4,7 @@ import sys, os, fileinput
 
 script_dir = os.path.dirname(__file__)
 print("Default size for stack and heap for all processors in the platform is 1KB.")
-print("Do you want to change the sizes? (Y/N) \n")
+print("Do you want to check/change the sizes? (Y/N) \n")
 answer = raw_input()
 while ((answer == 'Y') or (answer == 'y')):
     print("For which processor do you want to check/change stack and heap (e.g. P_1)? \n")    
