@@ -127,7 +127,7 @@ public class XpsStatementVisitor extends StatementVisitor {
         _visitChildren(x);
         if (!_printDelay && _scheduleType == 2) {
             //_printStream.println(_prefix + "vTaskDelayUntil( &xLastWakeTime, xFrequency );");
-            _printStream.println(_prefix + "delayCheckDeadline( &xLastWakeTime, xFrequency );");
+            _printStream.println(_prefix + "delayCheckDeadline( &xLastReleaseTime, xPeriod );");
             _printDelay = true;
         }
         _prefixDec();
@@ -277,7 +277,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 			if( fifo.getLevelUpResource() instanceof CM_AXI ) {
 				_printStream.print(", size" + t);
 				if (_scheduleType == 2) // FreeRTOS
-				_printStream.print(", xLastWakeTime, xFrequency");
+				_printStream.print(", xLastReleaseTime, xPeriod");
 			} 
 			_printStream.println(");");
 		}		
