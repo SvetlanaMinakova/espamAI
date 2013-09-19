@@ -450,10 +450,16 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 	
 	 MProcess mp = getMProcess(node);
 	
-	_printStream.println(_prefix + "portTickType xLastWakeTime;");
-	_printStream.println(_prefix + "const portTickType xFrequency = " + mp.get_period()  + ";");
-    _printStream.println(_prefix + "xLastWakeTime = xTaskGetTickCount();\n");
-    
+	_printStream.println(_prefix + "portTickType xLastReleaseTime, xSimultaneousReleaseTime;");
+	_printStream.println(_prefix + "const portTickType xPeriod = " + mp.get_period()  + ";");
+	_printStream.println(_prefix + "const portTickType xStartTime = " + mp.get_startTime()  + ";");
+	
+	_printStream.println(_prefix + "xSimultaneousReleaseTime = *((portTickType *) arg);");
+	_printStream.println(_prefix + "vTaskDelayUntil( &xSimultaneousReleaseTime, xStartTime );");
+	
+	
+	  
+    _printStream.println(_prefix + "xLastReleaseTime = xTaskGetTickCount();\n");
     _printStream.println(_prefix + "for (;;) { ");
     }
 
@@ -653,6 +659,8 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 	_printStream.println("void thread_main(void *arg) {");
 	_prefixInc();
 	
+	_printStream.println(_prefix + "static portTickType xSimultaneousReleaseTime;");
+	
     // Initilaize the WR and RD counters of the SW FIFOs
     _printStream.println(_prefix + "// Initialize the WR and RD counters of the FIFOs to which the processor writes to");
     Iterator g = x.getOutGates().iterator();
@@ -690,8 +698,10 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 	for (int pos = 0; pos < x.getAdgNodeList().size(); pos++) {
 	    ADGNode adgNode = (ADGNode)(x.getAdgNodeList().elementAt(pos));
 	    MProcess mp = getMProcess(adgNode);
-		_printStream.println(_prefix + "xTaskCreate( thread" + (pos + 1) + ", ( signed char * ) \"thread" + (pos + 1) + "\", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + " + (mp.get_priority()) + ", NULL);");
+		_printStream.println(_prefix + "xTaskCreate( thread" + (pos + 1) + ", ( signed char * ) \"thread" + (pos + 1) + "\", configMINIMAL_STACK_SIZE, &xSimultaneousReleaseTime, tskIDLE_PRIORITY + " + (mp.get_priority()) + ", NULL);");
 	}
+	
+	_printStream.println(_prefix + "xSimultaneousReleaseTime = xTaskGetTickCount();");  
 	
 	_printStream.println("");
 	_printStream.println(_prefix + "vTaskStartScheduler();");

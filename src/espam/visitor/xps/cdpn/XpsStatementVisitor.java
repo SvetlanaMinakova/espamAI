@@ -548,7 +548,7 @@ public class XpsStatementVisitor extends StatementVisitor {
 				// _printStream.println(", " + s + ", size" + t + ");");
 					_printStream.print(", size" + t);
 					if (_scheduleType == 2) // FreeRTOS
-						_printStream.print(", xLastWakeTime, xFrequency");
+						_printStream.print(", xLastReleasTime, xPeriod");
 				}
 				_printStream.println(");");
 				//--------------------------------------- 
