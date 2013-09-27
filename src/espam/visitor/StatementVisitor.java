@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.visitor;
 import java.io.PrintStream;
@@ -44,7 +29,7 @@ import espam.datamodel.parsetree.statement.LhsStatement;
 //// Visitor
 
 public class StatementVisitor implements Visitor {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
     
@@ -56,7 +41,7 @@ public class StatementVisitor implements Visitor {
     public void setOffset(String o) {
         _offset = o;
     }
-
+    
     /**
      *  Set the prefix to s spefic lenght.
      *
@@ -65,104 +50,104 @@ public class StatementVisitor implements Visitor {
     public void setPrefix(String prefix) {
         _prefix = prefix;
     }
-
+    
     /**
      *  Visit the Root Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(RootStatement x) {};
-
+    
     /**
      *  Visit the For Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(ForStatement x) {};
-
+    
     /**
      *  Visit the If Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(IfStatement x) {};
-
+    
     /**
      *  Visit the Else Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(ElseStatement x) {};
-
+    
     /**
      *  Visit the Assign Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(AssignStatement x) {};
-
+    
     /**
      *  Visit the Simple Assign Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(SimpleAssignStatement x) {};
-
+    
     /**
      *  Visit the OPD Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(OpdStatement x) {};
-
+    
     /**
      *  Visit the Variable Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(VariableStatement x) {};
-
+    
     /**
      *  Visit the Lhs Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(LhsStatement x) {};
-
+    
     /**
      *  Visit the Rhs Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(RhsStatement x) {};
-
+    
     /**
      *  Visit the Control Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(ControlStatement x) {};
-
+    
     /**
      *  Visit the Fifo Memory Statement.
      *
      * @param  x A Visitor Object.
      */
     public void visitStatement(FifoMemoryStatement x) {};
-
+    
     /**
      *  Prefix for indenting nested statement.
      */
     protected String _prefix = "";
-
-
+    
+    
     /**
      *  Decrement the indentation.
      */
     protected void _prefixDec() {
         _prefix = _prefix.substring(_offset.length());
     }
-
+    
     /**
      *  Decrement the indentation by n times
      *
@@ -173,14 +158,14 @@ public class StatementVisitor implements Visitor {
             _prefix = _prefix.substring(_offset.length());
         }
     }
-
+    
     /**
      *  increment the indentation.
      */
     protected void _prefixInc() {
         _prefix += _offset;
     }
-
+    
     /**
      *  Increment the indentation by n times
      *
@@ -191,7 +176,7 @@ public class StatementVisitor implements Visitor {
             _prefix += _offset;
         }
     }
-
+    
     /**
      *  Walk the parse down, visiting the childeren one by one.
      *
@@ -204,7 +189,7 @@ public class StatementVisitor implements Visitor {
             s.accept(this);
         }
     }
-
+    
     /**
      *  Visited all children of a given parse node with the current visitor
      *  object. This method is a help funtion to traverse a Parsetree.
@@ -217,15 +202,15 @@ public class StatementVisitor implements Visitor {
             node.accept(this);
         }
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         protected variables                ///
-
+    
     /**
      *  Value for the added offset when indenting.
      */
     protected static String _offset = "  ";
-
+    
     /**
      *  Stream where the print output is send to.
      */

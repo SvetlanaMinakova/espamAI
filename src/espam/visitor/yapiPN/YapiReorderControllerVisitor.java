@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 /*
  * The Compaan Software Tool
@@ -62,7 +47,7 @@ import panda.visitor.pseudopolynomial.CPolynomialVisitor;
  */
 
 public class YapiReorderControllerVisitor extends YapiStatementVisitor {
-
+    
     /**
      *  Constructor for the PtolemyStatementVisitor object
      *
@@ -70,7 +55,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
      * @param  name Description of the Parameter
      */
     public YapiReorderControllerVisitor(PrintStream printStream,
-            String name) {
+                                        String name) {
         super(printStream, name);
         setPrefix("   ");
         _visitor = new CExpressionVisitor();
@@ -89,36 +74,36 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + "if (state == 1) {");
         _prefixInc();
         _printStream.println(_prefix + "this->" + x.getIterator() 
-                + " = " + lbString + ";");
+                                 + " = " + lbString + ";");
         _prefixDec();
         _printStream.println(_prefix + "}");
         
         _printStream.println(_prefix + "for (int "
-                + x.getIterator() + " = ceil1("
-                + "this->" + x.getIterator() + "); "
-                + x.getIterator() + " <= "
-                + "floor1("
-                + ubString + "); "
-                + x.getIterator() + " += "
-                + x.getStepSize() + ") {");
+                                 + x.getIterator() + " = ceil1("
+                                 + "this->" + x.getIterator() + "); "
+                                 + x.getIterator() + " <= "
+                                 + "floor1("
+                                 + ubString + "); "
+                                 + x.getIterator() + " += "
+                                 + x.getStepSize() + ") {");
         
         //_printStream.println(_prefix + "} // for " + x.getIterator());
     }
-
+    
     /**
      *  Print the CAM Memory Statement the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
     public void visitStatement(CAMMemoryStatement x) {
-
+        
         // Get the UI.
         UserInterface _ui = UserInterface.getInstance();
         String name = x.getName();
         String t = "t" + x.getPort().getEdge().getName();
-
+        
         _prefix = "";
-
+        
         _printStream.println("#ifndef " + name + "_H");
         _printStream.println("#define " + name + "_H");
         _printStream.println("");
@@ -136,17 +121,17 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(" *");
         _printStream.println(" */");
         _printStream.println("");
-
-
+        
+        
         _printStream.println("/* This reoder controller is for variable");
         _printStream.println("");
         
         _printStream.println(" " 
-                + x.getPort().getEdge().getDocumentation());
-            
+                                 + x.getPort().getEdge().getDocumentation());
+        
         _printStream.println(" ");
         _printStream.println("*/\n\n");
-
+        
         _printStream.println("");
         _printStream.println("#include \"aux_func.h\"");
         _printStream.println("#include <map>");
@@ -177,35 +162,35 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + t +" readFromMem (int key) {");
         _prefixInc();
         _printStream.println(_prefix + "Data *data;");
-
+        
         if (_ui.getRec2Flag() || _ui.getPipRecFlag()) {
             _printStream.println(_prefix + "int multiplicity = 0;");
         } else {
             _printStream.println(_prefix + "int multiplicity;");
         }
-
+        
         _printStream.println(_prefix + t +" token;");
         _printStream.println(_prefix + "data =  CAM[key] ;");
-
+        
         if (!_ui.getRec2Flag() || !_ui.getPipRecFlag()) {
             _printStream.println(_prefix 
-                    + "multiplicity = data->getMultiplicity();");
+                                     + "multiplicity = data->getMultiplicity();");
         }
-
+        
         _printStream.println(_prefix + "token = data->getToken();");
-
+        
         if (_ui.getRec2Flag() || _ui.getPipRecFlag()) {
             _printStream.println(_prefix + "if( true ) {");
         } else {
             _printStream.println(_prefix + "if(multiplicity >= 1 ) {");
         }
         _prefixInc();
-
+        
         _printStream.println(_prefix 
-                + "data->setMultiplicity( multiplicity -- );");
+                                 + "data->setMultiplicity( multiplicity -- );");
         _printStream.println(_prefix 
-                + "CAM.insert( cam::value_type(key, data ));");
-
+                                 + "CAM.insert( cam::value_type(key, data ));");
+        
         _prefixDec();
         if (_ui.getRec2Flag() || _ui.getPipRecFlag()) {
             _printStream.println(_prefix + "}");
@@ -216,8 +201,8 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
             _prefixDec();
             _printStream.println(_prefix + "}");
         }
-
-
+        
+        
         _printStream.println(_prefix + "return token;");
         _prefixDec();
         _printStream.println(_prefix + "}");
@@ -234,9 +219,9 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + "if (Key != key) {");
         _prefixInc();
         _printStream.println(_prefix 
-                + "data = new Data(token, Multiplicity);");
+                                 + "data = new Data(token, Multiplicity);");
         _printStream.println(_prefix 
-                + "CAM.insert(cam::value_type(Key, data ));");
+                                 + "CAM.insert(cam::value_type(Key, data ));");
         _prefixDec();
         if (_ui.getRec2Flag() || _ui.getPipRecFlag()) {
             _printStream.println(_prefix + "} else if ( true ) {");
@@ -244,11 +229,11 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
             _printStream.println(_prefix + "} else if (Multiplicity > 1) {");
         }
         _prefixInc();
-
+        
         _printStream.println(_prefix 
-                + "data = new Data(token, Multiplicity--); ");
+                                 + "data = new Data(token, Multiplicity--); ");
         _printStream.println(_prefix 
-                + "CAM.insert(cam::value_type(Key, data ));");
+                                 + "CAM.insert(cam::value_type(Key, data ));");
         _prefixDec();
         _printStream.println(_prefix + "}");
         _prefixDec();
@@ -276,7 +261,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _prefixDec();
         _printStream.println(_prefix + "};");
         _printStream.println("");
-
+        
         // Print Content
         _printParameters(x);
         _printStream.println("");
@@ -292,7 +277,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println("");
         _printStream.println(_prefix + " public:");
         _printStream.println(_prefix + "Data(" 
-                + t +" token, int multiplicity) {");
+                                 + t +" token, int multiplicity) {");
         _prefixInc();
         _printStream.println(_prefix + " _token = token;");
         _printStream.println(_prefix + " _multiplicity = multiplicity;");
@@ -300,7 +285,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + "};");
         _printStream.println("");
         _printStream.println(_prefix 
-                + "void setMultiplicity(int multiplicity) {");
+                                 + "void setMultiplicity(int multiplicity) {");
         _prefixInc();
         _printStream.println(_prefix + " _multiplicity = multiplicity;");
         _prefixDec();
@@ -331,9 +316,9 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println("");
         _prefixDec();
         _printStream.println(_prefix + "};");
-
+        
         // Print Variables
-
+        
         _printStream.println("");
         _printStream.println(_prefix + "private:");
         _printStream.println(_prefix + "//  The reordering memory :");
@@ -342,16 +327,16 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + "cam CAM ;");
         _printStream.println(_prefix + "cam::const_iterator iter1 ;");
         _printStream.println("");
-
+        
         Iterator parameters = x.getParameters().iterator();
-
+        
         while (parameters.hasNext()) {
             _printStream.println(_prefix + "//private member ");
             _printStream.println(_prefix 
-                    + "int " + parameters.next().toString() + ";");
+                                     + "int " + parameters.next().toString() + ";");
             _printStream.println("");
         }
-
+        
         _printStream.println("");
         _printStream.println(_prefix + "//private member ");
         _printStream.println(_prefix + "InPort<" + t + "> *IP;");
@@ -367,7 +352,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println("");
         _printVariables(x);
         _printStream.println("");
-
+        
         // Print Content
         _prefixDec(); 
         _printStream.println("};");
@@ -375,43 +360,43 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println("");
         _printStream.println("#endif");
     }
-
+    
     ///////////////////////////new/////////////////////////////////
-
+    
     /**
      */
     Vector listIterators;
-
+    
     /**
      */
     Vector listParameters;
-
-
+    
+    
     /**
      *  Description of the Method
      *
      * @param  x Description of the Parameter
      */
     private void _initVariables(CAMMemoryStatement x) {
-
+        
         Iterator i = x.getLoopIterators().iterator();
-
+        
         while (i.hasNext()) {
             ForStatement p = (ForStatement) i.next();
             Expression exp = p.getLowerBound();
-
+            
             _printStream.println(_prefix + "//private member ");
             _printStream.println(_prefix + p.getIterator() 
-                    + " = " + exp.toString() + ";");
+                                     + " = " + exp.toString() + ";");
             _printStream.println("");
         }
-
+        
     }
-
-
+    
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
-
+    
     /**
      * @param  s Description of the Parameter
      * @return  Description of the Return Value
@@ -419,11 +404,11 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
      * @exception  PandaException Description of the Exception
      */
     private PrintStream _openMakefileFile(String s)
-            throws FileNotFoundException, PandaException {
-
+        throws FileNotFoundException, PandaException {
+        
         PrintStream printStream;
         UserInterface ui = UserInterface.getInstance();
-
+        
         String directory = null;
         // Create the directory indicated by the '-o' option. Otherwise
         // select the orignal filename.
@@ -433,40 +418,40 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
             directory = ui.getBasePath() + "/" + ui.getOutputFileName();
         }
         File dir = new File(directory);
-
+        
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 throw new PandaException("could not create " +
-                        "directory '" + dir.getPath() + "'.");
+                                         "directory '" + dir.getPath() + "'.");
             }
         }
-
+        
         String fullFileName = dir + "/" + s + ".h";
-
+        
         System.out.println(" -- OPEN FILE: " + fullFileName);
-
+        
         OutputStream file = null;
-
+        
         file = new FileOutputStream(fullFileName);
         printStream = new PrintStream(file);
         return printStream;
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
      * @param  x Description of the Parameter
      */
     private void _printFromMethod(CAMMemoryStatement x) {
-
+        
         String t = "t" + x.getPort().getEdge().getName();
         _printStream.println(_prefix + "/* The function getFrom */");
         _printStream.print(_prefix + t +" getFrom(");
         
         // Parameters
         Iterator inputIndices = x.getDataControlVector().iterator();
-
+        
         while (inputIndices.hasNext()) {
             _printStream.print("int " + inputIndices.next().toString());
             if (inputIndices.hasNext()) {
@@ -498,21 +483,21 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(_prefix + "}");
         _prefixDec();
         _printStream.println(_prefix + "}");
-
+        
     }
-
+    
     /**
      *  Description of the Method
      *
      * @param  x Description of the Parameter
      */
     private void _printMultiMethod(CAMMemoryStatement x) {
-
+        
         _printStream.println(_prefix + "/* The function multi */");
         _printStream.print(_prefix + "int multi0(");
         
         Iterator outputIndices = x.getOutputPortIndex().iterator();
-
+        
         while (outputIndices.hasNext()) {
             _printStream.print("int " + outputIndices.next().toString());
             if (outputIndices.hasNext()) {
@@ -536,13 +521,13 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         catch (IOException e) {
             throw new Error(e.getMessage());
         }
-
+        
         // _prefixDec();
         _printStream.println(_prefix + "}");
-
+        
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
@@ -550,9 +535,9 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
      */
     private void _printParameters(CAMMemoryStatement x) {
         Iterator parameters = x.getParameters().iterator();
-
+        
         _printStream.println(_prefix 
-                + "/* The function setControllerParameters */");
+                                 + "/* The function setControllerParameters */");
         _printStream.print(_prefix + "void setControllerParameters(");
         while (parameters.hasNext()) {
             _printStream.print("int " + parameters.next().toString());
@@ -565,16 +550,16 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         parameters = x.getParameters().iterator();
         while (parameters.hasNext()) {
             String parameterName = (String) parameters.next();
-
+            
             _printStream.println(_prefix + "this->" + parameterName
-                    + " = " + parameterName + ";");
+                                     + " = " + parameterName + ";");
         }
         _prefixDec();
         _printStream.println(_prefix + "}");
-
+        
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
@@ -583,9 +568,9 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
     private void _printReadMethod(CAMMemoryStatement x) {
         _printStream.println(_prefix + "/* The function Read Address */");
         _printStream.print(_prefix + "int getReadAddress(");
-
+        
         Iterator inputIndices = x.getDataControlVector().iterator();
-
+        
         while (inputIndices.hasNext()) {
             _printStream.print("int " + inputIndices.next().toString());
             if (inputIndices.hasNext()) {
@@ -607,10 +592,10 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         _printStream.println(");");
         _prefixDec();
         _printStream.println(_prefix + "}");
-
+        
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
@@ -618,7 +603,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
      */
     private void _printRecoverMethod(CAMMemoryStatement x) {
         _printStream.println(_prefix 
-                + "/* The function recoverKeyAndMultiplicity */");
+                                 + "/* The function recoverKeyAndMultiplicity */");
         _printStream.println(_prefix + "void recoverKeyAndMultiplicity() {");
         _prefixInc();
         _printStream.println(_prefix + "int stop = 0;");
@@ -628,17 +613,17 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
             p.accept( this );
             _prefixInc();
         }
-
+        
         //_prefixInc();
-
+        
         _printStream.println(_prefix + "if (stop == 1) {");
         _prefixInc();
         i = x.getLoopIterators().iterator();
         while (i.hasNext()) {
             ForStatement p = (ForStatement) i.next();
             _printStream.println(_prefix + "this->" 
-                    + p.getIterator() + " = " + p.getIterator() + ";");
-
+                                     + p.getIterator() + " = " + p.getIterator() + ";");
+            
         }
         _printStream.println(_prefix + "state = 0;");
         _printStream.println(_prefix + "return;");
@@ -648,7 +633,7 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         
         RootStatement root = x.getOutputFilter();
         root.accept( this );
-
+        
         boolean state = false;
         Iterator j = x.getLoopIterators().iterator();
         while (j.hasNext()) {
@@ -662,13 +647,13 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         }
         
         _prefixDec();
-
+        
         // Finish of this function
         _printStream.println(_prefix + "}");
         
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
@@ -677,9 +662,9 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
     private void _printScanMethod(CAMMemoryStatement x) {
         _printStream.println(_prefix + "/* The function Scan */");
         _printStream.print(_prefix + "int scan" + x.getNodeName() + "(");
-
+        
         Iterator outputIndices = x.getOutputPortIndex().iterator();
-
+        
         while (outputIndices.hasNext()) {
             _printStream.print("int " + outputIndices.next().toString());
             if (outputIndices.hasNext()) {
@@ -702,10 +687,10 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
         }
         _prefixDec();
         _printStream.println(_prefix + "}");
-
+        
     }
-
-
+    
+    
     /**
      *  Description of the Method
      *
@@ -718,21 +703,21 @@ public class YapiReorderControllerVisitor extends YapiStatementVisitor {
             Expression exp = p.getLowerBound();
             _printStream.println(_prefix + "//private member ");
             _printStream.println(_prefix + "double "
-                    + p.getIterator() + ";");
+                                     + p.getIterator() + ";");
             _printStream.println("");
         }
-
+        
     }
-
-
+    
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
-
+    
     /**
      *  The Expressions visitor.
      */
     private CExpressionVisitor _visitor = null;
-
-
+    
+    
 }
 

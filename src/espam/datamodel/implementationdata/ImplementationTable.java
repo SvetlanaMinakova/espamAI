@@ -1,18 +1,18 @@
 /*******************************************************************\
-
-The ESPAM Software Tool
-Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  The ESPAM Software Tool
+  Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.datamodel.implementationdata;
 
@@ -25,17 +25,17 @@ import java.util.Vector;
  * @author Sven van Haastregt
  */
 public class ImplementationTable {
-
+    
     //////////////////////////////////////////////////////////////////////////
     //// Public methods
-
+    
     /**
      * Constructor.
      */
     public ImplementationTable() {
         _table = new HashMap<String, Vector<Implementation>>();
     }
-
+    
     /**
      * Adds implementation to table.
      *
@@ -50,21 +50,21 @@ public class ImplementationTable {
         }
         impls.add(impl);
     }
-
+    
     /**
      * Returns number of implementations for given function.
      */
     public int getEntryCount(String funcName) {
         return _table.get(funcName).size();
     }
-
+    
     /**
      * Returns i-th implementation of given function.
      */
     public Implementation getEntry(String funcName, int i) {
         return _table.get(funcName).get(i);
     }
-
+    
     /**
      * Returns metric m for i-th implementation of given function.
      */
@@ -82,10 +82,10 @@ public class ImplementationTable {
             return implList.get(i).getMetric(m);
         }
     }
-
-
+    
+    
     //////////////////////////////////////////////////////////////////////////
     //// Private members
-
+    
     private HashMap <String, Vector<Implementation> > _table;
 }

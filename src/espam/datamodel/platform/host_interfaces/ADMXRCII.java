@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.host_interfaces;
 
@@ -32,10 +17,10 @@ import espam.visitor.PlatformVisitor;
  */
 
 public class ADMXRCII extends Resource {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a ADMXRCII component with a name.
      *
@@ -43,27 +28,27 @@ public class ADMXRCII extends Resource {
     public ADMXRCII(String name) {
         super(name);
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
-
+    
+    
     /**
      *  Clone this ADMXRCII
      *
      * @return  a new instance of the ADMXRCII.
      */
     public Object clone() {
-            ADMXRCII newObj = (ADMXRCII) super.clone();
-            newObj.setCommInterface(_commInterface);
-            return( newObj );
+        ADMXRCII newObj = (ADMXRCII) super.clone();
+        newObj.setCommInterface(_commInterface);
+        return( newObj );
     }
-
+    
     /**
      *  Get the communication interface.
      *
@@ -72,7 +57,7 @@ public class ADMXRCII extends Resource {
     public String getCommInterface() {
         return _commInterface;
     }
-
+    
     /**
      *  Set the communication interface.
      *
@@ -81,7 +66,7 @@ public class ADMXRCII extends Resource {
     public void setCommInterface(String commInterface) {
         _commInterface = commInterface;
     }
-
+    
     /**
      *  Return a description of the ADMXRCII.
      *
@@ -92,6 +77,6 @@ public class ADMXRCII extends Resource {
     }
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     private String _commInterface = "";
 }

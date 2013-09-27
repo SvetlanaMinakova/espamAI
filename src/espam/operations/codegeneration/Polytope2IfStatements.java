@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.operations.codegeneration;
 
@@ -44,7 +29,7 @@ import espam.utils.polylib.PolyLib;
  */
 
 public class Polytope2IfStatements {
-
+    
     /**
      * @param  polytope Description of the Parameter
      * @return  Description of the Return Value
@@ -52,20 +37,20 @@ public class Polytope2IfStatements {
      */
     public static Vector convert(Polytope polytope)
         throws CodeGenerationException {
-
+        
         Vector ifStatements = new Vector();
-
+        
         try {
-
+            
             SignedMatrix A = polytope.getConstraints();
             Vector strVect = new Vector();
-
-//	    strVect.addAll( polytope.getIndexVector().getIterationVector() );
-//	    strVect.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
-//	    strVect.addAll( polytope.getIndexVector().getDynamicCtrlVector() );
-//	    strVect.addAll( polytope.getIndexVector().getParameterVectorNames() );
-	    strVect = polytope.getIndexVector().getVectorsNames();
-
+            
+//     strVect.addAll( polytope.getIndexVector().getIterationVector() );
+//     strVect.addAll( polytope.getIndexVector().getStaticCtrlVectorNames() );
+//     strVect.addAll( polytope.getIndexVector().getDynamicCtrlVector() );
+//     strVect.addAll( polytope.getIndexVector().getParameterVectorNames() );
+            strVect = polytope.getIndexVector().getVectorsNames();
+            
             //Vector v = MatrixLib.toLinearExpression(A, strVect);
             List<Expression> v = Convert.toLinearExpression(A, strVect);
             Iterator j = v.iterator();
@@ -76,17 +61,17 @@ public class Polytope2IfStatements {
                     ifStatements.add( ifStatement );
                 }
             }
-
+            
         } catch( Exception e ) {
-	    e.printStackTrace(System.out);
+            e.printStackTrace(System.out);
             throw new CodeGenerationException(
-                " Polytope2IfStatement: "
-                    + " "
-                    + e.getMessage());
+                                              " Polytope2IfStatement: "
+                                                  + " "
+                                                  + e.getMessage());
         }
         return ifStatements;
     }
-
+    
     /**
      * @param  polytope Description of the Parameter
      * @return  Description of the Return Value
@@ -94,50 +79,50 @@ public class Polytope2IfStatements {
      */
     public static Polytope simplifyPDinND(Polytope pfd, Polytope nd)
         throws CodeGenerationException {
-
-	Polytope sp = (Polytope) pfd.clone(); // pfd represents a port domain or a function domain
+        
+        Polytope sp = (Polytope) pfd.clone(); // pfd represents a port domain or a function domain
         SignedMatrix sND = null;
         try {
-
-	    int iSizePFD = pfd.getIndexVector().getIterationVector().size();
+            
+            int iSizePFD = pfd.getIndexVector().getIterationVector().size();
             int cSizePFD = pfd.getIndexVector().getStaticCtrlVectorNames().size();
             int dSizePFD = pfd.getIndexVector().getDynamicCtrlVector().size();
             int pSizePFD = pfd.getIndexVector().getParameterVectorNames().size();
-
-	    int iSizeND = nd.getIndexVector().getIterationVector().size();
-	    int cSizeND = nd.getIndexVector().getStaticCtrlVectorNames().size();
-	    int dSizeND = nd.getIndexVector().getDynamicCtrlVector().size();
-
+            
+            int iSizeND = nd.getIndexVector().getIterationVector().size();
+            int cSizeND = nd.getIndexVector().getStaticCtrlVectorNames().size();
+            int dSizeND = nd.getIndexVector().getDynamicCtrlVector().size();
+            
             if ( nd.getIndexVector().getIterationVector().size() != 0 ) {
-
+                
                 sND = (SignedMatrix) nd.getConstraints().clone();
-	        //make the node domain with the same size as the port domain or the function domain
-	        sND.insertZeroColumns( (cSizePFD + dSizePFD) - (cSizeND + dSizeND), iSizeND + cSizeND + dSizeND + 1 );
-	        //add the context constraints to the node domain
-	        SignedMatrix ndContext = (SignedMatrix) nd.getContext().clone();
-	        ndContext.insertZeroColumns(iSizeND+cSizePFD+dSizePFD, 1 );
+                //make the node domain with the same size as the port domain or the function domain
+                sND.insertZeroColumns( (cSizePFD + dSizePFD) - (cSizeND + dSizeND), iSizeND + cSizeND + dSizeND + 1 );
+                //add the context constraints to the node domain
+                SignedMatrix ndContext = (SignedMatrix) nd.getContext().clone();
+                ndContext.insertZeroColumns(iSizeND+cSizePFD+dSizePFD, 1 );
                 sND.insertRows(ndContext, -1);
-
-	    } else {
-
-	        sND = (SignedMatrix) nd.getContext().clone();
-
-	    }
-
-           //simplify the port domain or the function domain in the context of the node domain
-	   SignedMatrix sPFD = pfd.getConstraints();
-           SignedMatrix A = PolyLib.getInstance().ConstraintsSimplify(sPFD, sND);
-	   sp.setConstraints( A );
-
+                
+            } else {
+                
+                sND = (SignedMatrix) nd.getContext().clone();
+                
+            }
+            
+            //simplify the port domain or the function domain in the context of the node domain
+            SignedMatrix sPFD = pfd.getConstraints();
+            SignedMatrix A = PolyLib.getInstance().ConstraintsSimplify(sPFD, sND);
+            sp.setConstraints( A );
+            
         } catch( Exception e ) {
-	    e.printStackTrace(System.out);
+            e.printStackTrace(System.out);
             throw new CodeGenerationException(
-                " simplifyPNinND: "
-                    + " "
-                    + e.getMessage());
+                                              " simplifyPNinND: "
+                                                  + " "
+                                                  + e.getMessage());
         }
         return sp;
     }
-
-
+    
+    
 }

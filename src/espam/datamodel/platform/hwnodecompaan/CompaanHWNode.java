@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.hwnodecompaan;
 
@@ -32,28 +17,28 @@ import espam.visitor.PlatformVisitor;
  */
 
 public class CompaanHWNode extends Resource {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a CompaanHWNode with a name, 
      *  empty resource list and empty link list 
      */
     public CompaanHWNode(String name) {
-    	super(name);
+        super(name);
         _resourceList = new Vector();
         _linkList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception MatParserException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception MatParserException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-	x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this CompaanHWnode
      *
@@ -65,7 +50,7 @@ public class CompaanHWNode extends Resource {
         newObj.setLinkList( (Vector) _linkList.clone() );
         return( newObj );
     }
-
+    
     /**
      *  Get the resource list of a CompaanHWnode.
      *
@@ -74,7 +59,7 @@ public class CompaanHWNode extends Resource {
     public Vector getResourceList() {
         return _resourceList;
     }
-
+    
     /**
      *  Set the resource list of a CompaanHWnode.
      *
@@ -83,7 +68,7 @@ public class CompaanHWNode extends Resource {
     public void setResourceList( Vector resourceList) {
         _resourceList = resourceList;
     }
-
+    
     /**
      *  Get the link list of a CompaanHWnode
      *
@@ -92,7 +77,7 @@ public class CompaanHWNode extends Resource {
     public Vector getLinkList() {
         return _linkList;
     }
-
+    
     /**
      *  Set the link list of a CompaanHWnode
      *
@@ -101,7 +86,7 @@ public class CompaanHWNode extends Resource {
     public void setLinkList(Vector linkList) {
         _linkList = linkList;
     }
-
+    
     /**
      *  Return a description of the CompaanHWnode.
      *
@@ -113,12 +98,12 @@ public class CompaanHWNode extends Resource {
     
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  List of the resources of a CompaanHWnode.
      */
     private Vector _resourceList = null;
-
+    
     /**
      *  List of the links of a CompaanHWnode.
      */

@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree.statement;
 
@@ -41,10 +26,10 @@ import espam.visitor.StatementVisitor;
  */
 
 public class ForStatement extends Statement {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Construct an For Statement given an iterator name, two linear
      *  expressions that describe respectiviely the upper and lower bound
@@ -62,16 +47,16 @@ public class ForStatement extends Statement {
         _lowerBound = lb;
         _upperBound = ub;
         _stepSize = stepSize;
-
+        
         if( _lowerBound != null ) {
             _lowerBound.simplify();
         }
-
+        
         if( _upperBound != null ) {
             _upperBound.simplify();
         }
     }
-
+    
     /**
      *  Accept a StatementVisitor
      *
@@ -80,22 +65,22 @@ public class ForStatement extends Statement {
     public void accept(StatementVisitor x) {
         x.visitStatement(this);
     }
-
+    
     /**
      *  Clone this ForStatement
      *
      * @return  a new instance of the ForStatement.
      */
     public Object clone() {
-
-            ForStatement fs = (ForStatement) super.clone();
-            fs.setIterator( _iterator );
-            fs.setLowerBound( (Expression) _lowerBound.clone() );
-            fs.setUpperBound( (Expression) _upperBound.clone() );
-            fs.setStepSize( _stepSize );
-            return (fs);
+        
+        ForStatement fs = (ForStatement) super.clone();
+        fs.setIterator( _iterator );
+        fs.setLowerBound( (Expression) _lowerBound.clone() );
+        fs.setUpperBound( (Expression) _upperBound.clone() );
+        fs.setStepSize( _stepSize );
+        return (fs);
     }
-
+    
     /**
      *  Set the iterator name.
      *
@@ -104,7 +89,7 @@ public class ForStatement extends Statement {
     public void setIterator(String iterator) {
         _iterator = iterator;
     }
-
+    
     /**
      *  Get the iterator name.
      *
@@ -113,7 +98,7 @@ public class ForStatement extends Statement {
     public String getIterator() {
         return _iterator;
     }
-
+    
     /**
      *  Set the lower bound.
      *
@@ -122,7 +107,7 @@ public class ForStatement extends Statement {
     public void setLowerBound(Expression lowerBound) {
         _lowerBound = lowerBound;
     }
-
+    
     /**
      *  Get the lower bound.
      *
@@ -131,7 +116,7 @@ public class ForStatement extends Statement {
     public Expression getLowerBound() {
         return _lowerBound;
     }
-
+    
     /**
      *  Set the step size.
      *
@@ -140,7 +125,7 @@ public class ForStatement extends Statement {
     public void setStepSize(int stepSize) {
         _stepSize = stepSize;
     }
-
+    
     /**
      *  Get the step size
      *
@@ -149,7 +134,7 @@ public class ForStatement extends Statement {
     public int getStepSize() {
         return _stepSize;
     }
-
+    
     /**
      *  Set the upper bound.
      *
@@ -158,7 +143,7 @@ public class ForStatement extends Statement {
     public void setUpperBound(Expression upperBound) {
         _upperBound = upperBound;
     }
-
+    
     /**
      *  Get the upper bound.
      *
@@ -167,7 +152,7 @@ public class ForStatement extends Statement {
     public Expression getUpperBound() {
         return _upperBound;
     }
-
+    
     /**
      *  Give the string representation of the for statement.
      *
@@ -175,29 +160,29 @@ public class ForStatement extends Statement {
      */
     public String toString() {
         String ln = " ForStatement: " + _iterator + " = "
-                + _lowerBound.toString() + " : " + _stepSize
-                + " : " + _upperBound.toString();
+            + _lowerBound.toString() + " : " + _stepSize
+            + " : " + _upperBound.toString();
         return ln;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of the iterator defined by the For Statement.
      */
     private String _iterator;
-
+    
     /**
      *  Lowerbound of the iterator.
      */
     private Expression _lowerBound;
-
+    
     /**
      *  Upperbound of the iterator.
      */
     private Expression _upperBound;
-
+    
     /**
      *  Step size of the iterator.
      */

@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.memories;
 
@@ -34,26 +19,26 @@ import espam.visitor.PlatformVisitor;
  */
 
 public class Memory extends Resource {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a Memory with a name, size=0 and 
      *  data width=0
      */
     public Memory(String name) {
-    	super(name);
+        super(name);
         _size = 0;
         _dataWidth = 0;
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception MatParserException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception MatParserException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
     /**
      *  Clone this Memory
@@ -66,7 +51,7 @@ public class Memory extends Resource {
         newObj.setDataWidth( _dataWidth );
         return( newObj );
     }
-
+    
     /**
      *  Get the size of the memory.
      *
@@ -75,7 +60,7 @@ public class Memory extends Resource {
     public int getSize() {
         return _size;
     }
-
+    
     /**
      *  Set the size of the memory.
      *
@@ -84,7 +69,7 @@ public class Memory extends Resource {
     public void setSize(int size) {
         _size = size;
     }
-
+    
     /**
      *  Get the data width of the memory.
      *
@@ -93,7 +78,7 @@ public class Memory extends Resource {
     public int getDataWidth() {
         return _dataWidth;
     }
-
+    
     /**
      *  Set the data width of the memory.
      *
@@ -102,7 +87,7 @@ public class Memory extends Resource {
     public void setDataWidth(int dataWidth) {
         _dataWidth = dataWidth;
     }
-
+    
     /**
      *  Return a description of the memory.
      *
@@ -111,15 +96,15 @@ public class Memory extends Resource {
     public String toString() {
         return "Memory: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  The size of the memory.
      */
     private int _size = 0;
-
+    
     /**
      *  The data width of the memory.
      */

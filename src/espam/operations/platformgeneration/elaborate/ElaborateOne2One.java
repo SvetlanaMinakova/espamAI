@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.operations.platformgeneration.elaborate;
 
@@ -69,11 +54,11 @@ import espam.datamodel.pn.cdpn.CDInGate;
 /**
  *  This class elaborates a platform in 'one-to-one' manner:
  *
- *	- The platform specification contains the processing component to be used in elaboration.
- *	  Currently supported components are MicroBlaze, PowerPC and hardwared IPs.
+ * - The platform specification contains the processing component to be used in elaboration.
+ *   Currently supported components are MicroBlaze, PowerPC and hardwared IPs.
  *
- *	- A mapping is not specified. A processing component is instantiated for each process of the process network and
- *	  fifo is instantiated for each channel of the process network
+ * - A mapping is not specified. A processing component is instantiated for each process of the process network and
+ *   fifo is instantiated for each channel of the process network
  *
  *  The elaborated platform contains fifos, processor memories, processors or only hardwared components.
  *
@@ -82,728 +67,728 @@ import espam.datamodel.pn.cdpn.CDInGate;
  *      $
  */
 public class ElaborateOne2One {
-
-	///////////////////////////////////////////////////////////////////
-	////                         public methods                    ////
-
-	/**
-	*  Return the singleton instance of this class;
-	*
-	* @return  the instance.
-	*/
-	public final static ElaborateOne2One getInstance() {
-		return _instance;
-	}
-
-	/**
-	 *  This class generates an elaborated platform
-	 *
-	 * @param  platform Description of the Parameter
-	 * @exception  EspamException MyException If such and such occurs
-	 */
-	public void elaborate( Platform platform, Mapping mapping ) {
-
-		// ---------------------------------------------------------------------
-		// One-to-one mapping with MicroBlaze processors only or
-		// PowerPC processors only or CompaanHWNodes only.
-		// Connections point-to-point according to the process network topology.
-		// ---------------------------------------------------------------------
-		// -----------------------------------------------------------------------------------------------------------
-		// HW Nodes, processors, memories, fifos are added to this vector
-		// This vector is needed because we can not add elements to the resource list until we use the iterator of it
-		// -----------------------------------------------------------------------------------------------------------
-		_newResources = new Vector();
-
-		// -------------------------------------------------------------
-		// Create the platform according to the process network topology
-		// -------------------------------------------------------------
-		_elaboratePlatform( platform, mapping );
-
-		// -----------------------------------------------------
-		// Add fifos controller to each procesor of the platform
-		// -----------------------------------------------------
-		_addFifosControllers( platform );
-
-		// ---------------------------------------------
-		// Add all new created resources to the platform
-		// ---------------------------------------------
-		platform.getResourceList().addAll( _newResources );
-	}
-
-	///////////////////////////////////////////////////////////////////
-	////                         private methods                   ////
-
-       /****************************************************************************************************************
-	*  Elaborate Platform:
-	*	Create the platform according to the process network topology and the specified mapping
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _elaboratePlatform( Platform platform, Mapping mapping ) {
-	
-		// Contains the correspondence between CDGates and platform components ports
-		Hashtable hashTable = new Hashtable();
-
-		// Contains the HW nodes that are already added to the platform
-		Hashtable hashNodes = new Hashtable();
-
-		// Used in names creation
-		int cntRcrs = 1;
-		int cntInPorts = 1;
-		int cntOutPorts = 1;
-
-		CDProcessNetwork cdpn = mapping.getCDPN();
-
-		Resource processor = (Resource) platform.getResourceList().get(0);
-
-		int dataMemSize = 0;
-		int progMemSize = 0;
-                if (processor instanceof MicroBlaze || processor instanceof PowerPC) {
-                    dataMemSize = ((Processor) processor).getDataMemSize();
-                    progMemSize = ((Processor) processor).getProgMemSize();
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         public methods                    ////
+    
+    /**
+     *  Return the singleton instance of this class;
+     *
+     * @return  the instance.
+     */
+    public final static ElaborateOne2One getInstance() {
+        return _instance;
+    }
+    
+    /**
+     *  This class generates an elaborated platform
+     *
+     * @param  platform Description of the Parameter
+     * @exception  EspamException MyException If such and such occurs
+     */
+    public void elaborate( Platform platform, Mapping mapping ) {
+        
+        // ---------------------------------------------------------------------
+        // One-to-one mapping with MicroBlaze processors only or
+        // PowerPC processors only or CompaanHWNodes only.
+        // Connections point-to-point according to the process network topology.
+        // ---------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------------------
+        // HW Nodes, processors, memories, fifos are added to this vector
+        // This vector is needed because we can not add elements to the resource list until we use the iterator of it
+        // -----------------------------------------------------------------------------------------------------------
+        _newResources = new Vector();
+        
+        // -------------------------------------------------------------
+        // Create the platform according to the process network topology
+        // -------------------------------------------------------------
+        _elaboratePlatform( platform, mapping );
+        
+        // -----------------------------------------------------
+        // Add fifos controller to each procesor of the platform
+        // -----------------------------------------------------
+        _addFifosControllers( platform );
+        
+        // ---------------------------------------------
+        // Add all new created resources to the platform
+        // ---------------------------------------------
+        platform.getResourceList().addAll( _newResources );
+    }
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         private methods                   ////
+    
+    /****************************************************************************************************************
+      *  Elaborate Platform:
+      * Create the platform according to the process network topology and the specified mapping
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _elaboratePlatform( Platform platform, Mapping mapping ) {
+        
+        // Contains the correspondence between CDGates and platform components ports
+        Hashtable hashTable = new Hashtable();
+        
+        // Contains the HW nodes that are already added to the platform
+        Hashtable hashNodes = new Hashtable();
+        
+        // Used in names creation
+        int cntRcrs = 1;
+        int cntInPorts = 1;
+        int cntOutPorts = 1;
+        
+        CDProcessNetwork cdpn = mapping.getCDPN();
+        
+        Resource processor = (Resource) platform.getResourceList().get(0);
+        
+        int dataMemSize = 0;
+        int progMemSize = 0;
+        if (processor instanceof MicroBlaze || processor instanceof PowerPC) {
+            dataMemSize = ((Processor) processor).getDataMemSize();
+            progMemSize = ((Processor) processor).getProgMemSize();
+        }
+        
+        // The platform spec. contains only one component. New components to be added.
+        platform.getResourceList().clear();
+        
+        // ------------------------------------------------------------------
+        // Create the map between process gates and platform components ports
+        // ------------------------------------------------------------------
+        Iterator i = cdpn.getProcessList().iterator();
+        while( i.hasNext() ) {
+            
+            cntInPorts  = 1;
+            cntOutPorts = 1;
+            
+            CDProcess cdPrcs = (CDProcess) i.next();
+            
+            // -----------------------
+            // Add communication ports
+            // -----------------------
+            Iterator inG = cdPrcs.getInGates().iterator();
+            while( inG.hasNext() ) {
+                
+                CDInGate gate = (CDInGate) inG.next();
+                
+                FifoReadPort inPort = new FifoReadPort( "In_" + cntInPorts++ );
+                
+                // Make a connection between the processor port and the gate
+                hashTable.put( gate, inPort );
+            }
+            
+            Iterator outG = cdPrcs.getOutGates().iterator();
+            while( outG.hasNext() ) {
+                
+                CDOutGate gate = (CDOutGate) outG.next();
+                
+                FifoWritePort outPort = new FifoWritePort( "Out_" + cntOutPorts++ );
+                
+                // Make a connection between the processor port and the gate
+                hashTable.put( gate, outPort );
+            }
+        }
+        
+        // ---------------------------------------------------------------------------------------------------
+        // Create hardware nodes and links between the resources according to the process network and mapping.
+        // Add the created hardware nodes and links to the platform
+        // ---------------------------------------------------------------------------------------------------
+        Iterator c = cdpn.getChannelList().iterator();
+        while( c.hasNext() ) {
+            
+            ADGNode adgNode;
+            
+            CDChannel channel = (CDChannel) c.next();
+            CDInGate toGate = channel.getToGate();
+            CDOutGate fromGate = channel.getFromGate();
+            Port inPort;
+            Port outPort;
+            
+            inPort  = (FifoReadPort) hashTable.get( toGate );
+            outPort = (FifoWritePort) hashTable.get( fromGate );
+            
+            // ----------------------------------------------------------------
+            // Add processing components if needed and attach I/O ports to them
+            // ----------------------------------------------------------------
+            if( inPort instanceof FifoReadPort ) {
+                
+                adgNode = (ADGNode) ((ADGPort) toGate.getAdgPortList().get(0)).getNode();
+                Resource platformNode = (Resource) hashNodes.get( adgNode );
+                
+                if( platformNode == null ) {
+                    
+                    // ----------------------------------------------------
+                    // Create a new resource and put it into the hash table
+                    // ----------------------------------------------------
+                    if( processor instanceof CompaanHWNode ) {
+                        
+                        //platformNode = new CompaanHWNode( adgNode.getName() );
+                        platformNode = new CompaanHWNode( "HWN_" + cntRcrs++ );
+                        
+                        // ----------------------------------------------------------------------------------------------------
+                        // Create and add a MProcessor to the mapping. MProcessor points to a Resource and ADGNode mapped on it
+                        // ----------------------------------------------------------------------------------------------------
+                        _addMProcessor( platformNode, adgNode, mapping );
+                        
+                    } else if( processor instanceof MicroBlaze ) {
+                        
+                        platformNode = new MicroBlaze( "MB_" + cntRcrs++ );
+                        ((Processor) platformNode).setDataMemSize( dataMemSize );
+                        ((Processor) platformNode).setProgMemSize( progMemSize );
+                        
+                        _elaborateProcessor( platformNode, platform );
+                        _addMProcessor( platformNode, adgNode, mapping );
+                        
+                    } else if( processor instanceof PowerPC ) {
+                        
+                        platformNode = new PowerPC( "PPC_" + cntRcrs++ );
+                        ((Processor) platformNode).setDataMemSize( dataMemSize );
+                        ((Processor) platformNode).setProgMemSize( progMemSize );
+                        
+                        _elaborateProcessor( platformNode, platform );
+                        _addMProcessor( platformNode, adgNode, mapping );
+                    }
+                    
+                    platform.getResourceList().add( platformNode );
+                    hashNodes.put( adgNode, platformNode );
                 }
-
-		// The platform spec. contains only one component. New components to be added.
-		platform.getResourceList().clear();
-
-		// ------------------------------------------------------------------
-		// Create the map between process gates and platform components ports
-		// ------------------------------------------------------------------
-		Iterator i = cdpn.getProcessList().iterator();
-		while( i.hasNext() ) {
-
-		    cntInPorts  = 1;
-		    cntOutPorts = 1;
-
-		    CDProcess cdPrcs = (CDProcess) i.next();
-
-		    // -----------------------
-		    // Add communication ports
-		    // -----------------------
-		    Iterator inG = cdPrcs.getInGates().iterator();
-		    while( inG.hasNext() ) {
-
-			CDInGate gate = (CDInGate) inG.next();
-
-			FifoReadPort inPort = new FifoReadPort( "In_" + cntInPorts++ );
-
-			// Make a connection between the processor port and the gate
-			hashTable.put( gate, inPort );
-		    }
-
-		    Iterator outG = cdPrcs.getOutGates().iterator();
-		    while( outG.hasNext() ) {
-
-			CDOutGate gate = (CDOutGate) outG.next();
-
-			FifoWritePort outPort = new FifoWritePort( "Out_" + cntOutPorts++ );
-
-			// Make a connection between the processor port and the gate
-			hashTable.put( gate, outPort );
-		    }
-		}
-
-		// ---------------------------------------------------------------------------------------------------
-		// Create hardware nodes and links between the resources according to the process network and mapping.
-		// Add the created hardware nodes and links to the platform
-		// ---------------------------------------------------------------------------------------------------
-		Iterator c = cdpn.getChannelList().iterator();
-		while( c.hasNext() ) {
-
-		    ADGNode adgNode;
-
-		    CDChannel channel = (CDChannel) c.next();
-		    CDInGate toGate = channel.getToGate();
-		    CDOutGate fromGate = channel.getFromGate();
-		    Port inPort;
-		    Port outPort;
-
-		    inPort  = (FifoReadPort) hashTable.get( toGate );
-		    outPort = (FifoWritePort) hashTable.get( fromGate );
-
-    		    // ----------------------------------------------------------------
-		    // Add processing components if needed and attach I/O ports to them
-		    // ----------------------------------------------------------------
-		    if( inPort instanceof FifoReadPort ) {
-		    
-		       	adgNode = (ADGNode) ((ADGPort) toGate.getAdgPortList().get(0)).getNode();
-			Resource platformNode = (Resource) hashNodes.get( adgNode );
-
-			if( platformNode == null ) {
-
-			    // ----------------------------------------------------
-			    // Create a new resource and put it into the hash table
-			    // ----------------------------------------------------
-			    if( processor instanceof CompaanHWNode ) {
-
-			        //platformNode = new CompaanHWNode( adgNode.getName() );
-			        platformNode = new CompaanHWNode( "HWN_" + cntRcrs++ );
-
-		                // ----------------------------------------------------------------------------------------------------
-		                // Create and add a MProcessor to the mapping. MProcessor points to a Resource and ADGNode mapped on it
-		                // ----------------------------------------------------------------------------------------------------
-			        _addMProcessor( platformNode, adgNode, mapping );
-
-			    } else if( processor instanceof MicroBlaze ) {
-
-			        platformNode = new MicroBlaze( "MB_" + cntRcrs++ );
-				((Processor) platformNode).setDataMemSize( dataMemSize );
-		                ((Processor) platformNode).setProgMemSize( progMemSize );
-
-				_elaborateProcessor( platformNode, platform );
-			        _addMProcessor( platformNode, adgNode, mapping );
-
-			    } else if( processor instanceof PowerPC ) {
-
-			        platformNode = new PowerPC( "PPC_" + cntRcrs++ );
-				((Processor) platformNode).setDataMemSize( dataMemSize );
-		                ((Processor) platformNode).setProgMemSize( progMemSize );
-
-				_elaborateProcessor( platformNode, platform );
-			        _addMProcessor( platformNode, adgNode, mapping );
-			    }
-
-			    platform.getResourceList().add( platformNode );
-		            hashNodes.put( adgNode, platformNode );
-			}
-
-			inPort.setResource( platformNode );
-			platformNode.getPortList().add( inPort );
-		    }
-
-		    if( outPort instanceof FifoWritePort ) {
-
-		    	adgNode = (ADGNode) ((ADGPort) fromGate.getAdgPortList().get(0)).getNode();
-			Resource platformNode = (Resource) hashNodes.get( adgNode );
-
-			if( platformNode == null ) {
-
-			    // ----------------------------------------------------
-			    // Create a new resource and put it into the hash table
-			    // ----------------------------------------------------
-			    if( processor instanceof CompaanHWNode ) {
-
-			        platformNode = new CompaanHWNode( "HWN_" + cntRcrs++ );
-
-			        _addMProcessor( platformNode, adgNode, mapping );
-
-			    } else if( processor instanceof MicroBlaze ) {
-
-			        platformNode = new MicroBlaze( "MB_" + cntRcrs++ );
-				((Processor) platformNode).setDataMemSize( dataMemSize );
-		                ((Processor) platformNode).setProgMemSize( progMemSize );
-
-				_elaborateProcessor( platformNode, platform );
-			        _addMProcessor( platformNode, adgNode, mapping );
-
-			    } else if( processor instanceof PowerPC ) {
-
-			        platformNode = new PowerPC( "PPC_" + cntRcrs++ );
-				((Processor) platformNode).setDataMemSize( dataMemSize );
-		                ((Processor) platformNode).setProgMemSize( progMemSize );
-
-				_elaborateProcessor( platformNode, platform );
-				_addMProcessor( platformNode, adgNode, mapping );
-			    }
-
-			    platform.getResourceList().add( platformNode );
-		            hashNodes.put( adgNode, platformNode );
-			}
-
-			outPort.setResource( platformNode );
-			platformNode.getPortList().add( outPort );
-		    }
-
-		    // ---------------------------------------------------------------------------------------
-		    // Create and initialize a link, add it to the inPort, outPort and platform. Insert a fifo
-		    // ---------------------------------------------------------------------------------------
-		    Link link = new Link("BUS_" + outPort.getResource().getName() + "_" + outPort.getName());
-		    link.getPortList().add( outPort );
-
-		    inPort.setLink(  link );
-		    outPort.setLink( link );
-		    platform.getLinkList().add( link );
-
-		    Fifo fifo = new Fifo( "FIFO_" + outPort.getResource().getName() + "_" + outPort.getName() );
-		    _addFifo( platform, outPort, inPort, fifo );
-
-		    // ----------------------------------------------------------------------------------------
-		    // Create and add a MFifo to the mapping. MFifo points to a Fifo and CDChannel mapped on it
-		    // ----------------------------------------------------------------------------------------
-		    _addMFifo( fifo, channel, mapping );
-		}
-	}
-
-	/****************************************************************************************************************
-	*  Elaborate a Processor component.
-	*  	Current strategy:
-	*	BRAMs are attached to the MicroBlazes and PPC: one memory component (for both PM and DM) per processor
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _elaborateProcessor( Resource processor, Platform platform ) {
-
-		// ---------------------------------------------------------------------------
-		// When a mapping is not specified, the processors are specified without ports
-		// The instruction and data processor ports are created here
-		// ---------------------------------------------------------
-		Port processorIPort;
-		Port processorDPort;
-
-		if( processor instanceof MicroBlaze ) {
-		    processorIPort = new ILMBPort( "ILMB" );
-		    processorDPort = new DLMBPort( "DLMB" );
-		} else {
-		    processorIPort = new IPLBPort( "IPLB" );
-		    processorDPort = new DPLBPort( "DPLB" );
-		}
-
-		processor.getPortList().add( processorDPort );
-		processor.getPortList().add( processorIPort );
-		processorDPort.setResource( processor );
-		processorIPort.setResource( processor );
-
-		// --------------------------------------------------------------------------------
-		// When the port is created a default link is created and added to the port as well
-		// However, this default link does not contain the processor port and the platform
-		// does not contain this default link
-		// --------------------------------------------------------------------------------
-		Link link = processorDPort.getLink();
-		link.setName( "DBUS_" + processor.getName() );
-		link.getPortList().add( processorDPort );
-
-		// Add the link to the platform
-		platform.getLinkList().add( link );
-
-		link = processorIPort.getLink();
-		link.setName( "PBUS_" + processor.getName() );
-		link.getPortList().add( processorIPort );
-
-		// Add the link to the platform
-		platform.getLinkList().add( link );
-
-		// -------------------------------------------------------------------------------------------------
-		// Create a Memory component of the processor (for both program and data) and add it to the platform
-		// -------------------------------------------------------------------------------------------------
-		Memory memory = new Memory( "M_" + processor.getName() );
-		memory.setSize( ((Processor) processor).getDataMemSize() + ((Processor) processor).getProgMemSize() );
-		memory.setDataWidth( 32 );
-		memory.setLevelUpResource( platform );
-		_addMemory2( platform, processorDPort, processorIPort, memory );
-
-		// --------------------------------------------------------------------------
-		// Create a Data Memory component of the processor and add it to the platform
-		// --------------------------------------------------------------------------
-		//Memory memory = new Memory( "DM_" + processor.getName() );
-		//memory.setSize( ((Processor) processor).getDataMemSize() );
-		//memory.setDataWidth( 32 );
-		//memory.setLevelUpResource( platform );
-		//_addMemory( platform, processorDPort, memory );
-		//
-		// -----------------------------------------------------------------------------
-		// Create a Program Memory component of the processor and add it to the platform
-		// -----------------------------------------------------------------------------
-		// memory = new Memory( "PM_" + processor.getName() );
-		// memory.setSize( ((Processor) processor).getProgMemSize() );
-		// memory.setDataWidth( 32 );
-		// memory.setLevelUpResource( platform );
-		// _addMemory( platform, processorIPort, memory );
-	}
-
-       /****************************************************************************************************************
-	*  Adds a memory component and memory controller to a Processor component
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addMemory( Platform platform, Port processorPort, Memory memory ) {
-
-		Link link = processorPort.getLink();
-		Port   memPort;
-
-		if( processorPort.getResource() instanceof PowerPC ) {
-		    memPort = new PLBPort( "IO_1" );
-		} else { //if( resource instanceof MicroBlaze ) {
-		    memPort = new LMBPort( "IO_1" );
-		}
-
-		// -----------------------------------------------------------------------------------
-		// Don't set the link because we add a controller between the processor and the memory
-		// -----------------------------------------------------------------------------------
-		//memPort.setLink( link );
-		memPort.setResource( memory );
-
-		memory.getPortList().add( memPort );
-
-		// --------------------------------------------
-		// Link the memory port with the processor port
-		// --------------------------------------------
-		//link.getPortList().add( memPort );
-
-		// -----------------------------------------
-		// Add this memory component to the platform
-		// -----------------------------------------
-		_newResources.add( memory );
-
-		// ---------------------
-		// Add memory controller
-		// ---------------------
-		MemoryController memCtrl = new MemoryController("CTRL_" + memory.getName());
-		_addController( platform, processorPort, memPort, memCtrl );
-	}
-
-        /****************************************************************************************************************
-	*  Adds a memory component and 2 memory controllers to a Processor component
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addMemory2( Platform platform, Port procDataPort, Port procProgPort, Memory memory ) {
-
-		Link linkData = procDataPort.getLink();
-		Link linkProg = procProgPort.getLink();
-		Port   memDataPort;
-		Port   memProgPort;
-
-		if( procDataPort.getResource() instanceof PowerPC ) {
-		    memDataPort = new DPLBPort( "DM" );
-		    memProgPort = new IPLBPort( "PM" );
-		} else { //if( resource instanceof MicroBlaze ) {
-		    memDataPort = new DLMBPort( "DM" );
-		    memProgPort = new ILMBPort( "PM" );
-		}
-
-		// -----------------------------------------------------------------------------------
-		// Don't set the link because we add a controller between the processor and the memory
-		// -----------------------------------------------------------------------------------
-		//memPort.setLink( link );
-		memDataPort.setResource( memory );
-		memProgPort.setResource( memory );
-
-		memory.getPortList().add( memDataPort );
-		memory.getPortList().add( memProgPort );
-
-		// --------------------------------------------
-		// Link the memory port with the processor port
-		// --------------------------------------------
-		//link.getPortList().add( memPort );
-
-		// -----------------------------------------
-		// Add this memory component to the platform
-		// -----------------------------------------
-		_newResources.add( memory );
-
-		// ----------------------
-		// Add memory controllers
-		// ----------------------
-		MemoryController memDataCtrl = new MemoryController("DCTRL_" + memory.getName());
-		_addController( platform, procDataPort, memDataPort, memDataCtrl );
-		MemoryController memProgCtrl = new MemoryController("PCTRL_" + memory.getName());
-		_addController( platform, procProgPort, memProgPort, memProgCtrl );
-	}
-
-       /****************************************************************************************************************
-	*  Adds a Fifo component between 2 ports
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addFifo( Platform platform, Port writePort, Port readPort, Fifo fifo ) {
-
-         	// -------------------------------------
-		// The link contains only the write port
-		// -------------------------------------
-		Link link = writePort.getLink();
-
-		// ----------------------------------------------------------------------------------------------
-		// Add a fifo between the read and the write ports
-		// ----------------------------------------------------------------------------------------------
-		//Fifo fifo = new Fifo( "FIFO_" + writePort.getResource().getName() + "_" + writePort.getName() );
-		//fifo.setSize( 512 );
-		fifo.setDataWidth( 32 ); // ???
-		fifo.setLevelUpResource( platform );
-
-		// -----------------------------------------------------------------
-		// Connect the Compaan out port with the fifo (use the current link)
-		// -----------------------------------------------------------------
-		FifoWritePort writeSide = new FifoWritePort( "IO_1" );
-		writeSide.setResource( fifo );
-		writeSide.setLink( link );
-
-		link.getPortList().add( writeSide );
-
-		// -----------------------------------------------------------
-		// Connect the crossbar port with the fifo (create a new link)
-		// -----------------------------------------------------------
-		FifoReadPort readSide = new FifoReadPort( "IO_2" );
-		readSide.setResource( fifo );
-
-		Link cbLink = new Link( "BUS_" + fifo.getName() );
-		cbLink.getPortList().add( readPort );
-		cbLink.getPortList().add( readSide );
-
-		readPort.setLink( cbLink );
-		readSide.setLink( cbLink );
-
-		// -----------------------------
-		// Add the new ports to the fifo
-		// -----------------------------
-		fifo.getPortList().add( writeSide   );
-		fifo.getPortList().add( readSide );
-
-		// Add the fifo component to the platform
-		_newResources.add( fifo );
-
-		// Add the new created link to the platform
-		platform.getLinkList().add( cbLink );
-	}
-	
-       /****************************************************************************************************************
-	*  Adds a MFifo to the mapping specification. MFifo points to a Fifo and CDChannel mapped on it
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addMFifo( Fifo fifo, CDChannel channel, Mapping mapping ) {
-
-		MFifo mFifo = new MFifo( fifo.getName() );
-		mFifo.setChannel( channel );
-		mFifo.setFifo( fifo );
-		mapping.getFifoList().add( mFifo );
-	}
-
-       /****************************************************************************************************************
-	*  Adds a MProcessor to the mapping specification.
-	*  MProcessor points to a processing component of a platform and an ADGNode mapped on it
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addMProcessor( Resource resource, ADGNode node, Mapping mapping ) {
-
-		MProcess mProcess = new MProcess( node.getName() );
-		mProcess.setNode( node );
-
-		MProcessor mProcessor = new MProcessor( resource.getName() );
-		mProcessor.getProcessList().add( mProcess );
-		mProcessor.setResource( resource );
-		mProcessor.setScheduleType( 0 ); // Default value
-
-		mapping.getProcessorList().add( mProcessor );
-	}
-
-       /****************************************************************************************************************
-	*  Insert a resource between 2 ports (Used to add Memory, MultiFifo or read crossbar controllers to a processor)
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addController( Platform platform, Port processorPort, Port memoryPort, Controller resource ) {
-
-         	// -----------------------------------------
-		// The link contains only the processor port
-		// -----------------------------------------
-		Link link = processorPort.getLink();
-
-		resource.setLevelUpResource( platform );
-
-		Port processorSide;
-		Port memorySide;
-
-//		if( (resource instanceof PowerPC && processorPort instanceof PLBPort ) {
-
-//		if( processorPort instanceof PLBPort ) {
-//		    processorSide = new PLBPort("IO_1");
-//		    memorySide = new PLBPort("IO_2");
-//		} else if( processorPort instanceof LMBPort ) {
-		if( processorPort instanceof LMBPort ) {
-		    processorSide = new LMBPort("IO_1");
-		    memorySide = new LMBPort("IO_2");
-		} else {  // Fifo (crossbar read controller) to be added
-		    processorSide = new FifoWritePort("IO_1"); // crossbarSide
-		    memorySide = new FifoReadPort("IO_2");     // Ip read side
-		}
-
-		processorSide.setResource( resource );
-		memorySide.setResource( resource );
-
-		// --------------------------------------------------------------------------
-		// Connect the processor port with the controller port (use the current link)
-		// --------------------------------------------------------------------------
-		processorSide.setLink( link );
-
-		link.getPortList().add( processorSide );
-
-		// --------------------------------------------------------------------
-		// Connect the controller port with the memory port (create a new link)
-		// --------------------------------------------------------------------
-		//Link cbLink = new Link( "BUS_" + resource.getName() );
-		Link cbLink = new Link( "BUS_" + resource.getName() );
-		cbLink.getPortList().add( memoryPort );
-		cbLink.getPortList().add( memorySide );
-
-		memoryPort.setLink( cbLink );
-		memorySide.setLink( cbLink );
-
-		// -----------------------------------
-		// Add the new ports to the controller
-		// -----------------------------------
-		resource.getPortList().add( processorSide );
-		resource.getPortList().add( memorySide );
-
-		// -------------------------
-		// Initialize the controller
-		// -------------------------
-		Memory memory = (Memory) memoryPort.getResource();
-		Page page = new Page();
-		page.setBaseAddress( 0 );
-		page.setSize( memory.getSize() );
-		resource.getPageList().add( page );
-
-		// Add the controller to the platform
-		_newResources.add( resource );
-
-		// Add the new created link to the platform
-		platform.getLinkList().add( cbLink );
-	}
-
-       /****************************************************************************************************************
-	*  Add and connect a Fifos controller to a processor
-	*  A Fifo controller has one port (processor port) and several fifo read and/or fifo write ports
-	*
-	* @param  platform Description of the Parameter
-	****************************************************************************************************************/
-	private void _addFifosControllers( Platform platform ) {
-
-	    Iterator r = platform.getResourceList().iterator();
-	    while( r.hasNext() ) {
-
-	        Resource resource = (Resource) r.next();
-
-  	        if( resource instanceof Processor ) {
-
-		    Vector ctrlPorts = new Vector();
-
-		    Port processorIPort = new Port("");
-		    Port processorDPort = new Port("");
-	            Port controllerPort = new Port("");
-	            Port opbPort        = new Port("");
-	            Port plbPort        = new Port("");
-
-		    if( resource instanceof MicroBlaze ) {
-
-		        controllerPort = new LMBPort("CTRL_IO");
-
-		    } else if( resource instanceof PowerPC ) {
-
-		    	controllerPort = new PLBPort("CTRL_IO");
-		    }
-
-		    // --------------------
-		    // Find processor ports
-		    // --------------------
-	            Iterator p = resource.getPortList().iterator();
-	            while( p.hasNext() ) {
-			Port port = (Port) p.next();
+                
+                inPort.setResource( platformNode );
+                platformNode.getPortList().add( inPort );
+            }
+            
+            if( outPort instanceof FifoWritePort ) {
+                
+                adgNode = (ADGNode) ((ADGPort) fromGate.getAdgPortList().get(0)).getNode();
+                Resource platformNode = (Resource) hashNodes.get( adgNode );
+                
+                if( platformNode == null ) {
+                    
+                    // ----------------------------------------------------
+                    // Create a new resource and put it into the hash table
+                    // ----------------------------------------------------
+                    if( processor instanceof CompaanHWNode ) {
+                        
+                        platformNode = new CompaanHWNode( "HWN_" + cntRcrs++ );
+                        
+                        _addMProcessor( platformNode, adgNode, mapping );
+                        
+                    } else if( processor instanceof MicroBlaze ) {
+                        
+                        platformNode = new MicroBlaze( "MB_" + cntRcrs++ );
+                        ((Processor) platformNode).setDataMemSize( dataMemSize );
+                        ((Processor) platformNode).setProgMemSize( progMemSize );
+                        
+                        _elaborateProcessor( platformNode, platform );
+                        _addMProcessor( platformNode, adgNode, mapping );
+                        
+                    } else if( processor instanceof PowerPC ) {
+                        
+                        platformNode = new PowerPC( "PPC_" + cntRcrs++ );
+                        ((Processor) platformNode).setDataMemSize( dataMemSize );
+                        ((Processor) platformNode).setProgMemSize( progMemSize );
+                        
+                        _elaborateProcessor( platformNode, platform );
+                        _addMProcessor( platformNode, adgNode, mapping );
+                    }
+                    
+                    platform.getResourceList().add( platformNode );
+                    hashNodes.put( adgNode, platformNode );
+                }
+                
+                outPort.setResource( platformNode );
+                platformNode.getPortList().add( outPort );
+            }
+            
+            // ---------------------------------------------------------------------------------------
+            // Create and initialize a link, add it to the inPort, outPort and platform. Insert a fifo
+            // ---------------------------------------------------------------------------------------
+            Link link = new Link("BUS_" + outPort.getResource().getName() + "_" + outPort.getName());
+            link.getPortList().add( outPort );
+            
+            inPort.setLink(  link );
+            outPort.setLink( link );
+            platform.getLinkList().add( link );
+            
+            Fifo fifo = new Fifo( "FIFO_" + outPort.getResource().getName() + "_" + outPort.getName() );
+            _addFifo( platform, outPort, inPort, fifo );
+            
+            // ----------------------------------------------------------------------------------------
+            // Create and add a MFifo to the mapping. MFifo points to a Fifo and CDChannel mapped on it
+            // ----------------------------------------------------------------------------------------
+            _addMFifo( fifo, channel, mapping );
+        }
+    }
+    
+    /****************************************************************************************************************
+      *  Elaborate a Processor component.
+      *   Current strategy:
+      * BRAMs are attached to the MicroBlazes and PPC: one memory component (for both PM and DM) per processor
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _elaborateProcessor( Resource processor, Platform platform ) {
+        
+        // ---------------------------------------------------------------------------
+        // When a mapping is not specified, the processors are specified without ports
+        // The instruction and data processor ports are created here
+        // ---------------------------------------------------------
+        Port processorIPort;
+        Port processorDPort;
+        
+        if( processor instanceof MicroBlaze ) {
+            processorIPort = new ILMBPort( "ILMB" );
+            processorDPort = new DLMBPort( "DLMB" );
+        } else {
+            processorIPort = new IPLBPort( "IPLB" );
+            processorDPort = new DPLBPort( "DPLB" );
+        }
+        
+        processor.getPortList().add( processorDPort );
+        processor.getPortList().add( processorIPort );
+        processorDPort.setResource( processor );
+        processorIPort.setResource( processor );
+        
+        // --------------------------------------------------------------------------------
+        // When the port is created a default link is created and added to the port as well
+        // However, this default link does not contain the processor port and the platform
+        // does not contain this default link
+        // --------------------------------------------------------------------------------
+        Link link = processorDPort.getLink();
+        link.setName( "DBUS_" + processor.getName() );
+        link.getPortList().add( processorDPort );
+        
+        // Add the link to the platform
+        platform.getLinkList().add( link );
+        
+        link = processorIPort.getLink();
+        link.setName( "PBUS_" + processor.getName() );
+        link.getPortList().add( processorIPort );
+        
+        // Add the link to the platform
+        platform.getLinkList().add( link );
+        
+        // -------------------------------------------------------------------------------------------------
+        // Create a Memory component of the processor (for both program and data) and add it to the platform
+        // -------------------------------------------------------------------------------------------------
+        Memory memory = new Memory( "M_" + processor.getName() );
+        memory.setSize( ((Processor) processor).getDataMemSize() + ((Processor) processor).getProgMemSize() );
+        memory.setDataWidth( 32 );
+        memory.setLevelUpResource( platform );
+        _addMemory2( platform, processorDPort, processorIPort, memory );
+        
+        // --------------------------------------------------------------------------
+        // Create a Data Memory component of the processor and add it to the platform
+        // --------------------------------------------------------------------------
+        //Memory memory = new Memory( "DM_" + processor.getName() );
+        //memory.setSize( ((Processor) processor).getDataMemSize() );
+        //memory.setDataWidth( 32 );
+        //memory.setLevelUpResource( platform );
+        //_addMemory( platform, processorDPort, memory );
+        //
+        // -----------------------------------------------------------------------------
+        // Create a Program Memory component of the processor and add it to the platform
+        // -----------------------------------------------------------------------------
+        // memory = new Memory( "PM_" + processor.getName() );
+        // memory.setSize( ((Processor) processor).getProgMemSize() );
+        // memory.setDataWidth( 32 );
+        // memory.setLevelUpResource( platform );
+        // _addMemory( platform, processorIPort, memory );
+    }
+    
+    /****************************************************************************************************************
+      *  Adds a memory component and memory controller to a Processor component
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addMemory( Platform platform, Port processorPort, Memory memory ) {
+        
+        Link link = processorPort.getLink();
+        Port   memPort;
+        
+        if( processorPort.getResource() instanceof PowerPC ) {
+            memPort = new PLBPort( "IO_1" );
+        } else { //if( resource instanceof MicroBlaze ) {
+            memPort = new LMBPort( "IO_1" );
+        }
+        
+        // -----------------------------------------------------------------------------------
+        // Don't set the link because we add a controller between the processor and the memory
+        // -----------------------------------------------------------------------------------
+        //memPort.setLink( link );
+        memPort.setResource( memory );
+        
+        memory.getPortList().add( memPort );
+        
+        // --------------------------------------------
+        // Link the memory port with the processor port
+        // --------------------------------------------
+        //link.getPortList().add( memPort );
+        
+        // -----------------------------------------
+        // Add this memory component to the platform
+        // -----------------------------------------
+        _newResources.add( memory );
+        
+        // ---------------------
+        // Add memory controller
+        // ---------------------
+        MemoryController memCtrl = new MemoryController("CTRL_" + memory.getName());
+        _addController( platform, processorPort, memPort, memCtrl );
+    }
+    
+    /****************************************************************************************************************
+      *  Adds a memory component and 2 memory controllers to a Processor component
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addMemory2( Platform platform, Port procDataPort, Port procProgPort, Memory memory ) {
+        
+        Link linkData = procDataPort.getLink();
+        Link linkProg = procProgPort.getLink();
+        Port   memDataPort;
+        Port   memProgPort;
+        
+        if( procDataPort.getResource() instanceof PowerPC ) {
+            memDataPort = new DPLBPort( "DM" );
+            memProgPort = new IPLBPort( "PM" );
+        } else { //if( resource instanceof MicroBlaze ) {
+            memDataPort = new DLMBPort( "DM" );
+            memProgPort = new ILMBPort( "PM" );
+        }
+        
+        // -----------------------------------------------------------------------------------
+        // Don't set the link because we add a controller between the processor and the memory
+        // -----------------------------------------------------------------------------------
+        //memPort.setLink( link );
+        memDataPort.setResource( memory );
+        memProgPort.setResource( memory );
+        
+        memory.getPortList().add( memDataPort );
+        memory.getPortList().add( memProgPort );
+        
+        // --------------------------------------------
+        // Link the memory port with the processor port
+        // --------------------------------------------
+        //link.getPortList().add( memPort );
+        
+        // -----------------------------------------
+        // Add this memory component to the platform
+        // -----------------------------------------
+        _newResources.add( memory );
+        
+        // ----------------------
+        // Add memory controllers
+        // ----------------------
+        MemoryController memDataCtrl = new MemoryController("DCTRL_" + memory.getName());
+        _addController( platform, procDataPort, memDataPort, memDataCtrl );
+        MemoryController memProgCtrl = new MemoryController("PCTRL_" + memory.getName());
+        _addController( platform, procProgPort, memProgPort, memProgCtrl );
+    }
+    
+    /****************************************************************************************************************
+      *  Adds a Fifo component between 2 ports
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addFifo( Platform platform, Port writePort, Port readPort, Fifo fifo ) {
+        
+        // -------------------------------------
+        // The link contains only the write port
+        // -------------------------------------
+        Link link = writePort.getLink();
+        
+        // ----------------------------------------------------------------------------------------------
+        // Add a fifo between the read and the write ports
+        // ----------------------------------------------------------------------------------------------
+        //Fifo fifo = new Fifo( "FIFO_" + writePort.getResource().getName() + "_" + writePort.getName() );
+        //fifo.setSize( 512 );
+        fifo.setDataWidth( 32 ); // ???
+        fifo.setLevelUpResource( platform );
+        
+        // -----------------------------------------------------------------
+        // Connect the Compaan out port with the fifo (use the current link)
+        // -----------------------------------------------------------------
+        FifoWritePort writeSide = new FifoWritePort( "IO_1" );
+        writeSide.setResource( fifo );
+        writeSide.setLink( link );
+        
+        link.getPortList().add( writeSide );
+        
+        // -----------------------------------------------------------
+        // Connect the crossbar port with the fifo (create a new link)
+        // -----------------------------------------------------------
+        FifoReadPort readSide = new FifoReadPort( "IO_2" );
+        readSide.setResource( fifo );
+        
+        Link cbLink = new Link( "BUS_" + fifo.getName() );
+        cbLink.getPortList().add( readPort );
+        cbLink.getPortList().add( readSide );
+        
+        readPort.setLink( cbLink );
+        readSide.setLink( cbLink );
+        
+        // -----------------------------
+        // Add the new ports to the fifo
+        // -----------------------------
+        fifo.getPortList().add( writeSide   );
+        fifo.getPortList().add( readSide );
+        
+        // Add the fifo component to the platform
+        _newResources.add( fifo );
+        
+        // Add the new created link to the platform
+        platform.getLinkList().add( cbLink );
+    }
+    
+    /****************************************************************************************************************
+      *  Adds a MFifo to the mapping specification. MFifo points to a Fifo and CDChannel mapped on it
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addMFifo( Fifo fifo, CDChannel channel, Mapping mapping ) {
+        
+        MFifo mFifo = new MFifo( fifo.getName() );
+        mFifo.setChannel( channel );
+        mFifo.setFifo( fifo );
+        mapping.getFifoList().add( mFifo );
+    }
+    
+    /****************************************************************************************************************
+      *  Adds a MProcessor to the mapping specification.
+      *  MProcessor points to a processing component of a platform and an ADGNode mapped on it
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addMProcessor( Resource resource, ADGNode node, Mapping mapping ) {
+        
+        MProcess mProcess = new MProcess( node.getName() );
+        mProcess.setNode( node );
+        
+        MProcessor mProcessor = new MProcessor( resource.getName() );
+        mProcessor.getProcessList().add( mProcess );
+        mProcessor.setResource( resource );
+        mProcessor.setScheduleType( 0 ); // Default value
+        
+        mapping.getProcessorList().add( mProcessor );
+    }
+    
+    /****************************************************************************************************************
+      *  Insert a resource between 2 ports (Used to add Memory, MultiFifo or read crossbar controllers to a processor)
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addController( Platform platform, Port processorPort, Port memoryPort, Controller resource ) {
+        
+        // -----------------------------------------
+        // The link contains only the processor port
+        // -----------------------------------------
+        Link link = processorPort.getLink();
+        
+        resource.setLevelUpResource( platform );
+        
+        Port processorSide;
+        Port memorySide;
+        
+//  if( (resource instanceof PowerPC && processorPort instanceof PLBPort ) {
+        
+//  if( processorPort instanceof PLBPort ) {
+//      processorSide = new PLBPort("IO_1");
+//      memorySide = new PLBPort("IO_2");
+//  } else if( processorPort instanceof LMBPort ) {
+        if( processorPort instanceof LMBPort ) {
+            processorSide = new LMBPort("IO_1");
+            memorySide = new LMBPort("IO_2");
+        } else {  // Fifo (crossbar read controller) to be added
+            processorSide = new FifoWritePort("IO_1"); // crossbarSide
+            memorySide = new FifoReadPort("IO_2");     // Ip read side
+        }
+        
+        processorSide.setResource( resource );
+        memorySide.setResource( resource );
+        
+        // --------------------------------------------------------------------------
+        // Connect the processor port with the controller port (use the current link)
+        // --------------------------------------------------------------------------
+        processorSide.setLink( link );
+        
+        link.getPortList().add( processorSide );
+        
+        // --------------------------------------------------------------------
+        // Connect the controller port with the memory port (create a new link)
+        // --------------------------------------------------------------------
+        //Link cbLink = new Link( "BUS_" + resource.getName() );
+        Link cbLink = new Link( "BUS_" + resource.getName() );
+        cbLink.getPortList().add( memoryPort );
+        cbLink.getPortList().add( memorySide );
+        
+        memoryPort.setLink( cbLink );
+        memorySide.setLink( cbLink );
+        
+        // -----------------------------------
+        // Add the new ports to the controller
+        // -----------------------------------
+        resource.getPortList().add( processorSide );
+        resource.getPortList().add( memorySide );
+        
+        // -------------------------
+        // Initialize the controller
+        // -------------------------
+        Memory memory = (Memory) memoryPort.getResource();
+        Page page = new Page();
+        page.setBaseAddress( 0 );
+        page.setSize( memory.getSize() );
+        resource.getPageList().add( page );
+        
+        // Add the controller to the platform
+        _newResources.add( resource );
+        
+        // Add the new created link to the platform
+        platform.getLinkList().add( cbLink );
+    }
+    
+    /****************************************************************************************************************
+      *  Add and connect a Fifos controller to a processor
+      *  A Fifo controller has one port (processor port) and several fifo read and/or fifo write ports
+      *
+      * @param  platform Description of the Parameter
+      ****************************************************************************************************************/
+    private void _addFifosControllers( Platform platform ) {
+        
+        Iterator r = platform.getResourceList().iterator();
+        while( r.hasNext() ) {
+            
+            Resource resource = (Resource) r.next();
+            
+            if( resource instanceof Processor ) {
+                
+                Vector ctrlPorts = new Vector();
+                
+                Port processorIPort = new Port("");
+                Port processorDPort = new Port("");
+                Port controllerPort = new Port("");
+                Port opbPort        = new Port("");
+                Port plbPort        = new Port("");
+                
+                if( resource instanceof MicroBlaze ) {
+                    
+                    controllerPort = new LMBPort("CTRL_IO");
+                    
+                } else if( resource instanceof PowerPC ) {
+                    
+                    controllerPort = new PLBPort("CTRL_IO");
+                }
+                
+                // --------------------
+                // Find processor ports
+                // --------------------
+                Iterator p = resource.getPortList().iterator();
+                while( p.hasNext() ) {
+                    Port port = (Port) p.next();
 //*
-			if( (resource instanceof PowerPC && port instanceof IPLBPort) || port instanceof ILMBPort ) {
-
-			    processorIPort = port;
-
-			} else if( (resource instanceof PowerPC && port instanceof DPLBPort) || port instanceof DLMBPort ) {
-
-			    processorDPort = port;
-
-			} else if( port instanceof FifoWritePort ) {
-
-			    ctrlPorts.add( port );
-
-			}  else if( port instanceof FifoReadPort ) {
-
-			    ctrlPorts.add( port );
-
-			} else if( port instanceof OPBPort ) {
-
-			    opbPort = port;
-
-			} else if( port instanceof PLBPort && resource instanceof MicroBlaze ) {
-
-			    plbPort = port;
-			}
-
-/*/
-			if( port instanceof IPLBPort || port instanceof ILMBPort ) {
-
-			    processorIPort = port;
-
-			} else if( port instanceof DPLBPort || port instanceof DLMBPort ) {
-
-			    processorDPort = port;
-
-			} else if( port instanceof FifoWritePort ) {
-
-			    ctrlPorts.add( port );
-
-			}  else if( port instanceof FifoReadPort ) {
-
-			    ctrlPorts.add( port );
-
-			} else if( port instanceof OPBPort ) {
-
-			    opbPort = port;
-			}
-//*/
-	            }
-
-		    // -----------------------------------------------------------------
-	            // Create a controller if there are fifos connected to the processor
-		    // -----------------------------------------------------------------
-		    if( ctrlPorts.size() > 0 ) {
-
-			// Only the processor port remains in the processor
-			resource.getPortList().clear();
-			resource.getPortList().add( processorIPort );
-			resource.getPortList().add( processorDPort );
-			if( !opbPort.getName().equals("") ) {
-			     resource.getPortList().add( opbPort );
-			}
-			if( !plbPort.getName().equals("") ) {
-			     resource.getPortList().add( plbPort );
-			}
-
-			// create the fifo controller
-			FifosController ctrl = new FifosController("CTRL_" + resource.getName() + "_FIFOs");
-			ctrl.setLevelUpResource( platform );
-			ctrl.getPortList().add( controllerPort );
-			ctrl.getPortList().addAll( ctrlPorts );
-
-			// Connect the fifos controller to the processor data bus
-			Link link = processorDPort.getLink();
-			link.getPortList().add( controllerPort );
-			
-			controllerPort.setResource( ctrl );
-			controllerPort.setLink( link );
-
-			// Re-direct the processor fifo ports (already removed from the processor) to be part of the fifos controller
-			p = ctrl.getPortList().iterator();
-			while( p.hasNext() ) {
-
-			    Port cPort = (Port) p.next();
-			    cPort.setResource( ctrl );
-			}
-
-			// Add the controller to the platform
-			_newResources.add( ctrl );
-	            }
-	        }
-	    }
-	}
-
-
-	///////////////////////////////////////////////////////////////////
-	////                         private variables                 ////
-
-	/**
-	 *  Create a unique instance of this class to implement a singleton
-	 */
-	private final static ElaborateOne2One _instance = new ElaborateOne2One();
-
-	// Contains the new component (memories, fifos, ...) to be added to the platform
-	private Vector _newResources = null;
+                    if( (resource instanceof PowerPC && port instanceof IPLBPort) || port instanceof ILMBPort ) {
+                        
+                        processorIPort = port;
+                        
+                    } else if( (resource instanceof PowerPC && port instanceof DPLBPort) || port instanceof DLMBPort ) {
+                        
+                        processorDPort = port;
+                        
+                    } else if( port instanceof FifoWritePort ) {
+                        
+                        ctrlPorts.add( port );
+                        
+                    }  else if( port instanceof FifoReadPort ) {
+                        
+                        ctrlPorts.add( port );
+                        
+                    } else if( port instanceof OPBPort ) {
+                        
+                        opbPort = port;
+                        
+                    } else if( port instanceof PLBPort && resource instanceof MicroBlaze ) {
+                        
+                        plbPort = port;
+                    }
+                    
+                    /*/
+                     if( port instanceof IPLBPort || port instanceof ILMBPort ) {
+                     
+                     processorIPort = port;
+                     
+                     } else if( port instanceof DPLBPort || port instanceof DLMBPort ) {
+                     
+                     processorDPort = port;
+                     
+                     } else if( port instanceof FifoWritePort ) {
+                     
+                     ctrlPorts.add( port );
+                     
+                     }  else if( port instanceof FifoReadPort ) {
+                     
+                     ctrlPorts.add( port );
+                     
+                     } else if( port instanceof OPBPort ) {
+                     
+                     opbPort = port;
+                     }
+                     //*/
+                }
+                
+                // -----------------------------------------------------------------
+                // Create a controller if there are fifos connected to the processor
+                // -----------------------------------------------------------------
+                if( ctrlPorts.size() > 0 ) {
+                    
+                    // Only the processor port remains in the processor
+                    resource.getPortList().clear();
+                    resource.getPortList().add( processorIPort );
+                    resource.getPortList().add( processorDPort );
+                    if( !opbPort.getName().equals("") ) {
+                        resource.getPortList().add( opbPort );
+                    }
+                    if( !plbPort.getName().equals("") ) {
+                        resource.getPortList().add( plbPort );
+                    }
+                    
+                    // create the fifo controller
+                    FifosController ctrl = new FifosController("CTRL_" + resource.getName() + "_FIFOs");
+                    ctrl.setLevelUpResource( platform );
+                    ctrl.getPortList().add( controllerPort );
+                    ctrl.getPortList().addAll( ctrlPorts );
+                    
+                    // Connect the fifos controller to the processor data bus
+                    Link link = processorDPort.getLink();
+                    link.getPortList().add( controllerPort );
+                    
+                    controllerPort.setResource( ctrl );
+                    controllerPort.setLink( link );
+                    
+                    // Re-direct the processor fifo ports (already removed from the processor) to be part of the fifos controller
+                    p = ctrl.getPortList().iterator();
+                    while( p.hasNext() ) {
+                        
+                        Port cPort = (Port) p.next();
+                        cPort.setResource( ctrl );
+                    }
+                    
+                    // Add the controller to the platform
+                    _newResources.add( ctrl );
+                }
+            }
+        }
+    }
+    
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+    
+    /**
+     *  Create a unique instance of this class to implement a singleton
+     */
+    private final static ElaborateOne2One _instance = new ElaborateOne2One();
+    
+    // Contains the new component (memories, fifos, ...) to be added to the platform
+    private Vector _newResources = null;
 }
 
 

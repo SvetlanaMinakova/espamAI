@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.operations.codegeneration;
 
@@ -39,7 +24,7 @@ import espam.main.UserInterface;
  */
 
 public class Node2ControlStatements {
-
+    
     /**
      * @param  x Description of the Parameter
      * @return  Description of the Return Value
@@ -47,57 +32,57 @@ public class Node2ControlStatements {
      *      occurs
      */
     public static Vector convert(ADGNode x) {
-
+        
         boolean bMultiApp = false;
         if(_ui.getADGFileNames().size() > 1) {
             bMultiApp = true;
         }   
-
-	Vector cStatements = new Vector();
-	HashMap  tmp = new HashMap();
-
-	Iterator i = x.getPortList().iterator();
-	while( i.hasNext() ) {
-		ADGPort port = (ADGPort) i.next();
-		Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
-		Iterator j = staticCtrl.iterator();
-		while( j.hasNext() ) {
-			ControlExpression cExp = (ControlExpression) j.next();
-                        String expName = cExp.getName();
-
-                        if ( !tmp.containsKey(expName) ) {
-
-			      tmp.put(expName, "");
-  			      ControlStatement statement = new ControlStatement( expName, cExp.getExpression(), 1 );
-                              cStatements.add( statement );
-
-			}
-
-		}
-	}
-
-	Iterator j = x.getExpressionList().iterator();
-	while( j.hasNext() ) {
-		ControlExpression cExp = (ControlExpression) j.next();
+        
+        Vector cStatements = new Vector();
+        HashMap  tmp = new HashMap();
+        
+        Iterator i = x.getPortList().iterator();
+        while( i.hasNext() ) {
+            ADGPort port = (ADGPort) i.next();
+            Vector staticCtrl = ((Polytope)port.getDomain().getLinearBound().get(0)).getIndexVector().getStaticCtrlVector();
+            Iterator j = staticCtrl.iterator();
+            while( j.hasNext() ) {
+                ControlExpression cExp = (ControlExpression) j.next();
                 String expName = cExp.getName();
-                if( bMultiApp ) {
-                     expName += "_" + x.getName();
-                }
-
+                
                 if ( !tmp.containsKey(expName) ) {
-
-		      tmp.put(expName, "");
-		      ControlStatement statement = new ControlStatement( expName, cExp.getExpression(), 1 );
-                      cStatements.add( statement );
-		}
-	}
-
+                    
+                    tmp.put(expName, "");
+                    ControlStatement statement = new ControlStatement( expName, cExp.getExpression(), 1 );
+                    cStatements.add( statement );
+                    
+                }
+                
+            }
+        }
+        
+        Iterator j = x.getExpressionList().iterator();
+        while( j.hasNext() ) {
+            ControlExpression cExp = (ControlExpression) j.next();
+            String expName = cExp.getName();
+            if( bMultiApp ) {
+                expName += "_" + x.getName();
+            }
+            
+            if ( !tmp.containsKey(expName) ) {
+                
+                tmp.put(expName, "");
+                ControlStatement statement = new ControlStatement( expName, cExp.getExpression(), 1 );
+                cStatements.add( statement );
+            }
+        }
+        
         return cStatements;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
-
+    
     private static UserInterface _ui = UserInterface.getInstance();
 }
 

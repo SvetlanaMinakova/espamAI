@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.graph.adg;
 
@@ -42,27 +27,27 @@ import espam.utils.symbolic.matrix.JMatrix;
  */
 
 public class ADGEdge extends Edge {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create an ADGEdge with a name.
      *
      */
     public ADGEdge(String name) {
-    	super(name);
+        super(name);
         _mapping = new JMatrix();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this ADGEdge
      *
@@ -71,10 +56,10 @@ public class ADGEdge extends Edge {
     public Object clone() {
         ADGEdge newObj = (ADGEdge) super.clone();
         newObj.setMapping( (JMatrix) _mapping.clone() );
-	newObj.setLinModel( _linearization );
+        newObj.setLinModel( _linearization );
         return( newObj );
     }
-
+    
     /**
      *  Get the mapping matrix of an ADGEdge.
      *
@@ -83,7 +68,7 @@ public class ADGEdge extends Edge {
     public JMatrix getMapping() {
         return _mapping;
     }
-
+    
     /**
      *  Set the mapping matrix of an ADGEdge.
      *
@@ -92,7 +77,7 @@ public class ADGEdge extends Edge {
     public void setMapping(JMatrix mapping) {
         _mapping = mapping;
     }
-
+    
     /**
      *  Get the linearization model of an ADGEdge.
      *
@@ -101,7 +86,7 @@ public class ADGEdge extends Edge {
     public LinearizationType getLinModel() {
         return _linearization;
     }
-
+    
     /**
      *  Set the size of an ADGEdge.
      *
@@ -110,7 +95,7 @@ public class ADGEdge extends Edge {
     public void setSize(int size) {
         _size = size;
     }
-
+    
     /**
      *  Get the size of an ADGEdge.
      *
@@ -119,7 +104,7 @@ public class ADGEdge extends Edge {
     public int getSize() {
         return _size;
     }
-
+    
     /**
      *  Set the linearization model of an ADGEdge.
      *
@@ -128,7 +113,7 @@ public class ADGEdge extends Edge {
     public void setLinModel(LinearizationType linearization) {
         _linearization = linearization;
     }
-
+    
     /**
      *  Get the adg name to which an ADGEdge belongs.
      *
@@ -137,7 +122,7 @@ public class ADGEdge extends Edge {
     public String getADGName() {
         return _adgName;
     }
-
+    
     /**
      *  Set the adg name to which an ADGEdge belongs.
      *
@@ -146,7 +131,7 @@ public class ADGEdge extends Edge {
     public void setADGName(String name) {
         _adgName = name;
     }
-
+    
     /**
      *  Return a description of the ADGEdge.
      *
@@ -155,7 +140,7 @@ public class ADGEdge extends Edge {
     public String toString() {
         return "ADGEdge: " + getName();
     }
-
+    
     /**
      *  Get the output port related to this ADGEdge.
      *
@@ -163,15 +148,15 @@ public class ADGEdge extends Edge {
      */
     public ADGOutPort getFromPort() {
         Iterator i = getPortList().iterator();
-	while ( i.hasNext() ) {
-	   ADGPort port = (ADGPort) i.next();
-	   if (port instanceof ADGOutPort) {
-	      return (ADGOutPort) port;
-	   }
-	}
-	return null;
+        while ( i.hasNext() ) {
+            ADGPort port = (ADGPort) i.next();
+            if (port instanceof ADGOutPort) {
+                return (ADGOutPort) port;
+            }
+        }
+        return null;
     }
-
+    
     /**
      *  Get the input port related to this ADGEdge.
      *
@@ -179,31 +164,31 @@ public class ADGEdge extends Edge {
      */
     public ADGInPort getToPort() {
         Iterator i = getPortList().iterator();
-	while ( i.hasNext() ) {
-	   ADGPort port = (ADGPort) i.next();
-	   if (port instanceof ADGInPort) {
-	      return (ADGInPort) port;
-	   }
-	}
-	return null;
+        while ( i.hasNext() ) {
+            ADGPort port = (ADGPort) i.next();
+            if (port instanceof ADGInPort) {
+                return (ADGInPort) port;
+            }
+        }
+        return null;
     }
-
+    
     /**
      *  Chcck if the edge is a self-edge
      *
      * @return  true if the edge is a self-edge, false otherwise
      */
     public boolean isSelfEdge() {
-	if ( this.getFromPort().getNode().getName().equals( this.getToPort().getNode().getName() ) ) {
-	    return true;
-	} else {
-	    return false;
-	}
+        if ( this.getFromPort().getNode().getName().equals( this.getToPort().getNode().getName() ) ) {
+            return true;
+        } else {
+            return false;
+        }
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Mapping matrix that defines the relation between the domains of
      *  the input port and the output port related to this edge.
@@ -215,11 +200,11 @@ public class ADGEdge extends Edge {
      *  Size required for the edge; -1 if unknown.
      */
     private int _size = -1;
-
+    
     /**
      * The adg name to which an ADGEdge belongs.
      */
-
+    
     private String _adgName = null;
-
+    
 }

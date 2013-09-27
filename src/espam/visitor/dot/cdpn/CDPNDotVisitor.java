@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.visitor.dot.cdpn;
 
@@ -42,10 +27,10 @@ import espam.visitor.CDPNVisitor;
  */
 
 public class CDPNDotVisitor extends CDPNVisitor {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
-
+    
     /**
      *  Constructor for the CDPNDotVisitor object
      *
@@ -54,14 +39,14 @@ public class CDPNDotVisitor extends CDPNVisitor {
     public CDPNDotVisitor(PrintStream printStream) {
         _printStream = printStream;
     }
-
+    
     /**
      *  Print a .dot file in the correct format for DOTTY.
      *
      * @param  x The platform that needs to be rendered.
      */
     public void visitComponent(CDProcessNetwork x) {
-
+        
         _prefixInc();
         _printStream.println( "digraph " + x.getName() + " {" );
         _printStream.println("");
@@ -75,7 +60,7 @@ public class CDPNDotVisitor extends CDPNVisitor {
         _printStream.println( _prefix + "node [fontsize=12, height=0.05, width=0.05, style=filled, shape=ellipse, color=orange]" );
         _printStream.println( _prefix + "edge [fontsize=10, decorate=false, width=6, minlen=2]");
         _printStream.println("");
-
+        
         // Visit all CDPN processes
         Iterator i = x.getProcessList().iterator();
         while( i.hasNext() ) {
@@ -83,19 +68,19 @@ public class CDPNDotVisitor extends CDPNVisitor {
             process.accept(this);
         }
         _printStream.println("");
-
-	// Visit all CDPN channels
+        
+        // Visit all CDPN channels
         i = x.getChannelList().iterator();
         while( i.hasNext() ) {
             CDChannel channel = (CDChannel) i.next();
             channel.accept(this);
         }
-
+        
         _prefixDec();
         _printStream.println("");
         _printStream.println("}");
     }
-
+    
 //------------------------------------------------------------------------------------------------
 // CDPN Processes
 //------------------------------------------------------------------------------------------------
@@ -105,11 +90,11 @@ public class CDPNDotVisitor extends CDPNVisitor {
      * @param  x The process that needs to be rendered.
      */
     public void visitComponent(CDProcess x) {
-
+        
         _printStream.println(
-             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + getADGFunctions(x) + " ];");
+                             _prefix + "\"" + x.getName() + "\" [ label=\"" + x.getName() + getADGFunctions(x) + " ];");
     }
-
+    
 //------------------------------------------------------------------------------------------------
 // CDPN Channels
 //------------------------------------------------------------------------------------------------
@@ -119,12 +104,12 @@ public class CDPNDotVisitor extends CDPNVisitor {
      * @param  x The channel that needs to be rendered.
      */
     public void visitComponent(CDChannel x) {
-
- 	String color = "dimgray";
+        
+        String color = "dimgray";
         String type = "";
-
+        
         LinearizationType comModel = x.getCommunicationModel(); 
-
+        
         if( comModel == LinearizationType.fifo ) {                       /** In-order without Multiplicity. */
 //            color="black";
             type="(fifo)";
@@ -144,20 +129,20 @@ public class CDPNDotVisitor extends CDPNVisitor {
             color="red";
             type="(OOM)";
         } 
-
+        
         _printStream.println( _prefix + "\"" + x.getFromGate().getProcess().getName() + "\" -> " + "\"" + x.getToGate().getProcess().getName() + 
-                           "\" [ label=\"" + x.getName() + "," + getADGEdges(x) + "\\n " + type + ": " + x.getMaxSize() + "\"" + ", color=" + color + " ];");
+                             "\" [ label=\"" + x.getName() + "," + getADGEdges(x) + "\\n " + type + ": " + x.getMaxSize() + "\"" + ", color=" + color + " ];");
     }
     
 //------------------------------------------------------------------
-
+    
     /**
      *  Get the ADG functions which are executed by a CDPN process
      *
      * @param  x The CDPN process
      */
     public String getADGFunctions( CDProcess x ) {
-
+        
         String strFunc = "";
         
         Iterator i = x.getAdgNodeList().iterator();
@@ -165,30 +150,30 @@ public class CDPNDotVisitor extends CDPNVisitor {
             ADGNode node = (ADGNode) i.next();
             String funcName = node.getFunction().getName();
             if( funcName != "" ) {
-               strFunc += "\\n" + node.getFunction().getName() + "()"; 
+                strFunc += "\\n" + node.getFunction().getName() + "()"; 
             }
         } 
         strFunc += "\"";
         return strFunc;
     }
-
+    
 //--------------------------------------------------------------------
-
+    
     /**
      *  Get the ADG edges assigned to a CDPN channel
      *
      * @param  x The CDPN channel
      */    
     public String getADGEdges( CDChannel x ) {
-    
+        
         String strEdges = "";
-
+        
         Iterator i = x.getAdgEdgeList().iterator();
-	while( i.hasNext() ) {
-	    ADGEdge edge = (ADGEdge) i.next();
-	    strEdges += "\\n" + edge.getName() + ", ";
+        while( i.hasNext() ) {
+            ADGEdge edge = (ADGEdge) i.next();
+            strEdges += "\\n" + edge.getName() + ", ";
         }
         return strEdges;
     }
-
+    
 }

@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.graph;
 
@@ -32,28 +17,28 @@ import espam.visitor.GraphVisitor;
  */
 
 public class Graph extends Node {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a Graph with a name,
      *  empty node list and empty edge list
      */
     public Graph(String name) {
-    	super(name);
+        super(name);
         _nodeList = new Vector();
         _edgeList = new Vector<Edge>();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(GraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this Graph
      *
@@ -66,7 +51,7 @@ public class Graph extends Node {
         newObj.setEdgeList( (Vector<Edge>) _edgeList.clone() );
         return( newObj );
     }
-
+    
     /**
      *  Get the node list of a grpah.
      *
@@ -75,7 +60,7 @@ public class Graph extends Node {
     public Vector getNodeList() {
         return _nodeList;
     }
-
+    
     /**
      *  Set the node list of a Graph.
      *
@@ -84,7 +69,7 @@ public class Graph extends Node {
     public void setNodeList( Vector nodeList) {
         _nodeList = nodeList;
     }
-
+    
     /**
      *  Get the edge list of a Graph
      *
@@ -93,7 +78,7 @@ public class Graph extends Node {
     public Vector<Edge> getEdgeList() {
         return _edgeList;
     }
-
+    
     /**
      *  Set the edge list of a Graph
      *
@@ -102,7 +87,7 @@ public class Graph extends Node {
     public void setEdgeList(Vector<Edge> edgeList) {
         _edgeList = edgeList;
     }
-
+    
     /**
      *  Return a description of the Graph.
      *
@@ -111,7 +96,7 @@ public class Graph extends Node {
     public String toString() {
         return "Graph: " + getName();
     }
-
+    
     /**
      *  Return a node which has a specific name. Return null if
      *  node cannot be found.
@@ -119,26 +104,26 @@ public class Graph extends Node {
      * @param  name the name of the node to search for.
      * @return  the node with the specific name.
      */
-     public Node getNode(String name) {
-          Iterator i;
-          i = _nodeList.iterator();
-          while( i.hasNext() ) {
-              Node node = (Node) i.next();
-              if( node.getName().equals(name) ) {
-                 return node;
-              }
-          }
-          return null;
-     }
-
+    public Node getNode(String name) {
+        Iterator i;
+        i = _nodeList.iterator();
+        while( i.hasNext() ) {
+            Node node = (Node) i.next();
+            if( node.getName().equals(name) ) {
+                return node;
+            }
+        }
+        return null;
+    }
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  List of the nodes of the Graph.
      */
     private Vector _nodeList = null;
-
+    
     /**
      *  List of the edges of the Graph.
      */

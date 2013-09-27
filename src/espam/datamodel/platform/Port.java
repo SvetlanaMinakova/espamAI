@@ -1,18 +1,18 @@
 /*******************************************************************\
-
-The ESPAM Software Tool
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  The ESPAM Software Tool
+  Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.datamodel.platform;
 
@@ -34,25 +34,25 @@ import espam.datamodel.platform.Link;
  */
 
 public class Port implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a Port with a name.
      *
      */
     public Port(String name) {
         _name = name;
-	_link = new Link(""); // default link - used in platform elaboration
+        _link = new Link(""); // default link - used in platform elaboration
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception MatParserException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception MatParserException If an error occurs.
+      */
     //public void accept(Visitor x) throws EspamException { }
-
+    
     /**
      *  Clone this Port
      *
@@ -61,10 +61,10 @@ public class Port implements Cloneable {
     public Object clone() {
         try {
             Port newObj = (Port) super.clone();
-	    newObj.setName(_name);
-	    newObj.setResource( (Resource) _resource.clone() );
-	    newObj.setLink( (Link) _link.clone() );
-	    newObj.setMemSize(_memSize);
+            newObj.setName(_name);
+            newObj.setResource( (Resource) _resource.clone() );
+            newObj.setLink( (Link) _link.clone() );
+            newObj.setMemSize(_memSize);
             return( newObj );
         }
         catch( CloneNotSupportedException e ) {
@@ -72,7 +72,7 @@ public class Port implements Cloneable {
         }
         return null;
     }
-
+    
     /**
      *  Get the name of this port.
      *
@@ -81,7 +81,7 @@ public class Port implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this port.
      *
@@ -90,7 +90,7 @@ public class Port implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the resource of this port.
      *
@@ -99,7 +99,7 @@ public class Port implements Cloneable {
     public Resource getResource() {
         return _resource;
     }
-
+    
     /**
      *  Set the resource of this port.
      *
@@ -108,7 +108,7 @@ public class Port implements Cloneable {
     public void setResource(Resource resource) {
         _resource = resource;
     }
-
+    
     /**
      *  Get the link of this port.
      *
@@ -117,7 +117,7 @@ public class Port implements Cloneable {
     public Link getLink() {
         return _link;
     }
-
+    
     /**
      *  Set the link of this port.
      *
@@ -126,7 +126,7 @@ public class Port implements Cloneable {
     public void setLink(Link link) {
         _link = link;
     }
-
+    
     /**
      *  Get the memory size this port can address.
      *
@@ -135,7 +135,7 @@ public class Port implements Cloneable {
     public int getMemSize() {
         return _memSize;
     }
-
+    
     /**
      *  Set the memory size this port can address.
      *
@@ -144,31 +144,31 @@ public class Port implements Cloneable {
     public void setMemSize(int size) {
         _memSize = size;
     }
-
-	/**
+    
+    /**
      *  Get the port conected on the other side of the link
      *
      * @return  port
      */
-	public Port getConnectedPort(){
-		if (_link == null ){
-			return null;
-		}
-
-		Iterator pit = _link.getPortList().iterator();
-		while( pit.hasNext() ) {
-			Port port = (Port) pit.next();
-			// if it is not the current port, it is another one we need
-			if (port.getName() != _name){
-				return port;
-			}
-		}
-
-		// should not reach here
-		return null;
-	}
-
-
+    public Port getConnectedPort(){
+        if (_link == null ){
+            return null;
+        }
+        
+        Iterator pit = _link.getPortList().iterator();
+        while( pit.hasNext() ) {
+            Port port = (Port) pit.next();
+            // if it is not the current port, it is another one we need
+            if (port.getName() != _name){
+                return port;
+            }
+        }
+        
+        // should not reach here
+        return null;
+    }
+    
+    
     /**
      *  Return a description of the port.
      *
@@ -177,30 +177,30 @@ public class Port implements Cloneable {
     public String toString() {
         return "Port: " + _name;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of the Port.
      */
     private String _name = null;
-
-
+    
+    
     /**
      *  The Resource which the Port belongs to.
      */
     private Resource _resource = null;
-
-
+    
+    
     /**
      *  The Link which the Port connects to.
      */
     private Link _link = null;
-
+    
     /**
      *  The size of the memory this port can address.
      */
     private int _memSize = 0;
-
+    
 }

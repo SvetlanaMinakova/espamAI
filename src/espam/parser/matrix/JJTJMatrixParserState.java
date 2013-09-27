@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -24,7 +24,7 @@ package espam.parser.matrix;
  * @version $Id: JJTJMatrixParserState.java,v 1.1 2007/12/07 22:07:01 stefanov Exp $
  */
 class JJTJMatrixParserState {
-
+    
     /**
      * Constructor for the JJTJMatrixParserState object
      */
@@ -34,8 +34,8 @@ class JJTJMatrixParserState {
         sp = 0;
         mk = 0;
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -47,8 +47,8 @@ class JJTJMatrixParserState {
         }
         mk = ((Integer) marks.pop()).intValue();
     }
-
-
+    
+    
     /*
      * A definite node is constructed from a specified number of
      * children.  That number of nodes are popped from the stack and
@@ -72,8 +72,8 @@ class JJTJMatrixParserState {
         pushNode(n);
         node_created = true;
     }
-
-
+    
+    
     /*
      * A conditional node is constructed if its condition is true.  All
      * the nodes that have been pushed since the node was opened are
@@ -105,8 +105,8 @@ class JJTJMatrixParserState {
             node_created = false;
         }
     }
-
-
+    
+    
     /*
      * Returns the number of children on the stack in the current node
      * scope.
@@ -119,8 +119,8 @@ class JJTJMatrixParserState {
     int nodeArity() {
         return sp - mk;
     }
-
-
+    
+    
     /*
      * Determines whether the current node was actually closed and
      * pushed.  This should only be called in the final user action of a
@@ -134,8 +134,8 @@ class JJTJMatrixParserState {
     boolean nodeCreated() {
         return node_created;
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -146,8 +146,8 @@ class JJTJMatrixParserState {
         mk = sp;
         n.jjtOpen();
     }
-
-
+    
+    
     /*
      * Returns the node currently on the top of the stack.
      */
@@ -159,8 +159,8 @@ class JJTJMatrixParserState {
     Node peekNode() {
         return (Node) nodes.peek();
     }
-
-
+    
+    
     /*
      * Returns the node on the top of the stack, and remove it from the
      * stack.
@@ -176,8 +176,8 @@ class JJTJMatrixParserState {
         }
         return (Node) nodes.pop();
     }
-
-
+    
+    
     /*
      * Pushes a node on to the stack.
      */
@@ -190,8 +190,8 @@ class JJTJMatrixParserState {
         nodes.push(n);
         ++sp;
     }
-
-
+    
+    
     /*
      * Call this to reinitialize the node stack.  It is called
      * automatically by the parser's ReInit() method.
@@ -205,8 +205,8 @@ class JJTJMatrixParserState {
         sp = 0;
         mk = 0;
     }
-
-
+    
+    
     /*
      * Returns the root node of the AST.  It only makes sense to call
      * this after a successful parse.
@@ -219,14 +219,14 @@ class JJTJMatrixParserState {
     Node rootNode() {
         return (Node) nodes.elementAt(0);
     }
-
-
+    
+    
     private java.util.Stack marks;
     // number of nodes on stack
     private int mk;
     // current mark
     private boolean node_created;
     private java.util.Stack nodes;
-
+    
     private int sp;
 }

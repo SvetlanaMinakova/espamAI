@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.visitor.xps.platform;
 
@@ -45,712 +30,712 @@ import espam.visitor.PlatformVisitor;
  */
 
 public class CrossbarVisitor extends PlatformVisitor {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
-
+    
     /**
      *  Constructor for the MhsVisitor object
      */
     public CrossbarVisitor()
         throws FileNotFoundException,EspamException {
-
-    	_ui = UserInterface.getInstance();
-
+        
+        _ui = UserInterface.getInstance();
+        
         if (_ui.getOutputFileName() == "") {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getFileName();
+            _codeDir = _ui.getBasePath() + "/" + _ui.getFileName();
         } else {
-	    _codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName();
+            _codeDir = _ui.getBasePath() + "/" + _ui.getOutputFileName();
         }
-
+        
         //      create the subdirectories
-    	_coreName = "cb_wrapper";
-    	_moduleName = _coreName + "_v1_00_a";
-    	_moduleDir = "pcores/" + _moduleName;
-    	_paoFile = _coreName + "_v2_1_0" + ".pao";
-    	_mpdFile = _coreName + "_v2_1_0" + ".mpd";
-    	_hdlFile = _coreName + ".vhd";
-
-    	_codeDir = _codeDir + "/" + _moduleDir;
-    	File dir = new File(_codeDir);
-    	dir.mkdirs();
-    	dir = new File(_codeDir + "/" + _dataDir);
-    	dir.mkdirs();
-    	dir = new File(_codeDir + "/" + _devlDir);
-    	dir.mkdirs();
-    	dir = new File(_codeDir + "/" + _hdlDir);
-    	dir.mkdirs();
-
+        _coreName = "cb_wrapper";
+        _moduleName = _coreName + "_v1_00_a";
+        _moduleDir = "pcores/" + _moduleName;
+        _paoFile = _coreName + "_v2_1_0" + ".pao";
+        _mpdFile = _coreName + "_v2_1_0" + ".mpd";
+        _hdlFile = _coreName + ".vhd";
+        
+        _codeDir = _codeDir + "/" + _moduleDir;
+        File dir = new File(_codeDir);
+        dir.mkdirs();
+        dir = new File(_codeDir + "/" + _dataDir);
+        dir.mkdirs();
+        dir = new File(_codeDir + "/" + _devlDir);
+        dir.mkdirs();
+        dir = new File(_codeDir + "/" + _hdlDir);
+        dir.mkdirs();
+        
     }
-
+    
     /**
      *  Print a Mhs file in the correct format for MHS.
      *
      * @param  x The platform that needs to be rendered.
      */
     public void visitComponent(Platform x) {
-    	try{
-    	    Iterator i;
+        try{
+            Iterator i;
             i = x.getResourceList().iterator();
             while( i.hasNext() ) {
-
+                
                 Resource resource = (Resource) i.next();
                 if (resource instanceof Crossbar) {
-
-                	Crossbar crossbar = (Crossbar) resource;
-                	_nmbrCBPorts = crossbar.getPortList().size();
-			_portList    = crossbar.getPortList();
+                    
+                    Crossbar crossbar = (Crossbar) resource;
+                    _nmbrCBPorts = crossbar.getPortList().size();
+                    _portList    = crossbar.getPortList();
                 }
             }
-
+            
             if (_nmbrCBPorts > 0) {
-		    _writeHdlCBSwitchFile();
-		    _writeHdlCBControlFile();
-                    _writeHdlPackageFile();
-        	    _writeHdlWrapperFile();
-        	    _writeMpdFile();
-        	    _writePaoFile();
+                _writeHdlCBSwitchFile();
+                _writeHdlCBControlFile();
+                _writeHdlPackageFile();
+                _writeHdlWrapperFile();
+                _writeMpdFile();
+                _writePaoFile();
             }
-
-    	} catch (Exception e) {
-                System.out.println(" In Crossbar Visitor: exception " +
-    			       "occured: " + e.getMessage());
-                e.printStackTrace();
-    	}
-
+            
+        } catch (Exception e) {
+            System.out.println(" In Crossbar Visitor: exception " +
+                               "occured: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                    ///
-
+    
     /**
      *  write the package .vhd file
      */
     private void _writeHdlPackageFile() throws FileNotFoundException {
-
-	PrintStream hdlPS = _openFile(_hdlDir + "/" + "package_crossbar.vhd");
-
-	hdlPS.println("-- File automatically generated by ESPAM");
-	hdlPS.println("");
-	hdlPS.println("");
-
-	hdlPS.println("LIBRARY ieee;");
-	hdlPS.println("USE ieee.std_logic_1164.ALL;");
-	hdlPS.println("");
-	hdlPS.println("PACKAGE typedef IS");
-	hdlPS.println("");
-	hdlPS.println("   CONSTANT ports_num      : INTEGER := " + (_nmbrCBPorts+1) + ";  -- ports_num should not be a power of 2!!!");
-	hdlPS.println("   CONSTANT ports_num_log2 : INTEGER := " + _log2(_nmbrCBPorts+1) + ";");
-	hdlPS.println("   CONSTANT data_bits      : INTEGER := 32;");
-	hdlPS.println("");
-	hdlPS.println("   TYPE t_data IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (data_bits-1 DOWNTO 0);");
-	hdlPS.println("   TYPE t_ctrl IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (ports_num_log2-1 DOWNTO 0);");
-	hdlPS.println("   TYPE t_fifo_sel IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (7 DOWNTO 0);");
-	hdlPS.println("   TYPE t_ch_size IS ARRAY (0 TO 127) OF NATURAL RANGE 1 TO 32; -- each number represents the address width of a channel");
+        
+        PrintStream hdlPS = _openFile(_hdlDir + "/" + "package_crossbar.vhd");
+        
+        hdlPS.println("-- File automatically generated by ESPAM");
         hdlPS.println("");
-	hdlPS.println("END typedef;");
+        hdlPS.println("");
+        
+        hdlPS.println("LIBRARY ieee;");
+        hdlPS.println("USE ieee.std_logic_1164.ALL;");
+        hdlPS.println("");
+        hdlPS.println("PACKAGE typedef IS");
+        hdlPS.println("");
+        hdlPS.println("   CONSTANT ports_num      : INTEGER := " + (_nmbrCBPorts+1) + ";  -- ports_num should not be a power of 2!!!");
+        hdlPS.println("   CONSTANT ports_num_log2 : INTEGER := " + _log2(_nmbrCBPorts+1) + ";");
+        hdlPS.println("   CONSTANT data_bits      : INTEGER := 32;");
+        hdlPS.println("");
+        hdlPS.println("   TYPE t_data IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (data_bits-1 DOWNTO 0);");
+        hdlPS.println("   TYPE t_ctrl IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (ports_num_log2-1 DOWNTO 0);");
+        hdlPS.println("   TYPE t_fifo_sel IS ARRAY (0 TO ports_num-1) OF STD_LOGIC_VECTOR (7 DOWNTO 0);");
+        hdlPS.println("   TYPE t_ch_size IS ARRAY (0 TO 127) OF NATURAL RANGE 1 TO 32; -- each number represents the address width of a channel");
+        hdlPS.println("");
+        hdlPS.println("END typedef;");
     }
-
+    
     /**
      *  write .vhd file
      */
     private void _writeHdlWrapperFile() throws FileNotFoundException {
-
-	PrintStream hdlPS = _openFile(_hdlDir + "/" + _hdlFile);
-
-	hdlPS.println("-- File automatically generated by ESPAM");
-	hdlPS.println("");
-	hdlPS.println("");
-
-	hdlPS.println("LIBRARY ieee;");
-	hdlPS.println("USE ieee.std_logic_1164.ALL;");
-	hdlPS.println("");
-	hdlPS.println("USE work.typedef.all;");
-	hdlPS.println("");
-	hdlPS.println("ENTITY " + _coreName + " IS");
-
+        
+        PrintStream hdlPS = _openFile(_hdlDir + "/" + _hdlFile);
+        
+        hdlPS.println("-- File automatically generated by ESPAM");
+        hdlPS.println("");
+        hdlPS.println("");
+        
+        hdlPS.println("LIBRARY ieee;");
+        hdlPS.println("USE ieee.std_logic_1164.ALL;");
+        hdlPS.println("");
+        hdlPS.println("USE work.typedef.all;");
+        hdlPS.println("");
+        hdlPS.println("ENTITY " + _coreName + " IS");
+        
         hdlPS.println("");
         hdlPS.println("  GENERIC (");
         hdlPS.println("     C_EXT_RESET_HIGH   : INTEGER  := 1");
         hdlPS.println("  );");
-	hdlPS.println("");
-
-	hdlPS.println("  PORT (");
-	hdlPS.println("    RST : IN STD_LOGIC;");
-	hdlPS.println("    CLK : IN STD_LOGIC;");
-
-	_printCBPorts( hdlPS );
-
-	hdlPS.println("END " + _coreName + ";");
-	hdlPS.println("");
-
-	hdlPS.println("ARCHITECTURE imp OF " + _coreName + " IS");
-	hdlPS.println("");
-	hdlPS.println("    -- component declarations");
-	hdlPS.println("    COMPONENT crossbar_switch IS");
-	hdlPS.println("      PORT (");
-	hdlPS.println("        P_rd_data_i   : IN  t_data;");
-	hdlPS.println("        P_empty_i     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("        P_rd_en_i     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("        P_rd_data_o   : OUT t_data;");
-	hdlPS.println("        P_empty_o     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("        P_rd_en_o     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("        C_i           : IN t_ctrl;");
-	hdlPS.println("        C_o           : IN t_ctrl");
-	hdlPS.println("      );");
-	hdlPS.println("    END COMPONENT;");
-	hdlPS.println("");
-
-	hdlPS.println("    COMPONENT crossbar_control IS");
-	hdlPS.println("      PORT (");
-	hdlPS.println("        RST         : IN  STD_LOGIC;");
-	hdlPS.println("        CLK         : IN  STD_LOGIC;");
-	hdlPS.println("");
-	hdlPS.println("        F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("        P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("        P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("        P_request_i : IN t_data;");
-	hdlPS.println("");
-	hdlPS.println("        F_select_o  : OUT t_fifo_sel;");
-	hdlPS.println("");
-	hdlPS.println("        C_i         : OUT t_ctrl;");
-	hdlPS.println("        C_o         : OUT t_ctrl");
-	hdlPS.println("      );");
-	hdlPS.println("    END COMPONENT;");
-	hdlPS.println("");
-
-	hdlPS.println("    -- signal declarations");
-	hdlPS.println("    SIGNAL sl_P_rd_en_i   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    SIGNAL sl_P_rd_data_i : t_data;");
-	hdlPS.println("    SIGNAL sl_P_empty_i   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("    SIGNAL sl_P_rd_en_o   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    SIGNAL sl_P_empty_o   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    SIGNAL sl_P_rd_data_o : t_data;");
-	hdlPS.println("");
-	hdlPS.println("    SIGNAL sl_P_wr_req_i  : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    SIGNAL sl_P_req_ackn_o: STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    SIGNAL sl_P_request_i : t_data;");
-	hdlPS.println("    SIGNAL sl_F_select_o  : t_fifo_sel;");
-	hdlPS.println("");
-	hdlPS.println("    SIGNAL sl_C_i         : t_ctrl;");
-	hdlPS.println("    SIGNAL sl_C_o         : t_ctrl;");
-	hdlPS.println("");
-	hdlPS.println("    SIGNAL sl_RST        : STD_LOGIC;");
-	hdlPS.println("");
-
-	hdlPS.println("BEGIN  -- architecture imp");
-	hdlPS.println("");
-
-	_printSignalAssignments( hdlPS );
-
-	hdlPS.println("");
+        hdlPS.println("");
+        
+        hdlPS.println("  PORT (");
+        hdlPS.println("    RST : IN STD_LOGIC;");
+        hdlPS.println("    CLK : IN STD_LOGIC;");
+        
+        _printCBPorts( hdlPS );
+        
+        hdlPS.println("END " + _coreName + ";");
+        hdlPS.println("");
+        
+        hdlPS.println("ARCHITECTURE imp OF " + _coreName + " IS");
+        hdlPS.println("");
+        hdlPS.println("    -- component declarations");
+        hdlPS.println("    COMPONENT crossbar_switch IS");
+        hdlPS.println("      PORT (");
+        hdlPS.println("        P_rd_data_i   : IN  t_data;");
+        hdlPS.println("        P_empty_i     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("        P_rd_en_i     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("        P_rd_data_o   : OUT t_data;");
+        hdlPS.println("        P_empty_o     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("        P_rd_en_o     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("        C_i           : IN t_ctrl;");
+        hdlPS.println("        C_o           : IN t_ctrl");
+        hdlPS.println("      );");
+        hdlPS.println("    END COMPONENT;");
+        hdlPS.println("");
+        
+        hdlPS.println("    COMPONENT crossbar_control IS");
+        hdlPS.println("      PORT (");
+        hdlPS.println("        RST         : IN  STD_LOGIC;");
+        hdlPS.println("        CLK         : IN  STD_LOGIC;");
+        hdlPS.println("");
+        hdlPS.println("        F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("        P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("        P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("        P_request_i : IN t_data;");
+        hdlPS.println("");
+        hdlPS.println("        F_select_o  : OUT t_fifo_sel;");
+        hdlPS.println("");
+        hdlPS.println("        C_i         : OUT t_ctrl;");
+        hdlPS.println("        C_o         : OUT t_ctrl");
+        hdlPS.println("      );");
+        hdlPS.println("    END COMPONENT;");
+        hdlPS.println("");
+        
+        hdlPS.println("    -- signal declarations");
+        hdlPS.println("    SIGNAL sl_P_rd_en_i   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    SIGNAL sl_P_rd_data_i : t_data;");
+        hdlPS.println("    SIGNAL sl_P_empty_i   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("    SIGNAL sl_P_rd_en_o   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    SIGNAL sl_P_empty_o   : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    SIGNAL sl_P_rd_data_o : t_data;");
+        hdlPS.println("");
+        hdlPS.println("    SIGNAL sl_P_wr_req_i  : STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    SIGNAL sl_P_req_ackn_o: STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    SIGNAL sl_P_request_i : t_data;");
+        hdlPS.println("    SIGNAL sl_F_select_o  : t_fifo_sel;");
+        hdlPS.println("");
+        hdlPS.println("    SIGNAL sl_C_i         : t_ctrl;");
+        hdlPS.println("    SIGNAL sl_C_o         : t_ctrl;");
+        hdlPS.println("");
+        hdlPS.println("    SIGNAL sl_RST        : STD_LOGIC;");
+        hdlPS.println("");
+        
+        hdlPS.println("BEGIN  -- architecture imp");
+        hdlPS.println("");
+        
+        _printSignalAssignments( hdlPS );
+        
+        hdlPS.println("");
         hdlPS.println("    CROSSBAR_SWITCH1: crossbar_switch");
-	hdlPS.println("      PORT MAP(");
-	hdlPS.println("        P_rd_data_i   => sl_P_rd_data_i, -- IN");
-	hdlPS.println("        P_empty_i     => sl_P_empty_i,   -- IN");
-	hdlPS.println("        P_rd_en_i     => sl_P_rd_en_i,   -- OUT");
-	hdlPS.println("");
-	hdlPS.println("        P_rd_data_o   => sl_P_rd_data_o, -- OUT");
-	hdlPS.println("        P_empty_o     => sl_P_empty_o,   -- OUT");
-	hdlPS.println("        P_rd_en_o     => sl_P_rd_en_o,   -- IN");
-	hdlPS.println("");
-	hdlPS.println("        C_i           => sl_C_i,");
-	hdlPS.println("        C_o           => sl_C_o");
-	hdlPS.println("      );");
-
-	hdlPS.println("");
- 	hdlPS.println("    SYS_RST_PROC: process (RST) is");
- 	hdlPS.println("       variable sys_rst_input : std_logic;");
- 	hdlPS.println("    begin");
- 	hdlPS.println("      if C_EXT_RESET_HIGH = 0 then");
- 	hdlPS.println("         sys_rst_input := not RST;");
- 	hdlPS.println("      else");
- 	hdlPS.println("         sys_rst_input := RST;");
- 	hdlPS.println("      end if;");
- 	hdlPS.println("      sl_RST <= sys_rst_input; -- Active HIGH reset for the crossbar_control component");
- 	hdlPS.println("    end process SYS_RST_PROC;");
-	hdlPS.println("");
-
-	hdlPS.println("    CROSSBAR_CTRL: crossbar_control");
-	hdlPS.println("      PORT MAP(");
-	hdlPS.println("        RST         => sl_RST,");
-	hdlPS.println("        CLK         => CLK,");
-	hdlPS.println("");
-	hdlPS.println("        F_empty_i   => sl_P_empty_i,");
-	hdlPS.println("        P_wr_req_i  => sl_P_wr_req_i,");
-	hdlPS.println("        P_request_i => sl_P_request_i,");
-	hdlPS.println("        P_req_ackn_o => sl_P_req_ackn_o,");
-	hdlPS.println("");
-	hdlPS.println("        F_select_o   => sl_F_select_o,");
-	hdlPS.println("");
-	hdlPS.println("        C_i         => sl_C_i,");
-	hdlPS.println("        C_o         => sl_C_o");
-	hdlPS.println("      );");
-	hdlPS.println("");
-
-	hdlPS.println("END ARCHITECTURE imp;");
+        hdlPS.println("      PORT MAP(");
+        hdlPS.println("        P_rd_data_i   => sl_P_rd_data_i, -- IN");
+        hdlPS.println("        P_empty_i     => sl_P_empty_i,   -- IN");
+        hdlPS.println("        P_rd_en_i     => sl_P_rd_en_i,   -- OUT");
+        hdlPS.println("");
+        hdlPS.println("        P_rd_data_o   => sl_P_rd_data_o, -- OUT");
+        hdlPS.println("        P_empty_o     => sl_P_empty_o,   -- OUT");
+        hdlPS.println("        P_rd_en_o     => sl_P_rd_en_o,   -- IN");
+        hdlPS.println("");
+        hdlPS.println("        C_i           => sl_C_i,");
+        hdlPS.println("        C_o           => sl_C_o");
+        hdlPS.println("      );");
+        
+        hdlPS.println("");
+        hdlPS.println("    SYS_RST_PROC: process (RST) is");
+        hdlPS.println("       variable sys_rst_input : std_logic;");
+        hdlPS.println("    begin");
+        hdlPS.println("      if C_EXT_RESET_HIGH = 0 then");
+        hdlPS.println("         sys_rst_input := not RST;");
+        hdlPS.println("      else");
+        hdlPS.println("         sys_rst_input := RST;");
+        hdlPS.println("      end if;");
+        hdlPS.println("      sl_RST <= sys_rst_input; -- Active HIGH reset for the crossbar_control component");
+        hdlPS.println("    end process SYS_RST_PROC;");
+        hdlPS.println("");
+        
+        hdlPS.println("    CROSSBAR_CTRL: crossbar_control");
+        hdlPS.println("      PORT MAP(");
+        hdlPS.println("        RST         => sl_RST,");
+        hdlPS.println("        CLK         => CLK,");
+        hdlPS.println("");
+        hdlPS.println("        F_empty_i   => sl_P_empty_i,");
+        hdlPS.println("        P_wr_req_i  => sl_P_wr_req_i,");
+        hdlPS.println("        P_request_i => sl_P_request_i,");
+        hdlPS.println("        P_req_ackn_o => sl_P_req_ackn_o,");
+        hdlPS.println("");
+        hdlPS.println("        F_select_o   => sl_F_select_o,");
+        hdlPS.println("");
+        hdlPS.println("        C_i         => sl_C_i,");
+        hdlPS.println("        C_o         => sl_C_o");
+        hdlPS.println("      );");
+        hdlPS.println("");
+        
+        hdlPS.println("END ARCHITECTURE imp;");
     }
-
+    
     /**
      *  write the crossbarswitch .vhd file
      */
     private void _writeHdlCBSwitchFile() throws FileNotFoundException {
-
-	PrintStream hdlPS = _openFile(_hdlDir + "/" + "crossbar_switch.vhd");
-
-	hdlPS.println("-- File automatically generated by ESPAM");
-	hdlPS.println("");
-	hdlPS.println("");
-
-	hdlPS.println("LIBRARY ieee;");
-	hdlPS.println("USE ieee.std_logic_1164.all;");
-	hdlPS.println("USE ieee.std_logic_unsigned.all;");
-	hdlPS.println("");
-	hdlPS.println("USE work.typedef.all;");
-	hdlPS.println("");
-	hdlPS.println("ENTITY crossbar_switch IS");
-
-	hdlPS.println("  PORT (");
-	hdlPS.println("    P_rd_data_i   : IN  t_data;");
-	hdlPS.println("    P_empty_i     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    P_rd_en_i     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("    P_rd_data_o   : OUT t_data;");
-	hdlPS.println("    P_empty_o     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    P_rd_en_o     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("    C_i           : IN t_ctrl;");
-	hdlPS.println("    C_o           : IN t_ctrl");
-	hdlPS.println("  );");
-	hdlPS.println("END crossbar_switch;");
-	hdlPS.println("");
-
-	hdlPS.println("ARCHITECTURE imp OF crossbar_switch IS");
-	hdlPS.println("");
-	hdlPS.println("  -- signal declarations");
-	hdlPS.println("  TYPE t_data_tmp IS ARRAY (0 TO ports_num) OF STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
-	hdlPS.println("  SIGNAL sl_P_rd_data_i : t_data_tmp;");
-	hdlPS.println("");
-	hdlPS.println("  SIGNAL sl_P_empty_i   : STD_LOGIC_VECTOR(ports_num DOWNTO 0);");
-	hdlPS.println("  SIGNAL sl_P_rd_en_o   : STD_LOGIC_VECTOR(ports_num DOWNTO 0);");
-	hdlPS.println("");
-	hdlPS.println("BEGIN  -- architecture imp");
-	hdlPS.println("");
-	hdlPS.println("  sl_P_empty_i(0) <= '1';");
-	hdlPS.println("  sl_P_empty_i(ports_num DOWNTO 1) <= P_empty_i;");
-	hdlPS.println("");
-	hdlPS.println("  sl_P_rd_data_i(0) <= (OTHERS => '0');");
-	hdlPS.println("");
-	hdlPS.println("  L1 : FOR i IN 0 TO ports_num-1 GENERATE");
-	hdlPS.println("       sl_P_rd_data_i(i+1) <= P_rd_data_i(i);");
-	hdlPS.println("  END GENERATE;");
-	hdlPS.println("");
-	hdlPS.println("  sl_P_rd_en_o(0) <= '0';");
-	hdlPS.println("  sl_P_rd_en_o(ports_num DOWNTO 1) <= P_rd_en_o;");
-	hdlPS.println("");
-	hdlPS.println("  L2 : FOR I IN 0 TO ports_num-1 GENERATE");
-	hdlPS.println("       P_rd_data_o(I) <= sl_P_rd_data_i( CONV_INTEGER( C_o(I) ) );");
-	hdlPS.println("       P_empty_o(I)   <= sl_P_empty_i(   CONV_INTEGER( C_o(I) ) );");
-	hdlPS.println("       P_rd_en_i(I)   <= sl_P_rd_en_o(   CONV_INTEGER( C_i(I) ) );");
-	hdlPS.println("  END GENERATE;");
-	hdlPS.println("");
-	hdlPS.println("END ARCHITECTURE imp;");
-   }
-
-        /**
+        
+        PrintStream hdlPS = _openFile(_hdlDir + "/" + "crossbar_switch.vhd");
+        
+        hdlPS.println("-- File automatically generated by ESPAM");
+        hdlPS.println("");
+        hdlPS.println("");
+        
+        hdlPS.println("LIBRARY ieee;");
+        hdlPS.println("USE ieee.std_logic_1164.all;");
+        hdlPS.println("USE ieee.std_logic_unsigned.all;");
+        hdlPS.println("");
+        hdlPS.println("USE work.typedef.all;");
+        hdlPS.println("");
+        hdlPS.println("ENTITY crossbar_switch IS");
+        
+        hdlPS.println("  PORT (");
+        hdlPS.println("    P_rd_data_i   : IN  t_data;");
+        hdlPS.println("    P_empty_i     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    P_rd_en_i     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("    P_rd_data_o   : OUT t_data;");
+        hdlPS.println("    P_empty_o     : OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    P_rd_en_o     : IN  STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("    C_i           : IN t_ctrl;");
+        hdlPS.println("    C_o           : IN t_ctrl");
+        hdlPS.println("  );");
+        hdlPS.println("END crossbar_switch;");
+        hdlPS.println("");
+        
+        hdlPS.println("ARCHITECTURE imp OF crossbar_switch IS");
+        hdlPS.println("");
+        hdlPS.println("  -- signal declarations");
+        hdlPS.println("  TYPE t_data_tmp IS ARRAY (0 TO ports_num) OF STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
+        hdlPS.println("  SIGNAL sl_P_rd_data_i : t_data_tmp;");
+        hdlPS.println("");
+        hdlPS.println("  SIGNAL sl_P_empty_i   : STD_LOGIC_VECTOR(ports_num DOWNTO 0);");
+        hdlPS.println("  SIGNAL sl_P_rd_en_o   : STD_LOGIC_VECTOR(ports_num DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("BEGIN  -- architecture imp");
+        hdlPS.println("");
+        hdlPS.println("  sl_P_empty_i(0) <= '1';");
+        hdlPS.println("  sl_P_empty_i(ports_num DOWNTO 1) <= P_empty_i;");
+        hdlPS.println("");
+        hdlPS.println("  sl_P_rd_data_i(0) <= (OTHERS => '0');");
+        hdlPS.println("");
+        hdlPS.println("  L1 : FOR i IN 0 TO ports_num-1 GENERATE");
+        hdlPS.println("       sl_P_rd_data_i(i+1) <= P_rd_data_i(i);");
+        hdlPS.println("  END GENERATE;");
+        hdlPS.println("");
+        hdlPS.println("  sl_P_rd_en_o(0) <= '0';");
+        hdlPS.println("  sl_P_rd_en_o(ports_num DOWNTO 1) <= P_rd_en_o;");
+        hdlPS.println("");
+        hdlPS.println("  L2 : FOR I IN 0 TO ports_num-1 GENERATE");
+        hdlPS.println("       P_rd_data_o(I) <= sl_P_rd_data_i( CONV_INTEGER( C_o(I) ) );");
+        hdlPS.println("       P_empty_o(I)   <= sl_P_empty_i(   CONV_INTEGER( C_o(I) ) );");
+        hdlPS.println("       P_rd_en_i(I)   <= sl_P_rd_en_o(   CONV_INTEGER( C_i(I) ) );");
+        hdlPS.println("  END GENERATE;");
+        hdlPS.println("");
+        hdlPS.println("END ARCHITECTURE imp;");
+    }
+    
+    /**
      *  write the crossbar control .vhd file
      */
     private void _writeHdlCBControlFile() throws FileNotFoundException {
-
-	PrintStream hdlPS = _openFile(_hdlDir + "/" + "crossbar_control.vhd");
-
-	hdlPS.println("-- File automatically generated by ESPAM");
-	hdlPS.println("");
-	hdlPS.println("");
-
-	hdlPS.println("LIBRARY ieee;");
-	hdlPS.println("USE ieee.std_logic_1164.all;");
-	hdlPS.println("USE ieee.std_logic_arith.all;");
-	hdlPS.println("USE ieee.std_logic_unsigned.all;");
-	hdlPS.println("");
-	hdlPS.println("USE work.typedef.all;");
-	hdlPS.println("");
-
-	hdlPS.println("ENTITY crossbar_control IS");
-	hdlPS.println("  PORT (");
-	hdlPS.println("    RST         : IN  STD_LOGIC;");
-	hdlPS.println("    CLK         : IN  STD_LOGIC;");
-	hdlPS.println("");
-	hdlPS.println("    F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
-	hdlPS.println("    P_request_i : IN t_data;");
-	hdlPS.println("");
-	hdlPS.println("    F_select_o  : OUT t_fifo_sel;");
-	hdlPS.println("");
-	hdlPS.println("    C_i         : OUT t_ctrl;");
-	hdlPS.println("    C_o         : OUT t_ctrl");
-	hdlPS.println("  );");
-	hdlPS.println("END crossbar_control;");
-	hdlPS.println("");
-	hdlPS.println("-- P_request [ports_num][31 downto 0]");
-	hdlPS.println("-- -------------------------------------------------");
-	hdlPS.println("-- |    31    |  30 downto 16   |    15 downto 0   |");
-	hdlPS.println("-- -------------------------------------------------");
-	hdlPS.println("-- | req. bit |read from port # | read from fifo # |");
-	hdlPS.println("-- -------------------------------------------------");
-	hdlPS.println("");
-
-	hdlPS.println("ARCHITECTURE imp OF crossbar_control IS");
-	hdlPS.println("");
-	hdlPS.println("  -- signal declarations");
-	hdlPS.println("  TYPE b_req_accpt IS ARRAY (ports_num-1 DOWNTO 0) OF BOOLEAN;");
-	hdlPS.println("  SIGNAL req_accepted   : b_req_accpt;");
-	hdlPS.println("");
-	hdlPS.println("  SIGNAL sl_req_regs    : t_data;");
-	hdlPS.println("  SIGNAL sl_req_regs_buf: t_data;");
-	hdlPS.println("  SIGNAL sl_req_granted : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
-	hdlPS.println("  SIGNAL sl_cross_table : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);  --positional;");
-	hdlPS.println("  -- '0' in a position in the cross-table means the current number of port is free for reading");
-	hdlPS.println("  SIGNAL sl_cur_req     : NATURAL RANGE 0 TO ports_num-1;");
-	hdlPS.println("  SIGNAL sl_clear_flag  : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
-	hdlPS.println("  SIGNAL sl_req_delayed : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
-	hdlPS.println("  SIGNAL sl_req_edge_fal: STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
-	hdlPS.println("");
-
-	hdlPS.println("BEGIN  -- architecture imp");
-	hdlPS.println("");
-	hdlPS.println("  WR_REQ : PROCESS(CLK, RST)");
-	hdlPS.println("  BEGIN");
-	hdlPS.println("     IF( RST='1' ) THEN");
-	hdlPS.println("");
-	hdlPS.println("        sl_req_regs   <= (OTHERS => (OTHERS => '0'));");
-	hdlPS.println("");
-	hdlPS.println("     ELSIF rising_edge(CLK) THEN");
-	hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
-	hdlPS.println("");
-	hdlPS.println("           IF( P_wr_req_i(I) = '1' ) THEN");
-	hdlPS.println("              sl_req_regs(I) <= P_request_i(I);");
-	hdlPS.println("           END IF;");
-	hdlPS.println("");
-	hdlPS.println("        END LOOP;");
-	hdlPS.println("     END IF;");
-	hdlPS.println("  END PROCESS;");
-	hdlPS.println("  ----------------------------------------------------");
-	hdlPS.println("  ----------------------------------------------------");
-	hdlPS.println("  PROCESS(CLK)");
-	hdlPS.println("  BEGIN");
-	hdlPS.println("     IF( RST='1' ) THEN");
-	hdlPS.println("");
-	hdlPS.println("        sl_req_delayed  <= (OTHERS => '0');");
-	hdlPS.println("        sl_clear_flag   <= (OTHERS => '0');");
-	hdlPS.println("");
-	hdlPS.println("     ELSIF rising_edge(CLK) THEN");
-	hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
-	hdlPS.println("           ----------------------------------------------------------------------");
-	hdlPS.println("           -- Falling edge detection of the request bit");
-	hdlPS.println("           -- Used to detect a request to clear a connection");
-	hdlPS.println("           ----------------------------------------------------------------------");
-	hdlPS.println("           sl_req_delayed(I)  <= sl_req_regs(I)(31);");
-	hdlPS.println("");
-	hdlPS.println("           IF( sl_req_edge_fal(I) = '1' ) THEN");
-	hdlPS.println("              sl_clear_flag(I) <= '1';");
-	hdlPS.println("           END IF;");
-	hdlPS.println("");
-	hdlPS.println("           ----------------------------------------------------------------------");
-	hdlPS.println("           -- After a connection is cleared, 'req_granted' is set to '0'");
-	hdlPS.println("           -- If the request has not been granted yet, 'req_granted' is '0'");
-	hdlPS.println("           -- 'clear_flag' is set to '0' and a new read request can be accepted");
-	hdlPS.println("           ----------------------------------------------------------------------");
-	hdlPS.println("           IF( sl_req_granted(I) = '0' ) THEN");
-	hdlPS.println("              sl_clear_flag(I) <= '0';");
-	hdlPS.println("           END IF;");
-	hdlPS.println("");
-	hdlPS.println("        END LOOP;");
-	hdlPS.println("     END IF;");
-	hdlPS.println("  END PROCESS;");
-	hdlPS.println("  --------------------------------------------------------------------------");
-	hdlPS.println("  --------------------------------------------------------------------------");
-	hdlPS.println("  GEN1 : FOR I IN 0 TO ports_num-1 GENERATE");
-	hdlPS.println("     Falling_edge_detection:");
-	hdlPS.println("        sl_req_edge_fal(I) <= sl_req_delayed(I) and not(sl_req_regs(I)(31));");
-	hdlPS.println("  END GENERATE;");
-	hdlPS.println("  --------------------------------------------------------------------------");
-	hdlPS.println("  --------------------------------------------------------------------------");
-	hdlPS.println("  REQ_PROC : PROCESS(CLK, RST)");
-	hdlPS.println("  BEGIN");
-	hdlPS.println("     IF( RST='1' ) THEN");
-	hdlPS.println("");
-	hdlPS.println("        sl_req_granted <= (OTHERS => '0');");
-	hdlPS.println("        sl_cur_req     <= 0;");
-	hdlPS.println("        req_accepted   <= (OTHERS => FALSE);");
-	hdlPS.println("        P_req_ackn_o   <= (OTHERS => '0');");
-	hdlPS.println("        ----------------------------------------------");
-	hdlPS.println("        sl_req_regs_buf<= (OTHERS => (OTHERS => '0'));");
-	hdlPS.println("        ----------------------------------------------");
-	hdlPS.println("        F_select_o     <= (OTHERS => (OTHERS => '0'));");
-	hdlPS.println("        C_i            <= (OTHERS => (OTHERS => '0'));");
-	hdlPS.println("        C_o            <= (OTHERS => (OTHERS => '0'));");
-	hdlPS.println("        sl_cross_table <= (OTHERS => '0');");
-	hdlPS.println("");
-	hdlPS.println("     ELSIF rising_edge(CLK) THEN");
-	hdlPS.println("");
-	hdlPS.println("        IF( sl_clear_flag(sl_cur_req) = '1' ) THEN  -- clear a connection");
-	hdlPS.println("");
-	hdlPS.println("           IF( sl_req_granted(sl_cur_req) = '1' ) THEN  -- only if the connection was previously granted");
-	hdlPS.println("              sl_cross_table( CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= '0'; -- the conn. resource is free");
-	hdlPS.println("              C_o(sl_cur_req) <= (OTHERS => '0');");
-	hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
-	hdlPS.println("           END IF;");
-	hdlPS.println("");
-	hdlPS.println("           req_accepted(sl_cur_req) <= FALSE;");
-	hdlPS.println("           sl_req_granted(sl_cur_req) <= '0';");
-//	hdlPS.println("           P_req_ackn_o(sl_cur_req) <= '0';    -- redundant?");
-	hdlPS.println("           F_select_o(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
-	hdlPS.println("");
-	hdlPS.println("           -- Move to the next port");
-	hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
-	hdlPS.println("              sl_cur_req <= 0;");
-	hdlPS.println("           ELSE");
-	hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
-	hdlPS.println("           END IF;");
-	hdlPS.println("");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        -- Accept a request (after that, check 'empty' signal in order to grant the request)");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        ELSIF( sl_req_regs(sl_cur_req)(31) = '1' AND ");
-//	hdlPS.println("           sl_clear_flag(sl_cur_req) = '0'  AND -- redundant because of the IF statement above");
-	hdlPS.println("           sl_req_granted(sl_cur_req) = '0' AND req_accepted(sl_cur_req) = FALSE AND");
-	hdlPS.println("           sl_cross_table( CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1 ) = '0' ) THEN");
-	hdlPS.println("");
-	hdlPS.println("           -- accept the request and check 'empty' signal the next clock cycle");
-	hdlPS.println("           req_accepted(sl_cur_req) <= TRUE;");
-	hdlPS.println("");
-	hdlPS.println("           -- buffer the CB port and FIFO to read from (important for making/clearing the right connection)");
-	hdlPS.println("           -- note: keeping the FIFO address (sl_req_regs(sl_cur_req)(7 DOWNTO 0)) is not needed");
-	hdlPS.println("           sl_req_regs_buf(sl_cur_req) <= sl_req_regs(sl_cur_req);");
-	hdlPS.println("");
-	hdlPS.println("           -- select a FIFO to read from");
-	hdlPS.println("           F_select_o(CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1) <= sl_req_regs(sl_cur_req)(7 DOWNTO 0);");
- 	hdlPS.println("");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        -- Grant a request (make a connection for reading a remote memory)");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        ELSIF( req_accepted(sl_cur_req) = TRUE ) THEN");
- 	hdlPS.println("");
-	hdlPS.println("           -- If the selected FIFO is not empty, make a connection");
-	hdlPS.println("           if( F_empty_i( CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1 ) = '0' ) THEN");
-	hdlPS.println("              -- Source ");
-	hdlPS.println("              C_o(sl_cur_req) <= sl_req_regs_buf(sl_cur_req)(ports_num_log2+15 DOWNTO 16);");
-	hdlPS.println("              -- Destination");
-	hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= CONV_STD_LOGIC_VECTOR(sl_cur_req+1, ports_num_log2);");
-	hdlPS.println("              -- Reserve the connection");
-	hdlPS.println("              sl_cross_table(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= '1';");
-	hdlPS.println("              -- The connection is granted");
-	hdlPS.println("              sl_req_granted(sl_cur_req) <= '1';");
-	hdlPS.println("           ELSE");
-	hdlPS.println("              C_o(sl_cur_req) <= (OTHERS => '0');");
-	hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
-	hdlPS.println("              F_select_o(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
-	hdlPS.println("           END IF;");
- 	hdlPS.println("");
-	hdlPS.println("           -- Acknowledge the request nevertheless if granted or not");
-	hdlPS.println("           P_req_ackn_o(sl_cur_req) <= '1';");
- 	hdlPS.println("");
-	hdlPS.println("           req_accepted(sl_cur_req) <= FALSE;");
- 	hdlPS.println("");
-	hdlPS.println("           -- Move to the next port");
-	hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
-	hdlPS.println("              sl_cur_req <= 0;");
-	hdlPS.println("           ELSE");
-	hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
-	hdlPS.println("           END IF;");
- 	hdlPS.println("");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        -- Move to the next port");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        ELSE");
- 	hdlPS.println("");
-	hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
-	hdlPS.println("              sl_cur_req <= 0;");
-	hdlPS.println("           ELSE");
-	hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
-	hdlPS.println("           END IF;");
- 	hdlPS.println("");
-	hdlPS.println("        END IF;");
- 	hdlPS.println("");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        -- Clear the acknowledge always when a write to a request register occurs");
-	hdlPS.println("        -------------------------------------------------------------------------------------");
-	hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
- 	hdlPS.println("");
-	hdlPS.println("           IF( P_wr_req_i(I) = '1' ) THEN");
-	hdlPS.println("              P_req_ackn_o(I) <= '0';");
-	hdlPS.println("           END IF;");
- 	hdlPS.println("");
-	hdlPS.println("        END LOOP;");
- 	hdlPS.println("");
-	hdlPS.println("     END IF;");
-	hdlPS.println("  END PROCESS;");
- 	hdlPS.println("");
-	hdlPS.println("  ---------------------------------------------------------------------------------------------------");
-	hdlPS.println("  -- Request acknowledge (P_req_ackn_o)");
-	hdlPS.println("  ---------------------------------------------------------------------------------------------------");
-	hdlPS.println("  -- A read request is acknowledged after the first time the controller serves the request.");
-	hdlPS.println("  -- The acknowledge is not related to whether the request has been granted or not.");
-	hdlPS.println("  -- The acknowledge is important for the requested microprocessor when OS is used.");
-	hdlPS.println("  -- A processor switches to another thread if the the request has been acknowledged but not granted.");
-	hdlPS.println("  ---------------------------------------------------------------------------------------------------");
-	hdlPS.println("  -- Note that a request is acknowledged only after the requested link becomes available");
-	hdlPS.println("  ---------------------------------------------------------------------------------------------------");
-	hdlPS.println("");
-	hdlPS.println("END ARCHITECTURE imp;");
-   }
-
+        
+        PrintStream hdlPS = _openFile(_hdlDir + "/" + "crossbar_control.vhd");
+        
+        hdlPS.println("-- File automatically generated by ESPAM");
+        hdlPS.println("");
+        hdlPS.println("");
+        
+        hdlPS.println("LIBRARY ieee;");
+        hdlPS.println("USE ieee.std_logic_1164.all;");
+        hdlPS.println("USE ieee.std_logic_arith.all;");
+        hdlPS.println("USE ieee.std_logic_unsigned.all;");
+        hdlPS.println("");
+        hdlPS.println("USE work.typedef.all;");
+        hdlPS.println("");
+        
+        hdlPS.println("ENTITY crossbar_control IS");
+        hdlPS.println("  PORT (");
+        hdlPS.println("    RST         : IN  STD_LOGIC;");
+        hdlPS.println("    CLK         : IN  STD_LOGIC;");
+        hdlPS.println("");
+        hdlPS.println("    F_empty_i   : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    P_wr_req_i  : IN STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    P_req_ackn_o: OUT STD_LOGIC_VECTOR(ports_num - 1 DOWNTO 0);");
+        hdlPS.println("    P_request_i : IN t_data;");
+        hdlPS.println("");
+        hdlPS.println("    F_select_o  : OUT t_fifo_sel;");
+        hdlPS.println("");
+        hdlPS.println("    C_i         : OUT t_ctrl;");
+        hdlPS.println("    C_o         : OUT t_ctrl");
+        hdlPS.println("  );");
+        hdlPS.println("END crossbar_control;");
+        hdlPS.println("");
+        hdlPS.println("-- P_request [ports_num][31 downto 0]");
+        hdlPS.println("-- -------------------------------------------------");
+        hdlPS.println("-- |    31    |  30 downto 16   |    15 downto 0   |");
+        hdlPS.println("-- -------------------------------------------------");
+        hdlPS.println("-- | req. bit |read from port # | read from fifo # |");
+        hdlPS.println("-- -------------------------------------------------");
+        hdlPS.println("");
+        
+        hdlPS.println("ARCHITECTURE imp OF crossbar_control IS");
+        hdlPS.println("");
+        hdlPS.println("  -- signal declarations");
+        hdlPS.println("  TYPE b_req_accpt IS ARRAY (ports_num-1 DOWNTO 0) OF BOOLEAN;");
+        hdlPS.println("  SIGNAL req_accepted   : b_req_accpt;");
+        hdlPS.println("");
+        hdlPS.println("  SIGNAL sl_req_regs    : t_data;");
+        hdlPS.println("  SIGNAL sl_req_regs_buf: t_data;");
+        hdlPS.println("  SIGNAL sl_req_granted : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
+        hdlPS.println("  SIGNAL sl_cross_table : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);  --positional;");
+        hdlPS.println("  -- '0' in a position in the cross-table means the current number of port is free for reading");
+        hdlPS.println("  SIGNAL sl_cur_req     : NATURAL RANGE 0 TO ports_num-1;");
+        hdlPS.println("  SIGNAL sl_clear_flag  : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
+        hdlPS.println("  SIGNAL sl_req_delayed : STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
+        hdlPS.println("  SIGNAL sl_req_edge_fal: STD_LOGIC_VECTOR(ports_num-1 DOWNTO 0);");
+        hdlPS.println("");
+        
+        hdlPS.println("BEGIN  -- architecture imp");
+        hdlPS.println("");
+        hdlPS.println("  WR_REQ : PROCESS(CLK, RST)");
+        hdlPS.println("  BEGIN");
+        hdlPS.println("     IF( RST='1' ) THEN");
+        hdlPS.println("");
+        hdlPS.println("        sl_req_regs   <= (OTHERS => (OTHERS => '0'));");
+        hdlPS.println("");
+        hdlPS.println("     ELSIF rising_edge(CLK) THEN");
+        hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
+        hdlPS.println("");
+        hdlPS.println("           IF( P_wr_req_i(I) = '1' ) THEN");
+        hdlPS.println("              sl_req_regs(I) <= P_request_i(I);");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        END LOOP;");
+        hdlPS.println("     END IF;");
+        hdlPS.println("  END PROCESS;");
+        hdlPS.println("  ----------------------------------------------------");
+        hdlPS.println("  ----------------------------------------------------");
+        hdlPS.println("  PROCESS(CLK)");
+        hdlPS.println("  BEGIN");
+        hdlPS.println("     IF( RST='1' ) THEN");
+        hdlPS.println("");
+        hdlPS.println("        sl_req_delayed  <= (OTHERS => '0');");
+        hdlPS.println("        sl_clear_flag   <= (OTHERS => '0');");
+        hdlPS.println("");
+        hdlPS.println("     ELSIF rising_edge(CLK) THEN");
+        hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
+        hdlPS.println("           ----------------------------------------------------------------------");
+        hdlPS.println("           -- Falling edge detection of the request bit");
+        hdlPS.println("           -- Used to detect a request to clear a connection");
+        hdlPS.println("           ----------------------------------------------------------------------");
+        hdlPS.println("           sl_req_delayed(I)  <= sl_req_regs(I)(31);");
+        hdlPS.println("");
+        hdlPS.println("           IF( sl_req_edge_fal(I) = '1' ) THEN");
+        hdlPS.println("              sl_clear_flag(I) <= '1';");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("           ----------------------------------------------------------------------");
+        hdlPS.println("           -- After a connection is cleared, 'req_granted' is set to '0'");
+        hdlPS.println("           -- If the request has not been granted yet, 'req_granted' is '0'");
+        hdlPS.println("           -- 'clear_flag' is set to '0' and a new read request can be accepted");
+        hdlPS.println("           ----------------------------------------------------------------------");
+        hdlPS.println("           IF( sl_req_granted(I) = '0' ) THEN");
+        hdlPS.println("              sl_clear_flag(I) <= '0';");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        END LOOP;");
+        hdlPS.println("     END IF;");
+        hdlPS.println("  END PROCESS;");
+        hdlPS.println("  --------------------------------------------------------------------------");
+        hdlPS.println("  --------------------------------------------------------------------------");
+        hdlPS.println("  GEN1 : FOR I IN 0 TO ports_num-1 GENERATE");
+        hdlPS.println("     Falling_edge_detection:");
+        hdlPS.println("        sl_req_edge_fal(I) <= sl_req_delayed(I) and not(sl_req_regs(I)(31));");
+        hdlPS.println("  END GENERATE;");
+        hdlPS.println("  --------------------------------------------------------------------------");
+        hdlPS.println("  --------------------------------------------------------------------------");
+        hdlPS.println("  REQ_PROC : PROCESS(CLK, RST)");
+        hdlPS.println("  BEGIN");
+        hdlPS.println("     IF( RST='1' ) THEN");
+        hdlPS.println("");
+        hdlPS.println("        sl_req_granted <= (OTHERS => '0');");
+        hdlPS.println("        sl_cur_req     <= 0;");
+        hdlPS.println("        req_accepted   <= (OTHERS => FALSE);");
+        hdlPS.println("        P_req_ackn_o   <= (OTHERS => '0');");
+        hdlPS.println("        ----------------------------------------------");
+        hdlPS.println("        sl_req_regs_buf<= (OTHERS => (OTHERS => '0'));");
+        hdlPS.println("        ----------------------------------------------");
+        hdlPS.println("        F_select_o     <= (OTHERS => (OTHERS => '0'));");
+        hdlPS.println("        C_i            <= (OTHERS => (OTHERS => '0'));");
+        hdlPS.println("        C_o            <= (OTHERS => (OTHERS => '0'));");
+        hdlPS.println("        sl_cross_table <= (OTHERS => '0');");
+        hdlPS.println("");
+        hdlPS.println("     ELSIF rising_edge(CLK) THEN");
+        hdlPS.println("");
+        hdlPS.println("        IF( sl_clear_flag(sl_cur_req) = '1' ) THEN  -- clear a connection");
+        hdlPS.println("");
+        hdlPS.println("           IF( sl_req_granted(sl_cur_req) = '1' ) THEN  -- only if the connection was previously granted");
+        hdlPS.println("              sl_cross_table( CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= '0'; -- the conn. resource is free");
+        hdlPS.println("              C_o(sl_cur_req) <= (OTHERS => '0');");
+        hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("           req_accepted(sl_cur_req) <= FALSE;");
+        hdlPS.println("           sl_req_granted(sl_cur_req) <= '0';");
+// hdlPS.println("           P_req_ackn_o(sl_cur_req) <= '0';    -- redundant?");
+        hdlPS.println("           F_select_o(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
+        hdlPS.println("");
+        hdlPS.println("           -- Move to the next port");
+        hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
+        hdlPS.println("              sl_cur_req <= 0;");
+        hdlPS.println("           ELSE");
+        hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        -- Accept a request (after that, check 'empty' signal in order to grant the request)");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        ELSIF( sl_req_regs(sl_cur_req)(31) = '1' AND ");
+// hdlPS.println("           sl_clear_flag(sl_cur_req) = '0'  AND -- redundant because of the IF statement above");
+        hdlPS.println("           sl_req_granted(sl_cur_req) = '0' AND req_accepted(sl_cur_req) = FALSE AND");
+        hdlPS.println("           sl_cross_table( CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1 ) = '0' ) THEN");
+        hdlPS.println("");
+        hdlPS.println("           -- accept the request and check 'empty' signal the next clock cycle");
+        hdlPS.println("           req_accepted(sl_cur_req) <= TRUE;");
+        hdlPS.println("");
+        hdlPS.println("           -- buffer the CB port and FIFO to read from (important for making/clearing the right connection)");
+        hdlPS.println("           -- note: keeping the FIFO address (sl_req_regs(sl_cur_req)(7 DOWNTO 0)) is not needed");
+        hdlPS.println("           sl_req_regs_buf(sl_cur_req) <= sl_req_regs(sl_cur_req);");
+        hdlPS.println("");
+        hdlPS.println("           -- select a FIFO to read from");
+        hdlPS.println("           F_select_o(CONV_INTEGER(sl_req_regs(sl_cur_req)(30 DOWNTO 16))-1) <= sl_req_regs(sl_cur_req)(7 DOWNTO 0);");
+        hdlPS.println("");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        -- Grant a request (make a connection for reading a remote memory)");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        ELSIF( req_accepted(sl_cur_req) = TRUE ) THEN");
+        hdlPS.println("");
+        hdlPS.println("           -- If the selected FIFO is not empty, make a connection");
+        hdlPS.println("           if( F_empty_i( CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1 ) = '0' ) THEN");
+        hdlPS.println("              -- Source ");
+        hdlPS.println("              C_o(sl_cur_req) <= sl_req_regs_buf(sl_cur_req)(ports_num_log2+15 DOWNTO 16);");
+        hdlPS.println("              -- Destination");
+        hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= CONV_STD_LOGIC_VECTOR(sl_cur_req+1, ports_num_log2);");
+        hdlPS.println("              -- Reserve the connection");
+        hdlPS.println("              sl_cross_table(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= '1';");
+        hdlPS.println("              -- The connection is granted");
+        hdlPS.println("              sl_req_granted(sl_cur_req) <= '1';");
+        hdlPS.println("           ELSE");
+        hdlPS.println("              C_o(sl_cur_req) <= (OTHERS => '0');");
+        hdlPS.println("              C_i(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
+        hdlPS.println("              F_select_o(CONV_INTEGER(sl_req_regs_buf(sl_cur_req)(30 DOWNTO 16))-1) <= (OTHERS => '0');");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("           -- Acknowledge the request nevertheless if granted or not");
+        hdlPS.println("           P_req_ackn_o(sl_cur_req) <= '1';");
+        hdlPS.println("");
+        hdlPS.println("           req_accepted(sl_cur_req) <= FALSE;");
+        hdlPS.println("");
+        hdlPS.println("           -- Move to the next port");
+        hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
+        hdlPS.println("              sl_cur_req <= 0;");
+        hdlPS.println("           ELSE");
+        hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        -- Move to the next port");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        ELSE");
+        hdlPS.println("");
+        hdlPS.println("           IF( sl_cur_req = ports_num-1 ) THEN");
+        hdlPS.println("              sl_cur_req <= 0;");
+        hdlPS.println("           ELSE");
+        hdlPS.println("              sl_cur_req <= sl_cur_req + 1;");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        END IF;");
+        hdlPS.println("");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        -- Clear the acknowledge always when a write to a request register occurs");
+        hdlPS.println("        -------------------------------------------------------------------------------------");
+        hdlPS.println("        FOR I IN 0 TO ports_num-1 LOOP");
+        hdlPS.println("");
+        hdlPS.println("           IF( P_wr_req_i(I) = '1' ) THEN");
+        hdlPS.println("              P_req_ackn_o(I) <= '0';");
+        hdlPS.println("           END IF;");
+        hdlPS.println("");
+        hdlPS.println("        END LOOP;");
+        hdlPS.println("");
+        hdlPS.println("     END IF;");
+        hdlPS.println("  END PROCESS;");
+        hdlPS.println("");
+        hdlPS.println("  ---------------------------------------------------------------------------------------------------");
+        hdlPS.println("  -- Request acknowledge (P_req_ackn_o)");
+        hdlPS.println("  ---------------------------------------------------------------------------------------------------");
+        hdlPS.println("  -- A read request is acknowledged after the first time the controller serves the request.");
+        hdlPS.println("  -- The acknowledge is not related to whether the request has been granted or not.");
+        hdlPS.println("  -- The acknowledge is important for the requested microprocessor when OS is used.");
+        hdlPS.println("  -- A processor switches to another thread if the the request has been acknowledged but not granted.");
+        hdlPS.println("  ---------------------------------------------------------------------------------------------------");
+        hdlPS.println("  -- Note that a request is acknowledged only after the requested link becomes available");
+        hdlPS.println("  ---------------------------------------------------------------------------------------------------");
+        hdlPS.println("");
+        hdlPS.println("END ARCHITECTURE imp;");
+    }
+    
     /**
      *  Write .mpd file
      */
     private void _writeMpdFile() throws FileNotFoundException {
-
-	PrintStream mpdPS = _openFile(_dataDir + "/" + _mpdFile);
-
-	mpdPS.println("## File automatically generated by ESPAM");
-	mpdPS.println("");
-	mpdPS.println("");
-
-	mpdPS.println("BEGIN " + _coreName);
-	mpdPS.println("");
-	mpdPS.println("## Peripheral Options");
-	mpdPS.println("OPTION IPTYPE = PERIPHERAL");
-	mpdPS.println("OPTION IMP_NETLIST = TRUE");
-	mpdPS.println("OPTION HDL = VHDL");
-	mpdPS.println("OPTION SIM_MODELS = BEHAVIORAL : STRUCTURAL");
-	mpdPS.println("OPTION USAGE_LEVEL = BASE_USER");
-	mpdPS.println("OPTION CORE_STATE = ACTIVE");
-	mpdPS.println("OPTION IP_GROUP = USER");
-	mpdPS.println("");
-
-	mpdPS.println("## Bus Interfaces");
+        
+        PrintStream mpdPS = _openFile(_dataDir + "/" + _mpdFile);
+        
+        mpdPS.println("## File automatically generated by ESPAM");
+        mpdPS.println("");
+        mpdPS.println("");
+        
+        mpdPS.println("BEGIN " + _coreName);
+        mpdPS.println("");
+        mpdPS.println("## Peripheral Options");
+        mpdPS.println("OPTION IPTYPE = PERIPHERAL");
+        mpdPS.println("OPTION IMP_NETLIST = TRUE");
+        mpdPS.println("OPTION HDL = VHDL");
+        mpdPS.println("OPTION SIM_MODELS = BEHAVIORAL : STRUCTURAL");
+        mpdPS.println("OPTION USAGE_LEVEL = BASE_USER");
+        mpdPS.println("OPTION CORE_STATE = ACTIVE");
+        mpdPS.println("OPTION IP_GROUP = USER");
+        mpdPS.println("");
+        
+        mpdPS.println("## Bus Interfaces");
         int i;
-	for(i=0; i<_nmbrCBPorts; i++) {
-           String name = ((Port)_portList.get(i)).getName();
-	   mpdPS.println("BUS_INTERFACE BUS = " + name + ", BUS_STD = TRANSPARENT, BUS_TYPE = UNDEF");
-	}
-	mpdPS.println("");
-
-	mpdPS.println("## Generics for VHDL or Parameters for Verilog");
+        for(i=0; i<_nmbrCBPorts; i++) {
+            String name = ((Port)_portList.get(i)).getName();
+            mpdPS.println("BUS_INTERFACE BUS = " + name + ", BUS_STD = TRANSPARENT, BUS_TYPE = UNDEF");
+        }
+        mpdPS.println("");
+        
+        mpdPS.println("## Generics for VHDL or Parameters for Verilog");
         mpdPS.println("PARAMETER C_EXT_RESET_HIGH = 1, DT = integer");
-	mpdPS.println("");
-	mpdPS.println("## Ports");
-	mpdPS.println("PORT RST = \"\", DIR = I, SIGIS = RST");
-	mpdPS.println("PORT CLK = \"\", DIR = I, SIGIS = CLK");
-	mpdPS.println("");
-
-	// print the crossbar ports
-	for(i=0; i<_nmbrCBPorts; i++) {
-
-           String name = ((Port)_portList.get(i)).getName();
-
-	   mpdPS.println("PORT VB" + (i+1) + "_READ_IN   = \"VB_READ_IN\",   DIR = O, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_DATA_OUT  = \"VB_DATA_OUT\",  DIR = I, VEC = [31:0], BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_EMPTY_OUT = \"VB_EMPTY_OUT\", DIR = I, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_READ_OUT  = \"VB_READ_OUT\",  DIR = I, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_EMPTY_IN  = \"VB_EMPTY_IN\",  DIR = O, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_PORT_IN   = \"VB_PORT_IN\",   DIR = O, VEC = [31:0], BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_REQ_WR    = \"VB_REQ_WR\",    DIR = I, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_REQ_ACKN  = \"VB_REQ_ACKN\",  DIR = O, BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_REQ_DATA  = \"VB_REQ_DATA\",  DIR = I, VEC = [31:0], BUS = " + name);
-	   mpdPS.println("PORT VB" + (i+1) + "_FIFO_SEL  = \"VB_FIFO_SEL\",  DIR = O, VEC = [7:0], BUS = " + name);
-	   mpdPS.println("");
-	}
-
-	mpdPS.println("END");
+        mpdPS.println("");
+        mpdPS.println("## Ports");
+        mpdPS.println("PORT RST = \"\", DIR = I, SIGIS = RST");
+        mpdPS.println("PORT CLK = \"\", DIR = I, SIGIS = CLK");
+        mpdPS.println("");
+        
+        // print the crossbar ports
+        for(i=0; i<_nmbrCBPorts; i++) {
+            
+            String name = ((Port)_portList.get(i)).getName();
+            
+            mpdPS.println("PORT VB" + (i+1) + "_READ_IN   = \"VB_READ_IN\",   DIR = O, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_DATA_OUT  = \"VB_DATA_OUT\",  DIR = I, VEC = [31:0], BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_EMPTY_OUT = \"VB_EMPTY_OUT\", DIR = I, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_READ_OUT  = \"VB_READ_OUT\",  DIR = I, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_EMPTY_IN  = \"VB_EMPTY_IN\",  DIR = O, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_PORT_IN   = \"VB_PORT_IN\",   DIR = O, VEC = [31:0], BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_REQ_WR    = \"VB_REQ_WR\",    DIR = I, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_REQ_ACKN  = \"VB_REQ_ACKN\",  DIR = O, BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_REQ_DATA  = \"VB_REQ_DATA\",  DIR = I, VEC = [31:0], BUS = " + name);
+            mpdPS.println("PORT VB" + (i+1) + "_FIFO_SEL  = \"VB_FIFO_SEL\",  DIR = O, VEC = [7:0], BUS = " + name);
+            mpdPS.println("");
+        }
+        
+        mpdPS.println("END");
     }
     
     /**
      *  Write .pao file
      */
     private void _writePaoFile() throws FileNotFoundException {
-	PrintStream paoPS = _openFile(_dataDir + "/" + _paoFile);
-	paoPS.println("## File automatically generated by ESPAM");
-	paoPS.println("");
-	paoPS.println("");
-	paoPS.println("lib " + _moduleName + " package_crossbar");
-	paoPS.println("lib " + _moduleName + " crossbar_switch");
-	paoPS.println("lib " + _moduleName + " crossbar_control");
-	paoPS.println("lib " + _moduleName + " " + _coreName);
+        PrintStream paoPS = _openFile(_dataDir + "/" + _paoFile);
+        paoPS.println("## File automatically generated by ESPAM");
+        paoPS.println("");
+        paoPS.println("");
+        paoPS.println("lib " + _moduleName + " package_crossbar");
+        paoPS.println("lib " + _moduleName + " crossbar_switch");
+        paoPS.println("lib " + _moduleName + " crossbar_control");
+        paoPS.println("lib " + _moduleName + " " + _coreName);
     }
-
+    
     /**
      *  Print the crossbar ports in the entity part of the vhdl file
      */
     private void _printCBPorts( PrintStream hdlPS ) {
-
+        
         int i;
-	for(i=1; i<=_nmbrCBPorts; i++) {
-
-           hdlPS.println("    -------------------------------------------------------");
-	   hdlPS.println("    -- Virtual buffer " + i + " interface (read from the buffer) --");
-           hdlPS.println("    -------------------------------------------------------");
-	   hdlPS.println("    VB" + i + "_READ_IN   : OUT STD_LOGIC; -- other processors read from the BUFFER");
-	   hdlPS.println("    VB" + i + "_DATA_OUT  : IN STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
-	   hdlPS.println("    VB" + i + "_EMPTY_OUT : IN STD_LOGIC; -- empty signal corresponding to FIFO(CB_FIFO_SEL)");
-	   hdlPS.println("");
-	   hdlPS.println("    -- Virtual buffer interface (the procesor reads from the crossbar)");
-	   hdlPS.println("    VB" + i + "_READ_OUT  : IN STD_LOGIC; -- read signal (to the crossbar) the processor reads from port");
-	   hdlPS.println("    VB" + i + "_EMPTY_IN  : OUT STD_LOGIC; -- empty signal (from the crossbar)");
-	   hdlPS.println("    VB" + i + "_PORT_IN   : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); -- port for reading data (the processor reads from the crossbar)");
-	   hdlPS.println("");
-	   hdlPS.println("    -- Virtual buffer control interface");
-	   hdlPS.println("    VB" + i + "_REQ_WR    : IN STD_LOGIC;");
-	   hdlPS.println("    VB" + i + "_REQ_ACKN  : OUT STD_LOGIC;");
-	   hdlPS.println("    VB" + i + "_REQ_DATA  : IN STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
-	   if( i == _nmbrCBPorts ) {
-	      hdlPS.println("    VB" + i + "_FIFO_SEL  : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) );");
-	   } else {
-	      hdlPS.println("    VB" + i + "_FIFO_SEL  : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);");
-	   }
-	}
+        for(i=1; i<=_nmbrCBPorts; i++) {
+            
+            hdlPS.println("    -------------------------------------------------------");
+            hdlPS.println("    -- Virtual buffer " + i + " interface (read from the buffer) --");
+            hdlPS.println("    -------------------------------------------------------");
+            hdlPS.println("    VB" + i + "_READ_IN   : OUT STD_LOGIC; -- other processors read from the BUFFER");
+            hdlPS.println("    VB" + i + "_DATA_OUT  : IN STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
+            hdlPS.println("    VB" + i + "_EMPTY_OUT : IN STD_LOGIC; -- empty signal corresponding to FIFO(CB_FIFO_SEL)");
+            hdlPS.println("");
+            hdlPS.println("    -- Virtual buffer interface (the procesor reads from the crossbar)");
+            hdlPS.println("    VB" + i + "_READ_OUT  : IN STD_LOGIC; -- read signal (to the crossbar) the processor reads from port");
+            hdlPS.println("    VB" + i + "_EMPTY_IN  : OUT STD_LOGIC; -- empty signal (from the crossbar)");
+            hdlPS.println("    VB" + i + "_PORT_IN   : OUT STD_LOGIC_VECTOR(31 DOWNTO 0); -- port for reading data (the processor reads from the crossbar)");
+            hdlPS.println("");
+            hdlPS.println("    -- Virtual buffer control interface");
+            hdlPS.println("    VB" + i + "_REQ_WR    : IN STD_LOGIC;");
+            hdlPS.println("    VB" + i + "_REQ_ACKN  : OUT STD_LOGIC;");
+            hdlPS.println("    VB" + i + "_REQ_DATA  : IN STD_LOGIC_VECTOR(data_bits-1 DOWNTO 0);");
+            if( i == _nmbrCBPorts ) {
+                hdlPS.println("    VB" + i + "_FIFO_SEL  : OUT STD_LOGIC_VECTOR(7 DOWNTO 0) );");
+            } else {
+                hdlPS.println("    VB" + i + "_FIFO_SEL  : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);");
+            }
+        }
     }
-
+    
     /**
      *  Print the signal assignments part of the vhdl file
      */
-     private void _printSignalAssignments( PrintStream hdlPS ) {
-
+    private void _printSignalAssignments( PrintStream hdlPS ) {
+        
         int i;
-	for(i=1; i<=_nmbrCBPorts; i++) {
-
-           hdlPS.println("    -----------------------------------------");
-	   hdlPS.println("    -- Signal assignments virtual buffer " + i + " --" );
-           hdlPS.println("    -----------------------------------------");
-	   hdlPS.println("    VB" + i + "_READ_IN   <= sl_P_rd_en_i(" + (i-1) + "); -- other processors read from the BUFFER");
-	   hdlPS.println("    sl_P_rd_data_i(" + (i-1) + ") <= VB" + i + "_DATA_OUT;");
-	   hdlPS.println("    sl_P_empty_i(" + (i-1) + ") <= VB" + i + "_EMPTY_OUT; -- empty signal corresponding to FIFO(CB_FIFO_SEL)");
-           hdlPS.println("");
-	   hdlPS.println("    sl_P_rd_en_o(" + (i-1) + ") <= VB" + i + "_READ_OUT; -- read signal (to the crossbar) the processor reads from port");
-	   hdlPS.println("    VB" + i + "_EMPTY_IN  <= sl_P_empty_o(" + (i-1) + "); -- empty signal (from the crossbar)");
-	   hdlPS.println("    VB" + i + "_PORT_IN   <= sl_P_rd_data_o(" + (i-1) + "); -- port for reading data (the processor reads from the crossbar)");
-	   hdlPS.println("");
-	   hdlPS.println("    sl_P_wr_req_i(" + (i-1) + ") <= VB" + i + "_REQ_WR;");
-	   hdlPS.println("    VB" + i + "_REQ_ACKN <= sl_P_req_ackn_o(" + (i-1) + ");");
-	   hdlPS.println("    sl_P_request_i(" + (i-1) + ") <= VB" + i + "_REQ_DATA;");
-	   hdlPS.println("    VB" + i + "_FIFO_SEL  <= sl_F_select_o(" + (i-1) + ");");
-	}
+        for(i=1; i<=_nmbrCBPorts; i++) {
+            
+            hdlPS.println("    -----------------------------------------");
+            hdlPS.println("    -- Signal assignments virtual buffer " + i + " --" );
+            hdlPS.println("    -----------------------------------------");
+            hdlPS.println("    VB" + i + "_READ_IN   <= sl_P_rd_en_i(" + (i-1) + "); -- other processors read from the BUFFER");
+            hdlPS.println("    sl_P_rd_data_i(" + (i-1) + ") <= VB" + i + "_DATA_OUT;");
+            hdlPS.println("    sl_P_empty_i(" + (i-1) + ") <= VB" + i + "_EMPTY_OUT; -- empty signal corresponding to FIFO(CB_FIFO_SEL)");
+            hdlPS.println("");
+            hdlPS.println("    sl_P_rd_en_o(" + (i-1) + ") <= VB" + i + "_READ_OUT; -- read signal (to the crossbar) the processor reads from port");
+            hdlPS.println("    VB" + i + "_EMPTY_IN  <= sl_P_empty_o(" + (i-1) + "); -- empty signal (from the crossbar)");
+            hdlPS.println("    VB" + i + "_PORT_IN   <= sl_P_rd_data_o(" + (i-1) + "); -- port for reading data (the processor reads from the crossbar)");
+            hdlPS.println("");
+            hdlPS.println("    sl_P_wr_req_i(" + (i-1) + ") <= VB" + i + "_REQ_WR;");
+            hdlPS.println("    VB" + i + "_REQ_ACKN <= sl_P_req_ackn_o(" + (i-1) + ");");
+            hdlPS.println("    sl_P_request_i(" + (i-1) + ") <= VB" + i + "_REQ_DATA;");
+            hdlPS.println("    VB" + i + "_FIFO_SEL  <= sl_F_select_o(" + (i-1) + ");");
+        }
     }
-
-
+    
+    
     private int _log2(int xInt) {
         int i = 0;
-    	while ( Math.pow( 2.0, (double)i ) < xInt ) {
-        	i++;
+        while ( Math.pow( 2.0, (double)i ) < xInt ) {
+            i++;
         }
-    	return i;
+        return i;
     }
-
+    
     /**
      *  Open a file to write
      *  @param fileName the fullpath file name
@@ -758,15 +743,15 @@ public class CrossbarVisitor extends PlatformVisitor {
     private PrintStream _openFile(String fileName) throws FileNotFoundException {
         PrintStream ps = null;
         String fn = "";
-
+        
         System.out.println(" -- OPEN FILE: " + fileName);
-
-	    fn = _codeDir + "/" + fileName;
+        
+        fn = _codeDir + "/" + fileName;
         if (fileName.equals(""))
             ps = new PrintStream(System.out);
         else
             ps = new PrintStream(new FileOutputStream(fn));
-
+        
         return ps;
     }
     
@@ -780,16 +765,16 @@ public class CrossbarVisitor extends PlatformVisitor {
     private static String _dataDir = "data";
     private static String _devlDir = "devl";
     private static String _hdlDir  = "hdl/vhdl";
-		
+    
     //The name of these two files must be the same as version of mhs!!!!
     //file name
     private String _paoFile;
     private String _mpdFile;
     private String _hdlFile;
-
+    
     private int _nmbrCBPorts = 0;
     private Vector _portList = null;
-
+    
     private UserInterface _ui = null;
     private String _codeDir;
     

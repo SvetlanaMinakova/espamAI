@@ -1,18 +1,18 @@
 /*******************************************************************\
-
-The ESPAM Software Tool
-Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  The ESPAM Software Tool
+  Copyright (c) 2004-2012 Leiden University (LERC group at LIACS).
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.datamodel.implementationdata;
 
@@ -24,38 +24,38 @@ import java.util.HashMap;
  * @author Sven van Haastregt
  */
 public class Implementation {
-
+    
     //////////////////////////////////////////////////////////////////////////
     //// Public enums
-
+    
     /**
      * Processor type.
      */
     public enum Type {
         NONE,
-        MICROBLAZE,
-        POWERPC,
-        LAURA
+            MICROBLAZE,
+            POWERPC,
+            LAURA
     }
-
+    
     /**
      * Metric, such as latency or memory footprint.
      */
     public enum Metric {
         NONE,
-        DELAY_AVG,               // Average delay (cycles)
-        DELAY_WORST,             // Worst case delay (cycles)
-        DELAY_BEST,              // Best case delay (cycles)
-        II,                      // Initiation interval (cycles)
-        SLICES,                  // Slice usage
-        MEMORY_DATA,             // Data memory (bytes)
-        MEMORY_CODE              // Code memory (bytes)
+            DELAY_AVG,               // Average delay (cycles)
+            DELAY_WORST,             // Worst case delay (cycles)
+            DELAY_BEST,              // Best case delay (cycles)
+            II,                      // Initiation interval (cycles)
+            SLICES,                  // Slice usage
+            MEMORY_DATA,             // Data memory (bytes)
+            MEMORY_CODE              // Code memory (bytes)
     }
-
-
+    
+    
     //////////////////////////////////////////////////////////////////////////
     //// Public methods
-
+    
     /**
      * Constructs an Implementation with given name and type.
      */
@@ -64,7 +64,7 @@ public class Implementation {
         _type = _string2Type(type);
         _metrics = new HashMap<Metric, Integer>();
     }
-
+    
     /**
      * Constructs an Implementation with given name and type.
      */
@@ -72,7 +72,7 @@ public class Implementation {
         _name = name;
         _type = type;
     }
-
+    
     /**
      * Adds metric,value pair.
      */
@@ -81,35 +81,35 @@ public class Implementation {
         int v = Integer.parseInt(value);
         setMetric(m, v);
     }
-
+    
     /**
      * Returns name of implementation.
      */
     public String getName() {
         return _name;
     }
-
+    
     /**
      * Sets name of implementation.
      */
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      * Returns type of implementation.
      */
     public Type getType() {
         return _type;
     }
-
+    
     /**
      * Sets type of implementation.
      */
     public void setType(Type type) {
         _type = type;
     }
-
+    
     /**
      * Returns value for metric m.
      */
@@ -122,7 +122,7 @@ public class Implementation {
             return _metrics.get(m);
         }
     }
-
+    
     /**
      * Sets value for metric m.
      */
@@ -131,11 +131,11 @@ public class Implementation {
             System.err.println("Warning: multiple values given for component '" + getName() + "', metric " + m + ".");
         }
     }
-
-
+    
+    
     //////////////////////////////////////////////////////////////////////////
     //// Private methods
-
+    
     /**
      * Converts string to Type.
      */
@@ -154,8 +154,8 @@ public class Implementation {
             return Type.NONE;
         }
     }
-
-
+    
+    
     /**
      * Converts string to Metric.
      */
@@ -186,11 +186,11 @@ public class Implementation {
             return Metric.NONE;
         }
     }
-
-
+    
+    
     //////////////////////////////////////////////////////////////////////////
     //// Private variables
-
+    
     private String _name;
     private Type _type;
     private HashMap<Metric, Integer> _metrics;

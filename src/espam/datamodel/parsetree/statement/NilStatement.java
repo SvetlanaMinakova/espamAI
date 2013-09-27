@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree.statement;
 
@@ -26,10 +11,10 @@ package espam.datamodel.parsetree.statement;
  */
 
 public class NilStatement extends Statement {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor that creates a NilStatement with a given name a list of
      *  linear expressions.
@@ -38,8 +23,8 @@ public class NilStatement extends Statement {
     public NilStatement() {
         super("NilStatement");
     }
-
-
+    
+    
     /**
      *  Accept a StatementVisitor
      *
@@ -49,19 +34,19 @@ public class NilStatement extends Statement {
     //public void accept( StatementVisitor x ) throws DgParserException {
     //   x.visitStatement( this );
     //}
-
-
+    
+    
     /**
      *  Clone this NilStatement.
      *
      * @return  a new instance of the NilStatement.
      */
-     public Object clone() {
-
-            NilStatement ns = (NilStatement) super.clone();
-	    return (ns);
-     }
-
+    public Object clone() {
+        
+        NilStatement ns = (NilStatement) super.clone();
+        return (ns);
+    }
+    
     /**
      *  Compare this variable statement object with another object. A
      *  variable is equal to this Object when it is a variable statement
@@ -78,8 +63,8 @@ public class NilStatement extends Statement {
         }
         return false;
     }
-
-
+    
+    
     /**
      *  Set Column number
      *
@@ -88,8 +73,8 @@ public class NilStatement extends Statement {
     public void setColumnNumber(int number) {
         _lineColumn = number;
     }
-
-
+    
+    
     /**
      *  Set line number
      *
@@ -98,8 +83,8 @@ public class NilStatement extends Statement {
     public void setLineNumber(int number) {
         _lineNumber = number;
     }
-
-
+    
+    
     /**
      *  Return a String representation of the Nil statement. The
      *  representation is of the following form <br>
@@ -113,23 +98,23 @@ public class NilStatement extends Statement {
     public String toString() {
         return "nil";
     }
-
-
+    
+    
     /**
      *  The column number where this assign statement is done
      */
     private int _lineColumn;
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                   ////
-
-
+    
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  The line number where this assign statement is done
      */
     private int _lineNumber;
-
+    
 }

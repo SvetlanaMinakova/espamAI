@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.operations.platformgeneration;
 
@@ -60,113 +45,113 @@ import espam.datamodel.EspamException;
  *      $
  */
 public class ElaboratePlatform {
-
-	///////////////////////////////////////////////////////////////////
-	////                         public methods                    ////
-
-	/**
-	*  Return the singleton instance of this class;
-	*
-	* @return  the instance.
-	*/
-	public final static ElaboratePlatform getInstance() {
-		return _instance;
-	}
-
-	/**
-	 *  This class generates an elaborated platform
-	 *
-	 * @param  platform Description of the Parameter
-	 * @exception  EspamException MyException If such and such occurs
-	 */
-	public void elaboratePlatform(Platform platform, Mapping mapping) throws EspamException {
-
-		System.out.println(" -- Elaborate platform ... ");
-
-		try {
-			if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == true &&
-			    ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == true ) {
-			   // ---------------------------------------------------------------------
-			   // One-to-one mapping with MicroBlaze processors only or
-			   // PowerPC processors only or CompaanHWNodes only.
-			   // Connections point-to-point according to the process network topology.
-			   // ---------------------------------------------------------------------
-			   
-			   ElaborateOne2One.getInstance().elaborate( platform, mapping );
-                           System.out.println(" -- Elaboration ONE2ONE");
-
-		     	} else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
-			           ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == true ) {
-			   // ---------------------------------------------------------------------
-			   // Many-to-one mapping with several processing components specified.
-			   // Connections point-to-point according to the process network topology.
-			   // ---------------------------------------------------------------------
-			
-			   ElaborateMany2One.getInstance().elaborate( platform, mapping );
-                           System.out.println(" -- Elaboration MANY2ONE");
-
-			} else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
-			           ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == false ) {
-			   // ---------------------------------------------------------------------
-			   // Many-to-one mapping with several processing components specified.
-			   // Connections through a communication network component.
-			   // ---------------------------------------------------------------------
-			   
-			   // find the type of the communication network component
-
-			   if( _getAxiCrossbar( platform ) ) { 
-			          ElaborateMany2OneCrossbarAXI.getInstance().elaborate( platform, mapping );
-                                  System.out.println(" -- Elaboration MANY2ONE AXI Crossbar");
-
-/*
-
-            Iterator i = platform.getResourceList().iterator();
-	    while( i.hasNext() ) {
-
-		Resource resource = (Resource) i.next();
-                System.out.println( resource );
-            }
-
-*/
-
-
-
-                           } else {
-			          ElaborateMany2OneCrossbar.getInstance().elaborate( platform, mapping );
-                                  System.out.println(" -- Elaboration MANY2ONE Crossbar");
-                           }
-			}
-
-			System.out.println(" -- Elaboration [Done]");
-
-		} catch( Exception e ) {
-			e.printStackTrace();
-			System.out.println("\nElaboratePlatform Exception: " + e.getMessage());
-		}
-	}
-
-
-        private boolean _getAxiCrossbar( Platform platform ) {
-
-            boolean tmp=false;
-            Iterator i = platform.getResourceList().iterator();
-	    while( i.hasNext() ) {
-
-		Resource resource = (Resource) i.next();
-
-		if( resource instanceof AXICrossbar ) {
-                     tmp = true;
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         public methods                    ////
+    
+    /**
+     *  Return the singleton instance of this class;
+     *
+     * @return  the instance.
+     */
+    public final static ElaboratePlatform getInstance() {
+        return _instance;
+    }
+    
+    /**
+     *  This class generates an elaborated platform
+     *
+     * @param  platform Description of the Parameter
+     * @exception  EspamException MyException If such and such occurs
+     */
+    public void elaboratePlatform(Platform platform, Mapping mapping) throws EspamException {
+        
+        System.out.println(" -- Elaborate platform ... ");
+        
+        try {
+            if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == true &&
+               ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == true ) {
+                // ---------------------------------------------------------------------
+                // One-to-one mapping with MicroBlaze processors only or
+                // PowerPC processors only or CompaanHWNodes only.
+                // Connections point-to-point according to the process network topology.
+                // ---------------------------------------------------------------------
+                
+                ElaborateOne2One.getInstance().elaborate( platform, mapping );
+                System.out.println(" -- Elaboration ONE2ONE");
+                
+            } else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
+                      ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == true ) {
+                // ---------------------------------------------------------------------
+                // Many-to-one mapping with several processing components specified.
+                // Connections point-to-point according to the process network topology.
+                // ---------------------------------------------------------------------
+                
+                ElaborateMany2One.getInstance().elaborate( platform, mapping );
+                System.out.println(" -- Elaboration MANY2ONE");
+                
+            } else if( ConsistencyCheck.getInstance().getMapProcessesOne2OneFlag() == false &&
+                      ConsistencyCheck.getInstance().getMapChannelsOne2OneFlag()  == false ) {
+                // ---------------------------------------------------------------------
+                // Many-to-one mapping with several processing components specified.
+                // Connections through a communication network component.
+                // ---------------------------------------------------------------------
+                
+                // find the type of the communication network component
+                
+                if( _getAxiCrossbar( platform ) ) { 
+                    ElaborateMany2OneCrossbarAXI.getInstance().elaborate( platform, mapping );
+                    System.out.println(" -- Elaboration MANY2ONE AXI Crossbar");
+                    
+                    /*
+                     * 
+                     Iterator i = platform.getResourceList().iterator();
+                     while( i.hasNext() ) {
+                     
+                     Resource resource = (Resource) i.next();
+                     System.out.println( resource );
+                     }
+                     
+                     */
+                    
+                    
+                    
+                } else {
+                    ElaborateMany2OneCrossbar.getInstance().elaborate( platform, mapping );
+                    System.out.println(" -- Elaboration MANY2ONE Crossbar");
                 }
             }
-            return tmp;
+            
+            System.out.println(" -- Elaboration [Done]");
+            
+        } catch( Exception e ) {
+            e.printStackTrace();
+            System.out.println("\nElaboratePlatform Exception: " + e.getMessage());
         }
-	///////////////////////////////////////////////////////////////////
-	////                         private variables                 ////
-
-	/**
-	 *  Create a unique instance of this class to implement a singleton
-	 */
-	private final static ElaboratePlatform _instance = new ElaboratePlatform();
- }
+    }
+    
+    
+    private boolean _getAxiCrossbar( Platform platform ) {
+        
+        boolean tmp=false;
+        Iterator i = platform.getResourceList().iterator();
+        while( i.hasNext() ) {
+            
+            Resource resource = (Resource) i.next();
+            
+            if( resource instanceof AXICrossbar ) {
+                tmp = true;
+            }
+        }
+        return tmp;
+    }
+    ///////////////////////////////////////////////////////////////////
+    ////                         private variables                 ////
+    
+    /**
+     *  Create a unique instance of this class to implement a singleton
+     */
+    private final static ElaboratePlatform _instance = new ElaboratePlatform();
+}
 
 

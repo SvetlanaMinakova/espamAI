@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -24,7 +24,7 @@ package espam.parser.matrix;
  * @version $Id: TokenMgrError.java,v 1.1 2007/12/07 22:07:01 stefanov Exp $
  */
 public class TokenMgrError extends Error {
-
+    
     /*
      * Constructors of various flavors follow.
      */
@@ -32,8 +32,8 @@ public class TokenMgrError extends Error {
      * Constructor for the TokenMgrError object
      */
     public TokenMgrError() { }
-
-
+    
+    
     /**
      * Constructor for the TokenMgrError object
      *
@@ -44,8 +44,8 @@ public class TokenMgrError extends Error {
         super(message);
         errorCode = reason;
     }
-
-
+    
+    
     /**
      * Constructor for the TokenMgrError object
      *
@@ -60,8 +60,8 @@ public class TokenMgrError extends Error {
     public TokenMgrError(boolean EOFSeen, int lexState, int errorLine, int errorColumn, String errorAfter, char curChar, int reason) {
         this(LexicalError(EOFSeen, lexState, errorLine, errorColumn, errorAfter, curChar), reason);
     }
-
-
+    
+    
     /**
      * You can also modify the body of this method to customize your error
      * messages. For example, cases like LOOP_DETECTED and
@@ -75,8 +75,8 @@ public class TokenMgrError extends Error {
     public String getMessage() {
         return super.getMessage();
     }
-
-
+    
+    
     /**
      * Replaces unprintable characters by their espaced (or unicode escaped)
      * equivalents in the given string
@@ -117,9 +117,9 @@ public class TokenMgrError extends Error {
                     continue;
                 default:
                     if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
-                        String s = "0000" + Integer.toString(ch, 16);
-                        retval.append("\\u" + s.substring(s.length() - 4, s.length()));
-                    }
+                    String s = "0000" + Integer.toString(ch, 16);
+                    retval.append("\\u" + s.substring(s.length() - 4, s.length()));
+                }
                     else {
                         retval.append(ch);
                     }
@@ -128,8 +128,8 @@ public class TokenMgrError extends Error {
         }
         return retval.toString();
     }
-
-
+    
+    
     /**
      * Tried to change to an invalid lexical state.
      */
@@ -141,25 +141,25 @@ public class TokenMgrError extends Error {
      * Lexical error occured.
      */
     static final int LEXICAL_ERROR = 0;
-
+    
     /**
      * Detected (and bailed out of) an infinite loop in the token manager.
      */
     static final int LOOP_DETECTED = 3;
-
+    
     /**
      * An attempt wass made to create a second instance of a static token
      * manager.
      */
     static final int STATIC_LEXER_ERROR = 1;
-
+    
     /**
      * Indicates the reason why the exception is thrown. It will have one of
      * the above 4 values.
      */
     int errorCode;
-
-
+    
+    
     /**
      * Returns a detailed message for the Error when it is thrown by the
      * token manager to indicate a lexical error. Parameters : EOFSeen :

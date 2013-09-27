@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree;
 
@@ -61,32 +46,32 @@ import espam.visitor.StatementVisitor;
  */
 
 public interface ParserNode {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Create a clone of this Object, default shallow cloning is performed
      *
      * @return  Description of the Return Value
      */
-
-     public Object clone();
-
+    
+    public Object clone();
+    
     /**
      *  Create a recursive clone of this Object and all child objects.
      *
      * @return  Description of the Return Value
      */
     public Object deepClone();
-
-
+    
+    
     /**
      *  Remove recursively this Object and all child objects.
      */
     public void deepRemove();
-
-
+    
+    
     /**
      *  Accept a Visitor
      *
@@ -94,14 +79,14 @@ public interface ParserNode {
      * @see  panda.visitor.Visitor
      */
     public void accept(StatementVisitor x);
-
+    
     /**
      *  Add a child node to the list of child nodes.
      *
      * @param  n A child node to add.
      */
     public void addChild(ParserNode n);
-
+    
     /**
      *  Add a child node at a particular place in the list of child nodes.
      *
@@ -110,7 +95,7 @@ public interface ParserNode {
      * @param  n A child node to add.
      */
     public void addChildAt(int p, ParserNode n);
-
+    
     /**
      *  Get a child from a particular location in the list of children.
      *
@@ -118,14 +103,14 @@ public interface ParserNode {
      * @return  The child value
      */
     public ParserNode getChild(int i);
-
+    
     /**
      *  Get the iterator on the list of children.
      *
      * @return  Iterator of the list of children.
      */
     public Iterator getChildren();
-
+    
     /**
      *  Return whether there are any children. Equivalent to
      *  "getNumChildren()>0".
@@ -133,21 +118,21 @@ public interface ParserNode {
      * @return  a boolean indicating if there are children.
      */
     public boolean hasChildren();
-
+    
     /**
      *  Get the number of children this Parse node has.
      *
      * @return  the number of children this parse node has.
      */
     public int getNumChildren();
-
+    
     /**
      *  Get the parent node of this parse node.
      *
      * @return  a parse node representing the parent node.
      */
     public ParserNode getParent();
-
+    
     /**
      *  Get the index of a child node in the list of children.
      *
@@ -156,7 +141,7 @@ public interface ParserNode {
      *      parse nodes.
      */
     public int indexOf(ParserNode i);
-
+    
     /**
      *  Remove a parse node from the list of children and return the index
      *  position the parse node had in the list.
@@ -166,7 +151,7 @@ public interface ParserNode {
      *      located.
      */
     public int removeChild(ParserNode o);
-
+    
     /**
      *  Find a parse node from the list of children and return the index
      *  position the parse node has in the list.
@@ -176,26 +161,26 @@ public interface ParserNode {
      *      located.
      */
     public int findChild(ParserNode n);
-
+    
     /**
      *  Remove all children from the parse node.
      */
     public void removeAllChildren();
-
+    
     /**
      *  Set the parent node of this parse node.
      *
      * @param  n parse node representing the parent node. parent.
      */
     public void setParent(ParserNode n);
-
+    
     /**
      *  Give the name of the parse node.
      *
      * @return  the name;
      */
     public String toString();
-
+    
     /**
      *  Give the name of the parse node.
      *
@@ -203,14 +188,14 @@ public interface ParserNode {
      */
     public String getName();
     
-     /**
+    /**
      *  Get the isParsed flag of the node.
      *
      * @return  The status of the isParsed flag.
      */
     public boolean getParsedFlag();
-
-
+    
+    
     /**
      *  Set the isParsed flag of the node.
      *

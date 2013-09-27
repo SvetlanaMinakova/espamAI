@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.graph.adg;
 
@@ -32,26 +17,26 @@ import espam.visitor.ADGraphVisitor;
  */
 
 public class ADGParameter implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create an ADG Parameter
      *
      */
     public ADGParameter(String name) {
-    	_name = name;
+        _name = name;
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this ADG parameter
      *
@@ -60,18 +45,18 @@ public class ADGParameter implements Cloneable {
     public Object clone() {
         try {
             ADGParameter newObj = (ADGParameter) super.clone();
-	    newObj.setName(_name);
+            newObj.setName(_name);
             newObj.setLowerBound( _lowerBound );
             newObj.setUpperBound( _upperBound );
             newObj.setValue( _value );
             return (newObj);
         }
-	catch( CloneNotSupportedException e ) {
+        catch( CloneNotSupportedException e ) {
             System.out.println("Error Clone not Supported");
         }
         return(null);
     }
-
+    
     /**
      *  Get the name of the ADG parameter.
      *
@@ -80,7 +65,7 @@ public class ADGParameter implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of the ADG parameter.
      *
@@ -89,7 +74,7 @@ public class ADGParameter implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the lower bound of the ADG parameter.
      *
@@ -98,7 +83,7 @@ public class ADGParameter implements Cloneable {
     public int getLowerBound() {
         return _lowerBound;
     }
-
+    
     /**
      *  Set the lower bound of the ADG parameter.
      *
@@ -107,8 +92,8 @@ public class ADGParameter implements Cloneable {
     public void setLowerBound(int lowerBound) {
         _lowerBound = lowerBound;
     }
-
-
+    
+    
     /**
      *  Get the upper bound of the ADG parameter.
      *
@@ -117,7 +102,7 @@ public class ADGParameter implements Cloneable {
     public int getUpperBound() {
         return _upperBound;
     }
-
+    
     /**
      *  Set the upper bound of the ADG parameter.
      *
@@ -126,7 +111,7 @@ public class ADGParameter implements Cloneable {
     public void setUpperBound(int upperBound) {
         _upperBound = upperBound;
     }
-
+    
     /**
      *  Get the value of the ADG parameter.
      *
@@ -135,7 +120,7 @@ public class ADGParameter implements Cloneable {
     public int getValue() {
         return _value;
     }
-
+    
     /**
      *  Set the value of the ADG parameter.
      *
@@ -144,7 +129,7 @@ public class ADGParameter implements Cloneable {
     public void setValue(int value) {
         _value = value;
     }
-
+    
     /**
      *  Return a description of the ADG parameter.
      *
@@ -153,25 +138,25 @@ public class ADGParameter implements Cloneable {
     public String toString() {
         return "ADGParameter: " + _name;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  the name of the ADG parameter.
      */
     private String _name = null;
-
+    
     /**
      *  the lower bound of the ADG parameter.
      */
     private int _lowerBound = 0;
-
+    
     /**
      *  the upper bound of the ADG parameter.
      */
     private int _upperBound = 0;
-
+    
     /**
      *  the default value of the ADG parameter.
      */

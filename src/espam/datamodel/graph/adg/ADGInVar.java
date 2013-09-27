@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.graph.adg;
 
@@ -35,29 +20,29 @@ import espam.visitor.ADGraphVisitor;
  */
 
 public class ADGInVar implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create an ADGInVar with a name.
      *
      */
     public ADGInVar(String name) {
-    	_name = name;
+        _name = name;
         _bindVariable = new ADGVariable("");
-	_domain = new LBS();
-	_node = new ADGNode("");
+        _domain = new LBS();
+        _node = new ADGNode("");
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this ADGInVar
      *
@@ -65,20 +50,20 @@ public class ADGInVar implements Cloneable {
      */
     public Object clone() {
         try {
-		ADGInVar newObj = (ADGInVar) super.clone();
-		newObj.setBindVariable( (ADGVariable) _bindVariable.clone() );
-		newObj.setDomain( (LBS) _domain.clone() );
-		newObj.setName(_name);
-		newObj.setNode(_node);
-		newObj.setRealName(_realName);
-		return( newObj );
+            ADGInVar newObj = (ADGInVar) super.clone();
+            newObj.setBindVariable( (ADGVariable) _bindVariable.clone() );
+            newObj.setDomain( (LBS) _domain.clone() );
+            newObj.setName(_name);
+            newObj.setNode(_node);
+            newObj.setRealName(_realName);
+            return( newObj );
         }
         catch( CloneNotSupportedException e ) {
             System.out.println("Error Clone not Supported");
         }
         return null;
     }
-
+    
     /**
      *  Get the name of this invar.
      *
@@ -87,7 +72,7 @@ public class ADGInVar implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this invar.
      *
@@ -96,7 +81,7 @@ public class ADGInVar implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the binding variable of an ADGInVar.
      *
@@ -105,7 +90,7 @@ public class ADGInVar implements Cloneable {
     public ADGVariable getBindVariable() {
         return _bindVariable;
     }
-
+    
     /**
      *  Set the binding variable of an ADGInVar.
      *
@@ -114,7 +99,7 @@ public class ADGInVar implements Cloneable {
     public void setBindVariable(ADGVariable bindVariable) {
         _bindVariable = bindVariable;
     }
-
+    
     /**
      *  Get the domain of an ADGInVar.
      *
@@ -123,7 +108,7 @@ public class ADGInVar implements Cloneable {
     public LBS getDomain() {
         return _domain;
     }
-
+    
     /**
      *  Set the domain of an ADGInVar.
      *
@@ -132,7 +117,7 @@ public class ADGInVar implements Cloneable {
     public void setDomain(LBS domain) {
         _domain = domain;
     }
-
+    
     /**
      *  Get the node.
      *
@@ -141,7 +126,7 @@ public class ADGInVar implements Cloneable {
     public ADGNode getNode() {
         return _node;
     }
-
+    
     /**
      *  Set the node.
      *
@@ -150,7 +135,7 @@ public class ADGInVar implements Cloneable {
     public void setNode(ADGNode node) {
         _node = node;
     }
-
+    
     /**
      *  Get the real name.
      *
@@ -159,7 +144,7 @@ public class ADGInVar implements Cloneable {
     public String getRealName() {
         return _realName;
     }
-
+    
     /**
      *  Set the real name.
      *
@@ -168,7 +153,7 @@ public class ADGInVar implements Cloneable {
     public void setRealName(String name) {
         _realName = name;
     }
-
+    
     /**
      *  Return a description of the ADGInVar.
      *
@@ -177,24 +162,24 @@ public class ADGInVar implements Cloneable {
     public String toString() {
         return "ADGInVar: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *
      */
     private ADGVariable _bindVariable = null;
-
+    
     /**
      * The domain of the invar.
      *
      */
     private LBS _domain = null;
-
+    
     private String _name = null;
-
+    
     private ADGNode _node = null;
-
+    
     private String _realName = null;
 }

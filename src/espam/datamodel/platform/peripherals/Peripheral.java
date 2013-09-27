@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.peripherals;
 
@@ -35,10 +20,10 @@ import java.util.Iterator;
  */
 
 public class Peripheral extends Resource {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a Peripheral with a name.
      *
@@ -47,26 +32,26 @@ public class Peripheral extends Resource {
         super(name);
         _pageList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this Peripheral
      *
      * @return  a new instance of the Peripheral.
      */
     public Object clone() {
-            Peripheral newObj = (Peripheral) super.clone();
-            newObj.setPageList( (Vector) _pageList.clone() );
-            return( newObj );
+        Peripheral newObj = (Peripheral) super.clone();
+        newObj.setPageList( (Vector) _pageList.clone() );
+        return( newObj );
     }
-
+    
     /**
      *  Get the page list of this Peripheral.
      *
@@ -75,7 +60,7 @@ public class Peripheral extends Resource {
     public Vector getPageList() {
         return _pageList;
     }
-
+    
     /**
      *  Set the page list of this Peripheral.
      *
@@ -84,7 +69,7 @@ public class Peripheral extends Resource {
     public void setPageList(Vector pageList) {
         _pageList = pageList;
     }
-
+    
     /**
      *  Get the base address of this Peripheral.
      *
@@ -92,19 +77,19 @@ public class Peripheral extends Resource {
      */
     public int getBaseAddress() {
         int Addr = 0;
-
-	Iterator i = _pageList.iterator();
-	Addr = ((Page) i.next()).getBaseAddress();
-	while( i.hasNext() ) {
-           int baseAddr  = ((Page) i.next()).getBaseAddress();
-	   if( baseAddr < Addr ) {
-	      Addr = baseAddr;
-	   }
-	}
-
+        
+        Iterator i = _pageList.iterator();
+        Addr = ((Page) i.next()).getBaseAddress();
+        while( i.hasNext() ) {
+            int baseAddr  = ((Page) i.next()).getBaseAddress();
+            if( baseAddr < Addr ) {
+                Addr = baseAddr;
+            }
+        }
+        
         return Addr;
     }
-
+    
     /**
      *  Get the size (in Bytes) of the space occupied by the peripheral.
      *
@@ -122,8 +107,8 @@ public class Peripheral extends Resource {
     public void setSize(int size) {
         _size = size;
     }
-
-
+    
+    
     /**
      *  Return a description of the Peripheral.
      *
@@ -132,10 +117,10 @@ public class Peripheral extends Resource {
     public String toString() {
         return "Peripheral: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  List containing memory map pages.
      */
@@ -145,5 +130,5 @@ public class Peripheral extends Resource {
      *  the size (in Bytes) of the space occupied by the peripheral in a processor's memory map  
      */
     private int _size = 0;
-
+    
 }

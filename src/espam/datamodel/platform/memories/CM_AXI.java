@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.memories;
 
@@ -35,27 +20,27 @@ import espam.datamodel.platform.memories.Fifo;
  */
 
 public class CM_AXI extends Memory {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a CM_AXI with a name, size=0 (the total amount
      *  of available locations) and empty fifo list
      */
     public CM_AXI(String name) {
-    	super(name);
+        super(name);
         _fifoList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception MatParserException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception MatParserException If an error occurs.
+      */
     public void accept(PlatformVisitor x) { 
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this CM_AXI
      *
@@ -66,7 +51,7 @@ public class CM_AXI extends Memory {
         newObj.setFifoList( (Vector) _fifoList.clone() );
         return( newObj );
     }
-
+    
     /**
      *  Get the list of fifos of this MultiMifo.
      *
@@ -75,7 +60,7 @@ public class CM_AXI extends Memory {
     public Vector getFifoList() {
         return _fifoList;
     }
-
+    
     /**
      *  Set the list of ports of this CM_AXI.
      *
@@ -93,17 +78,17 @@ public class CM_AXI extends Memory {
      */
     public int getSize() {
         int size = 0;
-	
-	Iterator f = _fifoList.iterator();
-	while( f.hasNext() ) {
-
-	    Fifo fifo = (Fifo) f.next();
-	    size += fifo.getSize();
-	}
-
+        
+        Iterator f = _fifoList.iterator();
+        while( f.hasNext() ) {
+            
+            Fifo fifo = (Fifo) f.next();
+            size += fifo.getSize();
+        }
+        
         return size;
     }
-
+    
     /**
      *  Return a description of a CM_AXI.
      *
@@ -112,10 +97,10 @@ public class CM_AXI extends Memory {
     public String toString() {
         return "CM_AXI: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  List of the fifos of a CM_AXI.
      */

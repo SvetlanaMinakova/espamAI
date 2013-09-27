@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.pn.cdpn;
 
@@ -39,28 +24,28 @@ import espam.visitor.CDPNVisitor;
  */
 
 public class CDGate extends Gate {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a CDGate with a name.
      *
      */
     public CDGate(String name) {
-    	super(name);
+        super(name);
         _adgPortList = new Vector();
-	_keyFuncList = new Vector();
+        _keyFuncList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(CDPNVisitor x) {
-          x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this CDGate
      *
@@ -72,7 +57,7 @@ public class CDGate extends Gate {
         newObj.setKeyFuncList( (Vector) _keyFuncList.clone() );
         return (newObj);
     }
-
+    
     /**
      *  Get the ADG port list of this CDGate.
      *
@@ -81,7 +66,7 @@ public class CDGate extends Gate {
     public Vector getAdgPortList() {
         return _adgPortList;
     }
-
+    
     /**
      *  Set the ADG port list of this CDGate.
      *
@@ -90,7 +75,7 @@ public class CDGate extends Gate {
     public void setAdgPortList(Vector adgPortList) {
         _adgPortList = adgPortList;
     }
-
+    
     /**
      *  Get the key function list of this CDGate.
      *
@@ -99,7 +84,7 @@ public class CDGate extends Gate {
     public Vector getKeyFuncList() {
         return _keyFuncList;
     }
-
+    
     /**
      *  Set the key func list of this CDGate.
      *
@@ -108,7 +93,7 @@ public class CDGate extends Gate {
     public void setKeyFuncList(Vector keyFuncList) {
         _keyFuncList = keyFuncList;
     }
-
+    
     /**
      *  Return a description of the CDGate.
      *
@@ -117,17 +102,17 @@ public class CDGate extends Gate {
     public String toString() {
         return "CDGate: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      * List of ADG ports associated with the gate. See "Iig"
      * and "Oog" on page 51 in [1] - Definition 2.4.3 and 2.4.4
      *
      */
     private Vector _adgPortList = null;
-
+    
     /**
      * List of key generation functions for every ADG port of this gate.
      * See "IKig" and "OKog" on page 51 in [1] - 

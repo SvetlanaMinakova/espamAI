@@ -3,12 +3,12 @@
 package espam.parser.expression;
 
 public class ASTstart extends SimpleNode {
-  public ASTstart(int id) {
-    super(id);
-  }
-
-  public ASTstart(ExpressionParser p, int id) {
-    super(p, id);
-  }
-
+    public ASTstart(int id) {
+        super(id);
+    }
+    
+    public ASTstart(ExpressionParser p, int id) {
+        super(p, id);
+    }
+    
 }

@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.graph.adg;
 
@@ -40,30 +25,30 @@ import espam.visitor.ADGraphVisitor;
  */
 
 public class ADGNode extends Node {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create an ADGNode with a name.
      *
      */
     public ADGNode(String name) {
-    	super(name);
+        super(name);
         _function = new ADGFunction("");
-	_domain = new LBS();
-	_inVarList = new Vector();
-	_fileList = new Vector();
+        _domain = new LBS();
+        _inVarList = new Vector();
+        _fileList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this ADGNode
      *
@@ -78,7 +63,7 @@ public class ADGNode extends Node {
         newObj.setExpressionList( (Vector) _expressionList.clone() );
         return( newObj );
     }
-
+    
     /**
      *  Return a new variable name with given prefix that is unique within this node.
      *
@@ -86,21 +71,21 @@ public class ADGNode extends Node {
      * @return  the new variable name
      */
     public String uniqueVariableName(String prefix) {
-	String name;
-	for (int i = 0; ; ++i) {
-	    name = prefix + i;
-	    int j;
-	    for (j = 0; j < _varNames.size(); ++j) {
-		if (_varNames.elementAt(j).equals(name))
-		    break;
-	    }
-	    if (j == _varNames.size())
-		break;
-	}
-	_varNames.add(name);
-	return name;
+        String name;
+        for (int i = 0; ; ++i) {
+            name = prefix + i;
+            int j;
+            for (j = 0; j < _varNames.size(); ++j) {
+                if (_varNames.elementAt(j).equals(name))
+                    break;
+            }
+            if (j == _varNames.size())
+                break;
+        }
+        _varNames.add(name);
+        return name;
     }
-
+    
     /**
      *  Get the function of an ADGNode.
      *
@@ -109,7 +94,7 @@ public class ADGNode extends Node {
     public ADGFunction getFunction() {
         return _function;
     }
-
+    
     /**
      *  Set the function of an ADGNode.
      *
@@ -118,7 +103,7 @@ public class ADGNode extends Node {
     public void setFunction(ADGFunction function) {
         _function = function;
     }
-
+    
     /**
      *  Get the domain of an ADGNode.
      *
@@ -127,7 +112,7 @@ public class ADGNode extends Node {
     public LBS getDomain() {
         return _domain;
     }
-
+    
     /**
      *  Set the domain of an ADGNode.
      *
@@ -136,7 +121,7 @@ public class ADGNode extends Node {
     public void setDomain(LBS domain) {
         _domain = domain;
     }
-
+    
     /**
      *  Get the adg name to which an ADGNode belongs.
      *
@@ -145,7 +130,7 @@ public class ADGNode extends Node {
     public String getADGName() {
         return _adgName;
     }
-
+    
     /**
      *  Set the adg name to which an ADGNode belongs.
      *
@@ -154,7 +139,7 @@ public class ADGNode extends Node {
     public void setADGName(String name) {
         _adgName = name;
     }
-
+    
     /**
      *  Return a description of the ADGNode.
      *
@@ -163,7 +148,7 @@ public class ADGNode extends Node {
     public String toString() {
         return "ADGNode: " + getName();
     }
-
+    
     /**
      *  Get the invar list of an ADGNode.
      *
@@ -172,7 +157,7 @@ public class ADGNode extends Node {
     public Vector getInVarList() {
         return _inVarList;
     }
-
+    
     /**
      *  Set the invar list of an ADGNode.
      *
@@ -190,7 +175,7 @@ public class ADGNode extends Node {
     public Vector getFileList() {
         return _fileList;
     }
-
+    
     /**
      *  Set the expression list of an ADGNode.
      *
@@ -200,7 +185,7 @@ public class ADGNode extends Node {
         _expressionList = expressionList;
     }
     
-      /**
+    /**
      *  Get the expression list of an ADGNode.
      *
      * @return  the expression list
@@ -208,7 +193,7 @@ public class ADGNode extends Node {
     public Vector getExpressionList() {
         return _expressionList;
     }
-
+    
     /**
      *  Set the file list of an ADGNode.
      *
@@ -225,17 +210,17 @@ public class ADGNode extends Node {
      */
     public Vector getInPorts() {
         Vector v = new Vector();
-
+        
         Iterator i = getPortList().iterator();
-	while ( i.hasNext() ) {
-	   ADGPort port = (ADGPort) i.next();
-	   if( port instanceof ADGInPort ) {
-	      v.add( (ADGInPort) port );
-	   }
-	}
-	return v;
+        while ( i.hasNext() ) {
+            ADGPort port = (ADGPort) i.next();
+            if( port instanceof ADGInPort ) {
+                v.add( (ADGInPort) port );
+            }
+        }
+        return v;
     }
-
+    
     /**
      *  Get the output ports of this ADGNode.
      *
@@ -243,62 +228,62 @@ public class ADGNode extends Node {
      */
     public Vector getOutPorts() {
         Vector v = new Vector();
-
+        
         Iterator i = getPortList().iterator();
-	while( i.hasNext() ) {
-	   ADGPort port = (ADGPort) i.next();
-	   if( port instanceof ADGOutPort ) {
-	      v.add( (ADGOutPort) port);
-	   }
-	}
-	return v;
+        while( i.hasNext() ) {
+            ADGPort port = (ADGPort) i.next();
+            if( port instanceof ADGOutPort ) {
+                v.add( (ADGOutPort) port);
+            }
+        }
+        return v;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      * Function associated with the node. See function "Fn"
      * on page 39 in [1] - Definition 2.2.2
      *
      */
     private ADGFunction _function = null;
-
+    
     /**
      * The domain of the node. See domain "NDn"
      * on page 39 in [1] - Definition 2.2.2
      *
      */
     private LBS _domain = null;
-
+    
     /**
      * List of (known) variables in this node.
      */
     private Vector<String> _varNames = new Vector<String>();
-
+    
     /**
      * List of 'invar' variables in this node.
      */
     private Vector _inVarList = new Vector();
-
+    
     /**
      * List of target implementation files of this node.
      * each element of this list is a string representing
      * the path to and the name of a file 
      */
     private Vector _fileList = new Vector();
-
+    
     /**
      * List of of expressions bound to function arguments.
      * Used when we want to propagate, e.g., loop iterators 
      * as function arguments 
      */
     private Vector _expressionList = new Vector();
-
+    
     /**
      * The adg name to which an ADGNode belongs.
      */
-
+    
     private String _adgName = null;
-
+    
 }

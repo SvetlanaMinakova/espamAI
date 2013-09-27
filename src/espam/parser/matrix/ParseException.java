@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -28,7 +28,7 @@ package espam.parser.matrix;
  * @version $Id: ParseException.java,v 1.1 2007/12/07 22:07:03 stefanov Exp $
  */
 public class ParseException extends Exception {
-
+    
     /**
      * This constructor is used by the method "generateParseException" in
      * the generated parser. Calling this constructor generates a new object
@@ -45,17 +45,17 @@ public class ParseException extends Exception {
      * @param tokenImageVal Description of the Parameter
      */
     public ParseException(Token currentTokenVal,
-            int[][] expectedTokenSequencesVal,
-            String[] tokenImageVal
-            ) {
+                          int[][] expectedTokenSequencesVal,
+                          String[] tokenImageVal
+                         ) {
         super("");
         specialConstructor = true;
         currentToken = currentTokenVal;
         expectedTokenSequences = expectedTokenSequencesVal;
         tokenImage = tokenImageVal;
     }
-
-
+    
+    
     /**
      * The following constructors are for use by you for whatever purpose
      * you can think of. Constructing the exception in this manner makes the
@@ -64,13 +64,13 @@ public class ParseException extends Exception {
      * "tokenImage" do not contain relevant information. The JavaCC
      * generated code does not use these constructors.
      */
-
+    
     public ParseException() {
         super();
         specialConstructor = false;
     }
-
-
+    
+    
     /**
      * Constructor for the ParseException object
      *
@@ -80,8 +80,8 @@ public class ParseException extends Exception {
         super(message);
         specialConstructor = false;
     }
-
-
+    
+    
     /**
      * This method has the standard behavior when this object has been
      * created using the standard constructors. Otherwise, it uses
@@ -134,30 +134,30 @@ public class ParseException extends Exception {
         retval += expected;
         return retval;
     }
-
-
+    
+    
     /**
      * This is the last token that has been consumed successfully. If this
      * object has been created due to a parse error, the token followng this
      * token will (therefore) be the first error token.
      */
     public Token currentToken;
-
+    
     /**
      * Each entry in this array is an array of integers. Each array of
      * integers represents a sequence of tokens (by their ordinal values)
      * that is expected at this point of the parse.
      */
     public int[][] expectedTokenSequences;
-
+    
     /**
      * This is a reference to the "tokenImage" array of the generated parser
      * within which the parse error occurred. This array is defined in the
      * generated ...Constants interface.
      */
     public String[] tokenImage;
-
-
+    
+    
     /**
      * Used to convert raw characters to their escaped version when these
      * raw version cannot be used as part of an ASCII string literal.
@@ -198,9 +198,9 @@ public class ParseException extends Exception {
                     continue;
                 default:
                     if ((ch = str.charAt(i)) < 0x20 || ch > 0x7e) {
-                        String s = "0000" + Integer.toString(ch, 16);
-                        retval.append("\\u" + s.substring(s.length() - 4, s.length()));
-                    }
+                    String s = "0000" + Integer.toString(ch, 16);
+                    retval.append("\\u" + s.substring(s.length() - 4, s.length()));
+                }
                     else {
                         retval.append(ch);
                     }
@@ -209,18 +209,18 @@ public class ParseException extends Exception {
         }
         return retval.toString();
     }
-
-
+    
+    
     /**
      * The end of line string for this machine.
      */
     protected String eol = System.getProperty("line.separator", "\n");
-
+    
     /**
      * This variable determines which constructor was used to create this
      * object and thereby affects the semantics of the "getMessage" method
      * (see below).
      */
     protected boolean specialConstructor;
-
+    
 }

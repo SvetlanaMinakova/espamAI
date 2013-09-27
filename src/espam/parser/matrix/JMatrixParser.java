@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -31,17 +31,17 @@ import espam.utils.symbolic.matrix.SignedMatrix;
  */
 
 public class JMatrixParser
-/*
- * @bgen(jjtree)
- */
-         implements JMatrixParserConstants, JMatrixParserTreeConstants {
-
+    /*
+     * @bgen(jjtree)
+     */
+    implements JMatrixParserConstants, JMatrixParserTreeConstants {
+    
     public JMatrixParser() {
         this(new ByteArrayInputStream("a hack!!".getBytes()));
         _byteStream = null;
     }
-
-
+    
+    
     public JMatrixParser(java.io.InputStream stream) {
         if (jj_initialized_once) {
             System.out.println("ERROR: Second call to constructor of static parser.  You must");
@@ -59,8 +59,8 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public JMatrixParser(java.io.Reader stream) {
         if (jj_initialized_once) {
             System.out.println("ERROR: Second call to constructor of static parser.  You must");
@@ -78,8 +78,8 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public JMatrixParser(JMatrixParserTokenManager tm) {
         if (jj_initialized_once) {
             System.out.println("ERROR: Second call to constructor of static parser.  You must");
@@ -96,8 +96,8 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public void ReInit(JMatrixParserTokenManager tm) {
         token_source = tm;
         token = new Token();
@@ -108,8 +108,8 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public static void ReInit(java.io.InputStream stream) {
         jj_input_stream.ReInit(stream, 1, 1);
         token_source.ReInit(jj_input_stream);
@@ -121,8 +121,8 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public static void ReInit(java.io.Reader stream) {
         jj_input_stream.ReInit(stream, 1, 1);
         token_source.ReInit(jj_input_stream);
@@ -134,12 +134,12 @@ public class JMatrixParser
             jj_la1[i] = -1;
         }
     }
-
-
+    
+    
     public static final void disable_tracing() {
     }
-
-
+    
+    
     public static final long element() throws ParseException {
         /*
          * @bgen(jjtree) element
@@ -167,7 +167,7 @@ public class JMatrixParser
             value = sign * (new Integer(i.image)).intValue();
             jjtree.closeNodeScope(jjtn000, true);
             jjtc000 = false;
-             {
+            {
                 if (true) {
                     return value;
                 }
@@ -179,12 +179,12 @@ public class JMatrixParser
         }
         throw new Error("Missing return statement in function");
     }
-
-
+    
+    
     public static final void enable_tracing() {
     }
-
-
+    
+    
     public static final ParseException generateParseException() {
         jj_expentries.removeAllElements();
         boolean[] la1tokens = new boolean[13];
@@ -217,8 +217,8 @@ public class JMatrixParser
         }
         return new ParseException(token, exptokseq, tokenImage);
     }
-
-
+    
+    
     /**
      * Convert a string representing a matrix in Matlab format in an
      * instance of JMatrix.
@@ -228,15 +228,15 @@ public class JMatrixParser
      * @exception ParseException MyException If such and such occurs
      */
     public static JMatrix getJMatrix(String matlabString)
-             throws ParseException {
+        throws ParseException {
         _byteStream = new ByteArrayInputStream(matlabString.getBytes());
         ReInit(_byteStream);
         JMatrix m = null;
         m = matrix();
         return m;
     }
-
-
+    
+    
     public static final Token getNextToken() {
         if (token.next != null) {
             token = token.next;
@@ -248,8 +248,8 @@ public class JMatrixParser
         jj_gen++;
         return token;
     }
-
-
+    
+    
     /**
      * Convert a string representing a matrix in Matlab format in an
      * instance of JMatrix.
@@ -259,15 +259,15 @@ public class JMatrixParser
      * @exception ParseException MyException If such and such occurs
      */
     public static SignedMatrix getSignedMatrix(String matlabString)
-             throws ParseException {
+        throws ParseException {
         _byteStream = new ByteArrayInputStream(matlabString.getBytes());
         ReInit(_byteStream);
         SignedMatrix m = null;
         m = new SignedMatrix(matrix());
         return m;
     }
-
-
+    
+    
     public static final Token getToken(int index) {
         Token t = token;
         for (int i = 0; i < index; i++) {
@@ -280,8 +280,8 @@ public class JMatrixParser
         }
         return t;
     }
-
-
+    
+    
     public static final JMatrix matrix() throws ParseException {
         /*
          * @bgen(jjtree) matrix
@@ -309,7 +309,7 @@ public class JMatrixParser
                 m = new JMatrix();
             }
             label_1:
-            while (true) {
+                while (true) {
                 switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                     case 10:
                         ;
@@ -322,14 +322,14 @@ public class JMatrixParser
                 row = row();
                 m.insertRows(row, m.nbRows());
             }
-            jj_consume_token(11);
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtc000 = false;
-             {
-                if (true) {
-                    return m;
+                jj_consume_token(11);
+                jjtree.closeNodeScope(jjtn000, true);
+                jjtc000 = false;
+                {
+                    if (true) {
+                        return m;
+                    }
                 }
-            }
         } catch (Throwable jjte000) {
             if (jjtc000) {
                 jjtree.clearNodeScope(jjtn000);
@@ -339,20 +339,20 @@ public class JMatrixParser
                 jjtree.popNode();
             }
             if (jjte000 instanceof RuntimeException) {
-                 {
+                {
                     if (true) {
                         throw (RuntimeException) jjte000;
                     }
                 }
             }
             if (jjte000 instanceof ParseException) {
-                 {
+                {
                     if (true) {
                         throw (ParseException) jjte000;
                     }
                 }
             }
-             {
+            {
                 if (true) {
                     throw (Error) jjte000;
                 }
@@ -364,8 +364,8 @@ public class JMatrixParser
         }
         throw new Error("Missing return statement in function");
     }
-
-
+    
+    
     public static final JMatrix row() throws ParseException {
         /*
          * @bgen(jjtree) row
@@ -380,7 +380,7 @@ public class JMatrixParser
             element = element();
             row.add(new Long(element));
             label_2:
-            while (true) {
+                while (true) {
                 switch ((jj_ntk == -1) ? jj_ntk() : jj_ntk) {
                     case 12:
                         ;
@@ -393,17 +393,17 @@ public class JMatrixParser
                 element = element();
                 row.add(new Long(element));
             }
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtc000 = false;
-            m = new JMatrix(1, row.size());
-            for (int col = 0; col < row.size(); col++) {
-                m.setElement(0, col, (long) ((Long) row.elementAt(col)).longValue());
-            }
-             {
-                if (true) {
-                    return m;
+                jjtree.closeNodeScope(jjtn000, true);
+                jjtc000 = false;
+                m = new JMatrix(1, row.size());
+                for (int col = 0; col < row.size(); col++) {
+                    m.setElement(0, col, (long) ((Long) row.elementAt(col)).longValue());
                 }
-            }
+                {
+                    if (true) {
+                        return m;
+                    }
+                }
         } catch (Throwable jjte000) {
             if (jjtc000) {
                 jjtree.clearNodeScope(jjtn000);
@@ -413,20 +413,20 @@ public class JMatrixParser
                 jjtree.popNode();
             }
             if (jjte000 instanceof RuntimeException) {
-                 {
+                {
                     if (true) {
                         throw (RuntimeException) jjte000;
                     }
                 }
             }
             if (jjte000 instanceof ParseException) {
-                 {
+                {
                     if (true) {
                         throw (ParseException) jjte000;
                     }
                 }
             }
-             {
+            {
                 if (true) {
                     throw (Error) jjte000;
                 }
@@ -438,8 +438,8 @@ public class JMatrixParser
         }
         throw new Error("Missing return statement in function");
     }
-
-
+    
+    
     public static Token token, jj_nt;
     public static JMatrixParserTokenManager token_source;
     /*
@@ -447,8 +447,8 @@ public class JMatrixParser
      */
     protected static JJTJMatrixParserState jjtree = new JJTJMatrixParserState();
     static ASCII_CharStream jj_input_stream;
-
-
+    
+    
     private static final Token jj_consume_token(int kind) throws ParseException {
         Token oldToken;
         if ((oldToken = token).next != null) {
@@ -466,8 +466,8 @@ public class JMatrixParser
         jj_kind = kind;
         throw generateParseException();
     }
-
-
+    
+    
     private static final int jj_ntk() {
         if ((jj_nt = token.next) == null) {
             return (jj_ntk = (token.next = token_source.getNextToken()).kind);
@@ -476,22 +476,22 @@ public class JMatrixParser
             return (jj_ntk = jj_nt.kind);
         }
     }
-
-
+    
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     // Private //
     private static ByteArrayInputStream _byteStream;
-
+    
     private static java.util.Vector jj_expentries = new java.util.Vector();
     private static int[] jj_expentry;
     private static int jj_gen;
-
+    
     private static boolean jj_initialized_once = false;
     private static int jj_kind = -1;
     private static final int[] jj_la1 = new int[4];
     private static final int[] jj_la1_0 = {0xc0, 0x400, 0x1000, 0x80,};
     private static int jj_ntk;
-
+    
 }

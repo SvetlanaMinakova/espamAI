@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -25,7 +25,7 @@ package espam.parser.matrix;
  */
 
 public class Token {
-
+    
     /**
      * Returns a new Token object, by default. However, if you want, you can
      * create and return subclass objects based on the value of ofKind.
@@ -45,8 +45,8 @@ public class Token {
                 return new Token();
         }
     }
-
-
+    
+    
     /**
      * Returns the image.
      *
@@ -55,27 +55,27 @@ public class Token {
     public final String toString() {
         return image;
     }
-
-
+    
+    
     /**
      * beginLine and beginColumn describe the position of the first
      * character of this token; endLine and endColumn describe the position
      * of the last character of this token.
      */
     public int beginLine, beginColumn, endLine, endColumn;
-
+    
     /**
      * The string image of the token.
      */
     public String image;
-
+    
     /**
      * An integer that describes the kind of this token. This numbering
      * system is determined by JavaCCParser, and a table of these numbers is
      * stored in the file ...Constants.java.
      */
     public int kind;
-
+    
     /**
      * A reference to the next regular (non-special) token from the input
      * stream. If this is the last token from the input stream, or if the
@@ -84,7 +84,7 @@ public class Token {
      * Otherwise, see below for a description of the contents of this field.
      */
     public Token next;
-
+    
     /**
      * This field is used to access special tokens that occur prior to this
      * token, but after the immediately preceding regular (non-special)
@@ -98,5 +98,5 @@ public class Token {
      * token). If there is no such token, this field is null.
      */
     public Token specialToken;
-
+    
 }

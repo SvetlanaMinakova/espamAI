@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform;
 
@@ -41,25 +26,25 @@ public class Platform extends Resource {
     
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a Platform with a name,
      *  empty resource list and empty link list
      */
     public Platform(String name) {
-    	super(name);
+        super(name);
         _resourceList = new Vector();
         _linkList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception MatParserException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception MatParserException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-          x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this Platform
      *
@@ -71,7 +56,7 @@ public class Platform extends Resource {
         newObj.setLinkList( (Vector) _linkList.clone() );
         return( newObj );
     }
-
+    
     /**
      *  Get the resource list of a Platform.
      *
@@ -80,7 +65,7 @@ public class Platform extends Resource {
     public Vector getResourceList() {
         return _resourceList;
     }
-
+    
     /**
      *  Set the resource list of a Platform.
      *
@@ -89,7 +74,7 @@ public class Platform extends Resource {
     public void setResourceList( Vector resourceList) {
         _resourceList = resourceList;
     }
-
+    
     /**
      *  Get the link list of a Platform
      *
@@ -98,7 +83,7 @@ public class Platform extends Resource {
     public Vector getLinkList() {
         return _linkList;
     }
-
+    
     /**
      *  Set the link list of a Platform
      *
@@ -107,7 +92,7 @@ public class Platform extends Resource {
     public void setLinkList(Vector linkList) {
         _linkList = linkList;
     }
-
+    
     /**
      *  Return a description of the Platform.
      *
@@ -116,7 +101,7 @@ public class Platform extends Resource {
     public String toString() {
         return "Platform: " + getName();
     }
-
+    
     /**
      *  Return a resource which has a specific name. Return null if
      *  resource cannot be found.
@@ -124,18 +109,18 @@ public class Platform extends Resource {
      * @param  name the name of the resource to search for.
      * @return  the resource with the specific name.
      */
-     public Resource getResource(String name) {
-          Iterator i;
-          i = _resourceList.iterator();
-          while (i.hasNext()) {
-              Resource resource = (Resource) i.next();
-              if (resource.getName().equals(name)) {
-                 return resource;
-              }
-          }
-          return null;
-     }
-     
+    public Resource getResource(String name) {
+        Iterator i;
+        i = _resourceList.iterator();
+        while (i.hasNext()) {
+            Resource resource = (Resource) i.next();
+            if (resource.getName().equals(name)) {
+                return resource;
+            }
+        }
+        return null;
+    }
+    
     /**
      * Determine the type of interconection:
      *  TYPE_AXI
@@ -155,15 +140,15 @@ public class Platform extends Resource {
         }
         return false;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  List of the resources of a Platform.
      */
     private Vector _resourceList = null;
-
+    
     /**
      *  List of the links of a Platform.
      */

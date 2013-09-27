@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.visitor.ymlPN;
 
@@ -62,7 +47,7 @@ import espam.utils.symbolic.expression.Expression;
  */
 
 public class YmlStatementVisitor extends StatementVisitor {
-
+    
     /**
      *  Constructor for the YapiStatementVisitor object
      *
@@ -74,10 +59,10 @@ public class YmlStatementVisitor extends StatementVisitor {
         _printStream = printStream;
         _cExpVisitor = new CExpressionVisitor();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
-
+    
     /**
      *  Print a root statement in the correct format for C++.
      *
@@ -88,59 +73,59 @@ public class YmlStatementVisitor extends StatementVisitor {
         _visitChildren(x);
         _prefixDec();
     }
-
+    
     /**
      *  Print a for statement in the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
     public void visitStatement(ForStatement x) {
-
+        
         Expression ub = x.getUpperBound();
         Expression lb = x.getLowerBound();
-
+        
         _printStream.println(_prefix + "for( int "
-              + x.getIterator() + " =  ceil1(" +
-              lb.accept( _cExpVisitor ) + "); " + x.getIterator() + " <= " +
-              " floor1(" + ub.accept( _cExpVisitor ) + "); " + x.getIterator() +
-              " += " + x.getStepSize() + " ) {");
-
-	_prefixInc();
+                                 + x.getIterator() + " =  ceil1(" +
+                             lb.accept( _cExpVisitor ) + "); " + x.getIterator() + " <= " +
+                             " floor1(" + ub.accept( _cExpVisitor ) + "); " + x.getIterator() +
+                             " += " + x.getStepSize() + " ) {");
+        
+        _prefixInc();
         _visitChildren(x);
         _prefixDec();
-
+        
         _printStream.println(_prefix + "} // for " + x.getIterator());
     }
-
-   /**
+    
+    /**
      *  Print an if statement in the correct format for c++
      *
      * @param  x Description of the Parameter
      */
     public void visitStatement(IfStatement x) {
-
+        
         String str = "";
-	int sign = x.getSign();
-	Expression expression = x.getCondition();
-
-	switch( sign ) {
-	   case 0  : str = " == ";
-	             break;
-	   case 1  : str = " >= ";
-	             break;
-	   default : str = " <= ";
-	             break;
+        int sign = x.getSign();
+        Expression expression = x.getCondition();
+        
+        switch( sign ) {
+            case 0  : str = " == ";
+            break;
+            case 1  : str = " >= ";
+            break;
+            default : str = " <= ";
+            break;
         }
-
+        
         _printStream.println(_prefix + "if( " +
-                    expression.accept( _cExpVisitor ) + str + "0 ) {");
-
-	_prefixInc();
+                             expression.accept( _cExpVisitor ) + str + "0 ) {");
+        
+        _prefixInc();
         _visitChildren(x);
         _prefixDec();
         _printStream.println(_prefix + "}");
     }
-
+    
     /**
      *  Print an else statement in the correct format for c++.
      *
@@ -154,7 +139,7 @@ public class YmlStatementVisitor extends StatementVisitor {
         _prefixDec();
         _printStream.println(_prefix + "}");
     }
-
+    
     /**
      *  Print an ipd statement in the correct format for c++.
      *
@@ -163,71 +148,71 @@ public class YmlStatementVisitor extends StatementVisitor {
     public void visitStatement(OpdStatement x) {
         _printStream.println("");
         _printStream.println(_prefix + "ports->" + x.getGateName() + ".write( " +
-                x.getArgumentName() + x.getNodeName() + " );");
-	_printStream.println("");
+                             x.getArgumentName() + x.getNodeName() + " );");
+        _printStream.println("");
     }
-
+    
     /**
      *  Print an Assignment statement in the correct format for c++.
      *
      * @param  x Description of the Parameter
      */
-      public void visitStatement(AssignStatement x) {
+    public void visitStatement(AssignStatement x) {
         Statement statement = null;
-       	LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
-       	RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
-
-	if ( !x.getFunctionName().equals("") ) {
-
-	     _printStream.println("");
-             _printStream.print(_prefix + "_" +  x.getFunctionName() + "(");
-
+        LhsStatement lhsStatement = (LhsStatement) x.getChild(0);
+        RhsStatement rhsStatement = (RhsStatement) x.getChild(1);
+        
+        if ( !x.getFunctionName().equals("") ) {
+            
+            _printStream.println("");
+            _printStream.print(_prefix + "_" +  x.getFunctionName() + "(");
+            
             Iterator i = rhsStatement.getChildren();
             while( i.hasNext() ) {
-                 VariableStatement var = (VariableStatement) i.next();
-                 if( i.hasNext() ) {
-                     _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
-                 } else {
-                     _printStream.print(var.getVariableName() + x.getNodeName());
-                 }
+                VariableStatement var = (VariableStatement) i.next();
+                if( i.hasNext() ) {
+                    _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                } else {
+                    _printStream.print(var.getVariableName() + x.getNodeName());
+                }
             }
-
+            
             // The sequence continues.
-           if( lhsStatement.getNumChildren() > 0 && rhsStatement.getNumChildren() > 0) {
+            if( lhsStatement.getNumChildren() > 0 && rhsStatement.getNumChildren() > 0) {
                 _printStream.print(", ");
-           }
-
-           i = lhsStatement.getChildren();
-           while( i.hasNext() ) {
-               VariableStatement var = (VariableStatement) i.next();
-               if( i.hasNext() ) {
-                   _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
-               } else {
-                   _printStream.print(var.getVariableName() + x.getNodeName());
-               }
-           }
-           _printStream.print(") ;");
-           _printStream.println("");
-           _printStream.println(_prefix + "execute(\"op"
-                            + "_" + x.getFunctionName() + "\");");
-           _printStream.println("");
-
-	} else {
-
-	       VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
-	       VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
-
-             _printStream.println("");
-             _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
-	                                 inArg.getVariableName() + x.getNodeName() + ";"           );
-             _printStream.println("");
-             _printStream.println(_prefix + "execute(\"op_CopyPropagate\");");
-	     _printStream.println("");
-
-	}
-
+            }
+            
+            i = lhsStatement.getChildren();
+            while( i.hasNext() ) {
+                VariableStatement var = (VariableStatement) i.next();
+                if( i.hasNext() ) {
+                    _printStream.print(var.getVariableName() + x.getNodeName() + ", ");
+                } else {
+                    _printStream.print(var.getVariableName() + x.getNodeName());
+                }
+            }
+            _printStream.print(") ;");
+            _printStream.println("");
+            _printStream.println(_prefix + "execute(\"op"
+                                     + "_" + x.getFunctionName() + "\");");
+            _printStream.println("");
+            
+        } else {
+            
+            VariableStatement inArg = (VariableStatement) rhsStatement.getChild(0);
+            VariableStatement outArg = (VariableStatement) lhsStatement.getChild(0);
+            
+            _printStream.println("");
+            _printStream.print(_prefix + outArg.getVariableName() + x.getNodeName() + " = "  +
+                               inArg.getVariableName() + x.getNodeName() + ";"           );
+            _printStream.println("");
+            _printStream.println(_prefix + "execute(\"op_CopyPropagate\");");
+            _printStream.println("");
+            
+        }
+        
     }
-
+    
     /**
      *  Print a Control statement in the correct format for c++.
      *
@@ -237,49 +222,49 @@ public class YmlStatementVisitor extends StatementVisitor {
         Expression expression = x.getNominator();
         if( x.getDenominator() == 1 ) {
             _printStream.println(_prefix + "int "
-                    + x.getName() + " = "
-                    + expression.accept(_cExpVisitor) + ";");
+                                     + x.getName() + " = "
+                                     + expression.accept(_cExpVisitor) + ";");
         } else {
             _printStream.println(_prefix + "int "
-                    + x.getName() + " = ("
-                    + expression.accept(_cExpVisitor) + ")/" +
-                    x.getDenominator() + ";");
+                                     + x.getName() + " = ("
+                                     + expression.accept(_cExpVisitor) + ")/" +
+                                 x.getDenominator() + ";");
         }
         _visitChildren(x);
     }
-
+    
     /**
      *  Print the Fifo Memory Statement in the correct format for c++
      *
      * @param  x Description of the Parameter
      */
     public void visitStatement(FifoMemoryStatement x) {
-
-          String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
-
+        
+        String tmp = ((ADGVariable) x.getArgumentList().get(0)).getName();
+        
         _printStream.println("");
         _printStream.println(_prefix + "ports->" + x.getGateName() + ".read( " +
-                                                    tmp + x.getNodeName() + " );");
-
+                             tmp + x.getNodeName() + " );");
+        
         Iterator i = x.getArgumentList().iterator();
-	if (i.hasNext()) {
+        if (i.hasNext()) {
             ADGVariable var = (ADGVariable) i.next();
-	}
-	while (i.hasNext()) {
-             ADGVariable var = (ADGVariable) i.next();
+        }
+        while (i.hasNext()) {
+            ADGVariable var = (ADGVariable) i.next();
             _printStream.println(_prefix + var.getName() + x.getNodeName() +" = "
-	                                            + tmp + x.getNodeName() + ";");
-	}
-
+                                     + tmp + x.getNodeName() + ";");
+        }
+        
         _printStream.println("");
         _prefixInc();
         _visitChildren(x);
         _prefixDec();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                  ///
-
+    
     /**
      * @param  s Description of the Parameter
      * @return  Description of the Return Value
@@ -287,11 +272,11 @@ public class YmlStatementVisitor extends StatementVisitor {
      * @exception  PandaException Description of the Exception
      */
     private PrintStream _openMakefileFile(String s)
-            throws FileNotFoundException, EspamException {
-
+        throws FileNotFoundException, EspamException {
+        
         PrintStream printStream;
         UserInterface ui = UserInterface.getInstance();
-
+        
         String directory = null;
         // Create the directory indicated by the '-o' option. Otherwise
         // select the orignal filename.
@@ -301,28 +286,28 @@ public class YmlStatementVisitor extends StatementVisitor {
             directory = ui.getBasePath() + "/" + ui.getOutputFileName();
         }
         File dir = new File(directory);
-
+        
         if( !dir.exists() ) {
             if( !dir.mkdirs() ) {
                 throw new EspamException("could not create " +
-                        "directory '" + dir.getPath() + "'.");
+                                         "directory '" + dir.getPath() + "'.");
             }
         }
-
+        
         String fullFileName = dir + "/" + s + ".h";
-
+        
         System.out.println(" -- OPEN FILE: " + fullFileName);
-
+        
         OutputStream file = null;
-
+        
         file = new FileOutputStream(fullFileName);
         printStream = new PrintStream(file);
         return printStream;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
-
+    
     /**
      *  The Expressions visitor.
      */

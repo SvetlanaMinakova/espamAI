@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.matrix;
 
@@ -29,28 +29,28 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
         }
         input_stream = stream;
     }
-
-
+    
+    
     public JMatrixParserTokenManager(ASCII_CharStream stream, int lexState) {
         this(stream);
         SwitchTo(lexState);
     }
-
-
+    
+    
     public static void ReInit(ASCII_CharStream stream) {
         jjmatchedPos = jjnewStateCnt = 0;
         curLexState = defaultLexState;
         input_stream = stream;
         ReInitRounds();
     }
-
-
+    
+    
     public static void ReInit(ASCII_CharStream stream, int lexState) {
         ReInit(stream);
         SwitchTo(lexState);
     }
-
-
+    
+    
     public static void SwitchTo(int lexState) {
         if (lexState >= 1 || lexState < 0) {
             throw new TokenMgrError("Error: Ignoring invalid lexical state : " + lexState + ". State unchanged.", TokenMgrError.INVALID_LEXICAL_STATE);
@@ -59,16 +59,16 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             curLexState = lexState;
         }
     }
-
-
+    
+    
     public static final Token getNextToken() {
         int kind;
         Token specialToken = null;
         Token matchedToken;
         int curPos = 0;
-
+        
         EOFLoop:
-        for (; ; ) {
+            for (; ; ) {
             try {
                 curChar = input_stream.BeginToken();
             } catch (java.io.IOException e) {
@@ -77,7 +77,7 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                 matchedToken.specialToken = specialToken;
                 return matchedToken;
             }
-
+            
             try {
                 input_stream.backup(0);
                 while (curChar <= 32 && (0x100002600L & (1L << curChar)) != 0L) {
@@ -137,39 +137,39 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             throw new TokenMgrError(EOFSeen, curLexState, error_line, error_column, error_after, curChar, TokenMgrError.LEXICAL_ERROR);
         }
     }
-
-
+    
+    
     public static final String[] jjstrLiteralImages = {
-            "", null, null, null, null, null, null, null, null, "\133", "\73", "\135",
-            "\54",};
+        "", null, null, null, null, null, null, null, null, "\133", "\73", "\135",
+        "\54",};
     public static final String[] lexStateNames = {
-            "DEFAULT",
-            };
+        "DEFAULT",
+    };
     protected static char curChar;
-
+    
     static int curLexState = 0;
     static int defaultLexState = 0;
     static final long[] jjbitVec0 = {
-            0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL
-            };
+        0x0L, 0x0L, 0xffffffffffffffffL, 0xffffffffffffffffL
+    };
     static int jjmatchedKind;
     static int jjmatchedPos;
     static int jjnewStateCnt;
     static final int[] jjnextStates = {
-            7, 8,
-            };
+        7, 8,
+    };
     static int jjround;
     static final long[] jjtoSkip = {
-            0x11eL,
-            };
+        0x11eL,
+    };
     static final long[] jjtoSpecial = {
-            0x100L,
-            };
+        0x100L,
+    };
     static final long[] jjtoToken = {
-            0x1ee1L,
-            };
-
-
+        0x1ee1L,
+    };
+    
+    
     private static final void ReInitRounds() {
         int i;
         jjround = 0x80000001;
@@ -177,42 +177,42 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             jjrounds[i] = 0x80000000;
         }
     }
-
-
+    
+    
     private static final void jjAddStates(int start, int end) {
         do {
             jjstateSet[jjnewStateCnt++] = jjnextStates[start];
         } while (start++ != end);
     }
-
-
+    
+    
     private static final void jjCheckNAdd(int state) {
         if (jjrounds[state] != jjround) {
             jjstateSet[jjnewStateCnt++] = state;
             jjrounds[state] = jjround;
         }
     }
-
-
+    
+    
     private static final void jjCheckNAddStates(int start, int end) {
         do {
             jjCheckNAdd(jjnextStates[start]);
         } while (start++ != end);
     }
-
-
+    
+    
     private static final void jjCheckNAddStates(int start) {
         jjCheckNAdd(jjnextStates[start]);
         jjCheckNAdd(jjnextStates[start + 1]);
     }
-
-
+    
+    
     private static final void jjCheckNAddTwoStates(int state1, int state2) {
         jjCheckNAdd(state1);
         jjCheckNAdd(state2);
     }
-
-
+    
+    
     private static final Token jjFillToken() {
         Token t = Token.newToken(jjmatchedKind);
         t.kind = jjmatchedKind;
@@ -224,8 +224,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
         t.endColumn = input_stream.getEndColumn();
         return t;
     }
-
-
+    
+    
     private static final int jjMoveNfa_0(int startState, int curPos) {
         int[] nextStates;
         int startsAt = 0;
@@ -241,15 +241,15 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             if (curChar < 64) {
                 long l = 1L << curChar;
                 MatchLoop:
-                do {
+                    do {
                     switch (jjstateSet[--i]) {
                         case 2:
                             if ((0x3ff000000000000L & l) != 0L) {
-                                if (kind > 6) {
-                                    kind = 6;
-                                }
-                                jjCheckNAdd(3);
+                            if (kind > 6) {
+                                kind = 6;
                             }
+                            jjCheckNAdd(3);
+                        }
                             else if ((0x280000000000L & l) != 0L) {
                                 if (kind > 7) {
                                     kind = 7;
@@ -261,8 +261,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                             break;
                         case 1:
                             if ((0x3ff008000000000L & l) == 0L) {
-                                break;
-                            }
+                            break;
+                        }
                             if (kind > 5) {
                                 kind = 5;
                             }
@@ -270,8 +270,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                             break;
                         case 3:
                             if ((0x3ff000000000000L & l) == 0L) {
-                                break;
-                            }
+                            break;
+                        }
                             if (kind > 6) {
                                 kind = 6;
                             }
@@ -279,8 +279,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                             break;
                         case 4:
                             if ((0x3ff000000000000L & l) == 0L) {
-                                break;
-                            }
+                            break;
+                        }
                             if (kind > 6) {
                                 kind = 6;
                             }
@@ -288,28 +288,28 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                             break;
                         case 5:
                             if ((0x280000000000L & l) != 0L && kind > 7) {
-                                kind = 7;
-                            }
+                            kind = 7;
+                        }
                             break;
                         case 6:
                             if (curChar == 47) {
-                                jjCheckNAddTwoStates(7, 8);
-                            }
+                            jjCheckNAddTwoStates(7, 8);
+                        }
                             break;
                         case 7:
                             if ((0xffffffffffffdbffL & l) != 0L) {
-                                jjCheckNAddTwoStates(7, 8);
-                            }
+                            jjCheckNAddTwoStates(7, 8);
+                        }
                             break;
                         case 8:
                             if ((0x2400L & l) != 0L) {
-                                kind = 8;
-                            }
+                            kind = 8;
+                        }
                             break;
                         case 9:
                             if (curChar == 47) {
-                                jjstateSet[jjnewStateCnt++] = 6;
-                            }
+                            jjstateSet[jjnewStateCnt++] = 6;
+                        }
                             break;
                         default:
                             break;
@@ -319,13 +319,13 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             else if (curChar < 128) {
                 long l = 1L << (curChar & 077);
                 MatchLoop:
-                do {
+                    do {
                     switch (jjstateSet[--i]) {
                         case 2:
                         case 0:
                             if ((0x7fffffe87fffffeL & l) == 0L) {
-                                break;
-                            }
+                            break;
+                        }
                             if (kind > 5) {
                                 kind = 5;
                             }
@@ -333,8 +333,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                             break;
                         case 1:
                             if ((0x7fffffe87fffffeL & l) == 0L) {
-                                break;
-                            }
+                            break;
+                        }
                             if (kind > 5) {
                                 kind = 5;
                             }
@@ -352,12 +352,12 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                 int i2 = (curChar & 0xff) >> 6;
                 long l2 = 1L << (curChar & 077);
                 MatchLoop:
-                do {
+                    do {
                     switch (jjstateSet[--i]) {
                         case 7:
                             if ((jjbitVec0[i2] & l2) != 0L) {
-                                jjAddStates(0, 1);
-                            }
+                            jjAddStates(0, 1);
+                        }
                             break;
                         default:
                             break;
@@ -380,8 +380,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
             }
         }
     }
-
-
+    
+    
     private static final int jjMoveStringLiteralDfa0_0() {
         switch (curChar) {
             case 44:
@@ -396,8 +396,8 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
                 return jjMoveNfa_0(2, 0);
         }
     }
-
-
+    
+    
     private static final int jjStartNfaWithStates_0(int pos, int kind, int state) {
         jjmatchedKind = kind;
         jjmatchedPos = pos;
@@ -408,30 +408,30 @@ public class JMatrixParserTokenManager implements JMatrixParserConstants {
         }
         return jjMoveNfa_0(state, pos + 1);
     }
-
-
+    
+    
     private static final int jjStartNfa_0(int pos, long active0) {
         return jjMoveNfa_0(jjStopStringLiteralDfa_0(pos, active0), pos + 1);
     }
-
-
+    
+    
     private static final int jjStopAtPos(int pos, int kind) {
         jjmatchedKind = kind;
         jjmatchedPos = pos;
         return pos + 1;
     }
-
-
+    
+    
     private static final int jjStopStringLiteralDfa_0(int pos, long active0) {
         switch (pos) {
             default:
                 return -1;
         }
     }
-
-
+    
+    
     private static ASCII_CharStream input_stream;
     private static final int[] jjrounds = new int[10];
     private static final int[] jjstateSet = new int[20];
-
+    
 }

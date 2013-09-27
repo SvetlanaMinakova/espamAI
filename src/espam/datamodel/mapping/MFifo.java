@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.mapping;
 
@@ -37,25 +22,25 @@ import espam.datamodel.platform.memories.Fifo;
  */
 
 public class MFifo implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a MFifo with a name
      */
     public MFifo( String name ) {
         _name = name;
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception If an error occurs.
+      */
     //public void accept(PlatformVisitor x) {
     //      x.visitComponent(this);
     //}
-
+    
     /**
      *  Clone this MProcessor
      *
@@ -64,7 +49,7 @@ public class MFifo implements Cloneable {
     public Object clone() {
         try {
             MFifo newObj = (MFifo) super.clone();
-	    newObj.setName(_name);
+            newObj.setName(_name);
             newObj.setChannel( (CDChannel) _channel.clone() );
             newObj.setFifo( (Fifo) _fifo.clone() );
             return (newObj);
@@ -74,8 +59,8 @@ public class MFifo implements Cloneable {
         }
         return null;
     }
-
-
+    
+    
     /**
      *  Get the name of this MFifo.
      *
@@ -84,7 +69,7 @@ public class MFifo implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this MFifo.
      *
@@ -94,22 +79,22 @@ public class MFifo implements Cloneable {
         _name = name;
     }
     
-	/**
-	 * Set the size of this MFifo
-	 * @param size The new size value
-	 */
-	public void setSize(int size) {
-		_size = size;
-	}
-
-	/**
-	 * Get the the size of this MFifo
-	 * @return the size
-	 */
-	public int getSize() {
-		return _size;
-	}    
-
+    /**
+     * Set the size of this MFifo
+     * @param size The new size value
+     */
+    public void setSize(int size) {
+        _size = size;
+    }
+    
+    /**
+     * Get the the size of this MFifo
+     * @return the size
+     */
+    public int getSize() {
+        return _size;
+    }    
+    
     /**
      *  Get the channel of a MFifo.
      *
@@ -118,7 +103,7 @@ public class MFifo implements Cloneable {
     public CDChannel getChannel() {
         return _channel;
     }
-
+    
     /**
      *  Set the channel of a MFifo.
      *
@@ -127,7 +112,7 @@ public class MFifo implements Cloneable {
     public void setChannel( CDChannel channel ) {
         _channel = channel;
     }
-
+    
     /**
      *  Get the fifo of MFifo.
      *
@@ -136,7 +121,7 @@ public class MFifo implements Cloneable {
     public Fifo getFifo() {
         return _fifo;
     }
-
+    
     /**
      *  Set the fifo of a MFifo.
      *
@@ -145,8 +130,8 @@ public class MFifo implements Cloneable {
     public void setFifo( Fifo fifo ) {
         _fifo = fifo;
     }
-
-
+    
+    
     /**
      *  Return a description of the MProcessor.
      *
@@ -155,25 +140,25 @@ public class MFifo implements Cloneable {
     public String toString() {
         return "MFifo: " + _name + " with size: " + _size;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of a MFIfo.
      */
     private String _name = null;
     
-	/**
-	 * Size of a MFifo
-	 */
-	private int _size = 0;    
-
+    /**
+     * Size of a MFifo
+     */
+    private int _size = 0;    
+    
     /**
      *  CDPN channel which is mapped on a fifo
      */
     private CDChannel _channel = null;
-
+    
     /**
      *  Platform fifo a CDPN channel is mapped on
      */

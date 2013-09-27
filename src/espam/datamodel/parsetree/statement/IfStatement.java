@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree.statement;
 
@@ -53,10 +38,10 @@ import espam.visitor.StatementVisitor;
  */
 
 public class IfStatement extends Statement {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Construct an canonical if statement using an linear expression.
      *
@@ -67,7 +52,7 @@ public class IfStatement extends Statement {
         _condition = condition;
         _sign = sign;
     }
-
+    
     /**
      *  Empty constructor
      *
@@ -76,7 +61,7 @@ public class IfStatement extends Statement {
     public IfStatement() {
         super("IfStatement");
     }
-
+    
     /**
      *  Accept a StatementVisitor
      *
@@ -86,20 +71,20 @@ public class IfStatement extends Statement {
     public void accept(StatementVisitor x) {
         x.visitStatement(this);
     }
-     
+    
     /**
      *  Clone this IfStatement.
      *
      * @return  a new instance of the IfStatement.
      */
-     public Object clone() {
-
-            IfStatement is = (IfStatement) super.clone();
-	    is.setCondition( (Expression) _condition.clone() );
-            is.setSign( _sign );
-	    return (is);
-     }
-
+    public Object clone() {
+        
+        IfStatement is = (IfStatement) super.clone();
+        is.setCondition( (Expression) _condition.clone() );
+        is.setSign( _sign );
+        return (is);
+    }
+    
     /**
      *  Get the condition
      *
@@ -108,7 +93,7 @@ public class IfStatement extends Statement {
     public Expression getCondition() {
         return _condition;
     }
-
+    
     /**
      *  Set the condition
      *
@@ -117,7 +102,7 @@ public class IfStatement extends Statement {
     public void setCondition(Expression condition) {
         _condition = condition;
     }
-
+    
     /**
      *  Gets the sign of the IfStatement object
      *
@@ -126,7 +111,7 @@ public class IfStatement extends Statement {
     public int getSign() {
         return _sign;
     }
-
+    
     /**
      *  Sets the sign of the IfStatement object
      *
@@ -134,7 +119,7 @@ public class IfStatement extends Statement {
     public void setSign(int sign) {
         _sign = sign;
     }
-
+    
     /**
      *  Give the string representation of the if statement.
      *
@@ -149,20 +134,20 @@ public class IfStatement extends Statement {
         }
         return ln;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  The epression of the If Statement
      */
     private Expression _condition;
-
+    
     /**
-    *  The sign of the If Statement:
-    *		0 : '=='
-    *		1 : '>='
-    *	       -1 : '<='
-    */
+     *  The sign of the If Statement:
+     *  0 : '=='
+     *  1 : '>='
+     *        -1 : '<='
+     */
     private int _sign;
 }

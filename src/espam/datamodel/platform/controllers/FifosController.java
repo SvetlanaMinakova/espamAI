@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.controllers;
 
@@ -36,10 +21,10 @@ import java.util.Iterator;
  */
 
 public class FifosController extends Controller {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a FifosController with a name.
      *
@@ -47,25 +32,25 @@ public class FifosController extends Controller {
     public FifosController(String name) {
         super(name);
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(PlatformVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this FifosController
      *
      * @return  a new instance of the FifosController.
      */
     public Object clone() {
-            FifosController newObj = (FifosController) super.clone();
-            return( newObj );
+        FifosController newObj = (FifosController) super.clone();
+        return( newObj );
     }
-
+    
     /**
      *  Get the number of FifoRead ports of this controller.
      *
@@ -73,18 +58,18 @@ public class FifosController extends Controller {
      */
     public int getNumberFifoReadPorts() {
         int num = 0;
-
-	Iterator i = getPortList().iterator();
-	while( i.hasNext() ) {
-           Port port = (Port) i.next();
-	   if( port instanceof FifoReadPort ) {
-	      num++;
-	   }
-	}
-
+        
+        Iterator i = getPortList().iterator();
+        while( i.hasNext() ) {
+            Port port = (Port) i.next();
+            if( port instanceof FifoReadPort ) {
+                num++;
+            }
+        }
+        
         return num;
     }
-
+    
     /**
      *  Get the number of FifoWrite ports of this controller.
      *
@@ -92,56 +77,56 @@ public class FifosController extends Controller {
      */
     public int getNumberFifoWritePorts() {
         int num = 0;
-
-	Iterator i = getPortList().iterator();
-	while( i.hasNext() ) {
-           Port port = (Port) i.next();
-	   if( port instanceof FifoWritePort ) {
-	      num++;
-	   }
-	}
-
+        
+        Iterator i = getPortList().iterator();
+        while( i.hasNext() ) {
+            Port port = (Port) i.next();
+            if( port instanceof FifoWritePort ) {
+                num++;
+            }
+        }
+        
         return num;
     }
-
+    
     /**
      *  Get the FifoRead ports of this controller.
      *
      * @return  the FifoRead ports
      */
     public Vector getFifoReadPorts() {
-
-	Vector readPorts = new Vector();
-	Iterator i = getPortList().iterator();
-	while( i.hasNext() ) {
-           Port port = (Port) i.next();
-	   if( port instanceof FifoReadPort ) {
-	      readPorts.add( port );
-	   }
-	}
-
+        
+        Vector readPorts = new Vector();
+        Iterator i = getPortList().iterator();
+        while( i.hasNext() ) {
+            Port port = (Port) i.next();
+            if( port instanceof FifoReadPort ) {
+                readPorts.add( port );
+            }
+        }
+        
         return readPorts;
     }
-
-     /**
+    
+    /**
      *  Get the FifoWrite ports of this controller.
      *
      * @return  the FifoWrite ports
      */
     public Vector getFifoWritePorts() {
-
-	Vector writePorts = new Vector();
-	Iterator i = getPortList().iterator();
-	while( i.hasNext() ) {
-           Port port = (Port) i.next();
-	   if( port instanceof FifoWritePort ) {
-	      writePorts.add( port );
-	   }
-	}
-
+        
+        Vector writePorts = new Vector();
+        Iterator i = getPortList().iterator();
+        while( i.hasNext() ) {
+            Port port = (Port) i.next();
+            if( port instanceof FifoWritePort ) {
+                writePorts.add( port );
+            }
+        }
+        
         return writePorts;
     }
-
+    
     /**
      *  Return a description of the FifosController.
      *
@@ -150,9 +135,9 @@ public class FifosController extends Controller {
     public String toString() {
         return "FifosController: " + getName();
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
-
+    
+    
 }

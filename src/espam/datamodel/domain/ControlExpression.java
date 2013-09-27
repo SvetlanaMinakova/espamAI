@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.domain;
 
@@ -34,10 +19,10 @@ import espam.utils.symbolic.expression.Expression;
  */
 
 public class ControlExpression implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a ControlExpression with a name.
      *
@@ -46,23 +31,23 @@ public class ControlExpression implements Cloneable {
         _name = name;
         _expression = new Expression();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     public boolean equals(Object obj) {
-	if (!(obj instanceof ControlExpression))
-	    return false;
-	ControlExpression o = (ControlExpression) obj;
-	return _name.equals(o._name)
-	    && _expression.equals(o._expression);
+        if (!(obj instanceof ControlExpression))
+            return false;
+        ControlExpression o = (ControlExpression) obj;
+        return _name.equals(o._name)
+            && _expression.equals(o._expression);
     }
-
+    
     /**
      *  Clone this control expression
      *
@@ -71,8 +56,8 @@ public class ControlExpression implements Cloneable {
     public Object clone() {
         try {
             ControlExpression newObj = (ControlExpression) super.clone();
-		    newObj.setName(_name);
-		    newObj.setExpression( (Expression) _expression.clone() );
+            newObj.setName(_name);
+            newObj.setExpression( (Expression) _expression.clone() );
             return( newObj );
         }
         catch( CloneNotSupportedException e ) {
@@ -80,7 +65,7 @@ public class ControlExpression implements Cloneable {
         }
         return null;
     }
-
+    
     /**
      *  Get the name of this control expression.
      *
@@ -89,7 +74,7 @@ public class ControlExpression implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this control expression.
      *
@@ -98,7 +83,7 @@ public class ControlExpression implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the expression of this control expression.
      *
@@ -107,7 +92,7 @@ public class ControlExpression implements Cloneable {
     public Expression getExpression() {
         return _expression;
     }
-
+    
     /**
      *  Set the expression of this control expression.
      *
@@ -116,7 +101,7 @@ public class ControlExpression implements Cloneable {
     public void setExpression(Expression expression) {
         _expression = expression;
     }
-
+    
     /**
      *  Return a description of the control expression.
      *
@@ -125,16 +110,16 @@ public class ControlExpression implements Cloneable {
     public String toString() {
         return "Control Expression: " + _name;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of the control expresion.
      */
     private String _name = null;
-
-
+    
+    
     /**
      *  The expression itself.
      */

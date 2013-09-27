@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.platform.processors;
 
@@ -31,10 +16,10 @@ import espam.datamodel.platform.Port;
  */
 
 public class MemoryMap implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a memory map with a name and an empty
      *  portList and pageList.
@@ -43,13 +28,13 @@ public class MemoryMap implements Cloneable {
         _name = name;
         _pageList = new Vector();
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     //public void accept(Visitor x) throws EspamException { }
-
+    
     /**
      *  Clone this memory map
      *
@@ -58,7 +43,7 @@ public class MemoryMap implements Cloneable {
     public Object clone() {
         try {
             MemoryMap newObj = (MemoryMap) super.clone();
-	    newObj.setName( _name );
+            newObj.setName( _name );
             newObj.setPort( _port );
             newObj.setPageList( (Vector) _pageList.clone() );
             return (newObj);
@@ -68,7 +53,7 @@ public class MemoryMap implements Cloneable {
         }
         return null;
     }
-
+    
     /**
      *  Get the name of this memory map.
      *
@@ -77,7 +62,7 @@ public class MemoryMap implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this memory map.
      *
@@ -86,7 +71,7 @@ public class MemoryMap implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the port of this memory map.
      *
@@ -95,7 +80,7 @@ public class MemoryMap implements Cloneable {
     public Port getPort() {
         return _port;
     }
-
+    
     /**
      *  Set the port of this memory map.
      *
@@ -104,7 +89,7 @@ public class MemoryMap implements Cloneable {
     public void setPort(Port port) {
         _port = port;
     }
-
+    
     /**
      *  Get the list of pages of this memory map.
      *
@@ -113,7 +98,7 @@ public class MemoryMap implements Cloneable {
     public Vector getPageList() {
         return _pageList;
     }
-
+    
     /**
      *  Set the list of pages of this memory map.
      *
@@ -122,7 +107,7 @@ public class MemoryMap implements Cloneable {
     public void setPageList(Vector pageList) {
         _pageList = pageList;
     }
-
+    
     /**
      *  Set the start addresses of of different memory segments of a memory map.
      *
@@ -131,27 +116,27 @@ public class MemoryMap implements Cloneable {
     public void setProgramMemorySegment( int programMemorySegment ) {
         _programMemorySegment = programMemorySegment;
     }
-
+    
     public void setDataMemorySegment( int dataMemorySegment ) {
         _dataMemorySegment = dataMemorySegment;
     }
-
+    
     public void setFifosReadSegment( int fifosReadSegment ) {
         _fifosReadSegment = fifosReadSegment;
     }
-
+    
     public void setFifosWriteSegment( int fifosWriteSegment ) {
         _fifosWriteSegment = fifosWriteSegment;
     }
-
+    
     public void setVirtualBufferSegment( int virtualBufferSegment ) {
         _virtualBufferSegment = virtualBufferSegment;
     }
-
+    
     public void setPeripheralsSegment( int peripheralsSegment ) {
         _peripheralsSegment = peripheralsSegment;
     }
-
+    
     /**
      *  Get the start addresses of of different memory segments of a memory map.
      *
@@ -160,27 +145,27 @@ public class MemoryMap implements Cloneable {
     public int getProgramMemorySegment() {
         return _programMemorySegment;
     }
-
+    
     public int getDataMemorySegment() {
         return _dataMemorySegment;
     }
-
+    
     public int getFifosReadSegment() {
         return _fifosReadSegment;
     }
-
+    
     public int getFifosWriteSegment() {
         return _fifosWriteSegment;
     }
-
+    
     public int getVirtualBufferSegment() {
         return _virtualBufferSegment;
     }
-
+    
     public int getPeripheralsSegment() {
         return _peripheralsSegment;
     }
-
+    
     /**
      *  Return a description of the memory map.
      *
@@ -189,20 +174,20 @@ public class MemoryMap implements Cloneable {
     public String toString() {
         return "Memory Map: " + _name;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of the Memory Map.
      */
     private String _name = null;
-
+    
     /**
      *  List of the ports to which this memory map corresponds.
      */
     private Port _port = null;
-
+    
     /**
      *  List of the pages (segments) of this memory map
      */

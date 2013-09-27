@@ -4,32 +4,32 @@ package espam.parser.expression;
 
 public interface ExpressionParserTreeConstants
 {
-  public int JJTSTART = 0;
-  public int JJTCOMPLEXEXPRESSION = 1;
-  public int JJTSIMPLEEXPRESSION = 2;
-  public int JJTSIGN = 3;
-  public int JJTLINEAROPERATOR = 4;
-  public int JJTTERMOROPERATOR = 5;
-  public int JJTSPECIALTERM = 6;
-  public int JJTSPECIALOPERATOR = 7;
-  public int JJTTERM = 8;
-  public int JJTFRACTION = 9;
-  public int JJTIDENTIFIER = 10;
-  public int JJTINTEGER = 11;
-
-
-  public String[] jjtNodeName = {
-    "start",
-    "complexExpression",
-    "simpleExpression",
-    "sign",
-    "linearOperator",
-    "termOrOperator",
-    "specialTerm",
-    "specialOperator",
-    "term",
-    "fraction",
-    "Identifier",
-    "Integer",
-  };
+    public int JJTSTART = 0;
+    public int JJTCOMPLEXEXPRESSION = 1;
+    public int JJTSIMPLEEXPRESSION = 2;
+    public int JJTSIGN = 3;
+    public int JJTLINEAROPERATOR = 4;
+    public int JJTTERMOROPERATOR = 5;
+    public int JJTSPECIALTERM = 6;
+    public int JJTSPECIALOPERATOR = 7;
+    public int JJTTERM = 8;
+    public int JJTFRACTION = 9;
+    public int JJTIDENTIFIER = 10;
+    public int JJTINTEGER = 11;
+    
+    
+    public String[] jjtNodeName = {
+        "start",
+        "complexExpression",
+        "simpleExpression",
+        "sign",
+        "linearOperator",
+        "termOrOperator",
+        "specialTerm",
+        "specialOperator",
+        "term",
+        "fraction",
+        "Identifier",
+        "Integer",
+    };
 }

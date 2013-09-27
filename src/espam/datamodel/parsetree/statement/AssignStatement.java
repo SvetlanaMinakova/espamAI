@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree.statement;
 
@@ -46,10 +31,10 @@ import espam.visitor.StatementVisitor;
  */
 
 public class AssignStatement extends Statement {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Construct an assign statement give a specific function name.
      *
@@ -58,7 +43,7 @@ public class AssignStatement extends Statement {
     public AssignStatement() {
         super("AssignStatement");
     }
-
+    
     /**
      *  Accept a StatementVisitor
      *
@@ -68,23 +53,23 @@ public class AssignStatement extends Statement {
     public void accept(StatementVisitor x) {
         x.visitStatement(this);
     }
-
+    
     /**
      *  Clone this AssignStatement
      *
      * @return  a new instance of the AssignStatement.
      */
     public Object clone() {
-
+        
         AssignStatement as = (AssignStatement) super.clone();
         as.setFunctionName( _functionName );
         as.setNodeName( _nodeName );
-
+        
         return (as);
-	
+        
     }
-
-
+    
+    
     /**
      *  Get the function name
      *
@@ -93,7 +78,7 @@ public class AssignStatement extends Statement {
     public String getFunctionName() {
         return _functionName;
     }
-
+    
     /**
      *  Set the function name.
      *
@@ -102,15 +87,15 @@ public class AssignStatement extends Statement {
     public void setFunctionName(String name) {
         _functionName = name;
     }
-
+    
     public String getNodeName() {
         return _nodeName;
     }
-
+    
     public void setNodeName(String name) {
         _nodeName = name;
     }
-
+    
     /**
      *  Give the string representation of the assign statement.
      *
@@ -120,15 +105,15 @@ public class AssignStatement extends Statement {
         String ln = "AssignStatement: " + _functionName;
         return ln;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  The name of the function.
      */
     private String _functionName;
-
+    
     /**
      *  The name of the node.
      */

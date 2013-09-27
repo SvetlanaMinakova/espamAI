@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.parser.xml.adg;
 
@@ -33,90 +18,90 @@ import org.xml.sax.InputSource;
  */
 
 public class ResolveEntityHandler implements EntityResolver {
-
-	///////////////////////////////////////////////////////////////////
-	////                         public members                    ////
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  publicId Description of the Parameter
-	 * @param  systemId Description of the Parameter
-	 * @return  Description of the Return Value
-	 */
-
-	public InputSource resolveEntity(String publicId, String systemId) {
-		if (publicId != null && publicId.equals("-//LIACS//DTD ESPAM 1//EN")) {
-			return new InputSource(new StringReader(ESPAM_DTD_1));
-		} else {
-			return null;
-		}
-	}
-
-	///////////////////////////////////////////////////////////////////
-	////                         public variables                  ////
-
-	/**
-	 *  Description of the Field
-	 */
-	public static String ESPAM_DTD_1 =
-		  "<!ELEMENT adg (parameter*,node*,edge*)>"
-		+ "<!ATTLIST adg name CDATA #REQUIRED levelUpNode CDATA #IMPLIED>"
-
-		+ "<!ELEMENT parameter EMPTY>"
-		+ "<!ATTLIST parameter name CDATA #REQUIRED lb CDATA #IMPLIED ub CDATA #IMPLIED value CDATA #IMPLIED>"
-
-		+ "<!ELEMENT node (inport*,outport*,function,domain)*>"
-		+ "<!ATTLIST node name CDATA #REQUIRED  levelUpNode CDATA #IMPLIED>"
-
-		+ "<!ELEMENT inport (invariable*, bindvariable*,domain)>"
-		+ "<!ATTLIST inport name CDATA #REQUIRED node CDATA #IMPLIED edge CDATA #IMPLIED>"
-
-		+ "<!ELEMENT outport (outvariable*, bindvariable*,domain)>"
-		+ "<!ATTLIST outport name CDATA #REQUIRED node CDATA #IMPLIED edge CDATA #IMPLIED>"
-
-		+ "<!ELEMENT function (inargument*,outargument*)>"
-		+ "<!ATTLIST function name CDATA #REQUIRED>"
-
-		+ "<!ELEMENT edge (linearization,mapping)>"
-		+ "<!ATTLIST edge name CDATA #REQUIRED fromPort CDATA #IMPLIED fromNode CDATA #IMPLIED toPort CDATA #IMPLIED toNode CDATA #IMPLIED size CDATA #IMPLIED>"
-
-		+ "<!ELEMENT domain (linearbound*,filterset*)>"
-		+ "<!ATTLIST domain type CDATA #REQUIRED>"
-
-		+ "<!ELEMENT linearbound (constraint+,context*,control*)>"
-		+ "<!ATTLIST linearbound index CDATA #REQUIRED staticControl CDATA #REQUIRED dynamicControl CDATA #REQUIRED parameter CDATA #REQUIRED>"
-
-		+ "<!ELEMENT filterset (constraint+)>"
-		+ "<!ATTLIST filterset index CDATA #REQUIRED staticControl CDATA #REQUIRED dynamicControl CDATA #REQUIRED parameter CDATA #REQUIRED>"
-
-		+ "<!ELEMENT invariable EMPTY>"
-		+ "<!ATTLIST invariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
-
-		+ "<!ELEMENT outvariable EMPTY>"
-		+ "<!ATTLIST outvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
-
-		+ "<!ELEMENT bindvariable EMPTY>"
-		+ "<!ATTLIST bindvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
-
-		+ "<!ELEMENT inargument EMPTY>"
-		+ "<!ATTLIST inargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
-
-		+ "<!ELEMENT outargument EMPTY>"
-		+ "<!ATTLIST outargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
-
-		+ "<!ELEMENT constraint EMPTY>"
-		+ "<!ATTLIST constraint matrix CDATA #REQUIRED>"
-
-		+ "<!ELEMENT context EMPTY>"
-		+ "<!ATTLIST context matrix CDATA #REQUIRED>"
-
-		+ "<!ELEMENT control EMPTY>"
-		+ "<!ATTLIST control name CDATA #REQUIRED exp CDATA #REQUIRED>"
-
-		+ "<!ELEMENT mapping EMPTY>"
-		+ "<!ATTLIST mapping matrix CDATA #REQUIRED>"
-
-		+ "<!ELEMENT linearization EMPTY>"
-		+ "<!ATTLIST linearization type CDATA #REQUIRED>";
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         public members                    ////
+    
+    /**
+     *  Description of the Method
+     *
+     * @param  publicId Description of the Parameter
+     * @param  systemId Description of the Parameter
+     * @return  Description of the Return Value
+     */
+    
+    public InputSource resolveEntity(String publicId, String systemId) {
+        if (publicId != null && publicId.equals("-//LIACS//DTD ESPAM 1//EN")) {
+            return new InputSource(new StringReader(ESPAM_DTD_1));
+        } else {
+            return null;
+        }
+    }
+    
+    ///////////////////////////////////////////////////////////////////
+    ////                         public variables                  ////
+    
+    /**
+     *  Description of the Field
+     */
+    public static String ESPAM_DTD_1 =
+        "<!ELEMENT adg (parameter*,node*,edge*)>"
+        + "<!ATTLIST adg name CDATA #REQUIRED levelUpNode CDATA #IMPLIED>"
+        
+        + "<!ELEMENT parameter EMPTY>"
+        + "<!ATTLIST parameter name CDATA #REQUIRED lb CDATA #IMPLIED ub CDATA #IMPLIED value CDATA #IMPLIED>"
+        
+        + "<!ELEMENT node (inport*,outport*,function,domain)*>"
+        + "<!ATTLIST node name CDATA #REQUIRED  levelUpNode CDATA #IMPLIED>"
+        
+        + "<!ELEMENT inport (invariable*, bindvariable*,domain)>"
+        + "<!ATTLIST inport name CDATA #REQUIRED node CDATA #IMPLIED edge CDATA #IMPLIED>"
+        
+        + "<!ELEMENT outport (outvariable*, bindvariable*,domain)>"
+        + "<!ATTLIST outport name CDATA #REQUIRED node CDATA #IMPLIED edge CDATA #IMPLIED>"
+        
+        + "<!ELEMENT function (inargument*,outargument*)>"
+        + "<!ATTLIST function name CDATA #REQUIRED>"
+        
+        + "<!ELEMENT edge (linearization,mapping)>"
+        + "<!ATTLIST edge name CDATA #REQUIRED fromPort CDATA #IMPLIED fromNode CDATA #IMPLIED toPort CDATA #IMPLIED toNode CDATA #IMPLIED size CDATA #IMPLIED>"
+        
+        + "<!ELEMENT domain (linearbound*,filterset*)>"
+        + "<!ATTLIST domain type CDATA #REQUIRED>"
+        
+        + "<!ELEMENT linearbound (constraint+,context*,control*)>"
+        + "<!ATTLIST linearbound index CDATA #REQUIRED staticControl CDATA #REQUIRED dynamicControl CDATA #REQUIRED parameter CDATA #REQUIRED>"
+        
+        + "<!ELEMENT filterset (constraint+)>"
+        + "<!ATTLIST filterset index CDATA #REQUIRED staticControl CDATA #REQUIRED dynamicControl CDATA #REQUIRED parameter CDATA #REQUIRED>"
+        
+        + "<!ELEMENT invariable EMPTY>"
+        + "<!ATTLIST invariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+        
+        + "<!ELEMENT outvariable EMPTY>"
+        + "<!ATTLIST outvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+        
+        + "<!ELEMENT bindvariable EMPTY>"
+        + "<!ATTLIST bindvariable name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+        
+        + "<!ELEMENT inargument EMPTY>"
+        + "<!ATTLIST inargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+        
+        + "<!ELEMENT outargument EMPTY>"
+        + "<!ATTLIST outargument name CDATA #REQUIRED dataType CDATA #IMPLIED>"
+        
+        + "<!ELEMENT constraint EMPTY>"
+        + "<!ATTLIST constraint matrix CDATA #REQUIRED>"
+        
+        + "<!ELEMENT context EMPTY>"
+        + "<!ATTLIST context matrix CDATA #REQUIRED>"
+        
+        + "<!ELEMENT control EMPTY>"
+        + "<!ATTLIST control name CDATA #REQUIRED exp CDATA #REQUIRED>"
+        
+        + "<!ELEMENT mapping EMPTY>"
+        + "<!ATTLIST mapping matrix CDATA #REQUIRED>"
+        
+        + "<!ELEMENT linearization EMPTY>"
+        + "<!ATTLIST linearization type CDATA #REQUIRED>";
 }

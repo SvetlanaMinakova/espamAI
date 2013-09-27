@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.domain;
 
@@ -34,10 +19,10 @@ import espam.datamodel.graph.adg.ADGParameter;
  */
 
 public class IndexVector implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a IndexVector with a name.
      *
@@ -46,27 +31,27 @@ public class IndexVector implements Cloneable {
         _iterationVector = new Vector();   // vector of strings
         _staticCtrlVector = new Vector();  // vector of ControlExpressions
         _dynamicCtrlVector = new Vector(); // vector of strings
-        _parameterVector = new Vector();   // vector of Parameters	
+        _parameterVector = new Vector();   // vector of Parameters 
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception EspamException If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception EspamException If an error occurs.
+      */
     public void accept(ADGraphVisitor x) {
-         x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     public boolean equals(Object obj) {
-	if (!(obj instanceof IndexVector))
-	    return false;
-	IndexVector o = (IndexVector) obj;
-	return _iterationVector.equals(o._iterationVector)
-	    && _staticCtrlVector.equals(o._staticCtrlVector)
-	    && _dynamicCtrlVector.equals(o._dynamicCtrlVector)
-	    && _parameterVector.equals(o._parameterVector);
+        if (!(obj instanceof IndexVector))
+            return false;
+        IndexVector o = (IndexVector) obj;
+        return _iterationVector.equals(o._iterationVector)
+            && _staticCtrlVector.equals(o._staticCtrlVector)
+            && _dynamicCtrlVector.equals(o._dynamicCtrlVector)
+            && _parameterVector.equals(o._parameterVector);
     }
-
+    
     /**
      *  Clone this IndexVector
      *
@@ -75,10 +60,10 @@ public class IndexVector implements Cloneable {
     public Object clone() {
         try {
             IndexVector newObj = (IndexVector) super.clone();
-		    newObj.setIterationVector( (Vector) _iterationVector.clone() );
-		    newObj.setStaticCtrlVector( (Vector) _staticCtrlVector.clone() );
-		    newObj.setDynamicCtrlVector( (Vector) _dynamicCtrlVector.clone() );
-		    newObj.setParameterVector( (Vector) _parameterVector.clone() );		    
+            newObj.setIterationVector( (Vector) _iterationVector.clone() );
+            newObj.setStaticCtrlVector( (Vector) _staticCtrlVector.clone() );
+            newObj.setDynamicCtrlVector( (Vector) _dynamicCtrlVector.clone() );
+            newObj.setParameterVector( (Vector) _parameterVector.clone() );      
             return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -86,7 +71,7 @@ public class IndexVector implements Cloneable {
         }
         return null;
     }
-
+    
     /**
      *  Get the vector of indexes of this IterationVector.
      *
@@ -95,7 +80,7 @@ public class IndexVector implements Cloneable {
     public Vector<String> getIterationVector() {
         return _iterationVector;
     }
-
+    
     /**
      *  Set the vector of indexes of this IterationVector.
      *
@@ -104,7 +89,7 @@ public class IndexVector implements Cloneable {
     public void setIterationVector(Vector<String> indexVector) {
         _iterationVector = indexVector;
     }
-
+    
     /**
      *  Get the static control vector of this IndexVector.
      *
@@ -113,28 +98,28 @@ public class IndexVector implements Cloneable {
     public Vector<ControlExpression> getStaticCtrlVector() {
         return _staticCtrlVector;
     }
-
+    
     /**
      *  Get the names of the static control expressions of this IndexVector.
      *
      * @return  the names of the static control expressions
      */
     public Vector<String> getStaticCtrlVectorNames() {
-
-    	Vector<String> names = new Vector<String>();
-    	ControlExpression curCtrl;
-    	
-    	Iterator i; 	
-    	i = _staticCtrlVector.iterator();
-    	
-   		while( i.hasNext() ) {
- 	         curCtrl = (ControlExpression) i.next();
- 	         names.add(curCtrl.getName());
- 	    }
-    	
+        
+        Vector<String> names = new Vector<String>();
+        ControlExpression curCtrl;
+        
+        Iterator i;  
+        i = _staticCtrlVector.iterator();
+        
+        while( i.hasNext() ) {
+            curCtrl = (ControlExpression) i.next();
+            names.add(curCtrl.getName());
+        }
+        
         return names;
     }
-
+    
     /**
      *  Set the static control vector of this IndexVector.
      *
@@ -143,7 +128,7 @@ public class IndexVector implements Cloneable {
     public void setStaticCtrlVector(Vector<ControlExpression> staticCtrlVector) {
         _staticCtrlVector = staticCtrlVector;
     }
-
+    
     /**
      *  Get the dynamic control vector of this IndexVector.
      *
@@ -152,7 +137,7 @@ public class IndexVector implements Cloneable {
     public Vector getDynamicCtrlVector() {
         return _dynamicCtrlVector;
     }
-
+    
     /**
      *  Set the dynamic control vector of this IndexVector.
      *
@@ -161,7 +146,7 @@ public class IndexVector implements Cloneable {
     public void setDynamicCtrlVector(Vector dynamicCtrlVector) {
         _dynamicCtrlVector = dynamicCtrlVector;
     }
-
+    
     /**
      *  Get the parameters vector of this IndexVector.
      *
@@ -170,43 +155,43 @@ public class IndexVector implements Cloneable {
     public Vector<ADGParameter> getParameterVector() {
         return _parameterVector;
     }
-
+    
     /**
      *  Get the names of the parameters of this IndexVector.
      *
      * @return  the names of the parameters
      */
     public Vector getParameterVectorNames() {
-    	Vector names = new Vector();
-    	ADGParameter curPar;
-
-    	Iterator i;
-    	i = _parameterVector.iterator();
-
-   		while( i.hasNext() ) {
- 	         curPar = (ADGParameter) i.next();
- 	         names.add(curPar.getName());
- 	    }
-
+        Vector names = new Vector();
+        ADGParameter curPar;
+        
+        Iterator i;
+        i = _parameterVector.iterator();
+        
+        while( i.hasNext() ) {
+            curPar = (ADGParameter) i.next();
+            names.add(curPar.getName());
+        }
+        
         return names;
     }
-
+    
     /**
      *  Get the names of the vectors contents in this IndexVector.
      *
      * @return  the names of the parameters
      */
     public Vector getVectorsNames() {
-
-	   Vector concVectNames = new Vector();
-	   concVectNames.addAll( getIterationVector() );
-	   concVectNames.addAll( getStaticCtrlVectorNames() );
-	   concVectNames.addAll( getDynamicCtrlVector() );
-	   concVectNames.addAll( getParameterVectorNames() );
-
-	   return concVectNames;
+        
+        Vector concVectNames = new Vector();
+        concVectNames.addAll( getIterationVector() );
+        concVectNames.addAll( getStaticCtrlVectorNames() );
+        concVectNames.addAll( getDynamicCtrlVector() );
+        concVectNames.addAll( getParameterVectorNames() );
+        
+        return concVectNames;
     }
-
+    
     /**
      *  Set the parameres vector of this IndexVector.
      *
@@ -215,7 +200,7 @@ public class IndexVector implements Cloneable {
     public void setParameterVector(Vector<ADGParameter> parameterVector) {
         _parameterVector = parameterVector;
     }
-
+    
     /**
      *  Return a description of the .
      *
@@ -223,31 +208,31 @@ public class IndexVector implements Cloneable {
      */
     public String toString() {
         return "Index Vector: " + _iterationVector + ", " +
-				  _staticCtrlVector + ", " +
-				  _dynamicCtrlVector + ", " +
-				  _parameterVector;
+            _staticCtrlVector + ", " +
+            _dynamicCtrlVector + ", " +
+            _parameterVector;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Vector of iterators.
      */
     private Vector<String> _iterationVector = null;
-
+    
     /**
      *  The static control expression is a vector of ControlExpressions
      *  A control expression contains a name and an expression. 
      *  In "d1 = div(i,2)" 'd1' is the name and 'div(i,2)' is the expression
      */
     private Vector<ControlExpression> _staticCtrlVector = null;
-
+    
     /**
      *  Vector of dynamic control expressions (names only).
      */
     private Vector<String> _dynamicCtrlVector = null;
-
+    
     /**
      *  Vector of parameters (the class contains name, lower bound, upper bound and
      *  default value).

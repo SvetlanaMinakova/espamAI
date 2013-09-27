@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.parsetree.statement;
 
@@ -32,14 +17,14 @@ import espam.visitor.StatementVisitor;
  */
 
 public class FifoMemoryStatement extends MemoryStatement {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     public FifoMemoryStatement() {
         super("FifoMemoryStatement");
     }
-
+    
     /**
      *  Accept a StatementVisitor
      *
@@ -48,23 +33,23 @@ public class FifoMemoryStatement extends MemoryStatement {
     public void accept(StatementVisitor x) {
         x.visitStatement(this);
     }
-
+    
     /**
      *  Clone this FifoMemoryStatement
      *
      * @return  a new instance of the FifoMemoryStatement.
      */
     public Object clone() {
-
-            FifoMemoryStatement fms = (FifoMemoryStatement) super.clone();
-            fms.setProcessName( _processName );
-            fms.setGateName( _gateName );
-            fms.setNodeName( _nodeName );
-            fms.setArgumentList( (Vector<ADGVariable>) _argumentList.clone() );
-            return (fms);
+        
+        FifoMemoryStatement fms = (FifoMemoryStatement) super.clone();
+        fms.setProcessName( _processName );
+        fms.setGateName( _gateName );
+        fms.setNodeName( _nodeName );
+        fms.setArgumentList( (Vector<ADGVariable>) _argumentList.clone() );
+        return (fms);
     }
-
-
+    
+    
     /**
      *  Get the argument name
      *
@@ -73,7 +58,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public Vector<ADGVariable> getArgumentList() {
         return _argumentList;
     }
-
+    
     /**
      *  Set the argument name
      *
@@ -81,7 +66,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public void setArgumentList(Vector<ADGVariable> argumentList) {
         _argumentList = argumentList;
     }
-
+    
     /**
      *  Get the process name
      *
@@ -90,7 +75,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public String getProcessName() {
         return _processName;
     }
-
+    
     /**
      *  Set the process name
      *
@@ -98,7 +83,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public void setProcessName(String processName) {
         _processName = processName;
     }
-
+    
     /**
      *  Get the gate name
      *
@@ -107,7 +92,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public String getGateName() {
         return _gateName;
     }
-
+    
     /**
      *  Set the gate name
      *
@@ -115,7 +100,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public void setGateName(String gateName) {
         _gateName = gateName;
     }
-
+    
     /**
      *  Get the node name
      *
@@ -124,7 +109,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public String getNodeName() {
         return _nodeName;
     }
-
+    
     /**
      *  Set the node name
      *
@@ -132,7 +117,7 @@ public class FifoMemoryStatement extends MemoryStatement {
     public void setNodeName(String nodeName) {
         _nodeName = nodeName;
     }
-
+    
     /**
      *  Give the string representation of the FifoMemoryStatement.
      *
@@ -140,22 +125,22 @@ public class FifoMemoryStatement extends MemoryStatement {
      */
     public String toString() {
         String ln = "FIFO: <"
-                + _processName
-                + _gateName + ", "
-                + _argumentList
-		+ _nodeName
-		+ ">";
+            + _processName
+            + _gateName + ", "
+            + _argumentList
+            + _nodeName
+            + ">";
         return ln;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  The name of the process.
      */
     private String _processName;
-
+    
     /**
      *  The name of the gate.
      */
@@ -164,7 +149,7 @@ public class FifoMemoryStatement extends MemoryStatement {
      *  The name of the node.
      */
     private String _nodeName;
-
+    
     /**
      *  The argument list.
      */

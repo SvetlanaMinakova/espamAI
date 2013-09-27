@@ -1,18 +1,3 @@
-/*******************************************************************\
-
-The ESPAM Software Tool 
-Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
 
 package espam.datamodel.mapping;
 
@@ -44,10 +29,10 @@ import espam.visitor.MappingVisitor;
  */
 
 public class Mapping implements Cloneable {
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
-
+    
     /**
      *  Constructor to create a mapping with a name
      *  and an empty processor list
@@ -56,19 +41,19 @@ public class Mapping implements Cloneable {
         _name = name;
         _processorList = new Vector();
         _fifoList = new Vector();
-	_adg = new ADGraph("");
-	_cdpn = new CDProcessNetwork("");
-	_platform = new Platform("");
+        _adg = new ADGraph("");
+        _cdpn = new CDProcessNetwork("");
+        _platform = new Platform("");
     }
-
+    
     /** Accept a Visitor
-     *  @param x A Visitor Object.
-     *  @exception If an error occurs.
-     */
+      *  @param x A Visitor Object.
+      *  @exception If an error occurs.
+      */
     public void accept(MappingVisitor x) {
-          x.visitComponent(this);
+        x.visitComponent(this);
     }
-
+    
     /**
      *  Clone this Mapping
      *
@@ -77,7 +62,7 @@ public class Mapping implements Cloneable {
     public Object clone() {
         try {
             Mapping newObj = (Mapping) super.clone();
-	    newObj.setName(_name);
+            newObj.setName(_name);
             newObj.setProcessorList( (Vector) _processorList.clone() );
             newObj.setFifoList( (Vector) _fifoList.clone() );
             return (newObj);
@@ -87,7 +72,7 @@ public class Mapping implements Cloneable {
         }
         return null;
     }
-
+    
     
     /**
      *  Get the name of this mapping.
@@ -97,7 +82,7 @@ public class Mapping implements Cloneable {
     public String getName() {
         return _name;
     }
-
+    
     /**
      *  Set the name of this mapping.
      *
@@ -106,7 +91,7 @@ public class Mapping implements Cloneable {
     public void setName(String name) {
         _name = name;
     }
-
+    
     /**
      *  Get the processor list of Mapping.
      *
@@ -115,7 +100,7 @@ public class Mapping implements Cloneable {
     public Vector getProcessorList() {
         return _processorList;
     }
-
+    
     /**
      *  Set the processor list of Mapping.
      *
@@ -124,7 +109,7 @@ public class Mapping implements Cloneable {
     public void setProcessorList( Vector processorList) {
         _processorList = processorList;
     }
-
+    
     /**
      *  Get the fifo list of Mapping.
      *
@@ -133,7 +118,7 @@ public class Mapping implements Cloneable {
     public Vector getFifoList() {
         return _fifoList;
     }
-
+    
     /**
      *  Set the fifo list of Mapping.
      *
@@ -151,7 +136,7 @@ public class Mapping implements Cloneable {
     public ADGraph getADG() {
         return _adg;
     }
-
+    
     /**
      *  Set the ADG of Mapping.
      *
@@ -160,7 +145,7 @@ public class Mapping implements Cloneable {
     public void setADG( ADGraph adg) {
         _adg = adg;
     }
-
+    
     /**
      *  Get the CDPN of Mapping.
      *
@@ -169,7 +154,7 @@ public class Mapping implements Cloneable {
     public CDProcessNetwork getCDPN() {
         return _cdpn;
     }
-
+    
     /**
      *  Set the CDPN of Mapping.
      *
@@ -178,7 +163,7 @@ public class Mapping implements Cloneable {
     public void setCDPN( CDProcessNetwork cdpn) {
         _cdpn = cdpn;
     }
-
+    
     /**
      *  Get the Platform of Mapping.
      *
@@ -187,7 +172,7 @@ public class Mapping implements Cloneable {
     public Platform getPlatform() {
         return _platform;
     }
-
+    
     /**
      *  Set the Platform of Mapping.
      *
@@ -196,8 +181,8 @@ public class Mapping implements Cloneable {
     public void setPlatform( Platform platform) {
         _platform = platform;
     }
-
-
+    
+    
     /**
      *  Return a description of the Mapping.
      *
@@ -206,7 +191,7 @@ public class Mapping implements Cloneable {
     public String toString() {
         return "Mapping: " + _name;
     }
-
+    
     /**
      *  Return a processor which has a specific name. Return null if
      *  processor cannot be found.
@@ -214,90 +199,90 @@ public class Mapping implements Cloneable {
      * @param  name the name of the processor to search for.
      * @return  the processor with the specific name.
      */
-     public MProcessor getProcessor(String name) {
-          Iterator i;
-          i = _processorList.iterator();
-          while (i.hasNext()) {
-              MProcessor processor = (MProcessor) i.next();
-              if (processor.getName().equals(name)) {
-                 return processor;
-              }
-          }
-          return null;
-     }
-     
-     /**
-      *  Return a MFifo which mapping with a specific CDChannel. Return null if MFifo cannot
-      *  be found.
-      *
-      * @param  name the CDChannel to search for.
-      * @return  the MFifo which mapping with a specific CDChannel.
-      */
-      public MFifo getMFifo(CDChannel cdChannel) {
-    	   String cdChannelName = cdChannel.getName();
-           Iterator i;
-           i = getFifoList().iterator();
-           while (i.hasNext()) {
-               MFifo mFifo = (MFifo) i.next();
-               CDChannel mcdChannel = mFifo.getChannel(); 
-               if (mcdChannel != null && mcdChannel.getName().equals(cdChannelName)) {
-                  return mFifo;
-               }
-           }
-           return null;
-      }
-      
-      /**
-       *  Return a CDChannel which mapping with a specific Fifo. Return null if CDChannel cannot
-       *  be found.
-       *
-       * @param  name the Fifo to search for.
-       * @return  the CDChannel which mapping with a specific Fifo.
-       */
-       public CDChannel getCDChannel(Fifo fifo) {
-     	    String fifoName = fifo.getName();
-            Iterator i;
-            i = getFifoList().iterator();
-            while (i.hasNext()) {
-                MFifo mFifo = (MFifo) i.next();
-                Fifo mapFifo = mFifo.getFifo();
-                if (mapFifo.getName().equals(fifoName)) {
-                   CDChannel cdChannel = mFifo.getChannel();
-                   return cdChannel;
+    public MProcessor getProcessor(String name) {
+        Iterator i;
+        i = _processorList.iterator();
+        while (i.hasNext()) {
+            MProcessor processor = (MProcessor) i.next();
+            if (processor.getName().equals(name)) {
+                return processor;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     *  Return a MFifo which mapping with a specific CDChannel. Return null if MFifo cannot
+     *  be found.
+     *
+     * @param  name the CDChannel to search for.
+     * @return  the MFifo which mapping with a specific CDChannel.
+     */
+    public MFifo getMFifo(CDChannel cdChannel) {
+        String cdChannelName = cdChannel.getName();
+        Iterator i;
+        i = getFifoList().iterator();
+        while (i.hasNext()) {
+            MFifo mFifo = (MFifo) i.next();
+            CDChannel mcdChannel = mFifo.getChannel(); 
+            if (mcdChannel != null && mcdChannel.getName().equals(cdChannelName)) {
+                return mFifo;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     *  Return a CDChannel which mapping with a specific Fifo. Return null if CDChannel cannot
+     *  be found.
+     *
+     * @param  name the Fifo to search for.
+     * @return  the CDChannel which mapping with a specific Fifo.
+     */
+    public CDChannel getCDChannel(Fifo fifo) {
+        String fifoName = fifo.getName();
+        Iterator i;
+        i = getFifoList().iterator();
+        while (i.hasNext()) {
+            MFifo mFifo = (MFifo) i.next();
+            Fifo mapFifo = mFifo.getFifo();
+            if (mapFifo.getName().equals(fifoName)) {
+                CDChannel cdChannel = mFifo.getChannel();
+                return cdChannel;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     *  Return a MProcessor which mapping with a specific CDProcess. Return null if MProcessor cannot
+     *  be found.
+     *
+     * @param  name the CDProcess to search for.
+     * @return  the MProcessor which mapping with a specific CDProcess.
+     */
+    public MProcessor getMProcessor(CDProcess cdProcess) {
+        Iterator i;
+        i = cdProcess.getAdgNodeList().iterator();
+        ADGNode adgNode = (ADGNode) i.next();
+        String adgNodeName = adgNode.getName();
+        
+        Iterator j;
+        i = getProcessorList().iterator();
+        while (i.hasNext()) {
+            MProcessor mProcessor = (MProcessor) i.next();
+            j = mProcessor.getProcessList().iterator();
+            while (j.hasNext()) {
+                MProcess mProcess = (MProcess) j.next();
+                String madgNodeName = mProcess.getNode().getName();
+                if (madgNodeName.equals(adgNodeName)) {
+                    return mProcessor;
                 }
             }
-            return null;
-       }
-      
-      /**
-       *  Return a MProcessor which mapping with a specific CDProcess. Return null if MProcessor cannot
-       *  be found.
-       *
-       * @param  name the CDProcess to search for.
-       * @return  the MProcessor which mapping with a specific CDProcess.
-       */
-       public MProcessor getMProcessor(CDProcess cdProcess) {
-    	    Iterator i;
-    	    i = cdProcess.getAdgNodeList().iterator();
-     	    ADGNode adgNode = (ADGNode) i.next();
-    	    String adgNodeName = adgNode.getName();
-
-            Iterator j;
-            i = getProcessorList().iterator();
-            while (i.hasNext()) {
-                MProcessor mProcessor = (MProcessor) i.next();
-                j = mProcessor.getProcessList().iterator();
-                while (j.hasNext()) {
-                	MProcess mProcess = (MProcess) j.next();
-                	String madgNodeName = mProcess.getNode().getName();
-                	if (madgNodeName.equals(adgNodeName)) {
-                		return mProcessor;
-                	}
-                }
-            }
-            return null;
-       }
-
+        }
+        return null;
+    }
+    
     /**
      *  Return a CDProcess which is mapped onto the given mProcessor. Return null if
      *  process cannot be found.
@@ -307,7 +292,7 @@ public class Mapping implements Cloneable {
      */
     public CDProcess getCDProcess(MProcessor mProcessor) {
         CDProcess rt;
-                
+        
         Iterator processIt = mProcessor.getProcessList().iterator();
         while (processIt.hasNext()) {
             MProcess mProcess = (MProcess) processIt.next();
@@ -317,38 +302,38 @@ public class Mapping implements Cloneable {
         }
         return null;
     }
-
+    
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
-
+    
     /**
      *  Name of a Mapping.
      */
     private String _name = null;
-
+    
     /**
      *  List of the processors of Platform.
      */
     private Vector _processorList = null;
-
+    
     /**
      *  List of MFifos. MFifo points to a Fifo and CDChannel mapped on it
      */
     private Vector _fifoList = null;
-
+    
     /**
      *  Pointer to the ADG involved in a mapping.
      */
     private ADGraph _adg = null;
-
+    
     /**
      *  Pointer to the CDPN involved in a mapping.
      */
     private CDProcessNetwork _cdpn = null;
-
+    
     /**
      *  Pointer to the Platform involved in a mapping.
      */
     private Platform _platform = null;
-
+    
 }

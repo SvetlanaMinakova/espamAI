@@ -1,19 +1,19 @@
 /*******************************************************************\
-
-This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
-Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
-Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
-All rights reserved.
-
-The use and distribution terms for this software are covered by the 
-Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-which can be found in the file LICENSE at the root of this distribution.
-By using this software in any fashion, you are agreeing to be bound by 
-the terms of this license.
-
-You must not remove this notice, or any other, from this software.
-
-\*******************************************************************/
+  * 
+  This file is donated to ESPAM by Compaan Design BV (www.compaandesign.com) 
+  Copyright (c) 2000 - 2005 Leiden University (LERC group at LIACS)
+  Copyright (c) 2005 - 2007 CompaanDesign BV, The Netherlands
+  All rights reserved.
+  
+  The use and distribution terms for this software are covered by the 
+  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
+  which can be found in the file LICENSE at the root of this distribution.
+  By using this software in any fashion, you are agreeing to be bound by 
+  the terms of this license.
+  
+  You must not remove this notice, or any other, from this software.
+  
+  \*******************************************************************/
 
 package espam.parser.expression;
 
@@ -24,7 +24,7 @@ package espam.parser.expression;
  * @version $Id: SimpleNode.java,v 1.1 2007/12/07 22:06:58 stefanov Exp $
  */
 public class SimpleNode implements Node {
-
+    
     /**
      * Constructor for the SimpleNode object
      *
@@ -33,8 +33,8 @@ public class SimpleNode implements Node {
     public SimpleNode(int i) {
         id = i;
     }
-
-
+    
+    
     /**
      * Constructor for the SimpleNode object
      *
@@ -45,8 +45,8 @@ public class SimpleNode implements Node {
         this(i);
         parser = p;
     }
-
-
+    
+    
     /*
      * Override this method if you want to customize how the node dumps
      * out its children.
@@ -67,8 +67,8 @@ public class SimpleNode implements Node {
             }
         }
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -86,15 +86,15 @@ public class SimpleNode implements Node {
         }
         children[i] = n;
     }
-
-
+    
+    
     /**
      * Description of the Method
      */
     public void jjtClose() {
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -104,8 +104,8 @@ public class SimpleNode implements Node {
     public Node jjtGetChild(int i) {
         return children[i];
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -114,8 +114,8 @@ public class SimpleNode implements Node {
     public int jjtGetNumChildren() {
         return (children == null) ? 0 : children.length;
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -124,15 +124,15 @@ public class SimpleNode implements Node {
     public Node jjtGetParent() {
         return parent;
     }
-
-
+    
+    
     /**
      * Description of the Method
      */
     public void jjtOpen() {
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -141,8 +141,8 @@ public class SimpleNode implements Node {
     public void jjtSetParent(Node n) {
         parent = n;
     }
-
-
+    
+    
     /*
      * You can override these two methods in subclasses of SimpleNode to
      * customize the way the node appears when the tree is dumped.  If
@@ -158,8 +158,8 @@ public class SimpleNode implements Node {
     public String toString() {
         return ExpressionParserTreeConstants.jjtNodeName[id];
     }
-
-
+    
+    
     /**
      * Description of the Method
      *
@@ -169,8 +169,8 @@ public class SimpleNode implements Node {
     public String toString(String prefix) {
         return prefix + toString();
     }
-
-
+    
+    
     /**
      * Description of the Field
      */
