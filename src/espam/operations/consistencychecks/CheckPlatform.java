@@ -18,6 +18,7 @@ import espam.datamodel.platform.ports.CompaanOutPort;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.PowerPC;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.communication.Crossbar;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
@@ -33,6 +34,7 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
 
 import espam.operations.ConsistencyCheck;
 
@@ -154,12 +156,16 @@ public class CheckPlatform {
                    !(resource instanceof ZBTMemoryController) && !(resource instanceof Uart) && 
                    !(resource instanceof ADMXRCII) && !(resource instanceof ADMXPL) &&
                    !(resource instanceof XUPV5LX110T) && !(resource instanceof ML505) && 
-                   !(resource instanceof ML605) && !(resource instanceof AXICrossbar)) {
+                   !(resource instanceof ML605) && !(resource instanceof ZedBoard) && 
+                   !(resource instanceof ARM) && !(resource instanceof AXICrossbar)) {
                     System.err.println("[Espam]ERROR: Resource " + resource + " cannot be used in the describtion of the platform. \n ");
                     _error++;
                 }
                 
-                if( resource instanceof MicroBlaze ) {
+                if (resource instanceof ARM ) {
+                    _arm++; // count the number of ARM processors in the platform
+
+                } else if( resource instanceof MicroBlaze ) {
                     _mb++; // count the number of MicroBlaze processors in the platform
                     
                 } else if( resource instanceof PowerPC ) {
@@ -178,7 +184,8 @@ public class CheckPlatform {
                     _uart++; // count the number of Uart in the platform
                     
                 } else if( resource instanceof ADMXRCII || resource instanceof ADMXPL ||
-                          resource instanceof XUPV5LX110T || resource instanceof ML505 || resource instanceof ML605 ) {
+                          resource instanceof XUPV5LX110T || resource instanceof ML505 || 
+                          resource instanceof ML605 || resource instanceof ZedBoard ) {
                     
                     _hostInterface++; // count the number of host interfaces
                 }
@@ -404,7 +411,6 @@ public class CheckPlatform {
                 Iterator j = resource.getPortList().iterator();
                 while( j.hasNext() ) {
                     Port port = (Port) j.next();
-                    //if( !(port instanceof LMBPort) ) {
                     if( port instanceof FifoReadPort  || port instanceof FifoWritePort ||
                        port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
                         System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type LMBPort, PLBPort, or OPBPort.");
@@ -412,12 +418,25 @@ public class CheckPlatform {
                         _error++;
                     }
                 }
+            } else if( resource instanceof ARM ) {
+                
+                Iterator j = resource.getPortList().iterator();
+                while( j.hasNext() ) {
+                    Port port = (Port) j.next();
+                    if( port instanceof FifoReadPort  || port instanceof FifoWritePort ||
+                       port instanceof CompaanInPort || port instanceof CompaanOutPort ||
+                       port instanceof LMBPort || port instanceof PLBPort || 
+                       port instanceof OPBPort ) {
+                        System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type AXIPort only.");
+                        System.err.println("=====> Found " + port + " \n ");
+                        _error++;
+                    }
+                }           
             } else if( resource instanceof PowerPC ) {
                 
                 Iterator j = resource.getPortList().iterator();
                 while( j.hasNext() ) {
                     Port port = (Port) j.next();
-                    //if( !(port instanceof PLBPort) ) {
                     if( port instanceof LMBPort || port instanceof FifoReadPort || port instanceof FifoWritePort ||
                        port instanceof CompaanInPort || port instanceof CompaanOutPort ) {
                         System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type PLBPort or OPBPort.");
@@ -430,7 +449,6 @@ public class CheckPlatform {
                 Iterator j = resource.getPortList().iterator();
                 while( j.hasNext() ) {
                     Port port = (Port) j.next();
-                    //if( !(port instanceof CompaanInPort) && !(port instanceof CompaanOutPort)) {
                     if( port instanceof LMBPort || port instanceof PLBPort || port instanceof OPBPort ) {
                         System.err.println("[Espam]ERROR: Resource " + resource + " must have ports of type CompaanInPort or CompaanOutPort.");
                         System.err.println("=====> Found " + port + " \n ");
@@ -650,6 +668,12 @@ public class CheckPlatform {
                         System.err.println("=====> Found " + _zmc + " ZBT controllers in the platform specification. \n ");
                         _error++;
                     }
+                } else if( resource instanceof ZedBoard ) {
+                    if(_arm > 2) {
+                        System.err.println("[Espam] ERROR: The target board ZedBoard has only two ARM cores");
+                        System.err.println("=====> Found " + _arm + " ARM cores in the platform specification. \n ");
+                        _error++;
+                    }
                 }
             }
         }
@@ -665,7 +689,8 @@ public class CheckPlatform {
     private final static CheckPlatform _instance = new CheckPlatform();
     
     private static int _error = 0;
-    
+   
+    private static int _arm=0; // The number of ARM processors in the platform
     private static int _ppc=0; // The number of PowerPC processors in the platform
     private static int _mb=0;  // The number of Microblaze processors in the platform
     private static int _cb=0;  // The number of Crossbars in the platform

@@ -11,6 +11,7 @@ import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.PowerPC;
 import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.Port;
@@ -146,6 +147,19 @@ public class SetMemoryMaps {
                             _setFSLPage( fslMemMap );
                             processor.getMemoryMapList().add( fslMemMap );
                         }
+                    } else if( processor instanceof ARM ) {
+                        MemoryMap programMemMap = new MemoryMap("Program Memory Map");
+                        programMemMap.setPort( port );
+                        programMemMap.setProgramMemorySegment( 0x0 ); 
+                        processor.getMemoryMapList().add( programMemMap ); 
+                        MemoryMap dataMemMap = new MemoryMap("Data Memory Map");
+                        dataMemMap.setPort( port );
+                        dataMemMap.setDataMemorySegment(    0x0 );
+                        dataMemMap.setFifosReadSegment(     0xc0000000 );
+                        dataMemMap.setFifosWriteSegment(    0xc0800000 );
+                        dataMemMap.setVirtualBufferSegment( 0xe0000000 );
+                        dataMemMap.setPeripheralsSegment(   0xf0000000 );
+                        processor.getMemoryMapList().add( dataMemMap );
                     }
                 }
             }

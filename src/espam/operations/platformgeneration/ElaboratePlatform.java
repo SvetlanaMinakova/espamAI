@@ -17,6 +17,7 @@ import espam.datamodel.platform.ports.CompaanOutPort;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.PowerPC;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.communication.Crossbar;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.hwnodecompaan.CompaanHWNode;
@@ -102,20 +103,7 @@ public class ElaboratePlatform {
                 if( _getAxiCrossbar( platform ) ) { 
                     ElaborateMany2OneCrossbarAXI.getInstance().elaborate( platform, mapping );
                     System.out.println(" -- Elaboration MANY2ONE AXI Crossbar");
-                    
-                    /*
-                     * 
-                     Iterator i = platform.getResourceList().iterator();
-                     while( i.hasNext() ) {
-                     
-                     Resource resource = (Resource) i.next();
-                     System.out.println( resource );
-                     }
-                     
-                     */
-                    
-                    
-                    
+                                     
                 } else {
                     ElaborateMany2OneCrossbar.getInstance().elaborate( platform, mapping );
                     System.out.println(" -- Elaboration MANY2ONE Crossbar");
