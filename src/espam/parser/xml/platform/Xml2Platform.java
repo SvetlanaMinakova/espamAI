@@ -14,6 +14,7 @@ import espam.datamodel.platform.Link;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.PowerPC;
 import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.communication.Crossbar;
@@ -143,7 +144,13 @@ public class Xml2Platform {
             processor.setDataMemSize(Integer.valueOf(dataMemorySize).intValue());
             processor.setProgMemSize(Integer.valueOf(programMemorySize).intValue());
             return processor;
-            
+        
+        } else if( type.equals("ARM") ) {
+            Processor processor = new ARM(name);
+            processor.setDataMemSize(Integer.valueOf(dataMemorySize).intValue());
+            processor.setProgMemSize(Integer.valueOf(programMemorySize).intValue());
+            return processor;
+           
         } else if( type.equals("CompaanHWNode") ) {
             CompaanHWNode processor = new CompaanHWNode(name);
             return processor;
@@ -558,5 +565,3 @@ public class Xml2Platform {
      * */
     private final static Xml2Platform _instance = new Xml2Platform();
 }
-
-

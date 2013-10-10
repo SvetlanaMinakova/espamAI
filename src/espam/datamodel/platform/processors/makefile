@@ -11,6 +11,7 @@ JSRCS = \
 	Processor.java \
 	PowerPC.java \
 	MicroBlaze.java \
+	ARM.java \
 	MemoryMap.java \
 	Page.java
 
