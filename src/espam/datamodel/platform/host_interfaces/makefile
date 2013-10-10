@@ -12,7 +12,8 @@ JSRCS = \
 	ADMXPL.java \
 	XUPV5LX110T.java \
 	ML505.java \
-	ML605.java 
+	ML605.java \
+	ZedBoard.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

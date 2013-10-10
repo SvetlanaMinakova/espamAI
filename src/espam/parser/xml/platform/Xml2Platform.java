@@ -47,6 +47,8 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
+
 
 import espam.main.UserInterface;
 
@@ -334,6 +336,15 @@ public class Xml2Platform {
             }
             System.out.println(" -- Communication interface: " + commInterface);
             ML605 hostInterface = new ML605(name);
+            hostInterface.setCommInterface(commInterface); 
+            return hostInterface;
+        } else if ( type.equals("ZedBoard") ) {
+            System.out.println(" -- FPGA Board: ZedBoard");
+            if( commInterface.equals("empty") ) {
+                commInterface = "Ethernet"; // The default communication interface
+            }
+            System.out.println(" -- Communication interface: " + commInterface);
+            ZedBoard hostInterface = new ZedBoard(name);
             hostInterface.setCommInterface(commInterface); 
             return hostInterface;
         } else {
