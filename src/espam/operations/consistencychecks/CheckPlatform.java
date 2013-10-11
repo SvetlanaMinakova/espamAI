@@ -673,6 +673,10 @@ public class CheckPlatform {
                         System.err.println("[Espam] ERROR: The target board ZedBoard has only two ARM cores");
                         System.err.println("=====> Found " + _arm + " ARM cores in the platform specification. \n ");
                         _error++;
+                    } else if (_mb > 0 || _ppc > 0) {
+                        System.err.println("[Espam] ERROR: The target board ZedBoard supports currently ARM cores only");
+                        System.err.println("=====> Found " + _mb + " MicroBlaze cores and " + _ppc + " PowerPC cores in the platform specification. \n ");
+                        _error++;
                     }
                 }
             }

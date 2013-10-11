@@ -1,18 +1,3 @@
-/*******************************************************************\
-  * 
-  The ESPAM Software Tool
-  Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-  All rights reserved.
-  
-  The use and distribution terms for this software are covered by the
-  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-  which can be found in the file LICENSE at the root of this distribution.
-  By using this software in any fashion, you are agreeing to be bound by
-  the terms of this license.
-  
-  You must not remove this notice, or any other, from this software.
-  
-  \*******************************************************************/
 
 package espam.visitor.xps.platform;
 
@@ -33,6 +18,7 @@ import espam.datamodel.platform.Port;
 import espam.datamodel.platform.Link;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.PowerPC;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.MicroBlaze;
 import espam.datamodel.platform.processors.MemoryMap;
 import espam.datamodel.platform.processors.Page;
@@ -63,6 +49,7 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.ports.AXIPort;
 import espam.datamodel.platform.memories.CM_AXI;
@@ -351,7 +338,35 @@ public class MhsVisitor extends PlatformVisitor {
                                      " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [3:0]\n" +
                                      " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]");
             }
-        } 
+        } else if ((_targetBoard.equals("ZedBoard")) {
+            _printStream.println(
+                " PORT processing_system7_0_MIO = processing_system7_0_MIO, DIR = IO, VEC = [53:0]\n" +
+                " PORT processing_system7_0_PS_SRSTB = processing_system7_0_PS_SRSTB, DIR = I\n" +
+                " PORT processing_system7_0_PS_CLK = processing_system7_0_PS_CLK, DIR = I, SIGIS = CLK\n" +
+                " PORT processing_system7_0_PS_PORB = processing_system7_0_PS_PORB, DIR = I\n" +
+                " PORT processing_system7_0_DDR_Clk = processing_system7_0_DDR_Clk, DIR = IO, SIGIS = CLK\n" +
+                " PORT processing_system7_0_DDR_Clk_n = processing_system7_0_DDR_Clk_n, DIR = IO, SIGIS = CLK\n" +
+                " PORT processing_system7_0_DDR_CKE = processing_system7_0_DDR_CKE, DIR = IO\n" +
+                " PORT processing_system7_0_DDR_CS_n = processing_system7_0_DDR_CS_n, DIR = IO\n" + 
+                " PORT processing_system7_0_DDR_RAS_n = processing_system7_0_DDR_RAS_n, DIR = IO\n" +
+                " PORT processing_system7_0_DDR_CAS_n = processing_system7_0_DDR_CAS_n, DIR = IO\n" +
+                " PORT processing_system7_0_DDR_WEB_pin = processing_system7_0_DDR_WEB, DIR = O\n" +
+                " PORT processing_system7_0_DDR_BankAddr = processing_system7_0_DDR_BankAddr, DIR = IO, VEC = [2:0]\n" +
+                " PORT processing_system7_0_DDR_Addr = processing_system7_0_DDR_Addr, DIR = IO, VEC = [14:0]\n" +
+                " PORT processing_system7_0_DDR_ODT = processing_system7_0_DDR_ODT, DIR = IO\n" +
+                " PORT processing_system7_0_DDR_DRSTB = processing_system7_0_DDR_DRSTB, DIR = IO, SIGIS = RST\n" +
+                " PORT processing_system7_0_DDR_DQ = processing_system7_0_DDR_DQ, DIR = IO, VEC = [31:0]\n" +
+                " PORT processing_system7_0_DDR_DM = processing_system7_0_DDR_DM, DIR = IO, VEC = [3:0]\n" +
+                " PORT processing_system7_0_DDR_DQS = processing_system7_0_DDR_DQS, DIR = IO, VEC = [3:0]\n" +
+                " PORT processing_system7_0_DDR_DQS_n = processing_system7_0_DDR_DQS_n, DIR = IO, VEC = [3:0]\n" +
+                " PORT processing_system7_0_DDR_VRN = processing_system7_0_DDR_VRN, DIR = IO\n" +
+                " PORT processing_system7_0_DDR_VRP = processing_system7_0_DDR_VRP, DIR = IO\n" +
+                " PORT vga_hsync = TFT_HSYNC, DIR = O\n" +
+                " PORT vga_vsync = TFT_VSYNC, DIR = O\n" +
+                " PORT vga_red = TFT_VGA_R, DIR = O, VEC = [5:0]\n" +
+                " PORT vga_green = TFT_VGA_G, DIR = O, VEC = [5:0]\n" +
+                " PORT vga_blue = TFT_VGA_B, DIR = O, VEC = [5:0]\n");
+        }
         _printStream.println("");
         
         Iterator i;
@@ -377,6 +392,10 @@ public class MhsVisitor extends PlatformVisitor {
      */
     public void visitComponent(PowerPC x) {
         
+    }
+
+    public void visitComponent(ARM x) {
+
     }
     
     /**
@@ -1741,6 +1760,133 @@ public class MhsVisitor extends PlatformVisitor {
             visitML605PLB(x);
         } // end platform: AXI or PLB
     }
+
+
+    public void visitComponent(ZedBoard x) {
+        _printStream.print(
+            "BEGIN processing_system7\n" +
+            " PARAMETER INSTANCE = processing_system7_0\n" +
+            " PARAMETER HW_VER = 4.02.a\n" +
+            " PARAMETER C_DDR_RAM_HIGHADDR = 0x1FFFFFFF\n" +
+            " PARAMETER C_USE_M_AXI_GP0 = 1\n" +
+            " PARAMETER C_EN_EMIO_CAN0 = 0\n" +
+            " PARAMETER C_EN_EMIO_CAN1 = 0\n" +
+            " PARAMETER C_EN_EMIO_ENET0 = 0\n" +
+            " PARAMETER C_EN_EMIO_ENET1 = 0\n" +
+            " PARAMETER C_EN_EMIO_I2C0 = 0\n" +
+            " PARAMETER C_EN_EMIO_I2C1 = 0\n" +
+            " PARAMETER C_EN_EMIO_PJTAG = 0\n" +
+            " PARAMETER C_EN_EMIO_SDIO0 = 0\n" +
+            " PARAMETER C_EN_EMIO_CD_SDIO0 = 0\n" +
+            " PARAMETER C_EN_EMIO_WP_SDIO0 = 0\n" +
+            " PARAMETER C_EN_EMIO_SDIO1 = 0\n" +
+            " PARAMETER C_EN_EMIO_CD_SDIO1 = 0\n" +
+            " PARAMETER C_EN_EMIO_WP_SDIO1 = 0\n" +
+            " PARAMETER C_EN_EMIO_SPI0 = 0\n" +
+            " PARAMETER C_EN_EMIO_SPI1 = 0\n" +
+            " PARAMETER C_EN_EMIO_SRAM_INT = 0\n" +
+            " PARAMETER C_EN_EMIO_TRACE = 0\n" +
+            " PARAMETER C_EN_EMIO_TTC0 = 1\n" +
+            " PARAMETER C_EN_EMIO_TTC1 = 0\n" +
+            " PARAMETER C_EN_EMIO_UART0 = 0\n" +
+            " PARAMETER C_EN_EMIO_UART1 = 0\n" +
+            " PARAMETER C_EN_EMIO_MODEM_UART0 = 0\n" +
+            " PARAMETER C_EN_EMIO_MODEM_UART1 = 0\n" +
+            " PARAMETER C_EN_EMIO_WDT = 0\n" +
+            " PARAMETER C_EN_QSPI = 1\n" +
+            " PARAMETER C_EN_SMC = 0\n" +
+            " PARAMETER C_EN_CAN0 = 0\n" +
+            " PARAMETER C_EN_CAN1 = 0\n" +
+            " PARAMETER C_EN_ENET0 = 1\n" +
+            " PARAMETER C_EN_ENET1 = 0\n" +
+            " PARAMETER C_EN_I2C0 = 0\n" +
+            " PARAMETER C_EN_I2C1 = 0\n" +
+            " PARAMETER C_EN_PJTAG = 0\n" +
+            " PARAMETER C_EN_SDIO0 = 1\n" +
+            " PARAMETER C_EN_SDIO1 = 0\n" +
+            " PARAMETER C_EN_SPI0 = 0\n" +
+            " PARAMETER C_EN_SPI1 = 0\n" +
+            " PARAMETER C_EN_TRACE = 0\n" +
+            " PARAMETER C_EN_TTC0 = 1\n" +
+            " PARAMETER C_EN_TTC1 = 0\n" +
+            " PARAMETER C_EN_UART0 = 0\n" +
+            " PARAMETER C_EN_UART1 = 1\n" +
+            " PARAMETER C_EN_MODEM_UART0 = 0\n" +
+            " PARAMETER C_EN_MODEM_UART1 = 0\n" +
+            " PARAMETER C_EN_USB0 = 1\n" +
+            " PARAMETER C_EN_USB1 = 0\n" +
+            " PARAMETER C_EN_WDT = 0\n" +
+            " PARAMETER C_EN_DDR = 1\n" +
+            " PARAMETER C_EN_GPIO = 1\n" +
+            " PARAMETER C_FCLK_CLK0_FREQ = 100000000\n" +
+            " PARAMETER C_FCLK_CLK1_FREQ = 100000000\n" +
+            " PARAMETER C_FCLK_CLK2_FREQ = 50000000\n" +
+            " PARAMETER C_FCLK_CLK3_FREQ = 25000000\n" +
+            " PARAMETER C_USE_S_AXI_HP0 = 1\n" +
+            " PARAMETER C_INTERCONNECT_S_AXI_HP0_MASTERS = axi_tft_0.M_AXI\n" +
+            " PARAMETER C_EN_EMIO_GPIO = 0\n" +
+            " PARAMETER C_EMIO_GPIO_WIDTH = 64\n" +
+            " BUS_INTERFACE M_AXI_GP0 = axilite_bus\n" +
+            " BUS_INTERFACE S_AXI_HP0 = axi_crossbar\n" +
+            " PORT MIO = processing_system7_0_MIO\n" +
+            " PORT PS_SRSTB = processing_system7_0_PS_SRSTB\n" +
+            " PORT PS_CLK = processing_system7_0_PS_CLK\n" +
+            " PORT PS_PORB = processing_system7_0_PS_PORB\n" +
+            " PORT DDR_Clk = processing_system7_0_DDR_Clk\n" +
+            " PORT DDR_Clk_n = processing_system7_0_DDR_Clk_n\n" +
+            " PORT DDR_CKE = processing_system7_0_DDR_CKE\n" +
+            " PORT DDR_CS_n = processing_system7_0_DDR_CS_n\n" +
+            " PORT DDR_RAS_n = processing_system7_0_DDR_RAS_n\n" +
+            " PORT DDR_CAS_n = processing_system7_0_DDR_CAS_n\n" +
+            " PORT DDR_WEB = processing_system7_0_DDR_WEB\n" +
+            " PORT DDR_BankAddr = processing_system7_0_DDR_BankAddr\n" +
+            " PORT DDR_Addr = processing_system7_0_DDR_Addr\n" +
+            " PORT DDR_ODT = processing_system7_0_DDR_ODT\n" +
+            " PORT DDR_DRSTB = processing_system7_0_DDR_DRSTB\n" +
+            " PORT DDR_DQ = processing_system7_0_DDR_DQ\n" +
+            " PORT DDR_DM = processing_system7_0_DDR_DM\n" +
+            " PORT DDR_DQS = processing_system7_0_DDR_DQS\n" +
+            " PORT DDR_DQS_n = processing_system7_0_DDR_DQS_n\n" +
+            " PORT DDR_VRN = processing_system7_0_DDR_VRN\n" +
+            " PORT DDR_VRP = processing_system7_0_DDR_VRP\n" +
+            " PORT FCLK_CLK0 = processing_system7_0_FCLK_CLK0\n" +
+            " PORT FCLK_RESET0_N = processing_system7_0_FCLK_RESET0_N_0\n" +
+            " PORT M_AXI_GP0_ACLK = processing_system7_0_FCLK_CLK0\n" +
+            " PORT S_AXI_HP0_ACLK = processing_system7_0_FCLK_CLK0\n" +
+            " PORT FCLK_CLK3 = processing_system7_0_FCLK_CLK3\n" +
+            "END\n\n" +
+            "BEGIN axi_interconnect\n" +
+            " PARAMETER INSTANCE = axilite_bus\n" +
+            " PARAMETER HW_VER = 1.06.a\n" +
+            " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 0\n" +
+            " PORT interconnect_aclk = processing_system7_0_FCLK_CLK0\n" +
+            " PORT INTERCONNECT_ARESETN = processing_system7_0_FCLK_RESET0_N_0\n" +
+            "END\n\n" +
+            "BEGIN axi_interconnect\n" +
+            " PARAMETER INSTANCE = axi_crossbar\n" +
+            " PARAMETER HW_VER = 1.06.a\n" +
+            " PARAMETER C_INTERCONNECT_CONNECTIVITY_MODE = 1\n" +
+            " PORT INTERCONNECT_ACLK = processing_system7_0_FCLK_CLK0\n" +
+            " PORT INTERCONNECT_ARESETN = processing_system7_0_FCLK_RESET0_N_0\n" +
+            "END\n\n" +
+            "BEGIN axi_tft\n" +
+            " PARAMETER INSTANCE = axi_tft_0\n" +
+            " PARAMETER HW_VER = 1.00.a\n" +
+            " PARAMETER C_TFT_INTERFACE = 0\n" +
+            " PARAMETER C_DEFAULT_TFT_BASE_ADDR = 0x11000000\n" +
+            " BUS_INTERFACE S_AXI = axilite_bus\n" +
+            " BUS_INTERFACE M_AXI = axi_crossbar\n" +
+            " PORT S_AXI_ACLK = processing_system7_0_FCLK_CLK0\n" +
+            " PORT M_AXI_ACLK = processing_system7_0_FCLK_CLK0\n" +
+            " PORT SYS_TFT_Clk = processing_system7_0_FCLK_CLK3\n" +
+            " PORT TFT_HSYNC = TFT_HSYNC\n" +
+            " PORT TFT_VGA_R = TFT_VGA_R\n" +
+            " PORT TFT_VGA_G = TFT_VGA_G\n" +
+            " PORT TFT_VGA_B = TFT_VGA_B\n" +
+            " PORT TFT_VSYNC = TFT_VSYNC\n" +
+            "END\n"
+                );
+    }
     
     /**
      *  Print a line for the process in the correct format for MHS.
@@ -2513,6 +2659,9 @@ public class MhsVisitor extends PlatformVisitor {
             } else if( resource instanceof ML605 ) {
                 board = "ML605";
                 _commInterface = ((ML605)resource).getCommInterface();
+            } else if( resource instanceof ZedBoard ) {
+                board = "ZedBoard";
+                _commInterface = ((ZedBoard)resource).getCommInterface();
             } else if( resource instanceof AXICrossbar ) {
                 _isAXICrossbar = true;
             }

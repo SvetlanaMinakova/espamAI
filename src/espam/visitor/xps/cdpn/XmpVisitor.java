@@ -16,6 +16,7 @@ import espam.datamodel.platform.host_interfaces.ADMXPL;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML505;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
@@ -149,7 +150,21 @@ public class XmpVisitor extends CDPNVisitor {
                     _printStream.println("Device: xc6vlx240t");
                     _printStream.println("Package: ff1156");
                     _printStream.println("SpeedGrade: -1");
-                    
+                
+                } else if ( _targetBoard.equals("ZedBoard") ) {
+                    _printStream.println(
+                        "XmpVersion: 14.4\n" +
+                        "VerMgmt: 14.4\n" +
+                        "IntStyle: default\n" +
+                        "Flow: ise\n" +
+                        "MHS File: system.mhs\n" +
+                        "Architecture: zynq\n" +
+                        "Device: xc7z020\n" +
+                        "Package: clg484\n" +
+                        "SpeedGrade: -1\n" +
+                        "BInfo: \n" +
+                        "Processor: processing_system7_0\n" +
+                    );
                 } else {
                     
                     _printStream.println("XmpVersion: 10.1");
@@ -170,7 +185,7 @@ public class XmpVisitor extends CDPNVisitor {
                 _printStream.println("UserCmd2:"); 
                 _printStream.println("UserCmd2Type: 0");
                 _printStream.println("GenSimTB: 0");
-                _printStream.println("SdkExportBmmBit: 0");
+                _printStream.println("SdkExportBmmBit: 1");
                 _printStream.println("SdkExportDir: SDK" + File.separatorChar + "SDK_Export");
                 _printStream.println("InsertNoPads: 0");
                 _printStream.println("WarnForEAArch: 1");
@@ -179,68 +194,38 @@ public class XmpVisitor extends CDPNVisitor {
                 _printStream.println("EnableParTimingError: 1");
                 _printStream.println("ShowLicenseDialog: 1");
                 
-                // Print for all processors here
-                Resource resource;
-                Iterator i;
-                i = _mapping.getPlatform().getResourceList().iterator();
-                while( i.hasNext() ) {
-                    resource = (Resource) i.next();
-                    if (resource instanceof Processor) {
-                        Processor p = (Processor) resource;
-                        _printStream.println("Processor: " + p.getName());
-                        // in case of SDKVisitor, we have default location for .elf file
-                        CDProcess cdProc = _mapping.getCDProcess(_mapping.getProcessor(p.getName()));
-                        _printStream.println("ElfImp: SDK/" + cdProc.getName() + "/Debug/" 
-                                                 + cdProc.getName() + ".elf" );
-                        _printStream.println("ElfSim:");
-                        //_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
-                        //_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + p.getName() + "_app" + File.separatorChar + "Debug" + File.separatorChar + p.getName() + "_app.elf");
+                // Print for all processors here only if the 
+                // board is not a ZedBoard
+                if (!_targetBoard.equals("ZedBoard")) {
+                    Resource resource;
+                    Iterator i;
+                    i = _mapping.getPlatform().getResourceList().iterator();
+                    while( i.hasNext() ) {
+                        resource = (Resource) i.next();
+                        if (resource instanceof Processor) {
+                            Processor p = (Processor) resource;
+                            _printStream.println("Processor: " + p.getName());
+                            // in case of SDKVisitor, we have default location for .elf file
+                            CDProcess cdProc = _mapping.getCDProcess(_mapping.getProcessor(p.getName()));
+                            _printStream.println("ElfImp: SDK" + File.separatorChar + cdProc.getName() + File.separatorChar + "Debug" + File.separatorChar + cdProc.getName() + ".elf" );
+                            _printStream.println("ElfSim:");
+                        }
                     }
+                    
+                    /* add the host interface MicroBlaze */
+                    _printStream.println("Processor: host_if_mb");
+                    
+                    // in case of SDKVisitor, we have default location of .elf file for the host interface
+                    _printStream.println("ElfImp: SDK" + File.separatorChar + "host_if" + File.separatorChar + "Debug" + File.separatorChar + "host_if.elf");
+                    _printStream.println("ElfSim:");
+                } else {
+                    // For ZedBoard, leave Elf fields empty
+                    _printStream.print(
+                        "ElfImp: \n" +
+                        "ElfSim: "
+                    );
                 }
                 
-                /* add the host interface MicroBlaze */
-                _printStream.println("Processor: host_if_mb");
-                
-                //_printStream.println("ElfImp:");
-                // in case of SDKVisitor, we have default location of .elf file for the host interface
-                _printStream.println("ElfImp: SDK/host_if/Debug/host_if.elf");
-                _printStream.println("ElfSim:");
-                //_printStream.println("ElfImp: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
-                //_printStream.println("ElfSim: SDK" + File.separatorChar + "SDK_Export" + File.separatorChar + "host_if_mb_app" + File.separatorChar + "Debug" + File.separatorChar + "host_if_mb_app.elf");
-                
-// Mohamed B: The following commented segment is no longer needed in XPS 13.x
-                
-                /*
-                 _printStream.println("SwProj: HOST_IF");
-                 _printStream.println("Processor: host_if_mb");
-                 _printStream.println("Executable: host_if_mb/executable.elf");
-                 _printStream.println("Source: code/HOST_IF/main.cpp" );
-                 _printStream.println("Header: code/aux_func.h"); //?
-                 _printStream.println("Header: code/MemoryMap.h"); //?
-                 _printStream.println("DefaultInit: executable");
-                 _printStream.println("InitBram: 1");
-                 _printStream.println("Active: 1");
-                 _printStream.println("CompilerOptLevel: 2");
-                 _printStream.println("GlobPtrOpt: 0");
-                 _printStream.println("DebugSym: 0");
-                 _printStream.println("ProfileFlag: 0");
-                 
-                 if( _targetBoard.equals("ADM-XRC-II") || _targetBoard.equals("ADM-XPL") ) {
-                 _printStream.println("AsmOpt:");
-                 _printStream.println("LinkOpt:");
-                 } else {
-                 _printStream.println("CompileInXps: 1");
-                 _printStream.println("NonXpsApp: 0");
-                 }
-                 
-                 _printStream.println("ProgStart: 0x50");
-                 _printStream.println("StackSize:");
-                 _printStream.println("HeapSize:");
-                 _printStream.println("LinkerScript:");
-                 _printStream.println("ProgCCFlags:");
-                 
-                 _visitAllProcessors( x );
-                 */
             } 
         } catch (Exception e) {
             System.out.println(" In Xmp Visitor: exception " +
@@ -262,7 +247,7 @@ public class XmpVisitor extends CDPNVisitor {
         
         System.out.println(" -- OPEN FILE: " + fileName);
         
-        fn = _codeDir + "/" + fileName;
+        fn = _codeDir + File.separatorChar + fileName;
         if (fileName.equals(""))
             ps = new PrintStream(System.out);
         else
@@ -296,6 +281,9 @@ public class XmpVisitor extends CDPNVisitor {
             } else if( resource instanceof ML605 ) {
                 board = "ML605";
                 _commInterface = ((ML605)resource).getCommInterface();
+            } else if( resource instanceof ZedBoard ) {
+                board = "ZedBoard";
+                _commInterface = ((ZedBoard)resource).getCommInterface();
             } else if( resource instanceof AXICrossbar ) {
                 _isAXICrossbar = true;
             }
@@ -395,7 +383,9 @@ public class XmpVisitor extends CDPNVisitor {
      */
     private void _visitML605( CDProcessNetwork x ) {
     }
-    
+
+    private void _visitZedBoard( CDProcessNetwork x ) {
+    }
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
     
