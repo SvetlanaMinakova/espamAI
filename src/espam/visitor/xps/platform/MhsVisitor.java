@@ -338,7 +338,7 @@ public class MhsVisitor extends PlatformVisitor {
                                      " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_pin, DIR = IO, VEC = [3:0]\n" +
                                      " PORT fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin = fpga_0_DDR3_SDRAM_DDR3_DQS_n_pin, DIR = IO, VEC = [3:0]");
             }
-        } else if ((_targetBoard.equals("ZedBoard")) {
+        } else if (_targetBoard.equals("ZedBoard")) {
             _printStream.println(
                 " PORT processing_system7_0_MIO = processing_system7_0_MIO, DIR = IO, VEC = [53:0]\n" +
                 " PORT processing_system7_0_PS_SRSTB = processing_system7_0_PS_SRSTB, DIR = I\n" +

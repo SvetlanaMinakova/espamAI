@@ -163,7 +163,7 @@ public class XmpVisitor extends CDPNVisitor {
                         "Package: clg484\n" +
                         "SpeedGrade: -1\n" +
                         "BInfo: \n" +
-                        "Processor: processing_system7_0\n" +
+                        "Processor: processing_system7_0"
                     );
                 } else {
                     
