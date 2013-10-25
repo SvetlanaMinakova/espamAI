@@ -1,23 +1,14 @@
-/*******************************************************************\
-  * 
-  The ESPAM Software Tool
-  Copyright (c) 2004-2008 Leiden University (LERC group at LIACS).
-  All rights reserved.
-  
-  The use and distribution terms for this software are covered by the
-  Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.txt)
-  which can be found in the file LICENSE at the root of this distribution.
-  By using this software in any fashion, you are agreeing to be bound by
-  the terms of this license.
-  
-  You must not remove this notice, or any other, from this software.
-  
-  \*******************************************************************/
 
 package espam.visitor.xps.cdpn;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+import java.util.ArrayList;
+
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -100,7 +91,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         
         File dir = new File(_codeDir);
         dir.mkdirs();
-    }
+    }    
     
     /**
      * @param  x Description of the Parameter
@@ -180,13 +171,45 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#endif");
             _printStreamFunc.close();
             
+            //creating platform.h
             if (_sdk_enabled) { // platform.h is needed only when using FreeRTOS
-                _printStreamPlatform = _openFile("platform", "h");
-                _printPlatformFile();
-                _printStreamPlatform.close();
+                String targetBoard = _sdk.getTargetBoard();
+
+               // copy all 'static' files (that need no processing) from src/espam/libXPS/SDK/<targetboard>/
+               // please notice that the folder names in src/espam/libXPS/SDK/ should have the same name as the targetboard
+               
+                ArrayList<String> staticFiles = new ArrayList<String>();
+                
+                String statisFilePath = _sdk.getPathSDK() + "SDK" + File.separatorChar;
+                
+                if(targetBoard.equals("ML605")){
+                    statisFilePath += targetBoard + File.separatorChar; // Adding targetboard in path to include board specific files
+                    staticFiles.add("platform.h");
+                }else if(targetBoard.equals("ZedBoard")){
+                    statisFilePath += targetBoard + File.separatorChar; // Adding targetboard in path to include board specific files
+                    staticFiles.add("network.h");
+                    staticFiles.add("platform.c");
+                    staticFiles.add("platform.h");
+                    staticFiles.add("xtft.c");
+                    staticFiles.add("xtft.h");
+                    staticFiles.add("xtft_charcode.h");
+                }
+                
+                
+                for(int j=0;j<staticFiles.size();j++){
+                    int splitPoint = staticFiles.get(j).lastIndexOf(".");
+                    String fileName = staticFiles.get(j).substring(0,splitPoint);
+                    String extension = staticFiles.get(j).substring(splitPoint+1,staticFiles.get(j).length());//+1 to get rit of the "."
+                        
+                    // Printing content of static file to new file
+                    PrintStream _printStreamStatic = _openFile(fileName, extension);
+                    String content = _getFileContent(statisFilePath + staticFiles.get(j));
+                    _printStreamStatic.println(content);
+                    _printStreamStatic.close();  
+                }
+                
             }
-            
-            
+ 
         }
         catch( Exception e ) {
             System.out.println(" In Xps PN Visitor: exception " +
@@ -222,6 +245,30 @@ public class XpsProcessVisitor extends CDPNVisitor {
         
         return printStream;
         
+    }
+    
+   private static String _getFileContent(String argFileName){
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(argFileName));
+            StringBuilder sb = new StringBuilder();
+            String line = br.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                sb.append('\n');
+                line = br.readLine();
+            }
+            return sb.toString();
+
+        } catch (FileNotFoundException ex) {
+             System.out.println("Could not find file while looking up it's content" + argFileName);
+        } catch (IOException ex) {
+             System.out.println("Could not open file while looking up it's content");
+        } finally {
+           
+        }
+        return "";
     }
     
     /**
@@ -319,14 +366,9 @@ public class XpsProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("inline int floor1(int a){");
         _printStreamFunc.println("    return a; /* return (int) floor(a);*/\n}\n");
         
-        _printStreamFunc.println(_fifoReadWriteApi);
+        _printStreamFunc.println(_getFileContent(_sdk.getPathSDK() + "SDK" + File.separatorChar + "all" + File.separatorChar + "_fifiReadWriteApi"));
     }
-    
-    
-    private void _printPlatformFile() {
-        _printStreamPlatform.println(_platformFile);
-    }
-    
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
     
@@ -338,6 +380,9 @@ public class XpsProcessVisitor extends CDPNVisitor {
     /**
      *  The UserInterface
      */
+
+    // The path to libSDK which contains the BSPTemplate
+     
     private UserInterface _ui = null;
     
     private Mapping _mapping = null;
@@ -347,9 +392,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
     private PrintStream _printStream = null;
     
     private PrintStream _printStreamFunc = null;
-    
-    private PrintStream _printStreamPlatform = null;
-    
+        
     private boolean _sdk_enabled = false;
     
     private XpsSDKVisitor _sdk = null;
@@ -359,6 +402,8 @@ public class XpsProcessVisitor extends CDPNVisitor {
     /**
      *  Read/Write fifo api
      */
+     
+    /* 
     private String _fifoReadWriteApi = "" +
         "#define readFSL(pos, value, len) \\\n" +
         "    do {\\\n" +
@@ -642,9 +687,9 @@ public class XpsProcessVisitor extends CDPNVisitor {
         "   }\\\n" +
         "   fifo[0] = w_cnt;\\\n" +
         "} while(0)\n\n";
-    
-    
-    private String _platformFile  = "" + 
+    */
+    /*
+    private String _platformFileML605  = "" + 
         "#ifndef PLATFORM_H_\n" +
         "#define PLATFORM_H_\n\n" +
         "#include <FreeRTOS.h>\n" +
@@ -716,6 +761,6 @@ public class XpsProcessVisitor extends CDPNVisitor {
         "}\n" +
         "#endif\n" +
         "#endif\n";
-    
+    */
 }
 

@@ -75,7 +75,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
         _printStreamFunc = printStreamFunc;
         _relation2 = relation;
         _ui = UserInterface.getInstance();
-        _targetBoard = _getBoard( mapping.getPlatform() );
+        _targetBoard = mapping.getPlatform().getBoardName();
         
         _ui = UserInterface.getInstance();
         if(_ui.getADGFileNames().size() > 1) {
@@ -701,32 +701,7 @@ public class XpsStaticProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "} // main");
     }
     
-    /**
-     *  Get the target FPGA board
-     *  @param platform
-     */
-    private String _getBoard( Platform x ) {
-        
-        String board = "";
-        Iterator j = x.getResourceList().iterator();
-        while (j.hasNext()) {
-            Resource resource = (Resource)j.next();
-            if( resource instanceof ADMXRCII ) {
-                board = "ADM-XRC-II";
-            } else if( resource instanceof ADMXPL ) {
-                board = "ADM-XPL";
-            } else if( resource instanceof XUPV5LX110T ) {
-                board = "XUPV5-LX110T";
-            } else if( resource instanceof ML505 ) {
-                board = "ML505";
-            } else if( resource instanceof ML605 ) {
-                board = "ML605";
-            }
-        }  
-        
-        return board;
-    }
-    
+  
     private boolean _getAxiCrossbar( Platform platform ) {
         
         boolean tmp=false;

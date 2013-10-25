@@ -6,6 +6,14 @@ import java.util.Vector;
 import java.util.Iterator;
 import java.io.IOException;
 
+import espam.datamodel.platform.host_interfaces.ADMXRCII;
+import espam.datamodel.platform.host_interfaces.ADMXPL;
+import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
+import espam.datamodel.platform.host_interfaces.ML505;
+import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
+
+
 
 import espam.visitor.PlatformVisitor;
 
@@ -35,6 +43,33 @@ public class Platform extends Resource {
         super(name);
         _resourceList = new Vector();
         _linkList = new Vector();
+    }
+    
+    
+    public String getBoardName() {
+		
+		// Doing lazy initialization because we don't know when Resource that contains board is present
+		if(_boardName == null){
+			Iterator j = this.getResourceList().iterator();
+			while (j.hasNext()) {
+				Resource resource = (Resource)j.next();
+				if( resource instanceof ADMXRCII ) {
+					_boardName = "ADM-XRC-II";
+				} else if( resource instanceof ADMXPL ) {
+					_boardName = "ADM-XPL";
+				} else if( resource instanceof XUPV5LX110T ) {
+					_boardName = "XUPV5-LX110T";
+				} else if( resource instanceof ML505 ) {
+					_boardName = "ML505";
+				} else if( resource instanceof ML605 ) {
+					_boardName = "ML605";
+				} else if( resource instanceof ZedBoard ) {
+					_boardName = "ZedBoard";
+				}
+			}  
+        }
+        
+        return _boardName;
     }
     
     /** Accept a Visitor
@@ -148,6 +183,8 @@ public class Platform extends Resource {
      *  List of the resources of a Platform.
      */
     private Vector _resourceList = null;
+    
+    private String _boardName = null;
     
     /**
      *  List of the links of a Platform.

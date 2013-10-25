@@ -73,7 +73,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
         _printStreamFunc = printStreamFunc;
         _relation2 = relation;
         _ui = UserInterface.getInstance();
-        _targetBoard = _getBoard( mapping.getPlatform() );
+        _targetBoard = mapping.getPlatform().getBoardName();
         if(_ui.getADGFileNames().size() > 1) {
             _bMultiApp = true;
         } 
@@ -661,7 +661,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
         } 
         
         
-        if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
+        if(_targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
             _printStream.println("");
             _printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
             _printStream.println("");
@@ -739,32 +739,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
         _printStream.println("");
     }
     
-    /**
-     *  Get the target FPGA board
-     *  @param platform
-     */
-    private String _getBoard( Platform x ) {
-        
-        String board = "";
-        Iterator j = x.getResourceList().iterator();
-        while (j.hasNext()) {
-            Resource resource = (Resource)j.next();
-            if( resource instanceof ADMXRCII ) {
-                board = "ADM-XRC-II";
-            } else if( resource instanceof ADMXPL ) {
-                board = "ADM-XPL";
-            } else if( resource instanceof XUPV5LX110T ) {
-                board = "XUPV5-LX110T";
-            } else if( resource instanceof ML505 ) {
-                board = "ML505";
-            } else if( resource instanceof ML605 ) {
-                board = "ML605";
-            }
-        }  
-        
-        return board;
-    }
-    
+ 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
     

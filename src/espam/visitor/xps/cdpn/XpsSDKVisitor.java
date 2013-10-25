@@ -25,6 +25,7 @@ import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.host_interfaces.XUPV5LX110T;
 import espam.datamodel.platform.host_interfaces.ML605;
+import espam.datamodel.platform.host_interfaces.ZedBoard;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.controllers.AXI_CM_CTRL;
 import espam.datamodel.platform.controllers.MemoryController;
@@ -938,10 +939,13 @@ public class XpsSDKVisitor {
             _commInterface = ((ML605) resource).getCommInterface();
             } else if( resource instanceof AXICrossbar ) {
             _axiPlatform = true;
-            }
+            } else if(resource instanceof ZedBoard ){
+				 _targetBoard = "ZedBoard";
+				_commInterface = ((ZedBoard) resource).getCommInterface();
+			}
         }
 
-        if (_targetBoard != "ML605" && _targetBoard != "XUPV5-LX110T"){
+        if (_targetBoard != "ML605" && _targetBoard != "XUPV5-LX110T" && _targetBoard != "ZedBoard"){
             System.err.println("Error: unsupported target board in using SDK visitor");
         }
 
@@ -966,6 +970,22 @@ public class XpsSDKVisitor {
         returnStr = returnStr + binStr;
         return returnStr;
     }
+    
+    /**
+    *  Get the boardname as string
+    */
+    public String getTargetBoard()
+    {
+		return _targetBoard;
+	}
+	
+	/**
+    *  Get the path to SDK 
+    */
+    public String getPathSDK()
+    {
+		return _libsdk_dir;
+	}
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///

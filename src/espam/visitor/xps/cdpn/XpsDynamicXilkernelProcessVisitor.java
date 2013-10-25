@@ -72,7 +72,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
         _printStreamFunc = printStreamFunc;
         _relation2 = relation;
         _ui = UserInterface.getInstance();
-        _targetBoard = _getBoard( mapping.getPlatform() );
+        _targetBoard = mapping.getPlatform().getBoardName() ;
         if(_ui.getADGFileNames().size() > 1) {
             _bMultiApp = true;
         } 
@@ -634,7 +634,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
         _printStream.println(_prefix + "pthread_t threadID[" + x.getSchedule().size() + "];");
         _printStream.println(_prefix + "int ret;");
         
-        if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
+        if(_targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ) {
             _printStream.println("");
             _printStream.println(_prefix + _prefix + "while( *FIN_SIGNAL == 0 ) {};");
             _printStream.println("");
@@ -687,6 +687,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
      *  Get the target FPGA board
      *  @param platform
      */
+     /*
     private String _getBoard( Platform x ) {
         
         String board = "";
@@ -708,7 +709,7 @@ public class XpsDynamicXilkernelProcessVisitor extends CDPNVisitor {
         
         return board;
     }
-    
+ */
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                  ///
     
