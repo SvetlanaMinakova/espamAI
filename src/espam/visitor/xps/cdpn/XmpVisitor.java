@@ -113,7 +113,8 @@ public class XmpVisitor extends CDPNVisitor {
                 
                 _visitAllProcessors( x );
                 
-            } else if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") || _targetBoard.equals("ML605") ) {
+            } else if( _targetBoard.equals("XUPV5-LX110T") || _targetBoard.equals("ML505") ||
+                        _targetBoard.equals("ML605") || _targetBoard.equals("ZedBoard") ) {
                 
                 if( _targetBoard.equals("XUPV5-LX110T") ) {
                     

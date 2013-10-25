@@ -148,10 +148,12 @@ public class SetMemoryMaps {
                             processor.getMemoryMapList().add( fslMemMap );
                         }
                     } else if( processor instanceof ARM ) {
+                        /*
                         MemoryMap programMemMap = new MemoryMap("Program Memory Map");
                         programMemMap.setPort( port );
                         programMemMap.setProgramMemorySegment( 0x0 ); 
                         processor.getMemoryMapList().add( programMemMap ); 
+                        */
                         MemoryMap dataMemMap = new MemoryMap("Data Memory Map");
                         dataMemMap.setPort( port );
                         dataMemMap.setDataMemorySegment(    0x0 );

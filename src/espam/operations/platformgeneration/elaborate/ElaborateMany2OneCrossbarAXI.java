@@ -17,6 +17,7 @@ import espam.datamodel.platform.ports.FifoReadPort;
 import espam.datamodel.platform.ports.FifoWritePort;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.memories.Memory;

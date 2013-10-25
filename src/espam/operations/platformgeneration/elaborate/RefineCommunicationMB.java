@@ -36,6 +36,7 @@ import espam.datamodel.platform.ports.DLMBPort;
 import espam.datamodel.platform.ports.FifoReadPort;
 import espam.datamodel.platform.ports.FifoWritePort;
 import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.controllers.FifosController;
 
 

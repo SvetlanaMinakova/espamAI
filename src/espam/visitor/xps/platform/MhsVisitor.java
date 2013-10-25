@@ -369,16 +369,19 @@ public class MhsVisitor extends PlatformVisitor {
         }
         _printStream.println("");
         
-        Iterator i;
+        if (!_targetBoard.equals("ZedBoard")) {
+            Iterator i;
         
-        // Visit all processes
-        Resource resource;
-        i = x.getResourceList().iterator();
-        while( i.hasNext() ) {
-            resource = (Resource) i.next();
-            resource.accept(this);
-        }
-        
+            // Visit all processes
+            Resource resource;
+            i = x.getResourceList().iterator();
+            while( i.hasNext() ) {
+                resource = (Resource) i.next();
+                resource.accept(this);
+            }
+        } else {
+            _visit_ZedBoard();
+        }    
         _printStream.println("");
         
         _prefixDec();
@@ -1762,7 +1765,7 @@ public class MhsVisitor extends PlatformVisitor {
     }
 
 
-    public void visitComponent(ZedBoard x) {
+    public void _visit_ZedBoard() {
         _printStream.print(
             "BEGIN processing_system7\n" +
             " PARAMETER INSTANCE = processing_system7_0\n" +

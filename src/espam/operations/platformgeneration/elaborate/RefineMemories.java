@@ -20,6 +20,7 @@ import espam.datamodel.platform.ports.FifoReadPort;
 import espam.datamodel.platform.ports.FifoWritePort;
 import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.PowerPC;
 import espam.datamodel.platform.processors.Page;
 import espam.datamodel.platform.memories.Memory;
@@ -350,15 +351,19 @@ public class RefineMemories {
             if( type == 0 ) {
 //*
                 if( (processor instanceof MicroBlaze && port instanceof DLMBPort) ||
-                   (processor instanceof PowerPC    && port instanceof DPLBPort) ) {
-                    
+                   (processor instanceof PowerPC    && port instanceof DPLBPort) ||
+                   (processor instanceof ARM    && port instanceof DLMBPort)
+                   ) {
+                    // TODO: Handle the DPort properly for ARM
                     processorPort = port;
                     break;
                 }
                 // Or get the Program memory side
             } else {
-                if( processor instanceof MicroBlaze && port instanceof ILMBPort ||
-                   processor instanceof PowerPC    && port instanceof IPLBPort ) {
+                if( (processor instanceof MicroBlaze && port instanceof ILMBPort) ||
+                   (processor instanceof PowerPC    && port instanceof IPLBPort) ||
+                   (processor instanceof ARM    && port instanceof ILMBPort)
+                   ) {
                     
                     processorPort = port;
                     break;
