@@ -164,6 +164,7 @@ public class XmpVisitor extends CDPNVisitor {
                         "Package: clg484\n" +
                         "SpeedGrade: -1\n" +
                         "BInfo: \n" +
+                        "UcfFile: data/system_ZedBoard.ucf\n" +
                         "Processor: processing_system7_0"
                     );
                 } else {
