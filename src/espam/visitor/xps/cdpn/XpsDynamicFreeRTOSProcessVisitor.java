@@ -593,6 +593,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
     private void _writeIncludes( CDProcess x ) {
         _printStream.println("#include <FreeRTOS.h>");
         _printStream.println("#include <task.h>");
+
         String parent = "";
         if (_ui.getSDKFlag()) {
             parent = ".." + File.separatorChar;
@@ -601,6 +602,13 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
         _printStream.println("#include \"" + parent + "MemoryMap.h\"");
         _printStream.println("#include \"" + parent + "aux_func.h\"");
         _printStream.println("");
+        
+        if(_includeDriversFlag == false){
+			_includeDriversFlag = true;
+			_printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"network.h\"");
+			_printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"xtft.h\"");
+			 _printStream.println("");
+		}
         
         Iterator n = x.getGateList().iterator();
         while( n.hasNext() ) {
@@ -748,6 +756,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
      */
     private static String _codeDir = "";
     
+    private static boolean _includeDriversFlag = false; // will be true after executing _writeIncludes once, because only first processor should include drivers
     /**
      *  The UserInterface
      */
