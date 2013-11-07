@@ -92,6 +92,8 @@ public class XpsSDKVisitor {
     * generation of SDK project for host IF
     */
     public void handleHostIF() {
+
+		
         String processorName = "host_if_mb";
         String processName = "host_if";
                 
@@ -191,115 +193,134 @@ public class XpsSDKVisitor {
         String bsp_folder, xcp_folder;
         boolean dir_if;
         
-        String processName = process.getName();
-        MProcessor mProcessor = _mapping.getMProcessor(process); 
-        String processorName = mProcessor.getName();
-        int schedulerType = mProcessor.getScheduleType();
-        Resource resource = mProcessor.getResource();
-            
-        bsp_dirname = "BSP_" + processName;
-        xcp_dirname = processName;
-        
-        bsp_folder = _sdk_dir + File.separatorChar + bsp_dirname; 
-        xcp_folder = _sdk_dir + File.separatorChar + xcp_dirname; 
-        
-        dir_if = new File(bsp_folder).mkdir();
-        if (!dir_if)
-            System.err.println ("ERROR creating " + bsp_dirname + " folder");
+        if(_targetBoard.equals("ZedBoard")){
+			String templateDirName = "BSPTemplate_ZedBoard_P_1";
+			String copyFromDir = _libsdk_dir + templateDirName; // path to bsp directory in libSKD (zedBoard)
+			String copyToDir =  _sdk_dir + File.separatorChar + templateDirName; //path to SDK 
+					
+			File from = new File(copyFromDir);
+			File To = new File(copyToDir);
+			File ToAbsolute = new File(To.getAbsolutePath()); // we have to have the absolute path, so conversion is unavoidable
+			
+			Copier cper = new Copier(from,ToAbsolute,1,true);
+			try{
+				cper.copy();
+			}catch(Exception e)
+			{
+				System.out.println("Something went wrong while copying BSP folder of Zedboard: " + e);
+			}
+		}else{
+			
+			String processName = process.getName();
+			MProcessor mProcessor = _mapping.getMProcessor(process); 
+			String processorName = mProcessor.getName();
+			int schedulerType = mProcessor.getScheduleType();
+			Resource resource = mProcessor.getResource();
+				
+			bsp_dirname = "BSP_" + processName;
+			xcp_dirname = processName;
+			
+			bsp_folder = _sdk_dir + File.separatorChar + bsp_dirname; 
+			xcp_folder = _sdk_dir + File.separatorChar + xcp_dirname; 
+			
+			dir_if = new File(bsp_folder).mkdir();
+			if (!dir_if)
+				System.err.println ("ERROR creating " + bsp_dirname + " folder");
 
-        dir_if = new File(xcp_folder).mkdir();
-        
+			dir_if = new File(xcp_folder).mkdir();
+			
 
-        // Generate BSP files
-        copySystemMss(bsp_folder, process);
-        makeFile(bsp_folder);
-        Libgen(processorName, bsp_folder);
-        makeProject(bsp_folder, bsp_dirname);
-        makeCProject(bsp_folder);
-        makeSdkProject(bsp_folder, processorName);
-                        
-        // Generate XCP files
-        try {
-            makeXCPCProject(xcp_folder, processorName, processName, schedulerType);
-            makeXCPProject(xcp_folder, processName);
-        } catch (Exception e) {
-            System.err.println ("Error making XCP Project/CProject");
-            e.printStackTrace();
-        }
+			// Generate BSP files
+			copySystemMss(bsp_folder, process);
+			makeFile(bsp_folder);
+			Libgen(processorName, bsp_folder);
+			makeProject(bsp_folder, bsp_dirname);
+			makeCProject(bsp_folder);
+			makeSdkProject(bsp_folder, processorName);
+							
+			// Generate XCP files
+			try {
+				makeXCPCProject(xcp_folder, processorName, processName, schedulerType);
+				makeXCPProject(xcp_folder, processName);
+			} catch (Exception e) {
+				System.err.println ("Error making XCP Project/CProject");
+				e.printStackTrace();
+			}
 
-        String sourceDir = _sdk_dir + File.separatorChar + _funcCodeDirName;
-        String destinationDir = xcp_folder;
-        
-        String[] link_cmd;
-        File dir = new File(sourceDir);
-        File destDir = new File(destinationDir);
+			String sourceDir = _sdk_dir + File.separatorChar + _funcCodeDirName;
+			String destinationDir = xcp_folder;
+			
+			String[] link_cmd;
+			File dir = new File(sourceDir);
+			File destDir = new File(destinationDir);
 
 
-        // create a dummy .elf as placeholder, otherwise, opening xps project gives error;
-        // we assume that they are in the directory "Debug"
-        String dirDebug = xcp_folder + File.separatorChar + "Debug";
-        boolean IsDirDebug = new File(dirDebug).mkdir();
-        if (!IsDirDebug)
-            System.err.println ("ERROR creating " + dirDebug + " folder");
-        
-        try{
-            String elfName = dirDebug + File.separatorChar + processName + ".elf";
-            FileWriter elfFile = new FileWriter(elfName);
-            elfFile.close();
-        } catch (IOException exp) {
-            System.err.println("Error creating dummy elf file");
-            System.err.println("Error:" + exp);
-        }
-                
-        
-        // make symbolic links to implemenation
-        try {
-            
-            File[] files = dir.listFiles(new FilenameFilter() { 
-                            public boolean accept(File dir, String filename) { return filename.endsWith(".c"); } } );
-            for (int r  = 0; r < files.length; r++) {
-                link_cmd = new String[4];
-                link_cmd[0] = "/bin/ln";
-                link_cmd[1] = "-s";
-                link_cmd[2] = files[r].getCanonicalPath();
-                link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
-                exe(link_cmd);
-            }
-    
-            files = dir.listFiles(new FilenameFilter() { 
-                            public boolean accept(File dir, String filename) { return filename.endsWith(".cpp"); } } );
-            for (int r  = 0; r < files.length; r++) {
-                link_cmd = new String[4];
-                link_cmd[0] = "/bin/ln";
-                link_cmd[1] = "-s";
-                link_cmd[2] = files[r].getCanonicalPath();
-                link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
-                exe(link_cmd);
-            }
-    
-            files = dir.listFiles(new FilenameFilter() { 
-                            public boolean accept(File dir, String filename) { return filename.endsWith(".h"); } } );
-            for (int r  = 0; r < files.length; r++) {
-                link_cmd = new String[4];
-                link_cmd[0] = "/bin/ln";
-                link_cmd[1] = "-s";
-                link_cmd[2] = files[r].getCanonicalPath();
-                link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
-                exe(link_cmd);
-            }
-                
-        } catch (Exception e) {
-            System.err.println("Error in making the symbolic links");
-            e.printStackTrace();
-        }
-        
-        if (Options.USE_FULLY_AUTOMATED_SDK == true) {
-            makeObject(xcp_folder);
-            makeSources(xcp_folder);
-            makeSubdir(xcp_folder, xcp_dirname, bsp_dirname, processorName);
-            makeFileXCP(xcp_folder, processorName, processName);
-            makeLscript(xcp_folder, processorName, resource);
-        }
+			// create a dummy .elf as placeholder, otherwise, opening xps project gives error;
+			// we assume that they are in the directory "Debug"
+			String dirDebug = xcp_folder + File.separatorChar + "Debug";
+			boolean IsDirDebug = new File(dirDebug).mkdir();
+			if (!IsDirDebug)
+				System.err.println ("ERROR creating " + dirDebug + " folder");
+			
+			try{
+				String elfName = dirDebug + File.separatorChar + processName + ".elf";
+				FileWriter elfFile = new FileWriter(elfName);
+				elfFile.close();
+			} catch (IOException exp) {
+				System.err.println("Error creating dummy elf file");
+				System.err.println("Error:" + exp);
+			}
+					
+			
+			// make symbolic links to implemenation
+			try {
+				
+				File[] files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".c"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+		
+				files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".cpp"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+		
+				files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".h"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+					
+			} catch (Exception e) {
+				System.err.println("Error in making the symbolic links");
+				e.printStackTrace();
+			}
+			
+			if (Options.USE_FULLY_AUTOMATED_SDK == true) {
+				makeObject(xcp_folder);
+				makeSources(xcp_folder);
+				makeSubdir(xcp_folder, xcp_dirname, bsp_dirname, processorName);
+				makeFileXCP(xcp_folder, processorName, processName);
+				makeLscript(xcp_folder, processorName, resource);
+			}
+	}
     }
 
 
