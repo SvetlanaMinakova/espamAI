@@ -488,7 +488,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         "       volatile int *fifo = (int *)pos;\\\n" +
         "       int r_cnt = fifo[1];\\\n" +
         "       while (1) {\\\n" +
-        "            int w_cnt = fifo[0];\\\n" +
+        "            volatile int w_cnt = fifo[0];\\\n" +
         "            if ( w_cnt != r_cnt ) {\\\n" +
         "                for (int i = 0; i < len; i++) {\\\n" +
         "                     ((volatile int *) value)[i] = fifo[(r_cnt & 0x7FFFFFFF) + 2 + i];\\\n" +
@@ -509,7 +509,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         "       volatile int *fifo = (int *)pos;\\\n" +
         "       int w_cnt = fifo[0];\\\n" +
         "       while (1) {\\\n" +
-        "            int r_cnt = fifo[1];\\\n" +
+        "            volatile int r_cnt = fifo[1];\\\n" +
         "            if ( r_cnt != (w_cnt ^ 0x80000000) ) {\\\n" +
         "                for (int i = 0; i < len; i++) {\\\n" +
         "                     fifo[(w_cnt & 0x7FFFFFFF) + 2 + i] = ((volatile int *) value)[i];\\\n" +
