@@ -109,7 +109,7 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
         }
         
         _writeThreadMain( x );
-        _writeMain();
+        _writeMain( x );
         
         _writeFunctionsInAuxFile( x );
     }
@@ -596,19 +596,40 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
 
         String parent = "";
         if (_ui.getSDKFlag()) {
-            parent = ".." + File.separatorChar;
+			//because ZedBoard SDK has extra /src folder within project folder
+			if(_targetBoard.equals("ZedBoard")){
+				parent = ".." + File.separatorChar + ".." + File.separatorChar;
+			}else{
+				parent = ".." + File.separatorChar;
+			}
         }
-        _printStream.println("#include \"" + parent + "platform.h\"");
+        
+		_printStream.println("#include \"" + parent + "Drivers" + File.separatorChar + "platform.h\"");
         _printStream.println("#include \"" + parent + "MemoryMap.h\"");
         _printStream.println("#include \"" + parent + "aux_func.h\"");
         _printStream.println("");
         
-        if(_includeDriversFlag == false){
-			_includeDriversFlag = true;
-			_printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"network.h\"");
-			_printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"xtft.h\"");
+        if(_targetBoard.equals("ZedBoard")){
+			_printStream.println("#include <xil_printf.h>");
+			_printStream.println("#include <xil_cache.h>");
+			_printStream.println("#include <xil_mmu.h>");
+			_printStream.println("#include <xil_io.h>");
+			
+			if(_includeDriversFlag == false){
+				_includeDriversFlag = true;
+				// At this point we dont want P_1 to have extra drivers includes
+				// _printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"network.h\"");
+				// _printStream.println("#include \"" + parent + "Drivers" + File.separatorChar +"xtft.h\"");
+				// next includes and defines are needed to wake up 2nd core on zedboard:
+				
+				_printStream.println("#define sev() __asm__ __volatile__(\"sev\")");
+				_printStream.println("#define CPU1STARTADR 0xfffffff0");
+				_printStream.println("#define COMM_VAL  (*(volatile unsigned long *)(0xFFFF0000))");
+			}
 			 _printStream.println("");
 		}
+		
+		
         
         Iterator n = x.getGateList().iterator();
         while( n.hasNext() ) {
@@ -737,9 +758,49 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
      *  Write the main function
      *
      */
-    private void _writeMain() {
+    private void _writeMain( CDProcess x ) {
+		
+		if(_targetBoard.equals("ZedBoard")){
+			_printStream.println("void vApplicationMallocFailedHook( void )");
+			_printStream.println("{");
+			_printStream.println("\txil_printf(\"malloc failed\");");
+			_printStream.println("\ttaskDISABLE_INTERRUPTS();");
+			_printStream.println("\tfor( ;; );");
+			_printStream.println("}");
+			_printStream.println("void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )");
+			_printStream.println("{");
+			_printStream.println("\t( void ) pcTaskName;");
+			_printStream.println("\t( void ) pxTask;");
+			_printStream.println("\txil_printf(\"stack overflow\");");
+			_printStream.println("\ttaskDISABLE_INTERRUPTS();");
+			_printStream.println("\tfor( ;; );");
+			_printStream.println("}");
+			_printStream.println("");
+			_printStream.println("void vApplicationSetupHardware( void )");
+			_printStream.println("{");
+			_printStream.println("}");
+			_printStream.println("");
+		}
+		
         _printStream.println("int main() {");
         _prefixInc();
+        
+        
+        // the following only needs to be executed on P_1 for zedBoard
+        if(_targetBoard.equals("ZedBoard" ) && _includeAltMainFlag == false){
+			_printStream.println("\tXil_SetTlbAttributes(0xFFFF0000,0x14de2);           // S=b1 TEX=b100 AP=b11, Domain=b1111, C=b0, B=b0");
+			_printStream.println("\t/* Disable L1 cache*/");
+			_printStream.println("\tXil_SetTlbAttributes(0x30000000,0x04de2);");
+			_printStream.println("\t/* Start CPU1 */");
+			_printStream.println("\t//	xil_printf(\"CPU0: writing start addr for cpu1\"");
+			_printStream.println("\tXil_Out32(CPU1STARTADR, 0x10000000); //should be set to ps7_ddr_0_S_AXI_BASEADDR of core_1 (see linkerscript)");
+			_printStream.println("\tdmb(); //waits until write has finished");
+			_printStream.println("\t//	xil_printf(\"CPU0: sending the SEV to wake up CPU1\"");
+			_printStream.println("\tsev();");
+			_includeAltMainFlag = true;
+		}
+	
+	
         _printStream.println(_prefix + "thread_main(NULL);");
         _printStream.println(_prefix + "return 0;");
         _prefixDec();
@@ -757,6 +818,8 @@ public class XpsDynamicFreeRTOSProcessVisitor extends CDPNVisitor {
     private static String _codeDir = "";
     
     private static boolean _includeDriversFlag = false; // will be true after executing _writeIncludes once, because only first processor should include drivers
+    
+    private static boolean _includeAltMainFlag = false; // For Zedboard to wirte a different main on P_1 then P_2 (used for waking the 2nd core)
     /**
      *  The UserInterface
      */

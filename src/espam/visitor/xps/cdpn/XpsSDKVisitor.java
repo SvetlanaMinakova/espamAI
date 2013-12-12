@@ -192,23 +192,136 @@ public class XpsSDKVisitor {
         String bsp_dirname, xcp_dirname;
         String bsp_folder, xcp_folder;
         boolean dir_if;
-        
+                
         if(_targetBoard.equals("ZedBoard")){
-			String templateDirName = "BSPTemplate_ZedBoard_P_1";
-			String copyFromDir = _libsdk_dir + templateDirName; // path to bsp directory in libSKD (zedBoard)
-			String copyToDir =  _sdk_dir + File.separatorChar + templateDirName; //path to SDK 
-					
-			File from = new File(copyFromDir);
-			File To = new File(copyToDir);
-			File ToAbsolute = new File(To.getAbsolutePath()); // we have to have the absolute path, so conversion is unavoidable
-			
-			Copier cper = new Copier(from,ToAbsolute,1,true);
+
+             //generating BSP files:
+            String templateName_bsp = "BSPTemplate_ZedBoard_" + process.getName();
+            String bspName =  process.getName() + "_bsp";
+            
+            String copyFromDir = _libsdk_dir + templateName_bsp; // path to bsp directory in libSKD (zedBoard)
+			String copyToDir =  _sdk_dir + File.separatorChar + bspName; //path to SDK 
+						
+			File from_bsp = new File(copyFromDir);
+			File to_bsp = new File(copyToDir);
+			File ToAbsolute_bsp = new File(to_bsp.getAbsolutePath()); // we have to have the absolute path for copying, so conversion is unavoidable
+				
+			Copier cper_bsp = new Copier(from_bsp,ToAbsolute_bsp,1,true);
 			try{
-				cper.copy();
+				cper_bsp.copy();
 			}catch(Exception e)
 			{
 				System.out.println("Something went wrong while copying BSP folder of Zedboard: " + e);
 			}
+            
+           
+            //SHOULD BE AS WELL: makeSdkProject();
+            
+            
+            
+            //generating files for project
+            /*
+            String templateName = "zedBoardProcessor.cproject";
+			String cprojectFileName = _libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + templateName; 
+			String cprojectDest =  _sdk_dir + File.separatorChar + process.getName() + File.separatorChar +"lala.cproject"; 
+            
+            File from = new File(cprojectFileName);
+			File to = new File(cprojectDest);
+			File ToAbsolute = new File(to.getAbsolutePath());
+            
+            Copier cper = new Copier(from,ToAbsolute,2,false);
+			try{
+				cper.copy();
+			}catch(Exception e)
+			{
+				System.out.println("Something went wrong while copying Cproject of Zedboard: " + e);
+			}
+            * */
+            
+            String cprojectDest =  _sdk_dir + File.separatorChar + process.getName(); 
+            String coreName;
+            //because in cproject file there are links to ps7_cortexa_<coreNumber> we have to map
+            //P_1 to ps7_cortexa_0 and map P_2 to ps7_cortexa_1
+            
+            if(process.getName().equals("P_1")){ // 
+                coreName = "ps7_cortexa9_0";
+            }else{
+                coreName = "ps7_cortexa9_1";
+            }
+            
+            
+            Libgen(coreName, copyToDir);
+            makeProject(copyToDir, process.getName()+"_bsp");
+            String debugFolder = cprojectDest + File.separatorChar + "Debug";
+            new File(debugFolder).mkdir();
+            makeObject(cprojectDest);
+            makeSources(cprojectDest);
+            makeFileXCP(cprojectDest,process.getName(),coreName);
+            new File(cprojectDest + File.separatorChar + "Debug" + File.separatorChar + "src").mkdir();
+            makeLscript(_sdk_dir,process.getName(),null);
+            try{
+                makeSubdirHostZedBoard(cprojectDest + File.separatorChar + "Debug" + File.separatorChar + "src",coreName,process.getName());
+            }catch(Exception e){
+                System.out.println("something went wrong while creating subdir.mk");
+
+            }
+            
+            try{
+                makeCProject_zedBoardProcessor(cprojectDest,process.getName(),coreName);
+                makeProject_zedBoardProcessor(cprojectDest,process.getName());
+            }catch(Exception e){
+                System.out.println("something went wrong while creating .project or .cproject files in processor sdk project");
+            }
+            
+            // make symbolic links to implemenation
+            String sourceDir = _sdk_dir + File.separatorChar + _funcCodeDirName;
+			String destinationDir = _sdk_dir + File.separatorChar + process.getName() + File.separatorChar + "src" + File.separatorChar;
+			
+			String[] link_cmd;
+			File dir = new File(sourceDir);
+			File destDir = new File(destinationDir);
+			try {
+				
+				File[] files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".c"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+		
+				files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".cpp"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+		
+				files = dir.listFiles(new FilenameFilter() { 
+								public boolean accept(File dir, String filename) { return filename.endsWith(".h"); } } );
+				for (int r  = 0; r < files.length; r++) {
+					link_cmd = new String[4];
+					link_cmd[0] = "/bin/ln";
+					link_cmd[1] = "-s";
+					link_cmd[2] = files[r].getCanonicalPath();
+					link_cmd[3] = destDir.getCanonicalPath() + File.separatorChar + files[r].getName();
+					exe(link_cmd);
+				}
+					
+			} catch (Exception e) {
+				System.err.println("Error in making the symbolic links");
+				e.printStackTrace();
+			}
+        
+            
+            
 		}else{
 			
 			String processName = process.getName();
@@ -540,6 +653,9 @@ public class XpsSDKVisitor {
 
             out = new PrintWriter(libGenFile);
             out.println("PROCESSOR=" + processorName);
+            if(_targetBoard.equals("ZedBoard")){
+                out.println("REPOSITORIES=-lp path_to_freertos_zynq_repo");
+            }
             out.println("HWSPEC=.." + File.separatorChar + _project_name + "_hw_platform" + File.separatorChar + "system.xml");
             out.close();
         } 
@@ -563,7 +679,11 @@ public class XpsSDKVisitor {
             printer.println("<project>" + _project_name + "_hw_platform</project>");
             printer.println("</projects>");
             printer.close();
-            copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "BSP_Template_Project", destFolder + File.separatorChar + ".project");
+            if(_targetBoard.equals("ZedBoard")){
+                copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "BSP_Template_Project_ZedBoard", destFolder + File.separatorChar + ".project");
+            }else{
+                copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "BSP_Template_Project", destFolder + File.separatorChar + ".project");
+            }
         
         } catch (IOException e) {
             System.err.println("ERROR making project file");
@@ -573,7 +693,63 @@ public class XpsSDKVisitor {
     }
 
     public void makeCProject (String destFolder){
-        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "BSP_Template_CProject", destFolder + File.separatorChar + ".cproject");
+        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardProcessor.cproject", destFolder + File.separatorChar + ".cproject");
+    }
+    
+    // method MakeCProject is for the BSP, for zedboard we need one for processor
+    private void makeCProject_zedBoardProcessor(String destFolder,String processName,String coreName)throws Exception{
+        
+        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardProcessor.cproject");
+        FileWriter file = new FileWriter (destFolder + File.separatorChar +".cproject");
+        PrintWriter printer = new PrintWriter(file);
+        if (!f.exists() && f.length() < 0) {
+            System.out.println("The specified file does not exist");
+        } else {
+            FileReader fr = new FileReader(f);
+            BufferedReader reader = new BufferedReader(fr);
+            String st = "";
+            String replace;
+            
+            while ((st = reader.readLine()) != null) {
+                replace = processName;	
+                Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+                Matcher m = p.matcher(st);
+                st = (m.replaceAll(replace));
+                
+         
+                p = Pattern.compile("##CORE_NAME##");
+                m = p.matcher(st);
+                printer.println(m.replaceAll(coreName));
+                
+            }
+            printer.close();
+        }
+    }
+    
+    // method MakeCProject is for the BSP, for zedboard we need one for processor
+    private void makeProject_zedBoardProcessor(String destFolder,String processName)throws Exception{
+        
+        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardProcessor.project");
+        FileWriter file = new FileWriter (destFolder + File.separatorChar +".project");
+        PrintWriter printer = new PrintWriter(file);
+        if (!f.exists() && f.length() < 0) {
+            System.out.println("The specified file does not exist");
+        } else {
+            FileReader fr = new FileReader(f);
+            BufferedReader reader = new BufferedReader(fr);
+            String st = "";
+            String replace;
+            
+            while ((st = reader.readLine()) != null) {
+                replace = processName;	
+                Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+                Matcher m = p.matcher(st);
+                st = (m.replaceAll(replace));
+                
+                printer.println(m.replaceAll(replace));
+            }
+            printer.close();
+        }
     }
 
     public void makeSdkProject (String destFolder, String processorName){
@@ -749,11 +925,19 @@ public class XpsSDKVisitor {
     } 
     
     public void makeObject (String destFolder){
-        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "objects.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "objects.mk");
+		if(_targetBoard.equals("zedBoard")){
+            copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardobjects.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "objects.mk");
+		}else{
+            copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "objects.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "objects.mk");
+		}
     }
     
     public void makeSources (String destFolder){
-        copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "sources.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "sources.mk");
+        if(_targetBoard.equals("zedBoard")){
+            copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardsources.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "sources.mk");
+		}else{
+            copyfile(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "sources.mk", destFolder + File.separatorChar + "Debug" + File.separatorChar + "sources.mk");
+        }
     }
 
     public void makeSubdir(String destFolder, String dirnameXCP, String dirnameBSP, String processorName){
@@ -805,6 +989,36 @@ public class XpsSDKVisitor {
             e.printStackTrace();
         }
     }
+    
+    public void makeSubdirHostZedBoard(String destFolder, String processName, String processorName) throws Exception{
+        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardsubdir.mk");
+        FileWriter file = new FileWriter (destFolder + File.separatorChar + "subdir.mk");
+        PrintWriter printer = new PrintWriter(file);
+        if (!f.exists() && f.length() < 0) {
+            System.out.println("The specified file does not exist");
+        } else {
+            FileReader fr = new FileReader(f);
+            BufferedReader reader = new BufferedReader(fr);
+            String st = "";
+            String replace;
+            
+            while ((st = reader.readLine()) != null) {
+                replace = processorName;
+                Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+                Matcher m = p.matcher(st);
+                st=(m.replaceAll(replace));
+
+                replace = processName;
+                p = Pattern.compile("##PROCESS_NAME##");
+                m = p.matcher(st);
+                st=m.replaceAll(replace);
+
+                printer.println(st);
+                                            
+            }
+            printer.close();
+        }
+    }
 
     public void makeSubdirHost(String destFolder, String dirnameBSP, String processorName){
         try {
@@ -853,7 +1067,12 @@ public class XpsSDKVisitor {
 
     public void makeFileXCP(String destFolder, String processorName, String processName){
     try{
-        File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Template_Makefile");
+        File f;
+        if(_targetBoard.equals("ZedBoard")){
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "zedBoardmakefile");
+        }else{
+            f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "XCP_Template_Makefile");
+        }
         FileWriter file = new FileWriter (destFolder + File.separatorChar + "Debug" + File.separatorChar +"makefile");
         PrintWriter printer = new PrintWriter(file);
         FileReader fr = new FileReader(f);
@@ -896,51 +1115,56 @@ public class XpsSDKVisitor {
     }
 
     public void makeLscript(String destFolder, String processorName, Resource resource){
-        try {
-            Integer s = _mapping.getProcessorList().size();
-            Integer localMem = 0;
-            FileWriter file = new FileWriter (destFolder + File.separatorChar + "lscript.ld");
-            PrintWriter printer = new PrintWriter(file);
+		
+		if(_targetBoard.equals("ZedBoard")){
+			copyfile(_libsdk_dir + File.separatorChar + processorName+".ld", destFolder + File.separatorChar + processorName + File.separatorChar + "src" + File.separatorChar + "lscript.ld");
+		}else{
+			try {
+				Integer s = _mapping.getProcessorList().size();
+				Integer localMem = 0;
+				FileWriter file = new FileWriter (destFolder + File.separatorChar + "lscript.ld");
+				PrintWriter printer = new PrintWriter(file);
 
-            localMem = ((Processor) resource).getProgMemSize();
-            localMem += ((Processor) resource).getDataMemSize();
-            
-            printer.println("_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 0x400;");
-            printer.println("_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x400;\n");
-            printer.println("/* Define Memories in the system */\n");
-            printer.println("MEMORY");
-            printer.println("{");
-            printer.println("   PCTRL_BRAM1_" + processorName + "_DCTRL_BRAM1_" + processorName + " : ORIGIN = 0x00000050, LENGTH = 0x" + _digitToStringHex(localMem - 80, 8));
-            if (_axiPlatform) {
-                printer.println("   LMB_CTRL_CM_" + processorName + " : ORIGIN = 0xE0000000, LENGTH = 0x00010000");
-                printer.println("   DDR3_SDRAM_S_AXI_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
-                for (int i = 1; i <= s; i++) {
-                    printer.println("   AXI_CTRL_CM_mb_" + i + "_S_AXI_BASEADDR : ORIGIN = 0x800" + i + "0000, LENGTH = 0x00010000");
-                }
-            }
-            else {
-                printer.println("   DDR3_SDRAM_MPMC_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
-            }
-            printer.println("}");
+				localMem = ((Processor) resource).getProgMemSize();
+				localMem += ((Processor) resource).getDataMemSize();
+				
+				printer.println("_STACK_SIZE = DEFINED(_STACK_SIZE) ? _STACK_SIZE : 0x400;");
+				printer.println("_HEAP_SIZE = DEFINED(_HEAP_SIZE) ? _HEAP_SIZE : 0x400;\n");
+				printer.println("/* Define Memories in the system */\n");
+				printer.println("MEMORY");
+				printer.println("{");
+				printer.println("   PCTRL_BRAM1_" + processorName + "_DCTRL_BRAM1_" + processorName + " : ORIGIN = 0x00000050, LENGTH = 0x" + _digitToStringHex(localMem - 80, 8));
+				if (_axiPlatform) {
+					printer.println("   LMB_CTRL_CM_" + processorName + " : ORIGIN = 0xE0000000, LENGTH = 0x00010000");
+					printer.println("   DDR3_SDRAM_S_AXI_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
+					for (int i = 1; i <= s; i++) {
+						printer.println("   AXI_CTRL_CM_mb_" + i + "_S_AXI_BASEADDR : ORIGIN = 0x800" + i + "0000, LENGTH = 0x00010000");
+					}
+				}
+				else {
+					printer.println("   DDR3_SDRAM_MPMC_BASEADDR : ORIGIN = 0xA0000000, LENGTH = 0x10000000");
+				}
+				printer.println("}");
 
-            File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "Linker_Script_Template");
-            FileReader fr = new FileReader(f);
-            BufferedReader reader = new BufferedReader(fr);
-            String st = "";
-            String replace;
-            
-            while ((st = reader.readLine()) != null) {
-                replace = processorName;	
-                Pattern p = Pattern.compile("##PROCESSOR_NAME##");
-                Matcher m = p.matcher(st);
-                st = m.replaceAll(replace);
-                printer.println(st);
-            }
-            printer.close();
-        } catch (IOException e) {
-            System.err.println("ERROR making linker script file");
-            e.printStackTrace();
-        }
+				File f = new File(_libsdk_dir + File.separatorChar + "BSPTemplate" + File.separatorChar + "Linker_Script_Template");
+				FileReader fr = new FileReader(f);
+				BufferedReader reader = new BufferedReader(fr);
+				String st = "";
+				String replace;
+				
+				while ((st = reader.readLine()) != null) {
+					replace = processorName;	
+					Pattern p = Pattern.compile("##PROCESSOR_NAME##");
+					Matcher m = p.matcher(st);
+					st = m.replaceAll(replace);
+					printer.println(st);
+				}
+				printer.close();
+			} catch (IOException e) {
+				System.err.println("ERROR making linker script file");
+				e.printStackTrace();
+			}
+		}
     }
     
     /**

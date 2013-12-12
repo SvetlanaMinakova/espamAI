@@ -20,6 +20,17 @@
 #define __PLATFORM_H_
 
 int init_platform();
+#define delayCheckDeadline(xLastReleaseTime, xPeriod) do {\
+	portTickType ticks;\
+    ticks = xTaskGetTickCount();\
+    vTaskDelayUntil( xLastReleaseTime, xPeriod );\
+    if (ticks > *xLastReleaseTime)\
+    {\
+		taskDISABLE_INTERRUPTS();\
+        xil_printf("PANIC! Deadline miss");\
+        for (;;);\
+    }\
+}while(0);
 void cleanup_platform();
 
 #endif

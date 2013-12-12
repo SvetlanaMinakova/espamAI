@@ -107,7 +107,10 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _printStreamFunc.println("#define __AUX_FUNC_H__");
             _printStreamFunc.println("");
             _printStreamFunc.println("#include <math.h>");
-            _printStreamFunc.println("#include <mb_interface.h>");
+            // Zedboard does not need MB_interface
+            if(!_sdk.getTargetBoard().equals("ZedBoard")){
+				_printStreamFunc.println("#include <mb_interface.h>");
+			}
             if (!_ui.getSDKFlag()) {
                 _printStreamFunc.println("#include \"func_code" + File.separatorChar + x.getName() + "_func.h\"");
             } else {
@@ -130,7 +133,8 @@ public class XpsProcessVisitor extends CDPNVisitor {
             _writeParameter(x);
             
             // For SDK backend, mProcessor does not contain hostIF, therefore, we handle hostIF explicitly
-            if (_sdk_enabled)
+            // But ZedBoard doesn't need host_if
+            if (_sdk_enabled && !_sdk.getTargetBoard().equals("ZedBoard"))
                 _sdk.handleHostIF();
             
             Iterator i = x.getProcessList().iterator();
@@ -143,7 +147,13 @@ public class XpsProcessVisitor extends CDPNVisitor {
                 Resource resource = mProcessor.getResource();
                 if (resource instanceof Processor) {
                     
-                    _printStream = _openFile(process.getName(), process.getName(), "cpp");
+                    if(_sdk.getTargetBoard().equals("ZedBoard")){
+						
+						new File(_codeDir + File.separatorChar + process.getName() + File.separatorChar +"src").mkdir();
+						_printStream = _openFile(process.getName()+ File.separatorChar +"src",process.getName() , "cpp");
+					}else{
+						_printStream = _openFile(process.getName(), process.getName(), "cpp");
+					}
                     
                     if ( mProcessor.getScheduleType() == 1 ) {
                         XpsDynamicXilkernelProcessVisitor pt = new XpsDynamicXilkernelProcessVisitor( _mapping, _printStream, _printStreamFunc, _relation2 );
