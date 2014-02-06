@@ -190,7 +190,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
                
                 ArrayList<String> staticFiles = new ArrayList<String>();
                 
-                String statisFilePath = _sdk.getPathSDK() + "SDK" + File.separatorChar;
+                String statisFilePath = _sdk.getPathSDK() + File.separatorChar + "SDK" + File.separatorChar;
                 
                 
                 if(targetBoard.equals("ML605")){
@@ -378,7 +378,7 @@ public class XpsProcessVisitor extends CDPNVisitor {
         _printStreamFunc.println("inline int floor1(int a){");
         _printStreamFunc.println("    return a; /* return (int) floor(a);*/\n}\n");
         
-        _printStreamFunc.println(_getFileContent(_sdk.getPathSDK() + "SDK" + File.separatorChar + "all" + File.separatorChar + "_fifiReadWriteApi"));
+        _printStreamFunc.println(_getFileContent(_sdk.getPathSDK() + File.separatorChar + "SDK" + File.separatorChar + "all" + File.separatorChar + "_fifiReadWriteApi"));
     }
 
     ///////////////////////////////////////////////////////////////////
