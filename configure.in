@@ -30,6 +30,8 @@ AC_CHECKING(" -------- JAVA Stuff --------- ")
 AC_PATH_PROG(JAVAC, javac)
 AC_ARG_WITH(java, [  --with-java=DIR         Location of JDK installation],
     JAVA_HOME=$withval, JAVA_HOME=`readlink -f $JAVAC | sed "s:/bin/javac::"`)
+
+echo $JAVA_HOME
 if test -d "$JAVA_HOME"; then
     AC_MSG_RESULT([Using Java installation at '$JAVA_HOME'])
 else
@@ -49,6 +51,34 @@ SYSTEMC_HOME_STATUS="OK"
 if test ! -r "${SYSTEMC_HOME}/include/systemc.h"; then
     SYSTEMC_HOME_STATUS="systemc.h not found"
     AC_MSG_WARN(SystemC header file not found.)
+fi
+
+#--------------------------------------------------------------------
+# DARTS stuff
+#--------------------------------------------------------------------
+AC_MSG_CHECKING([for DARTS])
+AC_ARG_WITH(darts, [  --with-darts=DIR      Location of darts installation],
+    DARTS_HOME=$withval, DARTS_HOME="${HOME}/darts-0.4")
+
+DARTS_HOME_STATUS="OK"
+if test ! -r "${DARTS_HOME}/ActorModel.py"; then
+    DARTS_HOME_STATUS="DARTS not found"
+    AC_MSG_WARN(DARTS not found.)
+else
+    AC_MSG_RESULT([Using darts installation at '$DARTS_HOME'])
+fi
+
+AC_CHECKING(" -------- PYTHON --------- ")
+#--------------------------------------------------------------------
+# Python stuff 
+#--------------------------------------------------------------------
+AC_MSG_CHECKING([for PYTHONPATH])
+AC_ARG_WITH(python, [  --with-python=DIR         Location of python installation],
+    PYTHONPATH=$withval, PYTHONPATH=`(which python)`)
+if test -e "$PYTHONPATH"; then
+    AC_MSG_RESULT([Using python installation at '$PYTHONPATH'])
+else
+    AC_MSG_ERROR([Python installation not found, please specify --with-python])
 fi
 
 #--------------------------------------------------------------------
@@ -104,7 +134,8 @@ AC_MSG_NOTICE([Java Home            = '$JAVA_HOME'])
 AC_MSG_NOTICE([Library Path         = '$LDPATH'])
 AC_MSG_NOTICE([Library Content      = '$LIBPATH'])
 AC_MSG_NOTICE([SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)])
-
+AC_MSG_NOTICE([darts Home           = '$DARTS_HOME' ($DARTS_HOME_STATUS)])
+AC_MSG_NOTICE([python path          = '$PYTHONPATH'])
 
 #---- Keep these substitutions alphabetical, with a description ----#
 
@@ -121,6 +152,12 @@ AC_SUBST(LDPATH)
 
 # Location of SystemC installation
 AC_SUBST(SYSTEMC_HOME)
+
+# Location of DARTS installation
+AC_SUBST(DARTS_HOME)
+
+# Location of PYTHON installation
+AC_SUBST(PYTHONPATH)
 
 # Files we substitute in
 #AC_OUTPUT(vars.mk)

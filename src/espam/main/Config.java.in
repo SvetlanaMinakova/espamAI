@@ -43,6 +43,20 @@ public class Config {
     return _systemcPath;
   }
 
+  /**
+   * Returns path to DARTS installation.
+   */
+  public String getDartsPath() {
+    return _dartsPath;
+  }
+
+  /**
+   * Returns path to Python installation.
+   */
+  public String getPythonPath() {
+    return _pythonPath;
+  }
+
 
   ////////////////////////////////////////////////////////////////////////
   //// private methods ////
@@ -61,5 +75,11 @@ public class Config {
 
   // Path to SystemC simulation
   private String _systemcPath = "@SYSTEMC_HOME@";
+
+  // Path to DARTS
+  private String _dartsPath = "@DARTS_HOME@";
+
+  // Path to Python
+  private String _pythonPath = "@PYTHONPATH@";
 
 }
