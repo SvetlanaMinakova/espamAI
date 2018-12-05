@@ -1,4 +1,4 @@
-ESPAMAI: Embedded System-level Platform synthesis and Application Mapping Tool, refined with tools for Artificial Intelligence
+ESPAMAI: Embedded System-level Platform synthesis and Application Mapping Tool, extended with tools for Artificial Intelligence
 ==============================================================================================================================
 
 This directory contains the original ESPAM tool and tools, designed for for Artificial Intelligence applications processing
@@ -27,11 +27,13 @@ the DARTS (http://daedalus.liacs.nl/daedalus-rt.html) tool
 installation on your system.If this option is not given, ESPAM assumes 
 SystemC is installed in `$HOME/darts-4.0`.
 
-Running ESPAM
+Running ESPAM and ESPAMAI
 -------------
-After building ESPAM successfully, you can invoke it by running:
+After building ESPAMAI successfully, you can invoke it by running:
 
 	./bin/espam
+
+the console interface is common for original ESPAM and ESPAM AI tools
 
 License
 -------
