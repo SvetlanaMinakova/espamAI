@@ -35,6 +35,8 @@ After building ESPAMAI successfully, you can invoke it by running:
 	./bin/espam
 
 the console interface is common for original ESPAM and ESPAM AI tools
+for ESPAMAI commands see
+       ./src/espam/docs/espamAI/espamAIMan.pdf
 
 License
 -------
