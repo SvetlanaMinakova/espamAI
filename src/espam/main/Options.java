@@ -100,12 +100,6 @@ public class Options {
                             _cnnui.setSrcPath(args[++i]);
                             _cnnui.setGenerate(true);
                         }
-                        else if (arg.equals("--models-number") || arg.equals("-n")) {
-                            try { _cnnui.setModelsToEval(Integer.parseInt(args[++i])); }
-                            catch (Exception e){System.err.println("Invalid models number");  }
-                        } else if( arg.equals("--out") || arg.equals("-o") ) {
-                            _cnnui.setDstPath(args[++i]);
-                        }
                         else if(arg.equals("--block-based")||arg.equals("-bb")){
                             try { _cnnui.setBlocks(Integer.parseInt(args[++i])); }
                             catch (Exception e){ System.err.println("Invalid blocks number"); }
@@ -327,24 +321,22 @@ public class Options {
      * command flags for cnn model processing
      */
     protected String _CNNcommandFlags[][] = {
-            {"--version         ", "-v"},
-
             /**input model flags. By default, input model is a dnn model*/
             {"--in-dnn          ", "none"},
             {"--in-csdf         ", "none"},
+
+            /** initial model representation flags*/
+            {"--layer-based     ", "-lb "},
+            {"--neuron-based    ", "-nb "},
 
             /** generation flags*/
             {"--multiple-models ", "-m"},
             {"--sesame          ", "none"},
             {"--png             ", "none"},
-            {"--json-csdf       ", "none"},
-            {"--xml-csdf        ", "none"},
             {"--png-csdf        ", "none"},
             {"--json            ", "none"},
-
-            /** initial model representation flags*/
-            {"--layer-based     ", "-lb"},
-            {"--neuron-based    ", "-nb"}
+            {"--json-csdf       ", "none"},
+            {"--xml-csdf        ", "none"},
     };
     
     /**
@@ -369,12 +361,10 @@ public class Options {
      * The command-line options that take arguments for cnn model processing
      */
     protected String _CNNcommandOptions[][] = {
-        {"--models-number  ", "-n  ", " <Integer>"},
         {"--evaluate       ", "-e  ", " <FileDirectory>"},
         {"--generate       ", "-g  ", " <FileDirectory>"},
-        {"--out            ", "-o  ", " <FileDirectory>"},
+        /** initial model representation flags*/
         {"--block-based    ", "-bb ", " <Integer>"},
-        {"--safe-counter   ", "none", " <Integer>"},
         {"--split-step     ", "none", " <Integer>"},
         {"--img-w          ", "none", " <Integer>"},
         {"--time-spec      ", "none", " <FilePath>"},
