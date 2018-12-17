@@ -53,10 +53,23 @@ public class Config {
   /**
    * Returns path to Python installation.
    */
-  public String getPythonPath() {
-    return _pythonPath;
+  public String getPythonCall() {
+    return _pythonCall;
   }
 
+ /**
+   * Returns path to project
+   */
+  public String getPrefix() {
+    return _prefix;
+  }
+
+ /**
+   * Returns path to output files.
+   */
+  public String getOutputDir() {
+    return _outputDir;
+  }
 
   ////////////////////////////////////////////////////////////////////////
   //// private methods ////
@@ -80,6 +93,11 @@ public class Config {
   private String _dartsPath = "@DARTS_HOME@";
 
   // Path to Python
-  private String _pythonPath = "@PYTHONPATH@";
+  private String _pythonCall = "@PYTHONCALL@";
 
+  // Path to the project
+  private String _prefix = "@prefix@";
+
+  // Output directory files
+  private String _outputDir = "@OUTPUT@";
 }

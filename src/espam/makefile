@@ -2,6 +2,10 @@
 # $Id: makefile,v 1.1 2007/12/07 22:06:44 stefanov Exp $
 #
 
+ONNX = $(ROOT)/../lib/onnx.jar
+GSON = $(ROOT)/../lib/gson.jar
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)
+
 ROOT  = ..
 
 SUBPACKAGES = \

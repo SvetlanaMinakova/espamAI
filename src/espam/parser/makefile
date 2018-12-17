@@ -10,7 +10,9 @@ SUBPACKAGES = \
 	matlab \
 	expression \
 	matrix \
-	yapi
+	yapi \
+	json \
+	onnx
 
 # Java files in this directory
 JSRCS = \

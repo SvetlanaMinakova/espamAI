@@ -10,7 +10,8 @@ SUBPACKAGES = \
 	platformgeneration \
 	platformparameterset \
 	consistencychecks \
-	transformations
+	transformations \
+	refinement
 
 # Java files in this directory
 JSRCS = \

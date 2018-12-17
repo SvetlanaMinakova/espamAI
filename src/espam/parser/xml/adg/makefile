@@ -6,9 +6,9 @@ ROOT  = ../../../..
 
 SUBPACKAGES =
 
-PARSER = $(ROOT)/lib/parser.jar
-JAXP = $(ROOT)/lib/jaxp.jar
-AUXCLASSPATH = $(PARSER)$(CLASSPATHSEPARATOR)$(JAXP)
+#PARSER = $(ROOT)/lib/parser.jar
+#JAXP = $(ROOT)/lib/jaxp.jar
+#AUXCLASSPATH = $(PARSER)$(CLASSPATHSEPARATOR)$(JAXP)
 
 # Java files in this directory
 JSRCS = \

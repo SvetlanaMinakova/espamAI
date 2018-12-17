@@ -6,7 +6,8 @@ ROOT  = ../../..
 
 SUBPACKAGES = \
 	adg \
-	cdpn
+	cdpn \
+	csdf
 
 # Java files in this directory
 JSRCS = \

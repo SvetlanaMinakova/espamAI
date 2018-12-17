@@ -5,6 +5,7 @@
 ROOT  = ../../..
 
 SUBPACKAGES = \
+    sesame
 
 # Java files in this directory
 JSRCS = \

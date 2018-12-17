@@ -72,13 +72,23 @@ AC_CHECKING(" -------- PYTHON --------- ")
 #--------------------------------------------------------------------
 # Python stuff 
 #--------------------------------------------------------------------
-AC_MSG_CHECKING([for PYTHONPATH])
+AC_MSG_CHECKING([for PYTHONCALL])
 AC_ARG_WITH(python, [  --with-python=DIR         Location of python installation],
-    PYTHONPATH=$withval, PYTHONPATH=`(which python)`)
-if test -e "$PYTHONPATH"; then
-    AC_MSG_RESULT([Using python installation at '$PYTHONPATH'])
+    PYTHONCALL=$withval, PYTHONCALL=`(which python)`)
+if test -e "$PYTHONCALL"; then
+    AC_MSG_RESULT([Using python installation at '$PYTHONCALL'])
 else
     AC_MSG_ERROR([Python installation not found, please specify --with-python])
+fi
+
+#--------------------------------------------------------------------
+# Output files directory
+#--------------------------------------------------------------------
+AC_MSG_CHECKING([for OUTPUT])
+AC_ARG_WITH(output, [  --with-output=DIR         ],
+    OUTPUT=$withval, OUTPUT=`(dirname $0 | xargs readlink -f)`)
+if test ! -d  $OUTPUT; then
+	AC_MSG_WARN([Prefix path doesn't exist. Please check path supplied with  "--with-output=path" option])
 fi
 
 #--------------------------------------------------------------------
@@ -135,7 +145,8 @@ AC_MSG_NOTICE([Library Path         = '$LDPATH'])
 AC_MSG_NOTICE([Library Content      = '$LIBPATH'])
 AC_MSG_NOTICE([SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)])
 AC_MSG_NOTICE([darts Home           = '$DARTS_HOME' ($DARTS_HOME_STATUS)])
-AC_MSG_NOTICE([python path          = '$PYTHONPATH'])
+AC_MSG_NOTICE([python path          = '$PYTHONCALL'])
+AC_MSG_NOTICE([output files path    = '$OUTPUT'])
 
 #---- Keep these substitutions alphabetical, with a description ----#
 
@@ -157,13 +168,16 @@ AC_SUBST(SYSTEMC_HOME)
 AC_SUBST(DARTS_HOME)
 
 # Location of PYTHON installation
-AC_SUBST(PYTHONPATH)
+AC_SUBST(PYTHONCALL)
+
+# Output directory
+AC_SUBST(OUTPUT)
 
 # Files we substitute in
 #AC_OUTPUT(vars.mk)
 
 # Files we substitute in
-AC_OUTPUT(./config/cpinvoke ./config/vars.mk ./src/espam/main/Config.java)
+AC_OUTPUT(./config/cpinvoke ./config/vars.mk ./src/espam/main/Config.java ./src/espam/interfaces/python/espam_cnn_interface.py)
 chmod -R 755 ./bin
 cp ./config/cpinvoke ./bin
 cp ./config/vars.mk ./src

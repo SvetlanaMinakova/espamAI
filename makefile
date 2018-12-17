@@ -66,7 +66,13 @@ docall:
 	(cd ./src; ${MAKE} javadoc )
 	
 jar:
-	(cd ./src; $(JAR) -cvf ../espam.jar `find -name "*.class"` )	
+	#create manifest with all dependencies
+	#(python manifestgenerator.py )
+	#create .jar with all the classes	
+	(cd ./src; $(JAR) -cvf ../espam.jar `find -name "*.class"` )
+	#add manifest to .jar
+	#(jar umf Manifest.txt espam.jar)
+	
 
 #release:
 #	( cd ./compaan; \

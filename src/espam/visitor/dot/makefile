@@ -4,9 +4,16 @@
 
 ROOT  = ../../..
 
+ONNX = $(ROOT)/../lib/onnx.jar
+GSON = $(ROOT)/../lib/gson.jar
+GRAPHVIZ = $(ROOT)/../lib/graphviz.jar
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVIZ)
+
 SUBPACKAGES = \
 	platform \
-	cdpn
+	cdpn \
+	cnn \
+	sdfg
 
 # Java files in this directory
 JSRCS = \

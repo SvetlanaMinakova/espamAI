@@ -2,10 +2,16 @@
 # $Id: makefile,v 1.1 2007/12/07 22:09:09 stefanov Exp $
 #
 
+ONNX = $(ROOT)/../lib/protobuf-java.jar
+GSON = $(ROOT)/../lib/gson.jar
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)
+
 ROOT  = ../../..
 
 SUBPACKAGES = \
-	adg
+	adg \
+	csdf \
+	cnn
 
 # Java files in this directory
 JSRCS = \

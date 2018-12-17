@@ -14,7 +14,9 @@ SUBPACKAGES = \
 	hdpc \
 	yapiPN \
 	ymlPN \
-	expression
+	expression \
+	json \
+	onnx
 
 # Java files in this directory
 JSRCS = \
@@ -26,7 +28,9 @@ JSRCS = \
 	CDPNVisitor.java \
 	StatementVisitor.java \
 	MappingVisitor.java \
-	ExpressionVisitor.java
+	ExpressionVisitor.java \
+	SDFGraphVisitor.java \
+	CNNGraphVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

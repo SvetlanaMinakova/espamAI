@@ -1,6 +1,9 @@
 
 package espam.main;
 
+import espam.main.cnnUI.DNNInitRepresentation;
+import espam.main.cnnUI.UI;
+
 import java.io.StringWriter;
 import java.util.StringTokenizer;
 
@@ -35,6 +38,8 @@ public class Options {
     public Options(String args[]) throws IllegalArgumentException, NumberFormatException {
         
         _ui = UserInterface.getInstance();
+        _cnnui = UI.getInstance();
+
         if( args != null ) {
             _parseArgs(args);
         }
@@ -83,7 +88,53 @@ public class Options {
                             _ui.setHdpcLibPath(args[++i]);
                         } else if( arg.equals("--libsystemc") ) {
                             _ui.setSystemcLibPath(args[++i]);
-                        } else {
+                        }
+                        /** CNNESPAM options*/
+
+                        if (arg.equals("--evaluate") || arg.equals("-e")) {
+                           // _cnnui.evaluate(args[++i]);
+                            _cnnui.setSrcPath(args[++i]);
+                            _cnnui.setEval(true);
+                        }
+                        else if( arg.equals("--generate") || arg.equals("-g") ) {
+                            _cnnui.setSrcPath(args[++i]);
+                            _cnnui.setGenerate(true);
+                        }
+                        else if (arg.equals("--models-number") || arg.equals("-n")) {
+                            try { _cnnui.setModelsToEval(Integer.parseInt(args[++i])); }
+                            catch (Exception e){System.err.println("Invalid models number");  }
+                        } else if( arg.equals("--out") || arg.equals("-o") ) {
+                            _cnnui.setDstPath(args[++i]);
+                        }
+                        else if(arg.equals("--block-based")||arg.equals("-bb")){
+                            try { _cnnui.setBlocks(Integer.parseInt(args[++i])); }
+                            catch (Exception e){ System.err.println("Invalid blocks number"); }
+                        }
+                         else if(arg.equals("--split-step")){
+                            try { _cnnui.setSplitChldrenNum(Integer.parseInt(args[++i])); }
+                            catch (Exception e){ System.err.println("Invalid split step"); }
+                        }
+                         else if(arg.equals("--safe-counter")){
+                            try { _cnnui.setSplitSafeCounter(Integer.parseInt(args[++i])); }
+                            catch (Exception e){ System.err.println("Invalid split safe counter"); }
+                        }
+
+                        else if(arg.equals("--img-w")){
+                            try { _cnnui.setImgW(Integer.parseInt(args[++i])); }
+                            catch (Exception e){ System.err.println("Invalid split safe counter"); }
+                        }
+
+                        else if(arg.equals("--time-spec")){
+                            try { _cnnui.setExecTimesSpec(args[++i]); }
+                            catch (Exception e){ System.err.println("Invalid path to CSDF model time (wcet) specification"); }
+                        }
+
+                         else if(arg.equals("--energy-spec")){
+                            try { _cnnui.setEnergySpec(args[++i]); }
+                            catch (Exception e){ System.err.println("Invalid path to CSDF model energy specification"); }
+                        }
+
+                        else {
                             // Unrecognized option.
                             throw new IllegalArgumentException("Unrecognized option: " + arg);
                         }
@@ -113,7 +164,7 @@ public class Options {
             System.out.println( _usage() );
             System.exit(0);
         } else if( arg.equals("--version") || arg.equals("-v") ) {
-            System.out.println("ESPAM version 0.0.1\n");
+            System.out.println("ESPAM version 0.0.2, extended by cnn processing\n");
             System.exit(0);
         } else if( arg.equals("--copyright") ) {
             StringWriter writer = new StringWriter();
@@ -122,6 +173,7 @@ public class Options {
             System.exit(0);
         } else if( arg.equals("--verbose") || arg.equals("-V") ) {
             _ui.setVerboseFlag();
+            _cnnui.setVerboseFlag(true);
         } else if( arg.equals("--yapi") || arg.equals("-Y") ) {
             _ui.setYapiFlag();
         } else if( arg.equals("--yml") || arg.equals("-M") ) {
@@ -152,7 +204,54 @@ public class Options {
             _ui.setDebuggerFlag();
         } else if( arg.equals("--dot-ppn") ) {
             _ui.setDotFlag();
-        } else if( arg.equals("") ) {
+        }
+
+        /** CNNESPAM arguments*/
+        else if (arg.equals("--in-csdf")) {
+            _cnnui.setInCSDF(true);
+            _cnnui.setInDnn(false);
+        }
+
+        else if (arg.equals("--in-dnn")) {
+            _cnnui.setInDnn(true);
+            _cnnui.setInCSDF(false);
+        }
+
+        else if (arg.equals("--layer-based") || arg.equals("-lb")) {
+            _cnnui.setDnnInitRepresentation(DNNInitRepresentation.LAYERBASED);
+        }
+        else if (arg.equals("--neuron-based") || arg.equals("-nb")) {
+            _cnnui.setDnnInitRepresentation(DNNInitRepresentation.NEURONBASED);
+        }
+
+        else if (arg.equals("--multiple-models")|| arg.equals("-m")) {
+            _cnnui.setMultipleModels(true);
+        }
+        else if (arg.equals("--json")) {
+            _cnnui.setJson(true);
+        }
+        else if (arg.equals("--png")) {
+            _cnnui.setpng(true);
+        }
+        else if (arg.equals("--json-csdf")) {
+            _cnnui.setCsdfgJson(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+        else if (arg.equals("--xml-csdf")) {
+            _cnnui.setCsdfgXml(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+        else if (arg.equals("--png-csdf")) {
+            _cnnui.setCsdfgpng(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
+        else if (arg.equals("--sesame")) {
+            _cnnui.setSesame(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
+        else if( arg.equals("") ) {
             // Ignore blank argument.
         } else {
             // Argument not recognized.
@@ -176,11 +275,26 @@ public class Options {
                 + _commandOptions[i][1] + " " + _commandOptions[i][2]
                 + "]\n";
         }
+        result += "\nespamAI options:\n";
+        
+        for( i = 0; i < _CNNcommandOptions.length; i++ ) {
+            result += " " + _CNNcommandOptions[i][0] + "\tabbr["
+                + _CNNcommandOptions[i][1] + " " + _CNNcommandOptions[i][2]
+                + "]\n";
+        }
+
         result += "\nBoolean flags:\n";
         for( i = 0; i < _commandFlags.length; i++ ) {
             result += " " + _commandFlags[i][0] + "\tabbr["
                 + _commandFlags[i][1] + "]\n";
         }
+        result += "\nespamAI flags:\n";
+        
+        for( i = 0; i < _CNNcommandFlags.length; i++ ) {
+            result += " " + _CNNcommandFlags[i][0] + "\tabbr["
+                + _CNNcommandFlags[i][1] + "]\n";
+        }
+
         return result;
     }
     
@@ -208,6 +322,30 @@ public class Options {
         { "--dot-ppn   ", "none" },
         { "--debug     ", "none" },
         { "--debugger  ", "none" }};
+
+        /**
+     * command flags for cnn model processing
+     */
+    protected String _CNNcommandFlags[][] = {
+            {"--version         ", "-v"},
+
+            /**input model flags. By default, input model is a dnn model*/
+            {"--in-dnn          ", "none"},
+            {"--in-csdf         ", "none"},
+
+            /** generation flags*/
+            {"--multiple-models ", "-m"},
+            {"--sesame          ", "none"},
+            {"--png             ", "none"},
+            {"--json-csdf       ", "none"},
+            {"--xml-csdf        ", "none"},
+            {"--png-csdf        ", "none"},
+            {"--json            ", "none"},
+
+            /** initial model representation flags*/
+            {"--layer-based     ", "-lb"},
+            {"--neuron-based    ", "-nb"}
+    };
     
     /**
      * The command-line options that take arguments.
@@ -224,7 +362,25 @@ public class Options {
         { "--funcCodePath", "none", "<FunctionalCodePath>" },
         { "--libhdpc", "none", "<LibraryPath>" },
         { "--libsystemc", "none", "<LibraryPath>" } };
-    
+
+
+
+     /**
+     * The command-line options that take arguments for cnn model processing
+     */
+    protected String _CNNcommandOptions[][] = {
+        {"--models-number  ", "-n  ", " <Integer>"},
+        {"--evaluate       ", "-e  ", " <FileDirectory>"},
+        {"--generate       ", "-g  ", " <FileDirectory>"},
+        {"--out            ", "-o  ", " <FileDirectory>"},
+        {"--block-based    ", "-bb ", " <Integer>"},
+        {"--safe-counter   ", "none", " <Integer>"},
+        {"--split-step     ", "none", " <Integer>"},
+        {"--img-w          ", "none", " <Integer>"},
+        {"--time-spec      ", "none", " <FilePath>"},
+        {"--energy-spec    ", "none", " <FilePath>"}
+       };
+
     /**
      * The form of the command line.
      */
@@ -234,4 +390,8 @@ public class Options {
      * The UserInterface object.
      */
     protected UserInterface _ui = null;
+    /**
+     * The cnn User interface object
+     */
+    protected UI _cnnui = null;
 }

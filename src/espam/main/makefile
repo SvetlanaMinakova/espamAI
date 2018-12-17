@@ -15,9 +15,10 @@
 
 ROOT  = ../..
 
-PARSER = $(ROOT)/lib/parser.jar
-JAXP = $(ROOT)/lib/jaxp.jar
-AUXCLASSPATH = $(PARSER)$(CLASSPATHSEPARATOR)$(JAXP)
+ONNX = $(ROOT)/../lib/onnx.jar
+GSON = $(ROOT)/../lib/gson.jar
+GRAPHVIZ = $(ROOT)/../lib/graphviz.jar
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVIZ)
 
 # Java files in this directory
 JSRCS = \
@@ -25,8 +26,11 @@ JSRCS = \
 	UserInterface.java \
 	Options.java \
 	Config.java \
-	Main.java
+	Main.java \
+	ExtensionFilter.java
 
+SUBPACKAGES = \
+    cnnUI
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

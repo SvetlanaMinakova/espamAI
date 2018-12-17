@@ -1,0 +1,138 @@
+{
+  "type": "csdf",
+  "name": "tinySDF",
+  "node_number": 4,
+  "edge_number": 4,
+    "nodes": [
+      {
+        "id": 0,
+        "name": "n_0",
+        "function": "null",
+        "group": "null",
+        "length": 1,
+        "port_number": 2,
+        "wcet":[1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "OP0",
+            "rate": [2],
+            "type": "out"
+          },
+          {
+            "id": 1,
+            "name": "OP1",
+            "rate": [2],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 1,
+        "name": "n_1",
+        "function": "null",
+        "group": "null",
+        "length": 2,
+        "port_number": 2,
+        "wcet":[1,1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4,4],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [0,1],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 2,
+        "name": "n_2",
+        "function": "null",
+        "group": "null",
+        "length": 2,
+        "port_number": 2,
+        "wcet":[1,1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4,4],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [0,1],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 3,
+        "name": "n_3",
+        "function": "null",
+        "group": "null",
+        "length": 1,
+        "port_number": 2,
+        "wcet":[1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [2],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "IP1",
+            "rate": [2],
+            "type": "in"
+          }
+        ]
+      }
+
+    ],
+    "edges": [
+      {
+        "id": 0,
+        "name": "n_0_to_n_1",
+        "src": [0,0],
+        "dst": [1,0]
+      }
+      ,
+      {
+        "id": 1,
+        "name": "n_0_to_n_2",
+        "src": [0,1],
+        "dst": [2,0]
+      }
+      ,
+      {
+        "id": 2,
+        "name": "n_1_to_n_3",
+        "src": [1,1],
+        "dst": [3,0]
+      }
+      ,
+      {
+        "id": 3,
+        "name": "n_2_to_n_3",
+        "src": [2,1],
+        "dst": [3,1]
+      }
+
+    ]
+}
