@@ -8,7 +8,7 @@ Compilation Instructions
 ------------------------
 To build ESPAMAI, you need to execute the following two commands:
 
-	./configure --prefix=`pwd` [--with-java=$JAVA_PATH --with-python=$PYTHONPATH --with-systemc=$SYSTEMC_HOME --with-darts=$DARTS_HOME ]
+	./configure --prefix=`pwd` [--with-java=$JAVA_PATH --with-python=$PYTHONPATH --with-systemc=$SYSTEMC_HOME --with-darts=$DARTS_HOME --with-output=$OUTPUT ]
 	make
 
 The prefix is set to the espam directory.
@@ -21,11 +21,12 @@ If this option is not given, ESPAMAI will look for the current python installati
 3. `$SYSTEMC_HOME` which is full path to 
 the SystemC installation on your system.If this option is not given, ESPAM assumes 
 SystemC is installed in `$HOME/systemc-2.2.0`.
-
 4. `$DARTS_HOME` which is full path to 
 the DARTS (http://daedalus.liacs.nl/daedalus-rt.html) tool
 installation on your system.If this option is not given, ESPAM assumes 
 SystemC is installed in `$HOME/darts-4.0`.
+5. `$OUTPUT` which is output files directory. If this option is not given, ESPAM assumes 
+the espam root directory +output_models as an output files directory
 
 Running ESPAM and ESPAMAI
 -------------
@@ -42,7 +43,7 @@ This tool is released under the license shown in LICENSE
 
 Bugs/Questions
 --------------
-In case of bugs/questions, please contact the ESPAMAI team (mailto:csartem@liacs.nl) with
+In case of bugs/questions, please contact the ESPAMAI team (s.minakova@liacs.leidenuniv.nl) with
 a short decription. The decription should include:
 
         1. Output by the framework and expected ouput
