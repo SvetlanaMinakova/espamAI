@@ -13,23 +13,15 @@ import espam.utils.fileworker.FileWorker;
 public class EnergySpecParser {
 
 
-    public void parseEnergySpec(String path) {
+    public static void parseEnergySpec(String path) {
 
         try {
 
             String json = FileWorker.read(path);
-
-            /**
-             * deserialize node
-
-            JsonObject object = JSONParser.getInstance().getGson(json);
-            int id = object.get("id").getAsInt();
-            String name = object.get("name").getAsString();
-            String op = object.get("function").getAsString();
-
-            CSDFNode node = new CSDFNode(name, id);
-            node.setOperation(op);         */
-
+            CSDFGEnergyRefiner parsed = (CSDFGEnergyRefiner)JSONParser.getInstance().fromJson(json,CSDFGEnergyRefiner.class);
+            CSDFGEnergyRefiner.getInstance().setAlpha(parsed.getAlpha());
+            CSDFGEnergyRefiner.getInstance().setBeta(parsed.getBeta());
+            CSDFGEnergyRefiner.getInstance().setB(parsed.getB());
         }
         catch (Exception e){
             System.err.println("Energy specification parsing error: "+e.getMessage());

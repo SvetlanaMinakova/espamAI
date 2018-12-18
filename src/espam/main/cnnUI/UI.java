@@ -5,6 +5,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.main.Config;
+import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
 import onnx.ONNX;
 import espam.interfaces.python.Espam2DARTS;
@@ -266,13 +267,6 @@ public class UI {
      */
     public void runCommands() throws Exception{
         try {
-
-            if(_execTimesSpec!=null)
-                _trySetExecTimesSpec();
-
-            if(_energySpec!=null)
-                _trySetEnergySpec();
-
             if (_multipleModels)
                 _runCommandsMultipleInputs();
             else
@@ -284,31 +278,6 @@ public class UI {
             if(_logErr)
                 _logError(_curPhase + e.getMessage());
             throw (e);
-        }
-    }
-
-    /**
-     * Set energy specification, if it is possible.
-     * Otherwise print an error.
-     * TODO FINISH IMPLEMENTATION
-     */
-    private void _trySetEnergySpec(){
-        try{}
-        catch (Exception e){
-            System.err.println("Energy specification set up error: "+ e.getMessage() +
-            "default energy specification will be used");
-        }
-    }
-
-    /**
-     * Set execution times (wcet) specification, if it is possible.
-     * Otherwise print an error.
-     */
-    private void _trySetExecTimesSpec(){
-        try{ TimingSpecParser.parseTimingSpecTemplate(_execTimesSpec); }
-        catch (Exception e){
-            System.err.println("Execution times (wcet)  specification set up error: "+ e.getMessage() +
-            "default energy specification will be used");
         }
     }
 
@@ -636,10 +605,6 @@ public class UI {
                 System.out.println(_curPhase + "...");
 
 
-            /**TODO REFINEMENT THROUGH THE JSON GENERATION??*/
-            /** refine timing evaluation*/
-            //CSDFTimingRefiner.getInstance().visitComponent(sdfg);
-
             CSDFEvalResult result = _edInterface.evaluateCSDFGraph(sdfg);
 
             if(_verbose)
@@ -657,8 +622,8 @@ public class UI {
             /**TODO REFINEMENT THROUGH THE JSON GENERATION??*/
 
             /** refine energy evaluation*/
-          //  Double refinedEnergy = _getRefinedEnergy(sdfg);
-          //  result.setEnergy(refinedEnergy);
+            Double refinedEnergy = _getRefinedEnergy(sdfg);
+            result.setEnergy(refinedEnergy);
 
             return result;
     }
@@ -1053,33 +1018,20 @@ public class UI {
     }
 
     /**
-     * Get CSDF model(s) energy specification
-     * @return CSDF model(s) energy specification
-     */
-    public String getEnergySpec() { return _energySpec; }
-
-    /**
      * Set CSDF model(s) energy specification
      * @param energySpec path to CSDF model(s) energy specification
      */
     public void setEnergySpec(String energySpec) {
-        this._energySpec = energySpec;
+        EnergySpecParser.parseEnergySpec(energySpec);
     }
 
-    /**
-     * Get CSDF model operators execution time specification
-     * @return CSDF model operators execution time specification
-     * */
-    public String getExecTimesSpec() {
-        return _execTimesSpec;
-    }
 
     /**
      * Set CSDF model operators execution time specification
      * @param execTimesSpec path to CSDF model operators execution time specification
      * */
     public void setExecTimesSpec(String execTimesSpec) {
-        this._execTimesSpec = execTimesSpec;
+        TimingSpecParser.parseTimingSpecTemplate(execTimesSpec);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1162,8 +1114,6 @@ public class UI {
         _inDnn = true;
         _inCSDF = false;
         _generate_csdfg = false;
-        _execTimesSpec = null;
-        _energySpec = null;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1254,10 +1204,4 @@ public class UI {
 
     /** generated images width*/
     private int _imgW = 7000;
-
-    /** execution times specification*/
-    private String _execTimesSpec = null;
-
-    /** energy model specification*/
-    private String _energySpec = null;
 }
