@@ -23,7 +23,8 @@
 
 
 PACKAGEDIRS = 	\
-		polylib
+		polylib \
+		onnx
 
 # list of packages for which javadoc will
 # generated documentation
