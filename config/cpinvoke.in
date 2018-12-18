@@ -19,9 +19,16 @@ if [ -z "$ESPAM" ]; then
     fi
 fi
 
+# Check that DARTS is set to pythonpath, and that we can find the proper sources
+if [ -z ${PYTHONPATH:=""} ] ; then
+        PYTHONPATH="@DARTS_HOME@"
+else
+        PYTHONPATH="$PYTHONPATH@CLASSPATHSEPARATOR@@DARTS_HOME@"
+fi
+export PYTHONPATH
+
 ESPAMSRC=$ESPAM/src
-ESPAMCLASSES="@LIBPATH@/*@CLASSPATHSEPARATOR@${@ESPAMSRC@}"
-echo ESPAMCLASSES
+ESPAMCLASSES="$ESPAMSRC@CLASSPATHSEPARATOR@@LIBPATH@/*@CLASSPATHSEPARATOR@@LIBPATH@/graphics/*"
 
 if [ -z ${CLASSPATH:=""} ] ; then
         CLASSPATH="$ESPAMCLASSES@CLASSPATHSEPARATOR@."
@@ -29,6 +36,7 @@ else
         CLASSPATH="$ESPAMCLASSES@CLASSPATHSEPARATOR@.@CLASSPATHSEPARATOR@${CLASSPATH}"
 fi
 export CLASSPATH
+
 
 if [ -z ${@LDPATH@:=""} ] ; then
         @LDPATH@="@LIBPATH@"

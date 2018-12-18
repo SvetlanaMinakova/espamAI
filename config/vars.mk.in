@@ -30,6 +30,9 @@ JVERSION =	@JVERSION@
 # For Cygwin, this would be ;
 CLASSPATHSEPARATOR = @CLASSPATHSEPARATOR@
 
+#darts
+DARTS_HOME = @DARTS_HOME@
+
 ########## You should not have to change anything below this line ######
 
 # The 'javac' compiler.
@@ -42,10 +45,10 @@ JAVAH = 	$(JAVA_DIR)/bin/javah
 # This line gets substituted by configure
 JDEBUG =	-g
 JOPTIMIZE =	#-O
-JFLAGS = 	$(JDEBUG) $(JOPTIMIZE) -source 1.5
+JFLAGS = 	$(JDEBUG) $(JOPTIMIZE) -source 1.8
 
 # The 'javadoc' program
-JAVADOC = 	$(JAVA_DIR)/bin/javadoc -source 1.5
+JAVADOC = 	$(JAVA_DIR)/bin/javadoc -source 1.8
 
 # Flags to pass to javadoc.
 JDOCFLAGS = 	-author -version
