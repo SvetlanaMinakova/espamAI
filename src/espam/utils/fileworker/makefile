@@ -12,8 +12,7 @@ AUXCLASSPATH = $(GRAPHVIZ)$(CLASSPATHSEPARATOR)$(ONNX)
 JSRCS = \
     FileWorker.java \
 	JSONFileWorker.java \
-	ONNXFileWorker.java \
-	DotFileWorker.java
+	ONNXFileWorker.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -17,26 +17,10 @@ import java.util.Vector;
 public class TimingRefinerVisitor {
 
     /** Visit timing refiner */
-    public static void visitTimingRefiner( String dir, String filename){
+    public static void visitTimingRefiner(String dir, String filename){
         try {
-            PrintStream printStream = FileWorker.openFile(dir,filename,"json");
-            printStream.println("{");
-
-            HashMap<String,Integer> operators = _getDefaultTimingSpec();
-            int commaBorder = operators.size()-1;
-            printStream.println("  \"operators \": {");
-            for(HashMap.Entry<String,Integer> op: operators.entrySet()) {
-                printStream.print("    \"" + op.getKey() + "\":" + op.getValue());
-                if (commaBorder > 0) {
-                    printStream.println(",");
-                    commaBorder--;
-                }
-            }
-            printStream.println("  },");
-            printStream.println("  \"scale\": " + CSDFTimingRefiner.getInstance().getTimeScale());
-            printStream.println("}");
-            printStream.close();
-            System.out.println(dir + filename +".json WCET specification generated");
+            String json = JSONParser.getInstance().toJson(CSDFTimingRefiner.getInstance().getBasicOperationsTiming());
+            FileWorker.write(dir,filename,"json",json);
         }
         catch (Exception e){
              System.err.println(dir + filename +
@@ -45,40 +29,50 @@ public class TimingRefinerVisitor {
         }
     }
 
-    /** Visit timing refiner of a specific graph*/
-    public static void visitTimingRefiner(CSDFGraph graph, String dir, String filename){
-     try {
-            PrintStream printStream = FileWorker.openFile(dir,filename,"json");
-            printStream.println("{");
-
-            HashMap<String,Integer> operators = _getTimingSpec(graph);
-            int commaBorder = operators.size()-1;
-            printStream.println("  \"operators \": {");
-            for(HashMap.Entry<String,Integer> op: operators.entrySet()) {
-                printStream.println("    \"" + op.getKey() + "\":" + op.getValue());
-                if (commaBorder > 0) {
-                    printStream.print(",");
-                    commaBorder--;
-                }
-            }
-            printStream.println("  },");
-            printStream.println("  \"scale\": " + CSDFTimingRefiner.getInstance().getTimeScale());
-            printStream.println("}");
-            printStream.close();
-            System.out.println(dir + filename +".json WCET specification generated");
+    /**
+     * Print default timing specification
+     * @param outdir output directory
+     * @param outfilename output file name
+     */
+    public static void printDefaultTimeSpec(String outdir, String outfilename){
+        try {
+            HashMap<String,Integer> defaultTimeSpec = _getDefaultTimingSpec();
+            String json = JSONParser.getInstance().toJson(defaultTimeSpec);
+            FileWorker.write(outdir,outfilename,"json",json);
         }
         catch (Exception e){
-             System.err.println(dir + filename +
+             System.err.println(outdir + outfilename +
                      ".json WCET specification generation error "+ e.getMessage());
 
         }
+
+    }
+
+      /**
+     * Print default timing specification
+     * @param outdir output directory
+     * @param outfilename output file name
+     * @param graph CSDF graph
+     */
+    public static void printTimeSpecTemplate(CSDFGraph graph, String outdir, String outfilename){
+        try {
+            HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
+            String json = JSONParser.getInstance().toJson(timeSpec);
+            FileWorker.write(outdir,outfilename,"json",json);
+        }
+        catch (Exception e){
+             System.err.println(outdir + outfilename +
+                     ".json WCET specification generation error "+ e.getMessage());
+
+        }
+
     }
 
 
     /**
      * print current exec times configuration in .json format
      */
-    private static HashMap<String,Integer> _getDefaultTimingSpec(){
+    public static HashMap<String,Integer> _getDefaultTimingSpec(){
         try {
             HashMap<String,Integer> execTimes = CSDFTimingRefiner.getInstance().getBasicOperationsTiming();
             return execTimes;

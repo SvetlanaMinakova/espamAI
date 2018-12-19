@@ -5,7 +5,6 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.connections.Connection;
-import espam.utils.fileworker.DotFileWorker;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CNNGraphVisitor;
 
@@ -29,12 +28,13 @@ public class CNNDotVisitor extends CNNGraphVisitor {
      */
     public static void callVisitor(Network dnn, String dir){
         try {
-            PrintStream printStream = DotFileWorker.openFile(dir, dnn.getName(), "dot");
+            PrintStream printStream = FileWorker.openFile(dir, dnn.getName(), "dot");
             _cnnDotVisitor._printStream = printStream;
             _cnnDotVisitor.visitComponent(dnn);
+            System.out.println("DOT file generated: " + dir + dnn.getName());
         }
         catch (Exception e){
-            System.err.println(dnn.getName() + " rendering error " + e.getMessage());
+            System.err.println("Dot file generation error " + e.getMessage());
         }
      }
 
@@ -48,7 +48,7 @@ public class CNNDotVisitor extends CNNGraphVisitor {
             _cnnDotVisitor.visitComponent(dnn);
         }
         catch (Exception e){
-            System.err.println("DNN rendering error " + e.getMessage());
+            System.err.println("Dot file generation error" + e.getMessage());
         }
      }
 

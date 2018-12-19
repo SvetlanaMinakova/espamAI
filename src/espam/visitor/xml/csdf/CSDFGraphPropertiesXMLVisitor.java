@@ -124,8 +124,7 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
            Vector<Integer> wcet = _wcet.get(node);
            if(wcet==null)
                wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(node.getLength());
-           Vector<Double> scaledExecTimes = CSDFTimingRefiner.getInstance().scaleExecTimes(wcet);
-           String execTime = vecToCommaSeparatedStr(scaledExecTimes);
+           String execTime = vecToCommaSeparatedStr(wcet);
            _printStream.println(_prefix + "<executionTime time='" + execTime + "'/>");
            prefixDec();
            _printStream.println(_prefix + "</processor>");
@@ -178,14 +177,14 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
      * @return vector of integers, serialized as a string of values,
      * separated by comma
      */
-    private String vecToCommaSeparatedStr(Vector<Double> vec){
+    private String vecToCommaSeparatedStr(Vector<Integer> vec){
         StringBuilder result = new StringBuilder();
 
         if(vec!=null){
             int curElemId = 0;
             int commaBorderId = vec.size()-1;
 
-            for(Double val: vec){
+            for(Integer val: vec){
                 result.append(val);
                 if(curElemId<commaBorderId)
                     result.append(",");

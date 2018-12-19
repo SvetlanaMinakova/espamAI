@@ -16,4 +16,16 @@ src_lib/lib
 src_lib/vars.mk
 *.o
 
+*.iml
+target
+out
+.idea
+espam.jar
+Manifest.txt
+
+output_models
+modelsamples
+
+unit_tests
+
 

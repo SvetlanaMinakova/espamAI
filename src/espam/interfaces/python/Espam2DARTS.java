@@ -73,10 +73,19 @@ public class Espam2DARTS {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
+    /**
+     * Create new EspamToDarts interface instance
+     */
+    public Espam2DARTS(String dartsPath) {
+        _dartsAbsPath = dartsPath + "/darts";
+        setPaths();
+    }
+
      /**
      * Create new EspamToDarts interface instance
      */
     public Espam2DARTS() {
+        _dartsAbsPath = Config.getInstance().getDartsPath() + "/darts";
         setPaths();
     }
 
@@ -90,7 +99,6 @@ public class Espam2DARTS {
 
         System.out.println("absClassPath: " + asbInterfacesPath); */
 
-        _dartsAbsPath = Config.getInstance().getDartsPath();
         _dartsInterfaceScriptAbsPath = _appAbsPath + File.separator +
                 _interfaceDirRelPath.replace("./","") +
                 File.separator + "espam_cnn_interface.py";
@@ -338,11 +346,7 @@ public class Espam2DARTS {
        if(isError(pythonScriptResult))
            result = new CSDFEvalError(pythonScriptResult);
        else {
-           try {
-               result = (CSDFEvalResult) _jsonParser.fromJson(pythonScriptResult, CSDFEvalResult.class);
-               Double scaledPerformance = result.getPerformance() * CSDFTimingRefiner.getInstance().getTimeScale();
-               result.setPerformance(scaledPerformance);
-            }
+           try { result = (CSDFEvalResult) _jsonParser.fromJson(pythonScriptResult, CSDFEvalResult.class); }
            catch (Exception e) { result = new CSDFEvalError("JSON eval result parsing error " +e.getMessage()); }
        }
      return result;
@@ -421,7 +425,7 @@ public class Espam2DARTS {
     private CNN2CSDFGraphConverter _cnn2SDFConverter = new CNN2CSDFGraphConverter();
 
     /** abs path to application directory*/
-    private String _appAbsPath = Config.getInstance().getPrefix();
+    private String _appAbsPath = Config.getInstance().getAppPath();
 
     /** relative path to current folder*/
     private String _interfaceDirRelPath =  "./src/espam/interfaces/python";

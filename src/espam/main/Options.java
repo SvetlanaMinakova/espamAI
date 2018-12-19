@@ -224,8 +224,8 @@ public class Options {
         else if (arg.equals("--json")) {
             _cnnui.setJson(true);
         }
-        else if (arg.equals("--png")) {
-            _cnnui.setpng(true);
+        else if (arg.equals("--dot")) {
+            _cnnui.setdot(true);
         }
         else if (arg.equals("--json-csdf")) {
             _cnnui.setCsdfgJson(true);
@@ -235,8 +235,8 @@ public class Options {
             _cnnui.setCsdfgXml(true);
             _cnnui.setGenerateCsdfg(true);
         }
-        else if (arg.equals("--png-csdf")) {
-            _cnnui.setCsdfgpng(true);
+        else if (arg.equals("--dot-csdf")) {
+            _cnnui.setCsdfgdot(true);
             _cnnui.setGenerateCsdfg(true);
         }
 
@@ -332,8 +332,8 @@ public class Options {
             /** generation flags*/
             {"--multiple-models ", "-m"},
             {"--sesame          ", "none"},
-            {"--png             ", "none"},
-            {"--png-csdf        ", "none"},
+            {"--dot             ", "none"},
+            {"--dot-csdf        ", "none"},
             {"--json            ", "none"},
             {"--json-csdf       ", "none"},
             {"--xml-csdf        ", "none"},

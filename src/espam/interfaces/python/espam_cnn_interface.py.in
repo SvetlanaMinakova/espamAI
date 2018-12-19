@@ -3,7 +3,7 @@ import sys
 from math import ceil
 import json
 import xml.etree.ElementTree as ET
-sys.path.append('@DARTS_HOME@')
+sys.path.append('@DARTS_HOME@/darts')
 from CSDFParser import CSDFParser
 
 def main():

@@ -71,6 +71,9 @@ public class Config {
     return _outputDir;
   }
 
+   /** get application absolute path*/
+  public String getAppPath() { return _appPath; }
+
   ////////////////////////////////////////////////////////////////////////
   //// private methods ////
 
@@ -100,4 +103,7 @@ public class Config {
 
   // Output directory files
   private String _outputDir = "@OUTPUT@";
+
+  //absolute path to the application sources
+  private String _appPath = "@APPPATH@";
 }

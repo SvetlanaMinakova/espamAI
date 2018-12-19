@@ -7,6 +7,8 @@ import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.main.Config;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
+import espam.visitor.dot.cnn.CNNDotVisitor;
+import espam.visitor.dot.sdfg.SDFGDotVisitor;
 import onnx.ONNX;
 import espam.interfaces.python.Espam2DARTS;
 import espam.main.ExtensionFilter;
@@ -19,7 +21,6 @@ import espam.operations.transformations.cnn_model_transformations.CNNTransformer
 import espam.parser.json.JSONParser;
 import espam.parser.onnx.InferenceDNNOptimizer;
 import espam.parser.onnx.ONNX2CNNConverter;
-import espam.utils.fileworker.DotFileWorker;
 import espam.utils.fileworker.FileWorker;
 import espam.utils.fileworker.ONNXFileWorker;
 import espam.visitor.json.CNNJSONVisitor;
@@ -68,11 +69,11 @@ import java.util.Vector;
      * (3) Output files generation [optional]: generates for input model output files,
      *     according to set options
      *         - json      : DNN graph in .json format
-     *         - png       : DNN graph in .png format and corresponding rendered image in .png format
+     *         - dot       : DNN graph in .dot format and corresponding generateDoted image in .dot format
      *         - sesame    : code templates for Sesame
      *         - json-csdf : CSDF graph in .json format for DARTS
      *         - xml-csdf  : CSDF graph in .xml fomat for SDF3
-     *         - png-csdf  : CSDF graph in .png format and corresponding rendered image in .png format
+     *         - dot-csdf  : CSDF graph in .dot format and corresponding generateDoted image in .dot format
      *
      * (4) Model evaluation [optional]: evaluates one or several input models
      *     in terms of power/performance, by means of the DARTS/SDF3 tool.
@@ -426,7 +427,7 @@ public class UI {
      * Generate DNN output files, if required
      * Admissible DNN output models:
      *  - json   : DNN graph as .json File
-     *  - png    : DNN graph in .png format and corresponding rendered image in .png format
+     *  - dot    : DNN graph in .dot format and corresponding generateDoted image in .dot format
      *  - sesame : code templates for Sesame
      * @param dnn input DNN model
      */
@@ -438,8 +439,8 @@ public class UI {
              _dstPath += dnn.getName();
              if (_json)
                 _generateDNNJSON(dnn);
-            if (_png)
-               _renderDNN(dnn);
+            if (_dot)
+               _generateDotDNN(dnn);
             _dstPath = rootDst;
     }
 
@@ -447,7 +448,7 @@ public class UI {
      * Generate CSDFG output files, if required
      * Admissible CSDFG output models:
      *  - json   : CSDF graph as .json File for DARTS
-     *  - png    : CSDF graph in .png format and corresponding rendered image in .png format
+     *  - dot    : CSDF graph in .dot format and corresponding generateDoted image in .dot format
      *  - xml    : CSDF graph as .xml File for SDF3
      * @param csdfg input CSDF graph model
      */
@@ -461,8 +462,8 @@ public class UI {
             _generateSDFGXML(csdfg);
         if(_csdfg_json)
             _generateSDFGJSON(csdfg);
-        if(_csdfg_png)
-            _renderSDFG(csdfg);
+        if(_csdfg_dot)
+            _generateDotSDFG(csdfg);
         _dstPath = rootDst;
     }
 
@@ -472,7 +473,7 @@ public class UI {
     private boolean _isSDFGenerationRequired(){
         if(_inCSDF)
             return false;
-       return _eval||_sesame||_csdfg_json ||_csdfg_png||_csdfg_xml;
+       return _eval||_sesame||_csdfg_json ||_csdfg_dot||_csdfg_xml;
     }
 
     /**
@@ -485,16 +486,16 @@ public class UI {
                 System.out.println(_curPhase + "...");
             CNNJSONVisitor.callVisitor(network,_dstPath +"/json/");
     }
-
+    
     /**
-     * Generate PNG image of DNN model
+     * Generate dot image of DNN model
      * @throws Exception if an error occurs
      */
-    private void _renderDNN(Network network) throws Exception{
-        _curPhase = network.getName() + " DNN image generation";
+    private void _generateDotDNN(Network network) throws Exception{
+        _curPhase = network.getName() + " DNN dot file generation";
             if(_verbose)
                 System.out.println(_curPhase + "...");
-        DotFileWorker.render(network,_dstPath + "/img/",_imgW);
+        CNNDotVisitor.callVisitor(network,_dstPath+"/dot/");
     }
 
     /**
@@ -522,14 +523,14 @@ public class UI {
     }
 
     /**
-     * Generate PNG image of DNN model
+     * Generate dot image of DNN model
      * @throws Exception if an error occurs
      */
-    private void _renderSDFG(CSDFGraph sdfg) throws Exception{
+    private void _generateDotSDFG(CSDFGraph sdfg) throws Exception{
         _curPhase = sdfg.getName() + " SDFG image generation";
             if(_verbose)
                 System.out.println(_curPhase + "...");
-        DotFileWorker.render(sdfg,_dstPath + "/sdfg/img/",_imgW);
+        SDFGDotVisitor.callVisitor(sdfg,_dstPath + "/sdfg/dot/");
     }
 
     /**
@@ -852,11 +853,11 @@ public class UI {
         this._json = json;
     }
 
-    /** get dnn-png output flag*/
-    public boolean ispng() { return _png; }
+    /** get dnn-dot output flag*/
+    public boolean isdot() { return _dot; }
 
-    /** set dnn-png output flag*/
-    public void setpng(boolean png) { this._png = png; }
+    /** set dnn-dot output flag*/
+    public void setdot(boolean dot) { this._dot = dot; }
 
     /**check csdfg-json output flag*/
     public boolean isCsdfgJson() {
@@ -868,14 +869,14 @@ public class UI {
         this._csdfg_json = csdfgJson;
     }
 
-    /**check csdfg-png output flag*/
-    public boolean isCsdfgpng() {
-        return _csdfg_png;
+    /**check csdfg-dot output flag*/
+    public boolean isCsdfgdot() {
+        return _csdfg_dot;
     }
 
-    /**set csdfg-png output flag*/
-    public void setCsdfgpng(boolean csdfgpng) {
-        this._csdfg_png = csdfgpng;
+    /**set csdfg-dot output flag*/
+    public void setCsdfgdot(boolean csdfgdot) {
+        this._csdfg_dot = csdfgdot;
     }
 
       /**check csdfg-xml output flag*/
@@ -1027,11 +1028,16 @@ public class UI {
 
 
     /**
+     * TODO extend operators list or replace it??
      * Set CSDF model operators execution time specification
      * @param execTimesSpec path to CSDF model operators execution time specification
      * */
     public void setExecTimesSpec(String execTimesSpec) {
-        TimingSpecParser.parseTimingSpecTemplate(execTimesSpec);
+       HashMap<String,Integer> newSpec = TimingSpecParser.parseTimingSpecTemplate(execTimesSpec);
+       /** add basic operators*/
+       CSDFTimingRefiner.getInstance().initBasicOperationsDefault();
+       /** replace basic operators and extend basic operators*/
+       CSDFTimingRefiner.getInstance().updateBasicOperationsTiming(newSpec);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1104,9 +1110,9 @@ public class UI {
         if(!_dstPath.endsWith(File.separator))
             _dstPath += File.separator;
         _json = false;
-        _png = false;
+        _dot = false;
         _csdfg_json = false;
-        _csdfg_png = false;
+        _csdfg_dot = false;
         _csdfg_xml = false;
         _sesame = false;
         _srcDir = "./";
@@ -1136,19 +1142,19 @@ public class UI {
     private String _srcPath;
 
     /** directory of destination model*/
-    private String _dstPath = Config.getInstance().getOutputDir() + File.separator;
+    private String _dstPath = Config.getInstance().getOutputDir();
 
     /** dnn-json output flag*/
     private boolean _json;
 
-    /** dnn-png output flag*/
-    private boolean _png;
+    /** dnn-dot output flag*/
+    private boolean _dot;
 
     /** csdfg-json output flag*/
     private boolean _csdfg_json;
 
-    /** csdfg-png output flag*/
-    private boolean _csdfg_png;
+    /** csdfg-dot output flag*/
+    private boolean _csdfg_dot;
 
     /** csdfg-xml output flag*/
     private boolean _csdfg_xml;

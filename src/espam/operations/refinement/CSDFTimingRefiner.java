@@ -81,18 +81,6 @@ import java.util.Vector;
         return wcet;
     }
 
-    /**
-     * Get default execution time
-     * @return default execution time
-     */
-    public Vector<Double> scaleExecTimes(Vector<Integer> execTimes){
-        Vector<Double> scaled = new Vector<>();
-          for(Integer time: execTimes)
-                scaled.add((double)time * _timeScale);
-
-        return scaled;
-    }
-
     /** TODO refactoring
      *  TODO all port rates should be aligned??
      * Refine worst-case execution time.
@@ -192,7 +180,7 @@ import java.util.Vector;
     /**
      * Initialize basic operations list by dummy default values
      */
-    private void initBasicOperationsDefault(){
+    public void initBasicOperationsDefault(){
         _basicOperationsTiming = new HashMap<>();
         /** read /write ops*/
         _basicOperationsTiming.put("read",1);
@@ -434,30 +422,11 @@ import java.util.Vector;
         }
     }
 
-    /**
-     * Get time scale
-     * @return time scale
-     */
-    public Double getTimeScale() {
-        return _timeScale;
-    }
-
-    /**
-     * Set time scale
-     * @param timeScale time scale
-     */
-    public void setTimeScale(Double timeScale) {
-        this._timeScale = timeScale;
-    }
-
     /////////////////////////////////////////////////////////////////////
     ////                         private variables                   ////
 
     /** timing of basic supported operations*/
     @SerializedName("operators")private HashMap<String,Integer> _basicOperationsTiming = new HashMap<>();
-
-    /** time scale to make time integer*/
-    @SerializedName("scale")private Double _timeScale = 1.0;
 
     /** refiner singletone*/
     private transient static CSDFTimingRefiner _refiner = new CSDFTimingRefiner();

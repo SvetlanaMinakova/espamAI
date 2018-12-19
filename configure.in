@@ -58,10 +58,11 @@ fi
 #--------------------------------------------------------------------
 AC_MSG_CHECKING([for DARTS])
 AC_ARG_WITH(darts, [  --with-darts=DIR      Location of darts installation],
-    DARTS_HOME=$withval, DARTS_HOME="${HOME}/darts-0.4")
+    DARTS_HOME=$withval, DARTS_HOME="${HOME}/darts")
 
+echo $DARTS_HOME
 DARTS_HOME_STATUS="OK"
-if test ! -r "${DARTS_HOME}/ActorModel.py"; then
+if test ! -r "${DARTS_HOME}/darts/ActorModel.py"; then
     DARTS_HOME_STATUS="DARTS not found"
     AC_MSG_WARN(DARTS not found.)
 else
@@ -82,13 +83,19 @@ else
 fi
 
 #--------------------------------------------------------------------
+# Application absolute path
+#--------------------------------------------------------------------
+APPPATH=`(pwd)`
+
+#--------------------------------------------------------------------
 # Output files directory
 #--------------------------------------------------------------------
 AC_MSG_CHECKING([for OUTPUT])
 AC_ARG_WITH(output, [  --with-output=DIR         ],
-    OUTPUT=$withval, OUTPUT=`(dirname $0 | xargs readlink -f)`)
+    OUTPUT=$withval, OUTPUT=$prefix)
+    OUTPUT=$OUTPUT/output_models
 if test ! -d  $OUTPUT; then
-	AC_MSG_WARN([Prefix path doesn't exist. Please check path supplied with  "--with-output=path" option])
+	AC_MSG_WARN([Output path doesn't exist. Please check path supplied with  "--with-output=path" option])
 fi
 
 #--------------------------------------------------------------------
@@ -172,6 +179,9 @@ AC_SUBST(PYTHONCALL)
 
 # Output directory
 AC_SUBST(OUTPUT)
+
+# Application sources absolute path
+AC_SUBST(APPPATH)
 
 # Files we substitute in
 #AC_OUTPUT(vars.mk)

@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import espam.datamodel.graph.NPort;
 import espam.datamodel.graph.csdf.*;
-import espam.utils.fileworker.DotFileWorker;
+import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
 
 public class SDFGDotVisitor extends CSDFGraphVisitor {
@@ -23,9 +23,10 @@ public class SDFGDotVisitor extends CSDFGraphVisitor {
      */
     public static void callVisitor(CSDFGraph sdfg, String dir){
         try {
-            PrintStream printStream = DotFileWorker.openFile(dir, sdfg.getName(), "dot");
+            PrintStream printStream = FileWorker.openFile(dir, sdfg.getName(), "dot");
             _sdfgDotVisitor._printStream = printStream;
             _sdfgDotVisitor.visitComponent(sdfg);
+            System.out.println("DOT file generated: " + dir + sdfg.getName());
         }
         catch (Exception e){
             System.err.println(sdfg.getName() + " rendering error " + e.getMessage());
