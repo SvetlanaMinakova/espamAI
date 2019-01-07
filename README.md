@@ -36,9 +36,9 @@ git checkout espamAI
 NOTE: The directory ".../espam/lib/" should contain at least the following 
 pre-build libraries:
 
-* libpandapolylib.so
-* onnx.jar
-* gson.jar
+	libpandapolylib.so  
+	onnx.jar  
+	gson.jar  
 
 - configure and install EspamAI as follows ->
 
