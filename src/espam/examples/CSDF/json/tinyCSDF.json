@@ -1,14 +1,13 @@
 {
   "type": "csdf",
-  "name": "tinySDF",
+  "name": "tinyCSDF",
   "node_number": 4,
   "edge_number": 4,
     "nodes": [
       {
         "id": 0,
         "name": "n_0",
-        "function": "null",
-        "group": "null",
+        "function": "F0",
         "length": 1,
         "port_number": 2,
         "wcet":[1], 
@@ -32,8 +31,7 @@
       {
         "id": 1,
         "name": "n_1",
-        "function": "null",
-        "group": "null",
+        "function": "F1",
         "length": 2,
         "port_number": 2,
         "wcet":[1,1], 
@@ -57,8 +55,7 @@
       {
         "id": 2,
         "name": "n_2",
-        "function": "null",
-        "group": "null",
+        "function": "F2",
         "length": 2,
         "port_number": 2,
         "wcet":[1,1], 
@@ -82,8 +79,7 @@
       {
         "id": 3,
         "name": "n_3",
-        "function": "null",
-        "group": "null",
+        "function": "F3",
         "length": 1,
         "port_number": 2,
         "wcet":[1], 

@@ -103,7 +103,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
          Iterator i = node.getPortList().iterator();
          CSDFPort port;
          while (i.hasNext()) {
-            port = (CSDFPort) i.next();
+          port = (CSDFPort) i.next();
           _writeContainerTemplate(port);
         }
     }
@@ -111,14 +111,14 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
   /**
      * Write container templates for each port
      * If specific memory unit is assigned for the port, this specific memory is described.
-     * Otherwise, a default container is generated
+     * Otherwise, a default container is generated. Default container is a linear container, stores integer units.
      * @param port CSDFPort
      */
     private void _writeContainerTemplate(CSDFPort port) {
         MemoryUnit mu = port.getAssignedMemory();
         if (mu == null) {
             Tensor defaultMemoryShape = new Tensor(_findMinMemSize(port));
-            mu = new MemoryUnit(port.getName(), defaultMemoryShape,mu.getTypeDesc());
+            mu = new MemoryUnit(port.getName(), defaultMemoryShape,"int");
         }
         _writeTensorToCPPArrayDefinition(mu.getShape(), mu.getName(), mu.getTypeDesc());
     }

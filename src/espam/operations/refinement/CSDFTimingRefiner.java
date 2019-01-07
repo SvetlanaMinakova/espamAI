@@ -160,7 +160,7 @@ import java.util.Vector;
         if(time == null)
             try { time = _extrapolateParametrizedOperationTime(operation); }
             catch (Exception e){
-            System.out.println(operation + " execution time calculation error. Default time = 1 is set for " + operation);
+            System.out.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
             time = 1;
             }
         return time;
