@@ -1,0 +1,20 @@
+{
+  "null": 1,
+  "read": 1,
+  "lrn": 3,
+  "matmul": 2,
+  "relu": 1,
+  "sigm": 1,
+  "concat": 1,
+  "reshape": 1,
+  "none": 0,
+  "addconst": 1,
+  "gemm": 2,
+  "softmax": 1,
+  "avgpool": 2,
+  "dropout": 1,
+  "conv": 3,
+  "thn": 1,
+  "maxpool": 2,
+  "write": 1
+}
