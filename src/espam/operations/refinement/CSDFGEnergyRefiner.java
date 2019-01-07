@@ -1,5 +1,6 @@
 package espam.operations.refinement;
 
+import com.google.gson.annotations.SerializedName;
 import espam.datamodel.graph.Graph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import java.util.HashMap;
@@ -90,11 +91,6 @@ public class CSDFGEnergyRefiner {
     }
 
 
-
-
-
-
-
     /**
      * Get alpha-parameter
      * @return alpha-parameter
@@ -147,13 +143,13 @@ public class CSDFGEnergyRefiner {
     /////////////////////////////////////////////////////////////////////
     ////                      private variables                     ////
     /** alpha - parameter*/
-    private Double _alpha;
+    @SerializedName("alpha")private Double _alpha;
 
     /** b - parameter*/
-    private Double _b;
+    @SerializedName("b")private Double _b;
 
     /** beta - parameter*/
-    private Double _beta;
+    @SerializedName("beta")private Double _beta;
 
     /**Singleton instance of energy refiner*/
     private static CSDFGEnergyRefiner _energyRefiner = new CSDFGEnergyRefiner();

@@ -399,8 +399,10 @@ import java.util.Vector;
      * @param newOperationsTiming new list with timing of basic supported operations
      */
     public void updateBasicOperationsTiming(HashMap<String, Integer> newOperationsTiming) {
-        for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet())
-                _basicOperationsTiming.put(newOp.getKey(),newOp.getValue());
+        for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet()) {
+            Integer val = (Integer) newOp.getValue();
+            _basicOperationsTiming.put(newOp.getKey(),val);
+        }
 
     }
 
