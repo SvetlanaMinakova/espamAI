@@ -107,7 +107,7 @@ import java.util.Vector;
         Vector<IndexPair> outRates = outPorts.firstElement().getRates();
         Vector<Integer> unrolledOutRates = CSDFSupportResolver.indexPairsToVec(outRates);
 
-        Integer opTime = _getOpTime(x.getOperation());
+        Integer opTime = getOpTime(x.getOperation());
         opTime *= (Integer)x.getOperationRepetitionsNumber();
         /** TODO for this estimation a program inside of the node
          * TODO is considered to be sequental!*/
@@ -149,17 +149,20 @@ import java.util.Vector;
      * @param operation operation description
      * @return
      */
-    private Integer _getOpTime(String operation) throws Exception{
+    public Integer getOpTime(String operation){
         /**TODO REPLACE BY 0 WHEN R/W VALUES WILL BE ADDED*/
         if(operation==null)
             return 1;
         if(operation=="null")
             return 1;
         Integer time = _basicOperationsTiming.get(operation.toLowerCase());
+
         if(time == null)
-            time = _extrapolateParametrizedOperationTime(operation);
-        if(time == null)
-            throw new Exception("timing refinement error");
+            try { time = _extrapolateParametrizedOperationTime(operation); }
+            catch (Exception e){
+            System.out.println(operation + " execution time calculation error. Default time = 1 is set for " + operation);
+            time = 1;
+            }
         return time;
     }
 
@@ -185,6 +188,8 @@ import java.util.Vector;
         /** read /write ops*/
         _basicOperationsTiming.put("read",1);
         _basicOperationsTiming.put("write",1);
+        _basicOperationsTiming.put("input",1);
+        _basicOperationsTiming.put("output",1);
 
         /** some specific ops*/
         _basicOperationsTiming.put("addconst",1);
@@ -312,7 +317,7 @@ import java.util.Vector;
         for(Integer intParam: intParams)
             totalTokens+=intParam;
 
-        return exec_time * (Integer)totalTokens;
+        return exec_time * totalTokens;
     }
 
      /**
@@ -399,20 +404,8 @@ import java.util.Vector;
      * @param newOperationsTiming new list with timing of basic supported operations
      */
     public void updateBasicOperationsTiming(HashMap<String, Integer> newOperationsTiming) {
-        for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet()) {
-            Integer val = (Integer) newOp.getValue();
-            _basicOperationsTiming.put(newOp.getKey(),val);
-        }
-
-    }
-
-    /**
-     * Add new operation timing to the basicOperationsTiming hash map
-     * @param operation operation name
-     * @param execTime execution time
-     */
-    public void addOperationTiming(String operation, Integer execTime){
-        _basicOperationsTiming.put(operation,execTime);
+        for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet())
+            _basicOperationsTiming.put(newOp.getKey(),newOp.getValue());
     }
 
     /**

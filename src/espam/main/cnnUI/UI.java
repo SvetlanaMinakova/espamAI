@@ -9,6 +9,8 @@ import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
 import espam.visitor.dot.cnn.CNNDotVisitor;
 import espam.visitor.dot.sdfg.SDFGDotVisitor;
+import espam.visitor.json.refinement.EnergyRefinerVisitor;
+import espam.visitor.json.refinement.TimingRefinerVisitor;
 import onnx.ONNX;
 import espam.interfaces.python.Espam2DARTS;
 import espam.main.ExtensionFilter;
@@ -441,6 +443,13 @@ public class UI {
                 _generateDNNJSON(dnn);
             if (_dot)
                _generateDotDNN(dnn);
+            if(_wcetTemplateGen)
+            _generateWCETTemplateForDNN(dnn);
+            /** generate energy template once*/
+            if(_energyTemplateGen) {
+                _generateEnergyTemplate();
+                _energyTemplateGen = false;
+            }
             _dstPath = rootDst;
     }
 
@@ -464,6 +473,11 @@ public class UI {
             _generateSDFGJSON(csdfg);
         if(_csdfg_dot)
             _generateDotSDFG(csdfg);
+        if(_wcetTemplateGen)
+            _generateWCETTemplate(csdfg);
+        if(_energyTemplateGen)
+            _generateEnergyTemplate();
+
         _dstPath = rootDst;
     }
 
@@ -473,7 +487,7 @@ public class UI {
     private boolean _isSDFGenerationRequired(){
         if(_inCSDF)
             return false;
-       return _eval||_sesame||_csdfg_json ||_csdfg_dot||_csdfg_xml;
+       return _eval||_sesame||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
     }
 
     /**
@@ -716,6 +730,21 @@ public class UI {
        // CSDFTimingRefiner.getInstance().visitComponent(graph);
     }
 
+    /** Generate WCET template */
+    private void _generateWCETTemplate(CSDFGraph csdfg){
+        TimingRefinerVisitor.printCSDFGTimeSpec(csdfg,_dstPath ,"wcet_spec_csdfg");
+    }
+
+    /** Generate WCET template, taking into account parametrized DNN operators (supported) */
+    private void _generateWCETTemplateForDNN(Network dnn){
+        TimingRefinerVisitor.printDNNTimeSpec(dnn,_dstPath,"wcet_spec_dnn");
+    }
+
+    /** Generate energy parameters template */
+    private void _generateEnergyTemplate(){
+        EnergyRefinerVisitor.printDefaultSpec(_dstPath);
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                  getters and setters                      ///
 
@@ -738,9 +767,6 @@ public class UI {
      * @param srcPath path to source model(s)
      */
     public void setSrcPath(String srcPath) {
-
-
-
         this._srcPath = srcPath;
     }
 
@@ -927,12 +953,6 @@ public class UI {
     }
 
     /**
-     * Set generated images width
-     * @param imgW generated images width
-     */
-    public void setImgW(int imgW) { this._imgW = imgW; }
-
-    /**
      * Is dnn transformation is required
      * @param dnnLayersCount number of the layers in initial dnn model
      * @return true, if transformation is required and false otherwise
@@ -1040,6 +1060,22 @@ public class UI {
        CSDFTimingRefiner.getInstance().updateBasicOperationsTiming(newSpec);
     }
 
+    /**
+    * Set energy template generation flag
+    * @param energyTemplateGen energy template generation flag
+    */
+    public void setEnergyTemplateGen(boolean energyTemplateGen) {
+        this._energyTemplateGen = energyTemplateGen;
+    }
+
+    /**
+    * Set WCET(worst-case execution times) template generation flag
+    * @param wcetTemplateGen WCET(worst-case execution times) template generation flag
+    */
+    public void setWcetTemplateGen(boolean wcetTemplateGen) {
+        this._wcetTemplateGen = wcetTemplateGen;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
@@ -1120,6 +1156,9 @@ public class UI {
         _inDnn = true;
         _inCSDF = false;
         _generate_csdfg = false;
+        _wcetTemplateGen = false;
+        _energyTemplateGen = false;
+
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1208,6 +1247,9 @@ public class UI {
     /** number of nodes after one node split up*/
     private int _splitChildrenNum = 2;
 
-    /** generated images width*/
-    private int _imgW = 7000;
+    /** Generate current WCET template*/
+    private boolean _wcetTemplateGen = false;
+
+    /** Generate current energy parameters template*/
+    private boolean _energyTemplateGen = false;
 }

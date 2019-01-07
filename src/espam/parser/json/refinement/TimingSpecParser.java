@@ -1,7 +1,7 @@
 package espam.parser.json.refinement;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import espam.operations.refinement.CSDFTimingRefiner;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
@@ -15,11 +15,17 @@ public class TimingSpecParser {
      * print setup times from configuration in .json format
      * @param path path to the timing specification
      */
-    public static HashMap<String,Integer>  parseTimingSpecTemplate(String path){
+    public static HashMap<String,Integer> parseTimingSpecTemplate(String path){
         try {
-            String json =  FileWorker.read(path);
-            HashMap<String,Integer> operators;
-            operators = (HashMap<String,Integer>)JSONParser.getInstance().fromJson(json,CSDFTimingRefiner.getInstance().getBasicOperationsTiming().getClass());
+            String strJSON =  FileWorker.read(path);
+            JsonObject opList = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
+            HashMap<String,Integer> operators = new HashMap<>();
+            for (HashMap.Entry<String,JsonElement> kv: opList.entrySet()){
+                String key = kv.getKey();
+                int val = kv.getValue().getAsInt();
+                operators.put(key,val);
+            }
+
             return operators;
         }
         catch(Exception e){

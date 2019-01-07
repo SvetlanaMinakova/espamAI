@@ -1526,6 +1526,18 @@ public class Network implements Cloneable, ReferenceResolvable {
         stackLayer(name,flattenNeuron,1);
     }
 
+    /** Get distinct DNN neuron names */
+    public Vector<String> getNeuronNamesDistinct(){
+        Vector<String> neuronNames = new Vector<>();
+        for(Layer layer: _layers){
+            String neuronName = layer.getNeuron().getName();
+            if(!neuronNames.contains(neuronName))
+                neuronNames.add(neuronName);
+        }
+
+        return neuronNames;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                ////
 

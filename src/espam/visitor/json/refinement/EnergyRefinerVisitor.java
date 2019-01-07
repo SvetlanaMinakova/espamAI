@@ -18,7 +18,7 @@ public class EnergyRefinerVisitor {
         try {
             PrintStream printStream = FileWorker.openFile(dir,"energy_spec","json");
             printEnergyRefiner(printStream,CSDFGEnergyRefiner.getInstance());
-            System.out.println(dir + "energy_spec.json file generated");
+            System.out.println(dir + "/energy_spec.json file generated");
             printStream.close();
         }
         catch(Exception e){

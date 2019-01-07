@@ -1,4 +1,5 @@
 package espam.visitor.json.refinement;
+import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.operations.refinement.CSDFTimingRefiner;
@@ -21,6 +22,7 @@ public class TimingRefinerVisitor {
         try {
             String json = JSONParser.getInstance().toJson(CSDFTimingRefiner.getInstance().getBasicOperationsTiming());
             FileWorker.write(dir,filename,"json",json);
+            System.out.println(dir+filename + ".json file generated");
         }
         catch (Exception e){
              System.err.println(dir + filename +
@@ -31,17 +33,19 @@ public class TimingRefinerVisitor {
 
     /**
      * Print default timing specification
-     * @param outdir output directory
-     * @param outfilename output file name
+     * @param dir output directory
+     * @param filename output file name
      */
-    public static void printDefaultTimeSpec(String outdir, String outfilename){
+    public static void printDNNTimeSpec(Network dnn, String dir, String filename){
         try {
-            HashMap<String,Integer> defaultTimeSpec = _getDefaultTimingSpec();
+            HashMap<String,Integer> defaultTimeSpec = _getTimingSpec(dnn);
+
             String json = JSONParser.getInstance().toJson(defaultTimeSpec);
-            FileWorker.write(outdir,outfilename,"json",json);
+            FileWorker.write(dir,filename,"json",json);
+            System.out.println(dir + "/" + filename + ".json file generated");
         }
         catch (Exception e){
-             System.err.println(outdir + outfilename +
+             System.err.println(dir + filename +
                      ".json WCET specification generation error "+ e.getMessage());
 
         }
@@ -50,18 +54,19 @@ public class TimingRefinerVisitor {
 
       /**
      * Print default timing specification
-     * @param outdir output directory
-     * @param outfilename output file name
+     * @param dir output directory
+     * @param filename output file name
      * @param graph CSDF graph
      */
-    public static void printTimeSpecTemplate(CSDFGraph graph, String outdir, String outfilename){
+    public static void printCSDFGTimeSpec(CSDFGraph graph, String dir, String filename){
         try {
             HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
             String json = JSONParser.getInstance().toJson(timeSpec);
-            FileWorker.write(outdir,outfilename,"json",json);
+            FileWorker.write(dir,filename,"json",json);
+            System.out.println(dir + "/" + filename + ".json file generated");
         }
         catch (Exception e){
-             System.err.println(outdir + outfilename +
+             System.err.println(dir + filename +
                      ".json WCET specification generation error "+ e.getMessage());
 
         }
@@ -70,76 +75,75 @@ public class TimingRefinerVisitor {
 
 
     /**
-     * print current exec times configuration in .json format
+     * Print wcet for DNN
+     * @param dnn DNN
+     * @return wcet specification for DNN
      */
-    public static HashMap<String,Integer> _getDefaultTimingSpec(){
+    private static HashMap<String,Integer> _getTimingSpec(Network dnn){
         try {
-            HashMap<String,Integer> execTimes = CSDFTimingRefiner.getInstance().getBasicOperationsTiming();
-            return execTimes;
+            Vector<String> opnamesDistinct =dnn.getNeuronNamesDistinct();
+            HashMap<String,Integer> opList = new HashMap<String,Integer>();
+
+            for(String op: opnamesDistinct){
+                Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
+                opList.put(op,opTime);
+            }
+            return opList;
         }
         catch(Exception e){
-            System.err.println("wcets printout error: " + e.getMessage());
-            return null;
-        }
-
-    }
-
-     /**
-     * Print required set of operations for an arbitrary CSDF graph
-     * @param graph CSDF graph
-     */
-    private static HashMap<String,Integer> _getTimingSpec(CSDFGraph graph) {
-        try {
-            HashMap<CSDFNode, Vector<Integer>> times = CSDFTimingRefiner.getInstance().getExecTimes(graph);
-            HashMap<String, Integer> opnamesDistinct = new HashMap<>();
-            Integer defaultTime = 1;
-            opnamesDistinct.put("read", defaultTime);
-            opnamesDistinct.put("write", defaultTime);
-            //Vector<String> graphOperations = graph.getOpListDistinct();
-
-            Iterator i;
-            i = graph.getNodeList().iterator();
-            while (i.hasNext()) {
-                CSDFNode node = (CSDFNode) i.next();
-                String op = node.getOperation();
-                if (!opnamesDistinct.containsKey(op)) {
-                    Vector<Integer> nodetimes = times.get(node);
-                    opnamesDistinct.put(op, _findWcet(nodetimes));
-                }
-            }
-            return opnamesDistinct;
-        } catch (Exception e) {
-            System.err.println(" wcets printout error: " + e.getMessage());
+            System.err.println(" wcets template generation error: " + e.getMessage());
             return null;
         }
     }
+
 
     /**
-     * Print required set of operations for an arbitrary CSDF graph
+     * Print wcet specification for CSDF graph
      * @param graph CSDF graph
+     * @return wcet specification for CSDF graph
      */
     private static HashMap<String,Integer> _getTimingSpecTemplate(CSDFGraph graph){
         try {
+            Vector<String> opnamesDistinct = graph.getOpListDistinct();
+            HashMap<String,Integer> opList = new HashMap<String,Integer>();
+
+            for(String op: opnamesDistinct){
+                Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
+                opList.put(op,opTime);
+            }
+            return opList;
+        }
+        catch(Exception e){
+            System.err.println(" wcets template generation error: " + e.getMessage());
+            return null;
+        }
+
+    }
+
+    /**
+     * Get distinct list of operators
+     * @param graph CSDF graph
+     * @return distinct list of graph operators
+     */
+    private static HashMap<String,Integer> getOperatorsDistinct(CSDFGraph graph){
+               try {
             HashMap<String, Integer> opnamesDistinct = new HashMap<>();
             Integer defaultTime = 1;
-            opnamesDistinct.put("read", defaultTime);
-            opnamesDistinct.put("write", defaultTime);
             Iterator i;
             i = graph.getNodeList().iterator();
             while (i.hasNext()) {
                 CSDFNode node = (CSDFNode) i.next();
                 String op = node.getOperation();
-                if (!opnamesDistinct.containsKey(op)) {
+                if (!opnamesDistinct.containsKey(op.toLowerCase())) {
                     opnamesDistinct.put(op, defaultTime);
                 }
             }
             return opnamesDistinct;
         }
         catch(Exception e){
-            System.err.println(" wcets printout error: " + e.getMessage());
+            System.err.println(" wcets operator list generation error: " + e.getMessage());
             return null;
         }
-
     }
 
     /**

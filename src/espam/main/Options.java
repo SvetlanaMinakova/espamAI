@@ -113,11 +113,6 @@ public class Options {
                             catch (Exception e){ System.err.println("Invalid split safe counter"); }
                         }
 
-                        else if(arg.equals("--img-w")){
-                            try { _cnnui.setImgW(Integer.parseInt(args[++i])); }
-                            catch (Exception e){ System.err.println("Invalid split safe counter"); }
-                        }
-
                         else if(arg.equals("--time-spec")){
                             try { _cnnui.setExecTimesSpec(args[++i]); }
                             catch (Exception e){ System.err.println("Invalid path to CSDF model time (wcet) specification"); }
@@ -245,6 +240,15 @@ public class Options {
             _cnnui.setGenerateCsdfg(true);
         }
 
+        else if(arg.equals("--wcet")){
+            _cnnui.setWcetTemplateGen(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
+        else if(arg.equals("--wcenergy")){
+            _cnnui.setEnergyTemplateGen(true);
+        }
+
         else if( arg.equals("") ) {
             // Ignore blank argument.
         } else {
@@ -337,6 +341,8 @@ public class Options {
             {"--json            ", "none"},
             {"--json-csdf       ", "none"},
             {"--xml-csdf        ", "none"},
+            {"--wcet            ", "none"},
+            {"--wcenergy        ", "none"},
     };
     
     /**
@@ -366,7 +372,6 @@ public class Options {
         /** initial model representation flags*/
         {"--block-based    ", "-bb ", " <Integer>"},
         {"--split-step     ", "none", " <Integer>"},
-        {"--img-w          ", "none", " <Integer>"},
         {"--time-spec      ", "none", " <FilePath>"},
         {"--energy-spec    ", "none", " <FilePath>"}
        };
