@@ -2,22 +2,29 @@ ESPAMAI: Embedded System-level Platform synthesis and Application Mapping Tool, 
 ================================================================================================================================
 Installation instructions for ESPAMAI
 
-I. Before installing ESPAMAI, you might need to install Java SDK and/or Python 2.7. See below:
+I. Installing Java and Python
+--------------------------------------------------------------------------------------------------------------------------------- 
 
-1. Installing Java SDK: 
+Before installing ESPAMAI, you might need to install Java SDK and/or Python 2.7. See below:
+
+#### Installing Java SDK: ####
 
 - download JAVA JDK (J2SE Development Kit) version 5.0 or later from
 http://java.sun.com/javase/downloads/index.jsp
 - follow the installation instructions on the web-page
 
-2. Installing Python 2.7
+#### Installing Python 2.7 #### 
 
 - select latest 2.7 python release from https://www.python.org/downloads/
 - follow the installation instructions on the release web-page
 
-II. Installing ESPAMAI -- There are several options listed below. Select one of them:
+II. Installing ESPAMAI 
+---------------------------------------------------------------------------------------------------------------------------------
+-- There are several options listed below. Select one of them:
 
-1. OPTION 1: The procedure below describes how to install EspamAI with 
+#### OPTION 1 ####  
+
+The procedure below describes how to install EspamAI with 
 pre-build EspamAI related libraries. 
 
 - download ESPAMAI from the GIT repo as follows ->
@@ -46,7 +53,9 @@ NOTE:If ESPAMAI does not work after installation,
 the reason might be that the pre-build EspamAI related libraries mentioned above
 are very old or incompatible. In such case try to install ESPAMAI with OPTION 2 below. 
 
-2. OPTION 2: The procedure below describes how to build the libraries used by ESPAMAI
+#### OPTION 2####
+
+The procedure below describes how to build the libraries used by ESPAMAI
 and how to install ESPAMAI.
 
 a) First, you need to install the GMP multi-precision library and Polylib library. See below:
@@ -146,5 +155,7 @@ chmod 755 .../espam/lib/onnx.jar
 Alternatively, you can modify LD_LIBRARY_PATH to point to the required libraries (polylib/gmp/onnx):
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/path/to/polylib/library:/path/to/gmp/library:/path/to/onnx.jar
 
-III. Now you can run ESPAM by running the executable script ".../espam/bin/espam"
+III. Running ESPAMAI
+---------------------------------------------------------------------------------------------------------------------------------
+Now you can run ESPAM by running the executable script ".../espam/bin/espam"
 
