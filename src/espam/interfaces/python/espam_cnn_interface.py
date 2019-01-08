@@ -273,14 +273,12 @@ def check_consistency(graph,  deadline_factor=1.0, verbose=False, printDetails=T
     x = fractions.Fraction(int(Utilities.lcmv(x_l)), 1)
     for a in graph.get_actors():
         reps[a] *= x
-        for e in graph.get_channels():
-            if reps[graph.get_actor(e.get_source())] * sum(e.get_production_sequence()) \
-                    != reps[graph.get_actor(e.get_destination())] * sum(e.get_consumption_sequence()):
-                if (printDetails):
-                    sys.stdout.write("false")
-                return False
-    if (printDetails):
-        sys.stdout.write("true")
+    for e in graph.get_channels():
+        if reps[graph.get_actor(e.get_source())] * sum(e.get_production_sequence()) \
+                != reps[graph.get_actor(e.get_destination())] * sum(e.get_consumption_sequence()):
+            sys.stdout.write("false")
+            return False
+    sys.stdout.write("true")
     return True
 
 """get repetition vector of the graph as list"""
