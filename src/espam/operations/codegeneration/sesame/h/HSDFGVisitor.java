@@ -118,7 +118,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         MemoryUnit mu = port.getAssignedMemory();
         if (mu == null) {
             Tensor defaultMemoryShape = new Tensor(_findMinMemSize(port));
-            mu = new MemoryUnit(port.getName(), defaultMemoryShape,"int");
+            mu = new MemoryUnit(port.getName(), defaultMemoryShape,MemoryUnit.getDefaultDataType());
         }
         _writeTensorToCPPArrayDefinition(mu.getShape(), mu.getName(), mu.getTypeDesc());
     }

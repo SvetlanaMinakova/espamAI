@@ -140,6 +140,14 @@ public class MemoryUnit implements Cloneable {
      */
     public void setUnitParamDesc(String UnitParamDesc) { this._UnitParamDesc = UnitParamDesc; }
 
+    /**
+     * Get default type for memory unit
+     * @return default type of data
+     */
+    public static String getDefaultDataType(){
+        return "int";
+    }
+
     ///////////////////////////////////////////////////////////////////
      ////                    private variables                    ////
     /** memory unit name*/
