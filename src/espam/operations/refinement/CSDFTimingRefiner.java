@@ -155,14 +155,19 @@ import java.util.Vector;
             return 1;
         if(operation=="null")
             return 1;
-        Integer time = _basicOperationsTiming.get(operation.toLowerCase());
+        Integer time = _basicOperationsTiming.get(operation);
+        if(time!=null)
+            return time;
 
-        if(time == null)
-            try { time = _extrapolateParametrizedOperationTime(operation); }
-            catch (Exception e){
+        time = _basicOperationsTiming.get(operation.toLowerCase());
+        if(time!=null)
+            return time;
+
+        try { time = _extrapolateParametrizedOperationTime(operation); }
+        catch (Exception e){
             System.out.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
             time = 1;
-            }
+        }
         return time;
     }
 

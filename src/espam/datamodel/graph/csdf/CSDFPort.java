@@ -311,12 +311,16 @@ public class CSDFPort extends NPort {
        return _assignedMemory.getName();
     }
 
+    /**
+     * TODO check if underscores could be removed
+     * @return
+     */
     private String getDefaultAssignedMemoryName(){
       String defaultMemoryName = getName();
-        if(_type==CSDFPortType.in)
+       /** if(_type==CSDFPortType.in)
             defaultMemoryName+="_input";
            if(_type==CSDFPortType.out)
-            defaultMemoryName+="_output";
+            defaultMemoryName+="_output"; */
       return defaultMemoryName;
     }
 
