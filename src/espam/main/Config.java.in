@@ -70,6 +70,13 @@ public class Config {
   public String getOutputDir() {
     return _outputDir;
   }
+  /**
+   * Set output directory
+   * @param outputDir output directory
+   */
+  public void setOutputDir(String outputDir){
+      _outputDir = outputDir;
+  }
 
    /** get application absolute path*/
   public String getAppPath() { return _appPath; }

@@ -5,6 +5,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.main.Config;
+import espam.operations.codegeneration.erqian.ErqianSDFGVisitor;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
 import espam.visitor.dot.cnn.CNNDotVisitor;
@@ -336,13 +337,22 @@ public class UI {
             _refineTiming(csdfg);
         }
 
-        /** generate Sesame template */
+        /** generate code templates */
+        if(_sesame || _erqian)
+            _edInterface.setRepetitionVector(csdfg);
+
         if (_sesame) {
-               _edInterface.setRepetitionVector(csdfg);
             if(_inCSDF)
                 SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
             if(_inDnn)
-                 SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+        }
+
+        if(_erqian){
+            if(_inCSDF)
+                ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+            if(_inDnn)
+                ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
         }
 
         if(_eval) {
@@ -413,13 +423,23 @@ public class UI {
         }
 
         /** generate Sesame template */
-        if (_sesame) {
+        if (_sesame || _erqian) {
             for(CSDFGraph csdfg:csdfgs) {
                 _edInterface.setRepetitionVector(csdfg);
+
+            if(_sesame) {
                 if (_inCSDF)
                     SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/", false);
                 if (_inDnn)
-                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/",true);
+                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/", true);
+            }
+
+            if(_erqian){
+                if(_inCSDF)
+                    ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                if(_inDnn)
+                    ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+            }
             }
         }
 
@@ -530,7 +550,7 @@ public class UI {
     private boolean _isSDFGenerationRequired(){
         if(_inCSDF)
             return false;
-       return _eval||_sesame||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
+       return _eval||_sesame||_erqian||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
     }
 
     /**
@@ -1142,6 +1162,14 @@ public class UI {
         this._wcetTemplateGen = wcetTemplateGen;
     }
 
+    /**
+     * Set erqian code generation flag
+     * @param erqian erqian code generation flag
+     */
+    public void setErqian(boolean erqian) {
+             this._erqian = erqian;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
@@ -1267,6 +1295,9 @@ public class UI {
 
     /** sesame-generation flag*/
     private boolean _sesame;
+
+    /** erqian-code generation flag*/
+    private boolean _erqian;
 
     /** flag, shows, if csdf graph generation is required*/
     private boolean _generate_csdfg;

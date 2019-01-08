@@ -246,6 +246,11 @@ public class Options {
             _cnnui.setGenerateCsdfg(true);
         }
 
+        else if (arg.equals("--erqian")) {
+            _cnnui.setErqian(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
         else if(arg.equals("--wcet")){
             _cnnui.setWcetTemplateGen(true);
             _cnnui.setGenerateCsdfg(true);
@@ -342,6 +347,7 @@ public class Options {
             /** generation flags*/
             {"--multiple-models ", "-m  "},
             {"--sesame          ", "none"},
+            {"--erqian          ", "none"},
             {"--dot             ", "none"},
             {"--dot-csdf        ", "none"},
             {"--json            ", "none"},

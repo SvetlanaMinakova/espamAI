@@ -200,10 +200,10 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
             // create the makefile
             //PrintStream mf = _openMakefileFile();
 
-            PrintStream mf = FileWorker.openFile(dir,"Makefile",null); //TODO changed!
+            PrintStream mf = FileWorker.openFile(dir,"Makefile",null);
             mf.println("#@Author: ESPAM");
             mf.println("");
-            mf.println("# include ./sources"); //TODO changed!
+            mf.println("# include ./sources");
             mf.println("");
             mf.println("NAME=" + _sdfg.getName());
             mf.println("");
@@ -220,7 +220,7 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
             mf.println("OBJS := $(patsubst %.cpp,%.o,$(SOURCES)) $(OBJ_FILES)");
             mf.println("");
             mf.println("CXX=g++");
-            mf.println("CFLAGS += `sesamesim-config --PNRunner-cflags` -Wall -std=c++11"); //TODO changed!
+            mf.println("CFLAGS += `sesamesim-config --PNRunner-cflags` -Wall -std=c++11");
             mf.println("LIBS += `sesamesim-config --PNRunner-libs`");
             mf.println("APPFLAGS := $(APPFLAGS) -L . -l $(APP_LIB)");
             mf.println("");
