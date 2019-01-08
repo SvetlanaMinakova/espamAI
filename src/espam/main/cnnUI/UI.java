@@ -1187,7 +1187,7 @@ public class UI {
           * @return true, if cnnespam commands are used and false otherwise
           */
     public boolean isUsed(){
-        return _eval || _generate;
+        return _eval || _generate || _consistencyCheckout ;
     }
 
     /**

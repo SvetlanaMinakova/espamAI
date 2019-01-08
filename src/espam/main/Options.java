@@ -123,6 +123,11 @@ public class Options {
                             catch (Exception e){ System.err.println("Invalid path to CSDF model energy specification"); }
                         }
 
+                        else if (arg.equals("--consistency")|| arg.equals("-c")) {
+                            _cnnui.setSrcPath(args[++i]);
+                            _cnnui.setConsistencyCheckout(true);
+                        }
+
                         else {
                             // Unrecognized option.
                             throw new IllegalArgumentException("Unrecognized option: " + arg);
@@ -250,10 +255,6 @@ public class Options {
             _cnnui.setEnergyTemplateGen(true);
         }
 
-        else if (arg.equals("--consistency")|| arg.equals("-C")) {
-            _cnnui.setConsistencyCheckout(true);
-        }
-
         else if( arg.equals("") ) {
             // Ignore blank argument.
         } else {
@@ -347,10 +348,8 @@ public class Options {
             {"--json-csdf       ", "none"},
             {"--xml-csdf        ", "none"},
             {"--wcet            ", "none"},
-            {"--wcenergy        ", "none"},
+            {"--wcenergy        ", "none"}
 
-            /** input models consistency checkout*/
-            {"--consistency     ", "-C  "}
     };
     
     /**
@@ -381,7 +380,8 @@ public class Options {
         {"--block-based    ", "-bb ", " <Integer>"},
         {"--split-step     ", "none", " <Integer>"},
         {"--time-spec      ", "none", " <FilePath>"},
-        {"--energy-spec    ", "none", " <FilePath>"}
+        {"--energy-spec    ", "none", " <FilePath>"},
+        {"--consistency    ", "-c  ", " <FilePath>"}
        };
 
     /**
