@@ -50,7 +50,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * Write container templates for each container, associated with the node
      * @param node SDF graph node
      */
-    private void _writeDNNRefinedContainerTemplates(CSDFNode node){
+    protected void _writeDNNRefinedContainerTemplates(CSDFNode node){
         for(CSDFPort inport: node.getInPorts()){
             if(!inport.isOverlapHandler()) {
                 MemoryUnit mu = inport.getAssignedMemory();
@@ -114,7 +114,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * Otherwise, a default container is generated. Default container is a linear container, stores integer units.
      * @param port CSDFPort
      */
-    private void _writeContainerTemplate(CSDFPort port) {
+    protected void _writeContainerTemplate(CSDFPort port) {
         MemoryUnit mu = port.getAssignedMemory();
         if (mu == null) {
             Tensor defaultMemoryShape = new Tensor(_findMinMemSize(port));
@@ -128,7 +128,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * @param port CSDFPort
      * @return min memory size could be associated with a port
      */
-    private int _findMinMemSize(CSDFPort port){
+    protected int _findMinMemSize(CSDFPort port){
         int minSize = 0;
         Vector<IndexPair> rates = port.getRates();
         if(rates==null)

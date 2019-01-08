@@ -74,11 +74,27 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
 
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        _printStream.println(_prefix + operation + _primitivePostfix +"(" + arrayName + ", " +
+        _printStream.println(_prefix + operation + _primitivePostfix + "_" + dataDimensionality + "D (" + arrayName + ", " +
                 "memobj_cpu, " + portName + "_tokens, " + portName + "_fifo_size);");
 
     }
 
+     /**
+     * print reading/writing template for port,
+     * taking into account only end border limitations
+     */
+     @Override
+    public void printOperationShiftedTemplate(CSDFPort port,String operation, String arrayName, String shiftDesc){
+       if(port==null || arrayName==null)
+           return;
+        int dataDimensionality = port.getMemoryDim();
+        String portName = port.getName();
+        _printStream.println(" ");
+        _printStream.println(_prefix + "//TODO overlapping data shift operation");
+        _printStream.println(_prefix + "// " + operation + " to " + arrayName);
+        _printStream.println(_prefix + operation + _primitivePostfix + "_" + dataDimensionality + "D (" + arrayName + "" +
+                "[" + shiftDesc + "], " + "memobj_cpu, " + portName + "_tokens, " + portName + "_fifo_size);");
+    }
 
     ///////////////////////////////////////////////////////////////////
     ///                private variables                           ///
