@@ -223,10 +223,25 @@ public class Espam2DARTS {
      */
     public String getBottleneckActor(CSDFGraph graph) throws Exception{
         String scriptResult = _runDARTS(graph,"bottleneck");
-                if(isError(scriptResult))
+        if(isError(scriptResult))
             throw new Exception(" repetition vector calculation error. " + scriptResult);
 
         return scriptResult;
+    }
+
+    /**
+     * CSDF graph consistency checkout
+     * @param graph CSDF graph to be checked
+     * @return true, if CSDF graph is consistent and fals otherwise
+     * @throws Exception if an error occurs
+     */
+    public boolean checkConsistency(CSDFGraph graph) throws Exception{
+        String scriptResult = _runDARTS(graph,"consistency");
+        if(isError(scriptResult))
+            throw new Exception(" consistency checkout error. " + scriptResult);
+        if(scriptResult.equals("true"))
+            return true;
+        return false;
     }
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                ///

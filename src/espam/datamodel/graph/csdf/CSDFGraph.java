@@ -413,8 +413,6 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         return true;
        }
 
-
-
     ///////////////////////////////////////////////////////////////////////
     //// resolve references inside the graph after the deserialization ////
 

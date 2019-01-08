@@ -293,15 +293,6 @@ public class Network implements Cloneable, ReferenceResolvable {
                 return false;
             }
         }
-
-     /**   try{
-            setDataFormats(_inputLayer.getOutputFormat());
-        }
-        catch (Exception e){
-            System.out.println("data formats setup inconsistency");
-            return false;
-        } */
-
         for(Layer layer: _layers){
             if(!layer.isDataFormatsConsistent()){
                 return false;

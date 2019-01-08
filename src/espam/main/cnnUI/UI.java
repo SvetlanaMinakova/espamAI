@@ -159,7 +159,7 @@ public class UI {
              }
             }
             catch (Exception e){
-                System.err.println(absPath+" model error!");
+                System.err.println(absPath + " model error!");
             }
         }
         return results;
@@ -307,6 +307,14 @@ public class UI {
 
             network.setDataFormats(network.getInputLayer().getOutputFormat());
 
+            if(_consistencyCheckout) {
+                boolean consistency = network.checkConsistency();
+                System.out.println("input dnn consistency: " + consistency);
+
+               // if (!network.checkConsistency())
+                 //   throw new Exception(network.getName() + "inconsistent DNN model");
+            }
+
             if(_isTransformationRequired(network.countLayers())){
                 CNNTransformer transformer = new CNNTransformer(network);
                 transformer.splitToBlocks(_blocks,_splitSafeCounter,_splitChildrenNum,_verbose);
@@ -318,6 +326,10 @@ public class UI {
             csdfg = _readSDFGJSONModel(_srcPath);
             if(csdfg == null)
                 throw new Exception(_srcPath + " CSDF model reading error");
+            if(_consistencyCheckout){
+                boolean consistency = _edInterface.checkConsistency(csdfg);
+                System.out.println("input csdf graph consistency: " + consistency);
+            }
         }
 
 
@@ -369,6 +381,11 @@ public class UI {
                   CNNTransformer transformer = new CNNTransformer(dnn);
                   transformer.splitToBlocks(_blocks, _splitSafeCounter, _splitChildrenNum, _verbose);
               }
+               if(_consistencyCheckout) {
+                   boolean consistency = dnn.checkConsistency();
+                   System.out.println("input dnn " + dnn.getName() + " consistency: " + consistency);
+               }
+
             }
         }
 
@@ -376,6 +393,13 @@ public class UI {
            csdfgs = _readAllSDFGs(_srcPath);
            if(csdfgs == null)
                 throw new Exception(_srcPath + " CSDF model reading error");
+
+           if(_consistencyCheckout) {
+               for(CSDFGraph csdfg: csdfgs) {
+                   boolean consistency = _edInterface.checkConsistency(csdfg);
+                   System.out.println("input csdf graph " + csdfg.getName()+ " consistency: " + consistency);
+               }
+           }
         }
 
         /**generate CSDFG from input DNN model if required*/
@@ -1046,8 +1070,15 @@ public class UI {
         EnergySpecParser.parseEnergySpec(energySpec);
     }
 
-
     /**
+     * Set consistency input model consistency checkout flag
+     * @param consistencyCheckout
+     */
+    public void setConsistencyCheckout(boolean consistencyCheckout) {
+        this._consistencyCheckout = consistencyCheckout;
+    }
+
+         /**
      * TODO extend operators list or replace it??
      * Set CSDF model operators execution time specification
      * @param execTimesSpec path to CSDF model operators execution time specification
@@ -1158,6 +1189,7 @@ public class UI {
         _generate_csdfg = false;
         _wcetTemplateGen = false;
         _energyTemplateGen = false;
+        _consistencyCheckout = false;
 
     }
 
@@ -1252,4 +1284,7 @@ public class UI {
 
     /** Generate current energy parameters template*/
     private boolean _energyTemplateGen = false;
+
+    /** input model consistency checkout*/
+    private boolean _consistencyCheckout = false;
 }

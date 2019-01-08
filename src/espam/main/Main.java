@@ -133,7 +133,7 @@ public class Main {
 
             /** cnn models processing*/
             try {
-                _cnnui.runCommands();
+               _cnnui.runCommands();
             } catch (Exception e) {
                 System.out.println(" ERROR Occured in CNNESPAM: " + e.getMessage());
                 e.printStackTrace(System.out);

@@ -216,6 +216,7 @@ public class Options {
         else if (arg.equals("--multiple-models")|| arg.equals("-m")) {
             _cnnui.setMultipleModels(true);
         }
+
         else if (arg.equals("--json")) {
             _cnnui.setJson(true);
         }
@@ -247,6 +248,10 @@ public class Options {
 
         else if(arg.equals("--wcenergy")){
             _cnnui.setEnergyTemplateGen(true);
+        }
+
+        else if (arg.equals("--consistency")|| arg.equals("-C")) {
+            _cnnui.setConsistencyCheckout(true);
         }
 
         else if( arg.equals("") ) {
@@ -334,7 +339,7 @@ public class Options {
             {"--neuron-based    ", "-nb "},
 
             /** generation flags*/
-            {"--multiple-models ", "-m"},
+            {"--multiple-models ", "-m  "},
             {"--sesame          ", "none"},
             {"--dot             ", "none"},
             {"--dot-csdf        ", "none"},
@@ -343,6 +348,9 @@ public class Options {
             {"--xml-csdf        ", "none"},
             {"--wcet            ", "none"},
             {"--wcenergy        ", "none"},
+
+            /** input models consistency checkout*/
+            {"--consistency     ", "-C  "}
     };
     
     /**
