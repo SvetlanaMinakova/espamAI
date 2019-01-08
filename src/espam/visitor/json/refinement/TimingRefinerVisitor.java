@@ -31,12 +31,42 @@ public class TimingRefinerVisitor {
         }
     }
 
+
+      /**
+     * Print default timing specification
+     * @param dir output directory
+     * @param filename output file name
+     * @param graph CSDF graph
+     */
+    public static void printTimeSpec(Network dnn, CSDFGraph graph, String dir, String filename){
+        try {
+            HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
+            HashMap<String,Integer> dnnTimeSpec = _getTimingSpec(dnn);
+
+            for(HashMap.Entry<String,Integer> dnnOp: dnnTimeSpec.entrySet()){
+                if(!timeSpec.containsKey(dnnOp.getKey())){
+                    timeSpec.put(dnnOp.getKey(),dnnOp.getValue());
+                }
+            }
+
+            String json = JSONParser.getInstance().toJson(timeSpec);
+            FileWorker.write(dir,filename,"json",json);
+            System.out.println(dir + filename + ".json file generated");
+        }
+        catch (Exception e){
+             System.err.println(dir + filename +
+                     ".json WCET specification generation error "+ e.getMessage());
+
+        }
+
+    }
+
     /**
      * Print default timing specification
      * @param dir output directory
      * @param filename output file name
      */
-    public static void printDNNTimeSpec(Network dnn, String dir, String filename){
+    public static void printTimeSpec(Network dnn, String dir, String filename){
         try {
             HashMap<String,Integer> defaultTimeSpec = _getTimingSpec(dnn);
 
@@ -58,7 +88,7 @@ public class TimingRefinerVisitor {
      * @param filename output file name
      * @param graph CSDF graph
      */
-    public static void printCSDFGTimeSpec(CSDFGraph graph, String dir, String filename){
+    public static void printTimeSpec(CSDFGraph graph, String dir, String filename){
         try {
             HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
             String json = JSONParser.getInstance().toJson(timeSpec);

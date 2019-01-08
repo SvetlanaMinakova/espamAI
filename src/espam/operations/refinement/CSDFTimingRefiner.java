@@ -163,7 +163,7 @@ import java.util.Vector;
         if(time!=null)
             return time;
 
-        try { time = _extrapolateParametrizedOperationTime(operation); }
+        try { time = _extrapolateParametrizedOperationTime(operation.toLowerCase()); }
         catch (Exception e){
             System.out.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
             time = 1;
@@ -410,7 +410,7 @@ import java.util.Vector;
      */
     public void updateBasicOperationsTiming(HashMap<String, Integer> newOperationsTiming) {
         for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet())
-            _basicOperationsTiming.put(newOp.getKey(),newOp.getValue());
+            _basicOperationsTiming.put(newOp.getKey().toLowerCase(),newOp.getValue());
     }
 
     /**

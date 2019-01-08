@@ -310,9 +310,6 @@ public class UI {
             if(_consistencyCheckout) {
                 boolean consistency = network.checkConsistency();
                 System.out.println("input dnn consistency: " + consistency);
-
-               // if (!network.checkConsistency())
-                 //   throw new Exception(network.getName() + "inconsistent DNN model");
             }
 
             if(_isTransformationRequired(network.countLayers())){
@@ -358,6 +355,10 @@ public class UI {
 
         if(_generate_csdfg)
             _generateCSDFOutputFiles(csdfg);
+
+        if(_wcetTemplateGen) {
+            _generateWCETTemplate(network,csdfg);
+        }
     }
 
     /**
@@ -447,6 +448,28 @@ public class UI {
                 }
             }
         }
+
+        if(_wcetTemplateGen) {
+            if(dnns==null && csdfgs==null)
+                return;
+            if(csdfgs==null){
+                for(Network dnn:dnns){
+                    _generateWCETTemplate(dnn);
+                }
+                return;
+            }
+
+            if(dnns==null){
+                for(CSDFGraph csdfg: csdfgs){
+                    _generateWCETTemplate(csdfg);
+                }
+                return;
+            }
+
+            for(int i=0; i< dnns.length;i++){
+                _generateWCETTemplate(dnns[i],csdfgs[i]);
+            }
+        }
     }
 
     /**
@@ -467,8 +490,6 @@ public class UI {
                 _generateDNNJSON(dnn);
             if (_dot)
                _generateDotDNN(dnn);
-            if(_wcetTemplateGen)
-            _generateWCETTemplateForDNN(dnn);
             /** generate energy template once*/
             if(_energyTemplateGen) {
                 _generateEnergyTemplate();
@@ -497,8 +518,6 @@ public class UI {
             _generateSDFGJSON(csdfg);
         if(_csdfg_dot)
             _generateDotSDFG(csdfg);
-        if(_wcetTemplateGen)
-            _generateWCETTemplate(csdfg);
         if(_energyTemplateGen)
             _generateEnergyTemplate();
 
@@ -756,12 +775,28 @@ public class UI {
 
     /** Generate WCET template */
     private void _generateWCETTemplate(CSDFGraph csdfg){
-        TimingRefinerVisitor.printCSDFGTimeSpec(csdfg,_dstPath ,"wcet_spec_csdfg");
+        TimingRefinerVisitor.printTimeSpec(csdfg,_dstPath + csdfg.getName() + "/",csdfg.getName() + "_wcet_spec");
     }
 
     /** Generate WCET template, taking into account parametrized DNN operators (supported) */
-    private void _generateWCETTemplateForDNN(Network dnn){
-        TimingRefinerVisitor.printDNNTimeSpec(dnn,_dstPath,"wcet_spec_dnn");
+    private void _generateWCETTemplate(Network dnn){
+        TimingRefinerVisitor.printTimeSpec(dnn,_dstPath + dnn.getName() + "/",dnn.getName() + "_wcet_spec");
+    }
+
+    /** Generate WCET template, taking into account both CSDFG operators and
+     * parametrized DNN operators (supported) */
+    private void _generateWCETTemplate(Network dnn,CSDFGraph csdfg){
+        if(dnn==null && csdfg==null)
+            return;
+        if(dnn==null){
+            _generateWCETTemplate(csdfg);
+            return;
+        }
+        if(csdfg==null){
+            _generateWCETTemplate(dnn);
+            return;
+        }
+        TimingRefinerVisitor.printTimeSpec(dnn,csdfg,_dstPath + dnn.getName() + "/",dnn.getName() + "_wcet_spec");
     }
 
     /** Generate energy parameters template */
