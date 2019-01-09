@@ -277,19 +277,35 @@ public class Network implements Cloneable, ReferenceResolvable {
     ///////////////////////////////////////////////////////////////////
     ////                  consistency check out                    ////
     /**
-     * Checks if the Network model is consistent by
-     * 1) comparing input and output data formats of each connected
-     *    pair of layers
-     * 2)checking if there are no null or '-' outputs
+     * Deep Neural Network model is consistent if all the following
+     * conditions are met
+     * 1) DNN has an output layer, reachable from DNN input layer.
+     * To check thins property, DNN layers are sorted from the top
+     * using Depth-First Search algorithm, starting from input layer.
+     * If output layer is mentioned in the traverse order,
+     * it is reachable from an input layer
+     *
+     * 2) Input and output data formats of each DNN connection match.
+     * This property is checked by comparison of
+     * input and output data formats of each connection
+     *
+     * 3)DNN neurons and layers data formats Contain
+     * no 'zero-pixel' outputs (which may occur, if
+     * input data format is too small for the DNN topology)
+     *
      * @return true, if network is consistent and false otherwise
      */
     public boolean checkConsistency() {
+        if(!_isOutputReachable())
+            return false;
+
         for (Connection con : _connections) {
 
             if (!_isConsistent(con))
                 return false;
 
-            if (isDenseToConv(con)){
+            /** TODO replace by more general checkout*/
+            if (_isDenseToConv(con)){
                 return false;
             }
         }
@@ -303,11 +319,30 @@ public class Network implements Cloneable, ReferenceResolvable {
     }
 
     /**
+     * Check, if DNN output exists and reachable
+     * DNN layers are sorted from the top
+     * using Depth-First Search algorithm, starting from input layer.
+     * If output layer is mentioned in the traverse order,
+     * it is reachable from an input layer
+     * Checkout starts from last layer, mentioned in the traverse order
+     * @return true, if DNN output layer exists and reachable and false otherwise
+     */
+    private boolean _isOutputReachable(){
+        Vector<Layer> layersInTraverseOrder = getLayersInTraverseOrderFromTop();
+        for(Layer layer: layersInTraverseOrder){
+            if(layer.getNeuron() instanceof Data && layer.getNeuron().getName().equals(DataType.OUTPUT.toString()))
+                return true;
+        }
+        return false;
+    }
+
+
+    /**
      * TODO REFACTORING
      * Checks if connections is type of DenseBlock--> Convolution
      * @return true, if connections is type of DenseBlock--> Convolution and false otherwise
      */
-    private  boolean isDenseToConv(Connection con){
+    private  boolean _isDenseToConv(Connection con){
         Neuron srcNeuron = con.getSrc().getNeuron();
         if(srcNeuron instanceof Data)
             return false;
