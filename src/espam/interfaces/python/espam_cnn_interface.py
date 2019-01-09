@@ -1,15 +1,12 @@
-
 import os
 import sys
 from math import ceil
-import fractions
-
 import json
 import xml.etree.ElementTree as ET
-#sys.path.append('/vol/home/minakovas/dartsHome/darts/darts')
 sys.path.append('/vol/home/minakovas/darts_git/darts-master/darts')
 from CSDFParser import CSDFParser
 import Utilities
+import fractions
 
 def main():
     import argparse
@@ -42,7 +39,8 @@ def main():
             command_recognized = True
 
         if command_recognized is False:
-            raise Exception("unrecognized command")
+            print("Error: unrecognized command")
+            raise Exception("Error: unrecognized command")
 
     except FileNotFoundError:
         print("Error: SDF model file not found")

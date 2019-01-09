@@ -5,6 +5,8 @@ import json
 import xml.etree.ElementTree as ET
 sys.path.append('@DARTS_HOME@/darts')
 from CSDFParser import CSDFParser
+import Utilities
+import fractions
 
 def main():
     import argparse
@@ -28,22 +30,27 @@ def main():
             eval_graph(graph, 1, 1.0, False, False)
             get_bottleneck_actor(graph)
             command_recognized = True
-        if command == "utilization" :
+        if command=="utilization":
             eval_graph(graph, 1, 1.0, False, False)
             get_utilization(graph)
             command_recognized = True
-        if  command_recognized == False:
-            raise Exception("unrecognized command")
+        if command == "consistency":
+            check_consistency(graph)
+            command_recognized = True
+
+        if command_recognized is False:
+            print("Error: unrecognized command")
+            raise Exception("Error: unrecognized command")
 
     except FileNotFoundError:
-        sys.stdout.write("Error: SDF model file not found")
+        print("Error: SDF model file not found")
         # in case of any DARTS internal errors
     except Exception:
-        sys.stdout.write("Error: Darts internal exception ")
+        print("Error: Darts internal exception ")
 
 
 def print_error(msg):
-    sys.stdout.write("Error: "+ msg)
+    print("Error: " + msg)
 
 
 def parse_graph(self):
@@ -68,7 +75,7 @@ def parse_graph(self):
         seq_length = node["length"]
         wcet_seq = list(node["wcet"])
         if (wcet_seq.__len__() == 0):
-            sys.stdout.write(actor_name + " empty wcets!!!")
+            print(actor_name + " empty wcets!!!")
         wcet = max(wcet_seq)
         self.graph.add_actor(actor_id, actor_name, function, wcet)
         self.graph.get_actor(actor_id).set_wcet_sequence(wcet_seq)
@@ -179,7 +186,7 @@ def load_graph(dir,filename):
     if file is None:
         raise FileNotFoundError
 
-    #sys.stdout.write("Graph file loaded")
+    #print("Graph file loaded")
     """ Parsing .json file to obtain ACSDF model"""
     #create parser instance
     splittedfilename = filename.split(".")
@@ -244,6 +251,33 @@ def calc_rep_vec(graph, deadline_factor=1.0, verbose=False, printDetails=True):
 
     return graph
 
+def check_consistency(graph,  deadline_factor=1.0, verbose=False, printDetails=True):
+    """Compute the repetition vector according to the linear time algorithm
+    given in page 48 of [BML1996]_
+
+    .. [BML1996]
+        Shuvra S. Bhattacharyya and Praveen K. Murthy and Edward A. Lee.
+        Software Synthesis from Dataflow Graphs. Vol. 360. Springer, 1996.
+    """
+    graph.set_deadline_factor(deadline_factor)
+    if verbose:
+        sys.stdout.write("Checking consistency...\n")
+    reps = dict({i: fractions.Fraction(0, 1) for i in graph.get_actors()})
+    a_prime = graph.get_actors()[0]
+    graph.set_reps(reps, a_prime, fractions.Fraction(1, 1))
+    x_l = []
+    for key, val in reps.items():
+        x_l.append(val.denominator)
+    x = fractions.Fraction(int(Utilities.lcmv(x_l)), 1)
+    for a in graph.get_actors():
+        reps[a] *= x
+    for e in graph.get_channels():
+        if reps[graph.get_actor(e.get_source())] * sum(e.get_production_sequence()) \
+                != reps[graph.get_actor(e.get_destination())] * sum(e.get_consumption_sequence()):
+            sys.stdout.write("false")
+            return False
+    sys.stdout.write("true")
+    return True
 
 """get repetition vector of the graph as list"""
 def get_repetition_vector_str_with_ids(graph):
@@ -281,7 +315,7 @@ def get_utilization(graph):
 # and between [0,1]. by default deadline factor = 1.0
 # boolean verbose - if there is a need to print details
 def write_evaluation_results(graph, dir):
-    #sys.stdout.write("evaluation results writing...")
+    #print("evaluation results writing...")
     #result_file_path = dir + os.sep + graph.name+"_result.json"
     result_file_path = dir
     mode = 'w' if os.path.exists(result_file_path) else 'a'
@@ -289,10 +323,10 @@ def write_evaluation_results(graph, dir):
         file.write(' {\n')
         file.write(' "performance": ' + str(graph.get_latency()) + ' ,\n')
         file.write(' "power": ' + str(graph.get_utilization()) + ' ,\n')
-        file.write(' "memory": ' + str(graph.get_total_buffer_size()) + ' ,\n')
+        file.write(' "memory": ' + str(graph.get_total_buffer_size())+ ' ,\n')
         file.write(' "processors": ' + str(ceil(graph.get_utilization())))
         file.write("\n}\n")
-    #sys.stdout.write("evaluation results are written")
+    #print("evaluation results are written")
 
 
 
@@ -304,20 +338,21 @@ def write_evaluation_results(graph, dir):
 # deadline_factor - the deadline factor of the graph. Must be real-valued
 # and between [0,1]. by default deadline factor = 1.0
 def print_evaluation_results(graph):
-    sys.stdout.write(' {\n')
-    sys.stdout.write(' "performance": ' + str(graph.get_latency()) + ' ,\n')
-    sys.stdout.write(' "power": ' + str(graph.get_utilization()) + ' ,\n')
-    sys.stdout.write(' "memory": ' + str(graph.get_total_buffer_size()) + ' ,\n'),
-    sys.stdout.write(' "processors": ' + str(ceil(graph.get_utilization())))
-    sys.stdout.write("\n}\n")
+    print (' {\n')
+    print (' "performance": ' + str(graph.get_latency()) + ' ,\n')
+    print (' "power": ' + str(graph.get_utilization()) + ' ,\n')
+    print (' "memory": ' + str(graph.get_total_buffer_size()) + ' ,\n'),
+    print (' "processors": '+ str(ceil(graph.get_utilization())))
+    print("\n}\n")
+
 
 def print_total_buffer_size (total_buffer_size):
     sys.stdout.write(" -- Total buffer size = %s\n" % (total_buffer_size))
 
 
-def print_to_dot(graph, dir):
+def print_to_dot (graph, dir):
     """Print .dot representation of the graph into file """
-    graph.print_graph_dot(graph, dir)
+    graph.print_graph_dot(graph,dir)
 
 
 # get file from directory
@@ -333,7 +368,7 @@ def get_file(dir,name):
 def read_file(fullpath):
     file = open(fullpath)
     for line in file:
-        sys.stdout.write(line)
+        print(line)
     file.close()
 
 # print whole bunch of the parametes calculated by DARTS
