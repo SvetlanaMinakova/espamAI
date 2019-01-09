@@ -6,6 +6,7 @@ import espam.operations.codegeneration.erqian.cpp.CPPSDFGVisitorErqian;
 import espam.operations.codegeneration.erqian.h.HSDFGVisitorErqian;
 import espam.utils.fileworker.FileWorker;
 
+import java.io.PrintStream;
 import java.util.Iterator;
 
 public class ErqianSDFGVisitor {
@@ -18,11 +19,15 @@ public class ErqianSDFGVisitor {
      */
      public static void callVisitor(CSDFGraph y, String dir, boolean CNNRefined){
      String templatesDir = dir + "app/";
-
      try {
          /** if templates directory already exists,
           *  remove it and all templates inside it*/
          FileWorker.recursiveDelete(templatesDir);
+
+         /** generate main class : app entry point*/
+         _cppVisitor.generateMainClassTemplate(templatesDir);
+         _hvisitor.generateMainClassTemplate(templatesDir);
+
          _hvisitor.setCNNRefined(CNNRefined);
          /** generate .cpp and .h files for each SDF graph node */
          Iterator i = y.getNodeList().iterator();
@@ -45,6 +50,27 @@ public class ErqianSDFGVisitor {
      }
 
      /** TODO makefile generation??*/
+
+
+
+
+    /**
+     * Generate .cpp file for application's main class
+     */
+    protected void generateMainClassCPP(){
+
+
+
+    }
+
+    /**
+     * Generate header of the
+     * main class for application
+     */
+    protected void generateMainClassH(){
+
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                     private variables                     ///
