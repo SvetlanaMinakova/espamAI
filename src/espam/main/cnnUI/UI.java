@@ -1122,7 +1122,11 @@ public class UI {
      * @param energySpec path to CSDF model(s) energy specification
      */
     public void setEnergySpec(String energySpec) {
-        EnergySpecParser.parseEnergySpec(energySpec);
+       HashMap<String,Double>operators = EnergySpecParser.parseEnergySpec(energySpec);
+
+       CSDFGEnergyRefiner.getInstance().setAlpha(operators.get("alpha"));
+       CSDFGEnergyRefiner.getInstance().setBeta(operators.get("beta"));
+       CSDFGEnergyRefiner.getInstance().setB(operators.get("b"));
     }
 
     /**

@@ -1,11 +1,14 @@
 package espam.parser.json.refinement;
 
 import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.operations.refinement.CSDFGEnergyRefiner;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
+
+import java.util.HashMap;
 
 /**
  * Energy specification parser
@@ -13,19 +16,25 @@ import espam.utils.fileworker.FileWorker;
 public class EnergySpecParser {
 
 
-    public static void parseEnergySpec(String path) {
+    public static HashMap<String,Double> parseEnergySpec(String path) {
 
+        HashMap<String,Double> operators = new HashMap<>();
         try {
 
-            String json = FileWorker.read(path);
-            CSDFGEnergyRefiner parsed = (CSDFGEnergyRefiner)JSONParser.getInstance().fromJson(json,CSDFGEnergyRefiner.class);
-            CSDFGEnergyRefiner.getInstance().setAlpha(parsed.getAlpha());
-            CSDFGEnergyRefiner.getInstance().setBeta(parsed.getBeta());
-            CSDFGEnergyRefiner.getInstance().setB(parsed.getB());
+            String strJSON = FileWorker.read(path);
+            JsonObject opList = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
+            for (HashMap.Entry<String,JsonElement> kv: opList.entrySet()){
+                String key = kv.getKey();
+                double val = kv.getValue().getAsDouble();
+                operators.put(key,val);
+            }
+
         }
         catch (Exception e){
             System.err.println("Energy specification parsing error: "+e.getMessage());
         }
+
+        return operators;
     }
 
 
