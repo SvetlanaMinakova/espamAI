@@ -68,6 +68,7 @@ docall:
 jar:
 	#create .jar with all the classes	
 	(cd ./src; $(JAR) -cvf ../espam.jar `find -name "*.class"` )
+	(cd ./src; $(JAR) -uvf ../espam.jar `find -name "*.py"` )
 
 jar-exec:
 	#create executable .jar with all the classes and manifest
@@ -75,6 +76,7 @@ jar-exec:
 	(python manifestgenerator.py )	
 	#create .jar with all the classes
 	(cd ./src; $(JAR) -cvf ../espam.jar `find -name "*.class"` )
+	(cd ./src; $(JAR) -uvf ../espam.jar `find -name "*.py"` )
 	#add manifest to .jar
 	(jar umf Manifest.txt espam.jar)
 	
