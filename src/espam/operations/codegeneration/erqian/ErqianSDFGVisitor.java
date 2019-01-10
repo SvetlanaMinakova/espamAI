@@ -8,6 +8,7 @@ import espam.utils.fileworker.FileWorker;
 
 import java.io.PrintStream;
 import java.util.Iterator;
+import java.util.Vector;
 
 public class ErqianSDFGVisitor {
         ///////////////////////////////////////////////////////////////////
@@ -25,8 +26,10 @@ public class ErqianSDFGVisitor {
          FileWorker.recursiveDelete(templatesDir);
 
          /** generate main class : app entry point*/
-         _cppVisitor.generateMainClassTemplate(templatesDir);
-         _hvisitor.generateMainClassTemplate(templatesDir);
+         _cppVisitor.generateMainClassTemplate(templatesDir,y);
+         _hvisitor.generateMainClassTemplate(templatesDir,y);
+         _cppVisitor.generateBaseClassTemplate(templatesDir);
+         _hvisitor.generateBaseClassTemplate(templatesDir);
 
          _hvisitor.setCNNRefined(CNNRefined);
          /** generate .cpp and .h files for each SDF graph node */
@@ -50,27 +53,6 @@ public class ErqianSDFGVisitor {
      }
 
      /** TODO makefile generation??*/
-
-
-
-
-    /**
-     * Generate .cpp file for application's main class
-     */
-    protected void generateMainClassCPP(){
-
-
-
-    }
-
-    /**
-     * Generate header of the
-     * main class for application
-     */
-    protected void generateMainClassH(){
-
-    }
-
 
     ///////////////////////////////////////////////////////////////////
     ////                     private variables                     ///
