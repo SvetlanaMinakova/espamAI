@@ -68,19 +68,58 @@ public class ErqianSDFGVisitor {
              _hvisitor.callVisitor(node, templatesDir);
              _cppVisitor.callVisitor(node, templatesDir);
          }
-
-         /** TODO generate  Makefile*/
-        // _ymlVisitor.callVisitor(y, templatesDir);
-         System.out.println("Sesame application generated in: " + templatesDir);
+         _writeMakeFile(dir,y.getName());
+         System.out.println("espamAI-erqian application generated in: " + templatesDir);
      }
 
         catch (Exception e){
-         System.err.println(templatesDir + "Sesame application generation error: " + e.getMessage());
+         System.err.println(templatesDir + "espamAI-erqian application generation error: " + e.getMessage());
 
         }
      }
 
-     /** TODO makefile generation??*/
+     /**
+      * write application makefile
+     */
+    private static void _writeMakeFile(String dir, String appName) {
+        try {
+            PrintStream mf = FileWorker.openFile(dir + "app/","Makefile",null);
+            mf.println("#File is generated automatically by ESPAM");
+            mf.println("");
+            mf.println("appname := " + appName);
+            mf.println("");
+            mf.println("CXX := clang++");
+            mf.println("CXXFLAGS := -std=c++11");
+            mf.println("");
+            mf.println("srcfiles := $(shell find . -maxdepth 1 -name \"*.cpp\")");
+            mf.println("objects  := $(patsubst %.cpp, %.o, $(srcfiles))");
+            mf.println("");
+            mf.println("all: $(appname)");
+            mf.println("");
+            mf.println("$(appname): $(objects)");
+            mf.println("\t$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname) $(objects) $(LDLIBS)");
+            mf.println("");
+            mf.println("depend: .depend");
+            mf.println("");
+            mf.println(".depend: $(srcfiles)");
+            mf.println("\trm -f ./.depend");
+            mf.println("\t$(CXX) $(CXXFLAGS) -MM $^>>./.depend;");
+            mf.println("");
+            mf.println("clean:");
+            mf.println("\trm -f $(objects)");
+            mf.println("");
+            mf.println("dist-clean: clean");
+            mf.println("\trm -f *~ .depend");
+            mf.println("");
+            mf.println("include .depend");
+            mf.println("");
+        }
+        catch( Exception e ) {
+            System.out.println("Error: " + e.getMessage());
+            System.out.println("Cannot create the default makefile");
+            System.out.println("please supply your own makefile");
+        }
+    }
 
     /**
      * TODO block-based support!

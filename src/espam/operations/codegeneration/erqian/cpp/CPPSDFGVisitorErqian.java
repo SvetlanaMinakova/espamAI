@@ -15,6 +15,7 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
+
     /**
      * generate main class template contains R/W primitives description
      * and other common stuff.
@@ -143,7 +144,7 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
      */
     protected void _writeMainClassMain(CSDFGraph csdfg){
         _prefixInc();
-        _printStream.println(_prefix + "void " + _mainClassName + "::main()");
+        _printStream.println(_prefix + "int main()");
         prefixInc();
         //open main function
          _printStream.println(_prefix + "{");
@@ -157,6 +158,8 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
          _printStream.println("");
          _printStream.println(_prefix + "// Call dnn nodes according to the schedule ");
          _callNodesInScheduleOrder();
+         _printStream.println("");
+         _printStream.println(_prefix + "return 0;");
          prefixDec();
          //close main function
          _printStream.println(_prefix + "}");

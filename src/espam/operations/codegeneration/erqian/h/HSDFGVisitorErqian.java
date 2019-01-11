@@ -129,7 +129,7 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
         _printStream.println("// list of available nodes");
         _printStream.println(_prefix + "static std::map< std::string,csdfNode* > nodes;");
         _printStream.println("");
-        _printStream.println(_prefix + "void main();");
+        _printStream.println(_prefix + "int main();");
         _printStream.println();
         _printStream.println("// Call of the specific node ");
         _printStream.println(_prefix + "static void run_node(std::string node_name);");
