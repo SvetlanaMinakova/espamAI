@@ -16,7 +16,7 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
     ////                         public methods                     ///
 
     /**
-     * generate main class template contains R/W primnitives description
+     * generate main class template contains R/W primitives description
      * and other common stuff.
      */
     public void generateMainClassTemplate(String dir, CSDFGraph sdfg){
@@ -27,7 +27,7 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
             _addAllClassesHeaders(sdfg);
             _writeMainClassCPPBeginning();
             _writeNoBaseCppConstructorAndDestructor(_mainClassName);
-            _writeMainClassFunctions();
+            _writeMainClassFunctions(sdfg);
             _printStream.close();
         }
         catch (Exception e){
@@ -84,9 +84,13 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
 
          /** TODO: should I define any libraries in here?? Or they will
           * TODO be copied from the graphName.so file?*/
-        _printStream.println("#include \""+ _mainClassName + ".h\"");
         _printStream.println("#include <stdlib.h>");
         _printStream.println("#include <iostream>");
+        _printStream.println("#include <map>");
+        _printStream.println("#include <vector>");
+        _printStream.println("#include \"" + _baseClassName + ".h\"");
+        _printStream.println("#include \""+_mainClassName+".h\"");
+
         /** include existing primitives definition*/
        // _printStream.println("#include \"fifo.h\"");
         _printStream.println("using namespace std;");
@@ -105,28 +109,18 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         }
     }
 
-    /**
-     * TODO refactoring on idea
-     *
-     * @param csdfG
-     */
-    protected void _createAllClassesInstances(CSDFGraph csdfG){
-
-    }
 
 
     /**
      * Write application main class .cpp beginning
      */
-    protected void _writeMainClassFunctions(){
+    protected void _writeMainClassFunctions(CSDFGraph csdfG){
         _printStream.println("// Main function");
-        _prefixInc();
-        _printStream.println(_prefix + "void " + _mainClassName + "::main() {   }");
-        _prefixDec();
-        _printStream.println("// Call of the specific node ");
-        _prefixInc();
-        _printStream.println(_prefix + "void " + _mainClassName + "::run_node(string node_name) { }");
-        _prefixDec();
+        _writeMainClassMain(csdfG);
+    //    _printStream.println("// Call of the specific node ");
+    //    _prefixInc();
+    //    _printStream.println(_prefix + "void " + _mainClassName + "::run_node(string node_name) { }");
+    //    _prefixDec();
         _printStream.println();
         _printStream.println(_prefix + "// Read/Write primitives");
         prefixInc();
@@ -143,6 +137,108 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         _writeShiftFunction();
         prefixDec();
     }
+
+    /**
+     * Write main function of the main class
+     */
+    protected void _writeMainClassMain(CSDFGraph csdfg){
+        _prefixInc();
+        _printStream.println(_prefix + "void " + _mainClassName + "::main()");
+        prefixInc();
+        //open main function
+         _printStream.println(_prefix + "{");
+         prefixInc();
+         _printStream.println(_prefix + "// list of all available nodes");
+         _printStream.println(_prefix + "std::map< std::string, "+ _baseClassName +
+                 "* > nodes = std::map< std::string," + _baseClassName + "* >();");
+         _createAllClassesInstancesAndRefs(csdfg);
+         _printStream.println("");
+         _writeSchedule();
+         _printStream.println("");
+         _printStream.println(_prefix + "// Call dnn nodes according to the schedule ");
+         _callNodesInScheduleOrder();
+         prefixDec();
+         //close main function
+         _printStream.println(_prefix + "}");
+         prefixDec();
+        _prefixDec();
+        //
+    }
+
+      /**
+     * TODO refactoring on idea
+     * Create instances of all node and references on them
+     * @param csdfG csdf graph
+     */
+    protected void _createAllClassesInstancesAndRefs(CSDFGraph csdfG){
+        Iterator i = csdfG.getNodeList().iterator();
+        String nodename;
+        while (i.hasNext()) {
+            CSDFNode node = (CSDFNode) i.next();
+            nodename = node.getName();
+            _printStream.println(_prefix + nodename + " " + nodename + "_instance = " + nodename + "();");
+            _printStream.println(_prefix + "nodes[\"" + nodename + "\"] = &" + nodename + "_instance;");
+        }
+
+    }
+
+    /**
+     //define schedule - LB: layers in traverse order
+	   //NB : neurons of one layer can run in parallel?
+
+     */
+    protected void _writeSchedule(){
+        _printStream.println(_prefix + "/**");
+        prefixInc();
+        _printStream.println(_prefix + "Define schedule ");
+        _printStream.println(_prefix + "Dummy schedule for LB-mode: layers in traverse order");
+        _printStream.println(_prefix + "Dummy schedule for NB-mode: neurons of one layer can run in parallel");
+        prefixDec();
+        _printStream.println(_prefix + "*/");
+        _printStream.println(_prefix + "vector<std::string> schedule = vector<std::string>();");
+        _printStream.println("");
+        //
+        if(_isScheduleNullOrEmpty())
+            _processNullSchedule();
+
+        else {
+            for (String nodeCall : _schedule)
+                _printStream.println(_prefix + "schedule.push_back(\"" + nodeCall + "\");");
+        }
+
+    }
+
+    /**
+     * Checks if schedule is null or empty
+     * @return true, if schedule is null or empty and false otherwise
+     */
+    private boolean _isScheduleNullOrEmpty(){
+        if(_schedule==null)
+            return true;
+        if(_schedule.size()==0)
+            return true;
+        return false;
+    }
+
+    /**
+     * Process null schedule in generated .cpp - code
+     */
+    private void _processNullSchedule(){
+        _printStream.println(_prefix + "//WARNING: Please, write CSDF graph schedule here using schedule.push_back(\"node_name\");");
+        _printStream.println(_prefix + "cout<<\"WARNING: CSDF graph schedule is undefined.\"<<endl<<\"Please, write schedule manually in appMain.main()\";");
+    }
+
+    /**
+     * Call dnn nodes according to schedule
+     */
+    protected void _callNodesInScheduleOrder(){
+        _printStream.println(_prefix + "for(int i=0; i<schedule.size();i++){");
+        prefixInc();
+        _printStream.println(_prefix + "nodes[schedule.at(i)]->main();");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+    }
+
 
     /**
      * Write shift function (for shifting overlapping data in I/O arrays)"
@@ -307,6 +403,14 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
                 "[" + shiftDesc + "], " + memobj_cpu + ", " + portName + "_tokens, " + portName + "_fifo_size);");
     }
 
+    /**
+     * Set csdfg schedule
+     * CSDFG nodes schedule : get from the repetition vector of CSDFG??
+     * @param schedule CSDFG nodes schedule : get from the repetition vector of CSDFG??
+     */
+    public void setSchedule(Vector<String> schedule){
+        _schedule = schedule;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ///                private variables                           ///
@@ -326,6 +430,8 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
     /** max r/w primitives dimensionality */
     private static int _maxPrimitiveDimensionality = 3;
 
+    /** CSDFG nodes schedule : get from the repetition vector of CSDFG??*/
+    Vector<String> _schedule;
 
     /** TODO shift primitive???*/
 

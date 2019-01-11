@@ -113,8 +113,12 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
         _printStream.println("#ifndef " + name + "_H");
         _printStream.println("#define " + name + "_H");
         // Include specific headers
-        _printStream.println("#include <string>");
+        _printStream.println("#include <stdlib.h>");
+        _printStream.println("#include <iostream>");
         _printStream.println("#include <map>");
+        _printStream.println("#include <vector>");
+        _printStream.println("#include \"" + _baseClassName + ".h\"");
+        _printStream.println("#include \""+_mainClassName+".h\"");
         _printStream.println("");
         _printStream.println("class " + name + " {");
         _printStream.println("public:");
