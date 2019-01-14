@@ -135,7 +135,8 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         _printStream.println("");
         _printStream.println(_prefix + "// Data shift function (for shifting overlapping data in I/O arrays)");
         prefixInc();
-        _writeShiftFunction();
+        _writeShiftFunctions();
+        _writePrintFunctions();
         prefixDec();
     }
 
@@ -245,10 +246,148 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
 
     /**
      * Write shift function (for shifting overlapping data in I/O arrays)"
-     * TODO implement shift function
+     * TODO refactor shift function : make one for general arrays - tensors
      */
-    protected void _writeShiftFunction(){
-        _printStream.println(_prefix + " void " + _mainClassName + "::data_shift(void *array, int dim) {   }");
+    protected void _writeShiftFunctions(){
+        _writeShift2D("int");
+        _writeShift3D("int");
+        _writeShift2D("float");
+        _writeShift3D("float");
+    }
+
+    /**
+     * Write 2D shift
+     */
+    protected void _writeShift2D(String dataType){
+        _printStream.println(_prefix + "/**");
+         prefixInc();
+          _printStream.println(_prefix + "* Moves 2D data on n lines to top.");
+          _printStream.println(_prefix + "* Required for overlapping data.");
+          _printStream.println(_prefix + "* h - array height");
+          _printStream.println(_prefix + "* w - array width");
+          _printStream.println(_prefix + "* x - pointer to first array element");
+          _printStream.println(_prefix + "* TODO: remove cout after testing");
+         prefixDec();
+         _printStream.println(_prefix + "*/");
+
+         _printStream.println(_prefix + " void " + _mainClassName + "::shift_2D (const int &h, const int &w, "+ dataType + " *x, const int &stride)");
+         prefixInc();
+         _printStream.println(_prefix + "{");
+         prefixInc();
+         _printStream.println(_prefix + "cout<<\"2D data shift\"<<endl;");
+         _printStream.println(_prefix + "for(int line_ind = stride; line_ind < w ; line_ind ++){");
+         prefixInc();
+         _printStream.println(_prefix + "for(int i=0; i<w; i++)");
+         prefixInc();
+         _printStream.println(_prefix + "x[i + (line_ind - stride)* w] = x[i + line_ind * w];");
+         prefixDec();
+         _printStream.println(_prefix + "}");
+         prefixDec();
+         prefixDec();
+         _printStream.println(_prefix + "}");
+         prefixDec();
+    }
+
+    /**
+     * Write 3D shift
+     */
+    protected void _writeShift3D(String dataType){
+         _printStream.println(_prefix + "/**");
+         prefixInc();
+          _printStream.println(_prefix + "* Moves 3D data on n lines to top.");
+          _printStream.println(_prefix + "* Required for overlapping data.");
+          _printStream.println(_prefix + "* d - array depth");
+          _printStream.println(_prefix + "* h - array height");
+          _printStream.println(_prefix + "* w - array width");
+          _printStream.println(_prefix + "* x - pointer to first array element");
+          _printStream.println(_prefix + "* TODO: remove cout after testing");
+         prefixDec();
+         _printStream.println(_prefix + "*/");
+
+         _printStream.println(_prefix + " void " + _mainClassName + "::shift_3D (const int &d, const int &h, const int &w, "+ dataType + " *x, const int &stride)");
+         prefixInc();
+         _printStream.println(_prefix + "{");
+         prefixInc();
+         _printStream.println(_prefix + "cout<<\"3D data shift\"<<endl;");
+
+         _printStream.println(_prefix + "int start_elem_id = 0;");
+         _printStream.println(_prefix + "for(int depth=0; depth < d; depth++ ){");
+         prefixInc();
+         _printStream.println(_prefix + "for(int line_ind = stride; line_ind < w ; line_ind ++){");
+         prefixInc();
+         _printStream.println(_prefix + "for(int i=0; i<w; i++)");
+         prefixInc();
+         _printStream.println(_prefix + "x[i + (line_ind - stride)* w + start_elem_id] = x[i + line_ind * w + start_elem_id];");
+         prefixDec();
+         _printStream.println(_prefix + "}");
+         prefixDec();
+         _printStream.println(_prefix + "start_elem_id +=w*h;");
+         prefixDec();
+         _printStream.println(_prefix + "}");
+         prefixDec();
+         _printStream.println(_prefix + "}");
+         prefixDec();
+    }
+
+    /**
+     * TODO: refactoring for tensor
+     */
+  /**
+     * Write matrix print functions
+     * TODO refactoring: print(matrix)
+     */
+    protected void _writePrintFunctions(){
+        _writeprint2D("int");
+        _writeprint3D("int");
+        _writeprint2D("float");
+        _writeprint3D("float");
+    }
+
+    protected void _writeprint2D(String dataType){
+        _printStream.println(_prefix + "//2D array print function, type: " + dataType);
+        _printStream.println(_prefix + " void " + _mainClassName + "::print_2D(const int &h, const int &w, "+ dataType + " *x)");
+        prefixInc();
+        _printStream.println(_prefix + "{");
+        prefixInc();
+        _printStream.println(_prefix + "for (int i = 0; i < h; i++){");
+        prefixInc();
+        _printStream.println(_prefix + "for (int j = 0; j < w ; j++)");
+        prefixInc();
+        _printStream.println(_prefix + "std::cout << x[i * w + j] << ' ';");
+        prefixDec();
+        _printStream.println(_prefix + "std::cout<<endl;");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+        prefixDec();
+    }
+
+    protected void _writeprint3D(String dataType){
+        _printStream.println(_prefix + "//3D array print function, type: " + dataType);
+        _printStream.println(_prefix + " void " + _mainClassName + "::print_3D(const int &d, const int &h, const int &w, "+ dataType + " *x)");
+        prefixInc();
+        _printStream.println(_prefix + "{");
+        prefixInc();
+        _printStream.println(_prefix + "int start_elem_id = 0;");
+        _printStream.println(_prefix + "for(int depth=0; depth < d; depth++ ){");
+        prefixInc();
+        _printStream.println(_prefix + "std::cout<<\"depth\"<<depth<<endl;");
+        _printStream.println(_prefix + "for (int i = 0; i < h; i++){");
+        prefixInc();
+        _printStream.println(_prefix + "for (int j = 0; j < w ; j++)");
+        prefixInc();
+        _printStream.println(_prefix + "std::cout << x[i * w + j + start_elem_id] << ' ';");
+        prefixDec();
+        _printStream.println(_prefix + "std::cout<<endl;");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+        _printStream.println(_prefix + "start_elem_id +=w*h;");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+        prefixDec();
+        _printStream.println(_prefix + "}");
+        prefixDec();
     }
 
     /**
@@ -258,8 +397,8 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         for (int dim=1;dim <=_maxPrimitiveDimensionality; dim++){
          _writeMocRWPrimitive("read"+ _externalRWPostfix ,dim);
          _writeMocRWPrimitive("write"+ _externalRWPostfix ,dim);
-         _writeMocRWPrimitive("read" + _internalRWPostfix ,dim);
-         _writeMocRWPrimitive("write" + _internalRWPostfix,dim);
+       //  _writeMocRWPrimitive("read" + _internalRWPostfix ,dim);
+       //  _writeMocRWPrimitive("write" + _internalRWPostfix,dim);
         }
     }
 
@@ -327,23 +466,44 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         _processExecution(node,_mainClassName + "::execute");
     }
 
+      /**
+     * process node input ports
+     * @param node SDF Node
+     */
+    protected void _processReading(CSDFNode node){
+       _printStream.println("");
+       _printStream.println(_prefix + "//reading");
+        for (CSDFPort inport: node.getOverlapHandlingInPorts()){
+            _definePhasesLimitation(inport, false);
+            printReadTemplate(inport);
+        }
+
+        for (CSDFPort inport: node.getNonOverlapHandlingInPorts()){
+            _definePhasesLimitation(inport, false);
+            printReadTemplate(inport);
+        }
+    }
+
      /**
      * print reading template
      * @param port SDF input port
+      *             TODO swith read local/external arrays
      */
      @Override
       public void printReadTemplate(CSDFPort port) {
         String arrayName = port.getAssignedMemoryName();
-        if(port.getStartTokens()==null) {
-         //   if(port.isOverlapHandler())
+      //  if(port.getStartTokens()==null) {
+            if(!port.isOverlapHandler()){
            //     printOperationTemplate(port, "read" + _internalRWPostfix,arrayName);
           //  else
             _printStream.println(_prefix + "//TODO replace NULL by shared memory object");
             printOperationTemplate(port, "read" + _externalRWPostfix,arrayName);
             return;
         }
-        String shiftDesc = port.getName() + "_shift";
-        printOperationShiftedTemplate(port,"read" + _internalRWPostfix,arrayName,shiftDesc);
+     //   String shiftDesc = port.getName() + "_shift";
+        _printInternalArrayShift(port,arrayName);
+
+       // printOperationShiftedTemplate(port,"read" + _internalRWPostfix,arrayName,shiftDesc);
     }
 
     /**
@@ -353,7 +513,7 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
     public void printWriteTemplate(CSDFPort port) {
         String arrayName = port.getAssignedMemoryName();
         if(port.isOverlapHandler()) {
-            printOperationTemplate(port, "write" + _internalRWPostfix, arrayName);
+           // printOperationTemplate(port, "write" + _internalRWPostfix, arrayName);
         }
         else {
             _printStream.println(_prefix + "//TODO replace NULL by shared memory object");
@@ -369,6 +529,9 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
      * 2. memobj_cpu : reference on source array (default value, stored in header)
      * 3. len - number of tokens to be transferred
      * 4. fifo_size - total fifo size (const value, stored in header)
+      *
+      * write fifo --> local mem
+      * read: local mem --> fifo
       * */
      @Override
     public void printOperationTemplate(CSDFPort port,String operation, String arrayName){
@@ -379,10 +542,16 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         String memobj_cpu = "NULL";
         if(operation.contains(_internalRWPostfix))
             memobj_cpu = arrayName;
+        String fifo = arrayName;
+
+        if(operation.contains("read")){
+            fifo = memobj_cpu;
+            memobj_cpu = arrayName;
+        }
 
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        _printStream.println(_prefix + _mainClassName + "::"+ operation + "_" + dataDimensionality + "D (" + arrayName + ", " +
+        _printStream.println(_prefix + _mainClassName + "::"+ operation + "_" + dataDimensionality + "D (" + fifo + ", " +
                 memobj_cpu +", " + portName + "_tokens, " + portName + "_fifo_size);");
 
     }
@@ -399,11 +568,54 @@ public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
         String portName = port.getName();
         String memobj_cpu = arrayName;
 
+        String fifo = arrayName + "[" + shiftDesc + "]";
+
+         if(operation.contains("read")){
+            fifo = memobj_cpu;
+            memobj_cpu = arrayName + "[" + shiftDesc + "]";
+        }
+
         _printStream.println(" ");
         _printStream.println(_prefix + "//TODO replace internal r/w by overlapping data shift operation");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        _printStream.println(_prefix + _mainClassName + "::" + operation + "_" + dataDimensionality + "D (" + arrayName + "" +
-                "[" + shiftDesc + "], " + memobj_cpu + ", " + portName + "_tokens, " + portName + "_fifo_size);");
+        _printStream.println(_prefix + _mainClassName + "::" + operation + "_" + dataDimensionality + "D (" + fifo +
+                ", " + memobj_cpu + ", " + portName + "_tokens, " + portName + "_fifo_size);");
+    }
+
+    /**
+     * print internal data shift for overlapping port memory,
+     * taking into account only end border limitations
+     *
+     * C++ shift functions:
+     * static void shift_2D(int h, int w, int *x, int stride);
+     * appMain::shift_2D(h,w,&arr_to_shift_3D[0][0],stride);
+     * static void shift_3D(int d, int h, int w, int *x, int stride);
+     * appMain::shift_3D(d,h,w,&arr_to_shift_3D[0][0][0],stride);
+     *
+     */
+
+    public void _printInternalArrayShift(CSDFPort port,String arrayName){
+       if(port==null || arrayName==null)
+           return;
+        int dataDimensionality = port.getMemoryDim();
+        if(dataDimensionality<2 || dataDimensionality>3)
+            return;
+
+        _printStream.println(" ");
+        _printStream.println(_prefix + "// internal shift of " + arrayName);
+        //shift 2D
+        if(dataDimensionality==2)
+                   _printStream.print(_prefix + _mainClassName + "::shift_2D(" + arrayName + "_dim_0," +
+                arrayName + "_dim_1," + "&" + arrayName +"[0][0], stride);");
+        //shift 3D
+        else
+            _printStream.print(_prefix + _mainClassName + "::shift_3D("+ arrayName + "_dim_0," +
+                arrayName + "_dim_1," + arrayName + "_dim_2," + "&" + arrayName +"[0][0][0], stride);");
+
+
+
+
+        _printStream.println("");
     }
 
     /**

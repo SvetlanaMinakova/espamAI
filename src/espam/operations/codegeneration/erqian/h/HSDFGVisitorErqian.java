@@ -4,6 +4,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
+import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.operations.codegeneration.sesame.h.HSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
 
@@ -157,16 +158,43 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
         _printStream.println(_prefix + "@param dim   : I/O overlapping array dimensionality");
         _printStream.println(_prefix + "*/");
         prefixInc();
-        _writeShiftFunction();
+        _writeShiftFunctions("int");
+        _writeShiftFunctions("float");
+        _printStream.println("");
+        _writePrintFunctions("int");
+        _writePrintFunctions("float");
         prefixDec();
     }
 
+
+    /**
+     * 	static void shift_2D(int n, int m, int *x, int stride);
+	static void shift_3D(int d, int n, int m, int *x, int stride);
+	static void print_matrix (int n, int m, int *x);
+	static void print_matrix3D (int d, int n, int m, int *x);
+     */
+
+
     /**
      * Write shift function (for shifting overlapping data in I/O arrays)"
+     * TODO refactoring: shift(tensor)
      */
-    protected void _writeShiftFunction(){
-        _printStream.println(_prefix + "static void data_shift(void *array, int dim);");
+    protected void _writeShiftFunctions(String dataType){
+        _printStream.println(_prefix + "// matrix shift functions, type: " + dataType);
+        _printStream.println(_prefix + "static void shift_2D(const int &h, const int &w, "+ dataType + " *x, const int &stride);");
+        _printStream.println(_prefix + "static void shift_3D(const int &d, const int &h, const int &w, "+ dataType + " *x, const int &stride);");
     }
+
+    /**
+     * Write matrix print functions
+     * TODO refactoring: print(matrix)
+     */
+    protected void _writePrintFunctions(String dataType){
+        _printStream.println(_prefix + "// matrix print functions, type: " + dataType);
+        _printStream.println(_prefix + "static void print_2D (const int &h, const int &w, "+ dataType + " *x);");
+        _printStream.println(_prefix + "static void print_3D (const int &d, const int &h, const int &w, "+ dataType + " *x);");
+    }
+
 
     /**
      * Write r/w primitive functions templates
@@ -178,8 +206,8 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
             _writeMocRWPrimitive("read" + _externalRWPostfix ,dim);
             _writeMocRWPrimitive("write"+ _externalRWPostfix ,dim);
           /** internal r/w (for everlapping)*/
-            _writeMocRWPrimitive("read" + _internalRWPostfix ,dim);
-            _writeMocRWPrimitive("write" + _internalRWPostfix,dim);
+          //  _writeMocRWPrimitive("read" + _internalRWPostfix ,dim);
+          //  _writeMocRWPrimitive("write" + _internalRWPostfix,dim);
         }
     }
 
@@ -233,6 +261,53 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
 
     }
 
+    /**
+     * Get C++ definition of static multidimensional array,
+     * corresponding to  espam. Tensor
+     * @param tensor espam. Tensor
+     * @param name name of the array
+     * @param typeDesc description of array type;
+     * @return C++ description of static multidimensional array,
+     * corresponding to  espam. Tensor
+     * TODO check tensor order!!
+     */
+    @Override
+    public void _writeTensorToCPPArrayDefinition(Tensor tensor, String name, String typeDesc){
+        if(Tensor.isNullOrEmpty(tensor))
+            return;
+
+        _printStream.println(_prefix + "//"+ name +" array definition");
+        _prefixInc();
+        int tensorDimensionality = tensor.getDimensionality();
+       // int revId = tensorDimensionality-1;
+        for (int i = 0; i< tensorDimensionality; i++)
+            _printStream.println(_prefix + "const int " + name + "_dim_" + i +" = " +tensor.getDimSize(i)+";");
+
+        StringBuilder defsb = new StringBuilder(typeDesc);
+        defsb.append(" ");
+        defsb.append(name);
+
+        for (int i = 0; i<tensorDimensionality; i++)
+            defsb.append("[" + tensor.getDimSize(i) + "]");
+
+          /** static array definition*/
+        defsb.append(" = ");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("{");
+
+        defsb.append("0");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("}");
+
+        defsb.append(";");
+
+        _printStream.println(_prefix + defsb.toString());
+        prefixDec();
+        _printStream.println("");
+    }
+
     ///////////////////////////////////////////////////////////////////
     ///                private variables                           ///
 
@@ -240,7 +315,7 @@ public class HSDFGVisitorErqian extends HSDFGVisitor{
     private static String _externalRWPostfix = "SWF_CPU";
 
     /** primitive postfix*/
-    private static String _internalRWPostfix = "_Internal";
+   // private static String _internalRWPostfix = "_Internal";
 
     /** application main class name*/
     private static String _mainClassName = "appMain";
