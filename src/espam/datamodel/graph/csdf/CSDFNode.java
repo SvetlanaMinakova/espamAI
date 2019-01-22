@@ -122,6 +122,20 @@ import java.util.Iterator;
         return v;
     }
 
+      /**
+     * Get input ports of the CSDFNode, which are not overlap handlers
+     * @return  input ports of the CSDFNode, which are not overlap handlers
+     */
+    public Vector<CSDFPort> getOverlapHandlingInPorts() {
+        Vector<CSDFPort> inports = new Vector<>();
+        for(CSDFPort inport: getInPorts()) {
+            if(inport.isOverlapHandler())
+                inports.add(inport);
+        }
+
+        return inports;
+    }
+
     /**
      * Get input ports of the CSDFNode, which are not overlap handlers
      * @return  input ports of the CSDFNode, which are not overlap handlers

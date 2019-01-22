@@ -4,9 +4,10 @@ ROOT  = ../../..
 
 SUBPACKAGES = \
 
+ONNX = $(ROOT)/../lib/onnx.jar
+GSON = $(ROOT)/../lib/gson.jar
 GRAPHVIZ = $(ROOT)/../lib/graphviz.jar
-ONNX = $(ROOT)/../lib/protobuf-java.jar
-AUXCLASSPATH = $(GRAPHVIZ)$(CLASSPATHSEPARATOR)$(ONNX)
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVIZ)
 
 # Java files in this directory
 JSRCS = \

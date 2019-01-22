@@ -1,5 +1,7 @@
 package espam.utils.fileworker;
 
+import onnx.ONNX;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,7 +14,7 @@ public class ONNXFileWorker {
      * @param srcFile path to source file
      * @return ONNX model if it was successfully read and null otherwise
      */
-    public static onnx.ONNX.ModelProto readModelThroughBuff (String srcFile) {
+    public static ONNX.ModelProto readModelThroughBuff (String srcFile) {
        try {
            //File inFile = new File(srcFile);
 
@@ -24,7 +26,7 @@ public class ONNXFileWorker {
             System.out.println("Model byte array red in : " +elapsedTime);
 
             startTime = System.currentTimeMillis();
-           onnx.ONNX.ModelProto model = onnx.ONNX.ModelProto.parseFrom(array);
+           ONNX.ModelProto model = ONNX.ModelProto.parseFrom(array);
            elapsedTime = (new Date()).getTime() - startTime;
 
            System.out.print("Model byte array parsed in: "+elapsedTime);
@@ -43,12 +45,12 @@ public class ONNXFileWorker {
      * @param srcFile path to source file
      * @return ONNX model if it was successfully read and null otherwise
      */
-    public static onnx.ONNX.ModelProto readModel (String srcFile) {
+    public static ONNX.ModelProto readModel (String srcFile) {
        try {
               File inFile = new File(srcFile);
               FileInputStream inStream = new FileInputStream(inFile);
 
-              onnx.ONNX.ModelProto model = onnx.ONNX.ModelProto.parseFrom(inStream);
+              ONNX.ModelProto model = ONNX.ModelProto.parseFrom(inStream);
               inStream.close();
               return model;
           }
@@ -64,12 +66,12 @@ public class ONNXFileWorker {
      * @param srcFile path to source file
      * @return ONNX model if it was successfully read and null otherwise
      */
-    public static onnx.ONNX.GraphProto readGraph (String srcFile) {
+    public static ONNX.GraphProto readGraph (String srcFile) {
        try {
               File inFile = new File(srcFile);
               FileInputStream inStream = new FileInputStream(inFile);
 
-              onnx.ONNX.GraphProto graph = onnx.ONNX.GraphProto.parseFrom(inStream);
+              ONNX.GraphProto graph = ONNX.GraphProto.parseFrom(inStream);
               inStream.close();
               return graph;
           }
@@ -85,7 +87,7 @@ public class ONNXFileWorker {
   * @param dstFile path to destination file
   * @param model ONNX model to be written
   */
-  public static void writeModel(onnx.ONNX.ModelProto model, String dstFile) {
+  public static void writeModel(ONNX.ModelProto model, String dstFile) {
     try
         {
         File outFile = new File(dstFile);

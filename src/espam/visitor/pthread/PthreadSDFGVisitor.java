@@ -1,19 +1,19 @@
-package espam.operations.codegeneration.erqian;
+package espam.visitor.pthread;
 
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.main.cnnUI.DNNInitRepresentation;
-import espam.operations.codegeneration.erqian.cpp.CPPSDFGVisitorErqian;
-import espam.operations.codegeneration.erqian.h.HSDFGVisitorErqian;
 import espam.utils.fileworker.FileWorker;
+import espam.visitor.pthread.cpp.CPPSDFGVisitorPthread;
+import espam.visitor.pthread.h.HSDFGVisitorPthread;
 
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Vector;
 
-public class ErqianSDFGVisitor {
+public class PthreadSDFGVisitor {
         ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
@@ -69,11 +69,11 @@ public class ErqianSDFGVisitor {
              _cppVisitor.callVisitor(node, templatesDir);
          }
          _writeMakeFile(dir,y.getName());
-         System.out.println("espamAI-erqian application generated in: " + templatesDir);
+         System.out.println("espamAI-Pthread application generated in: " + templatesDir);
      }
 
         catch (Exception e){
-         System.err.println(templatesDir + "espamAI-erqian application generation error: " + e.getMessage());
+         System.err.println(templatesDir + "espamAI-Pthread application generation error: " + e.getMessage());
 
         }
      }
@@ -170,9 +170,9 @@ public class ErqianSDFGVisitor {
     ////                     private variables                     ///
 
     /** header-files visitor*/
-    public static HSDFGVisitorErqian _hvisitor = new HSDFGVisitorErqian();
+    public static HSDFGVisitorPthread _hvisitor = new HSDFGVisitorPthread();
 
     /**C++ code-files visitor*/
-    public static CPPSDFGVisitorErqian _cppVisitor = new CPPSDFGVisitorErqian();
+    public static CPPSDFGVisitorPthread _cppVisitor = new CPPSDFGVisitorPthread();
 
 }

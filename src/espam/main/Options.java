@@ -246,8 +246,8 @@ public class Options {
             _cnnui.setGenerateCsdfg(true);
         }
 
-        else if (arg.equals("--erqian")) {
-            _cnnui.setErqian(true);
+        else if (arg.equals("--pthread")) {
+            _cnnui.setPthread(true);
             _cnnui.setGenerateCsdfg(true);
         }
 
@@ -347,7 +347,7 @@ public class Options {
             /** generation flags*/
             {"--multiple-models ", "-m  "},
             {"--sesame          ", "none"},
-            {"--erqian          ", "none"},
+            {"--pthread          ", "none"},
             {"--dot             ", "none"},
             {"--dot-csdf        ", "none"},
             {"--json            ", "none"},

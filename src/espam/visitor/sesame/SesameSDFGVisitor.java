@@ -1,10 +1,10 @@
-package espam.operations.codegeneration.sesame;
+package espam.visitor.sesame;
 
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.operations.codegeneration.sesame.cpp.CPPSDFGVisitor;
-import espam.operations.codegeneration.sesame.h.HSDFGVisitor;
-import espam.operations.codegeneration.sesame.ymlSDF.YmlSDFGVisitor;
+import espam.visitor.sesame.cpp.CPPSDFGVisitor;
+import espam.visitor.sesame.h.HSDFGVisitor;
+import espam.visitor.sesame.ymlSDF.YmlSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
 import java.util.Iterator;
 

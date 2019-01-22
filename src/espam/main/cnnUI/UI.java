@@ -5,17 +5,17 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.main.Config;
-import espam.operations.codegeneration.erqian.ErqianSDFGVisitor;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
 import espam.visitor.dot.cnn.CNNDotVisitor;
 import espam.visitor.dot.sdfg.SDFGDotVisitor;
 import espam.visitor.json.refinement.EnergyRefinerVisitor;
 import espam.visitor.json.refinement.TimingRefinerVisitor;
+import espam.visitor.pthread.PthreadSDFGVisitor;
+import espam.visitor.sesame.SesameSDFGVisitor;
 import onnx.ONNX;
 import espam.interfaces.python.Espam2DARTS;
 import espam.main.ExtensionFilter;
-import espam.operations.codegeneration.sesame.SesameSDFGVisitor;
 import espam.operations.refinement.CSDFGEnergyRefiner;
 import espam.operations.refinement.CSDFTimingRefiner;
 import espam.operations.refinement.RefinedCSDFEvaluator;
@@ -338,7 +338,7 @@ public class UI {
         }
 
         /** generate code templates */
-        if(_sesame || _erqian)
+        if(_sesame || _Pthread)
             _edInterface.setRepetitionVector(csdfg);
 
         if (_sesame) {
@@ -348,11 +348,11 @@ public class UI {
                 SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
         }
 
-        if(_erqian){
+        if(_Pthread){
             if(_inCSDF)
-                ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
             if(_inDnn)
-                ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+                PthreadSDFGVisitor.callVisitor(network, _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/");
         }
 
         if(_eval) {
@@ -423,7 +423,8 @@ public class UI {
         }
 
         /** generate Sesame template */
-        if (_sesame || _erqian) {
+        if (_sesame || _Pthread) {
+            int csdfgId = 0;
             for(CSDFGraph csdfg:csdfgs) {
                 _edInterface.setRepetitionVector(csdfg);
 
@@ -434,12 +435,13 @@ public class UI {
                     SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/", true);
             }
 
-            if(_erqian){
+            if(_Pthread){
                 if(_inCSDF)
-                    ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                    PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
                 if(_inDnn)
-                    ErqianSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+                    PthreadSDFGVisitor.callVisitor(dnns[csdfgId], _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/");
             }
+            csdfgId++;
             }
         }
 
@@ -550,7 +552,7 @@ public class UI {
     private boolean _isSDFGenerationRequired(){
         if(_inCSDF)
             return false;
-       return _eval||_sesame||_erqian||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
+       return _eval||_sesame||_Pthread||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
     }
 
     /**
@@ -1167,11 +1169,11 @@ public class UI {
     }
 
     /**
-     * Set erqian code generation flag
-     * @param erqian erqian code generation flag
+     * Set Pthread code generation flag
+     * @param Pthread Pthread code generation flag
      */
-    public void setErqian(boolean erqian) {
-             this._erqian = erqian;
+    public void setPthread(boolean Pthread) {
+             this._Pthread = Pthread;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1300,8 +1302,8 @@ public class UI {
     /** sesame-generation flag*/
     private boolean _sesame;
 
-    /** erqian-code generation flag*/
-    private boolean _erqian;
+    /** Pthread-code generation flag*/
+    private boolean _Pthread;
 
     /** flag, shows, if csdf graph generation is required*/
     private boolean _generate_csdfg;

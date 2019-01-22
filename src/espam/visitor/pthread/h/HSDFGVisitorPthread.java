@@ -1,14 +1,14 @@
-package espam.operations.codegeneration.erqian.h;
+package espam.visitor.pthread.h;
 
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
-import espam.operations.codegeneration.sesame.h.HSDFGVisitor;
+import espam.visitor.sesame.h.HSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
 
-public class HSDFGVisitorErqian extends HSDFGVisitor{
+public class HSDFGVisitorPthread extends HSDFGVisitor{
 
         /**
      * generate main class template contains R/W primnitives description

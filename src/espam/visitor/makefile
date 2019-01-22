@@ -4,6 +4,11 @@
 
 ROOT  = ../..
 
+ONNX = $(ROOT)/../lib/onnx.jar
+GSON = $(ROOT)/../lib/gson.jar
+GRAPHVIZ = $(ROOT)/../lib/graphviz.jar
+AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVIZ)
+
 SUBPACKAGES = \
 	dot \
 	xml \
@@ -16,7 +21,9 @@ SUBPACKAGES = \
 	ymlPN \
 	expression \
 	json \
-	onnx
+	onnx \ 
+        sesame \
+    	pthread
 
 # Java files in this directory
 JSRCS = \

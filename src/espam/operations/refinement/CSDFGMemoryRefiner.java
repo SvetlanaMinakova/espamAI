@@ -752,8 +752,8 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
 
         if(inputChannels>1)
             weights.addDimension(inputChannels);
-            weights.addDimension(kernelW);
             weights.addDimension(kernelH);
+            weights.addDimension(kernelW);
 
          MemoryUnit weightsMU = new MemoryUnit("weights",weights,weightsType);
          return weightsMU;
@@ -781,9 +781,9 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
 
         if(inputChannels>1)
             lin_input *= inputChannels;
-
-        weights.addDimension(lin_input);
         weights.addDimension(blockNeuronsNum);
+        weights.addDimension(lin_input);
+
         MemoryUnit weightsMU = new MemoryUnit("weights",weights,weightsType);
         return weightsMU;
     }

@@ -1,17 +1,17 @@
-package espam.operations.codegeneration.erqian.cpp;
+package espam.visitor.pthread.cpp;
 
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
-import espam.operations.codegeneration.sesame.cpp.CPPSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
+import espam.visitor.sesame.cpp.CPPSDFGVisitor;
 
 import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Vector;
 
-public class CPPSDFGVisitorErqian extends CPPSDFGVisitor {
+public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 

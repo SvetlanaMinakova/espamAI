@@ -1,4 +1,4 @@
-package espam.operations.codegeneration.sesame.h;
+package espam.visitor.sesame.h;
 
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;

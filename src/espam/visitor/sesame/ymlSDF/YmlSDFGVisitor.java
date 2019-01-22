@@ -1,4 +1,4 @@
-package espam.operations.codegeneration.sesame.ymlSDF;
+package espam.visitor.sesame.ymlSDF;
 
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;

@@ -1,4 +1,4 @@
-package espam.operations.codegeneration.sesame.cpp;
+package espam.visitor.sesame.cpp;
 
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
@@ -97,6 +97,14 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
         }
     }
 
+    /**
+     * process exec function with default name
+     * @param node CSDF node
+     */
+    protected void _processExecution(CSDFNode node){
+        _processExecution(node,"execute");
+    }
+
      /**
       * process execution phase.
       * Execution describes processing of input data
@@ -110,8 +118,9 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
       * and =1 by default
       *
       * @param node SDF Node
+     *  @param execPrimitiveName name of the execution primitive
      */
-    protected void _processExecution(CSDFNode node){
+    protected void _processExecution(CSDFNode node,String execPrimitiveName){
       int opRepetitionsNum = node.getOperationRepetitionsNumber();
       if(opRepetitionsNum==0)
           return;
@@ -133,7 +142,7 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
           _printStream.println(_prefix + "for (int i = 0; i < " + opRepetitionsNum + "; i++) {");
       }
 
-      _printStream.println(_prefix + "execute(\"" + operation + "\");");
+      _printStream.println(_prefix + execPrimitiveName +"(\"" + operation + "\");");
 
       if(opRepetitionsNum>1) {
           prefixDec();
@@ -272,6 +281,10 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
         _printStream.println("");
     }
 
+    /**
+     * Print read  template
+     * @param port CSDF port performs reading
+     */
     public void printReadTemplate(CSDFPort port) {
         String arrayName = port.getAssignedMemoryName();
         if(port.getStartTokens()==null) {
@@ -286,6 +299,10 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
     //    printOperationTemplate(portsGroup,groupName,"read",dataDimensionality,arrayName);
   //  }
 
+    /**
+     * Print write template
+     * @param port CSDF port performs writing
+     */
     public void printWriteTemplate(CSDFPort port) {
         String arrayName = port.getAssignedMemoryName();
         printOperationTemplate(port,"write",arrayName);
