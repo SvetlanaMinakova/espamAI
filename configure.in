@@ -93,9 +93,8 @@ APPPATH=`(pwd)`
 AC_MSG_CHECKING([for OUTPUT])
 AC_ARG_WITH(output, [  --with-output=DIR         ],
     OUTPUT=$withval, OUTPUT=$prefix)
-    OUTPUT=$OUTPUT/output_models
 if test ! -d  $OUTPUT; then
-	AC_MSG_WARN([Output path doesn't exist. Please check path supplied with  "--with-output=path" option])
+        OUTPUT=$OUTPUT/output_models
 fi
 
 #--------------------------------------------------------------------
