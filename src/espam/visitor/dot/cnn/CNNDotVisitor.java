@@ -106,10 +106,29 @@ public class CNNDotVisitor extends CNNGraphVisitor {
      * Print a line for the CNN Layer in the correct format for DOTTY.
      * @param  x The node that needs to be rendered.
      */
+
+
+    /**
+     *        StringBuilder strNeuron = new StringBuilder();
+       strNeuron.append(getName());
+       strNeuron.append("\n type: "+getNeuronType().toString());
+       strNeuron.append(getStrParameters());
+       return strNeuron.toString();
+     *
+     *
+     * @param  x A Visitor Object.
+     */
+
     public void visitComponent(Layer x) {
-       _printStream.println(_prefix + "\"" + x.getName() + x.getId() +"\" [ label=\"" + x.toString()+
-               "\n neuron: \n"+x.getNeuron().toString()+"\", shape=box, " +
-               "color="+getColor(x.getNeuron().getNeuronType())+", margin=0.4];");
+        String strParams = x.getNeuron().getStrParameters();
+        strParams = strParams.replaceAll("\n"," ");
+
+       _printStream.println(_prefix +
+               "\"" + x.getName() + x.getId() +"\" [ label=\"" +
+               x.getName() + " \\n neurons: " + x.getNeuronsNum() +
+               " \\n neuron: " + x.getNeuron().getName()  + "(" +x.getNeuron().getNeuronType() +  ") \\n" +
+               strParams + "\\n"+
+               " \", shape=box, color=" + getColor(x.getNeuron().getNeuronType()) + ", margin=0.4];");
     }
 
      /**
@@ -118,7 +137,7 @@ public class CNNDotVisitor extends CNNGraphVisitor {
      * @param  x The node that needs to be rendered.
      */
     public void visitComponent(Neuron x) {
-        _printStream.println(_prefix + "\"" +x.getName() + "\" [ label=\"" + x.getName()+"\"];");
+        _printStream.print(_prefix + " \"" +x.getName() + "\" [ label=\"" + x.getName()+"\"]; ");
     }
 
      /**
