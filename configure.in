@@ -86,17 +86,6 @@ fi
 # Application absolute path
 #--------------------------------------------------------------------
 APPPATH=`(pwd)`
-
-#--------------------------------------------------------------------
-# Output files directory
-#--------------------------------------------------------------------
-AC_MSG_CHECKING([for OUTPUT])
-AC_ARG_WITH(output, [  --with-output=DIR         ],
-    OUTPUT=$withval, OUTPUT=$prefix)
-if test ! -d  $OUTPUT; then
-        OUTPUT=$OUTPUT/output_models
-fi
-
 #--------------------------------------------------------------------
 #	Figure out which separator to use for CLASSPATH
 #	So much for write once, run everywhere.
@@ -152,7 +141,6 @@ AC_MSG_NOTICE([Library Content      = '$LIBPATH'])
 AC_MSG_NOTICE([SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)])
 AC_MSG_NOTICE([darts Home           = '$DARTS_HOME' ($DARTS_HOME_STATUS)])
 AC_MSG_NOTICE([python path          = '$PYTHONCALL'])
-AC_MSG_NOTICE([output files path    = '$OUTPUT'])
 
 #---- Keep these substitutions alphabetical, with a description ----#
 
@@ -175,9 +163,6 @@ AC_SUBST(DARTS_HOME)
 
 # Location of PYTHON installation
 AC_SUBST(PYTHONCALL)
-
-# Output directory
-AC_SUBST(OUTPUT)
 
 # Application sources absolute path
 AC_SUBST(APPPATH)
