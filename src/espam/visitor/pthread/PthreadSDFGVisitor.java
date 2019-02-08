@@ -1,5 +1,6 @@
 package espam.visitor.pthread;
 
+import espam.datamodel.graph.Node;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
@@ -55,9 +56,14 @@ public class PthreadSDFGVisitor {
 
          /** generate main class : app entry point*/
          _cppVisitor.generateMainClassTemplate(templatesDir,y);
-         _hvisitor.generateMainClassTemplate(templatesDir,y);
+         _hvisitor.generateMainClassTemplate(templatesDir);
+
          _cppVisitor.generateBaseClassTemplate(templatesDir);
          _hvisitor.generateBaseClassTemplate(templatesDir);
+
+         _hvisitor.generateFuncClassTemplate(templatesDir);
+         _cppVisitor.generateFuncClassTemplate(templatesDir);
+
 
          _hvisitor.setCNNRefined(CNNRefined);
          /** generate .cpp and .h files for each SDF graph node */
@@ -68,7 +74,8 @@ public class PthreadSDFGVisitor {
              _hvisitor.callVisitor(node, templatesDir);
              _cppVisitor.callVisitor(node, templatesDir);
          }
-         _writeMakeFile(dir,y.getName());
+         Vector<String> classesList = _getClassesList(y);
+         _writeMakeFile(dir,y.getName(),classesList);
          System.out.println("espamAI-Pthread application generated in: " + templatesDir);
      }
 
@@ -78,41 +85,63 @@ public class PthreadSDFGVisitor {
         }
      }
 
+    /**
+     * TODO REFACTOR FOR NB MODE BASE CLASSES
+     * get list of classes names
+     * @return list of classes names
+     */
+    private static Vector<String> _getClassesList(CSDFGraph csdfG){
+        Vector<String>classesList = new Vector<>();
+        Iterator i = csdfG.getNodeList().iterator();
+            while (i.hasNext()) {
+                CSDFNode node = (CSDFNode) i.next();
+                classesList.add(node.getName());
+            }
+
+        classesList.add(_dnnFuncClassName);
+        classesList.add(_funcClassName);
+        classesList.add(_baseClassName);
+        classesList.add(_mainClassName);
+
+        classesList.add("run");
+        classesList.add("fifo");
+        return classesList;
+     }
+
      /**
       * write application makefile
      */
-    private static void _writeMakeFile(String dir, String appName) {
+    private static void _writeMakeFile(String dir, String appName, Vector<String> classesList) {
         try {
             PrintStream mf = FileWorker.openFile(dir + "app/","Makefile",null);
-            mf.println("#File is generated automatically by ESPAM");
+            mf.println("CXX=g++");
             mf.println("");
-            mf.println("appname := " + appName);
+            mf.println("CXXFLAGS= -std=c++11 -pthread ");
             mf.println("");
-            mf.println("CXX := clang++");
-            mf.println("CXXFLAGS := -std=c++11");
+
+            mf.print("OBJS = ");
+            for(String classname: classesList)
+                mf.print(classname+".o ");
+
             mf.println("");
-            mf.println("srcfiles := $(shell find . -maxdepth 1 -name \"*.cpp\")");
-            mf.println("objects  := $(patsubst %.cpp, %.o, $(srcfiles))");
             mf.println("");
-            mf.println("all: $(appname)");
+            mf.println("PRG = run");
             mf.println("");
-            mf.println("$(appname): $(objects)");
-            mf.println("\t$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(appname) $(objects) $(LDLIBS)");
+            mf.println("all: ${PRG}");
             mf.println("");
-            mf.println("depend: .depend");
             mf.println("");
-            mf.println(".depend: $(srcfiles)");
-            mf.println("\trm -f ./.depend");
-            mf.println("\t$(CXX) $(CXXFLAGS) -MM $^>>./.depend;");
+            mf.println("run:  ${OBJS}");
+            mf.println("\t${CXX} ${CXXFLAGS} -o $@ ${OBJS}");
+            mf.println("");
+            for(String classname: classesList){
+                mf.println(classname+".o: " + classname + ".cpp");
+                mf.println("\t${CXX} ${CXXFLAGS} -c -g $?");
+                mf.println("");
+            }
+            mf.println("");
             mf.println("");
             mf.println("clean:");
-            mf.println("\trm -f $(objects)");
-            mf.println("");
-            mf.println("dist-clean: clean");
-            mf.println("\trm -f *~ .depend");
-            mf.println("");
-            mf.println("include .depend");
-            mf.println("");
+            mf.println("\trm -rf *~ *.o ");
         }
         catch( Exception e ) {
             System.out.println("Error: " + e.getMessage());
@@ -174,5 +203,18 @@ public class PthreadSDFGVisitor {
 
     /**C++ code-files visitor*/
     public static CPPSDFGVisitorPthread _cppVisitor = new CPPSDFGVisitorPthread();
+
+        /** application main class name*/
+    private static String _mainClassName = "appMain";
+
+    /** CSDF graph node base class*/
+    private static String _baseClassName = "csdfNode";
+
+
+    /** CSDF graph node functions class*/
+    private static String _funcClassName = "appFunc";
+
+    /** DNN node functions class*/
+    private static String _dnnFuncClassName = "dnnFunc";
 
 }
