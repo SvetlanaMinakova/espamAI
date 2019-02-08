@@ -14,11 +14,11 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
 	CSDFGraph.java \
-	CSDFGNode.java \
-	CSDFGEdge.java \
-	CSDFGPort.java \
-	CSDFGPortType.java \
-	SDFGType.java
+	CSDFNode.java \
+	CSDFEdge.java \
+	CSDFPort.java \
+	CSDFPortType.java \
+	SDFGraphType.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk
