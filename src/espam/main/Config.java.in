@@ -109,7 +109,7 @@ public class Config {
   private String _prefix = "@prefix@";
 
   // Output directory files
-  private String _outputDir = "@OUTPUT@";
+  private String _outputDir = "./espamAI_output_models";
 
   //absolute path to the application sources
   private String _appPath = "@APPPATH@";
