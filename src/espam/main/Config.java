@@ -97,20 +97,20 @@ public class Config {
   private final static Config _instance = new Config();
 
   // Path to SystemC simulation
-  private String _systemcPath = "@SYSTEMC_HOME@";
+  private String _systemcPath = "/vol/home/minakovas/systemc-2.2.0";
 
   // Path to DARTS
-  private String _dartsPath = "@DARTS_HOME@";
+  private String _dartsPath = "/vol/home/minakovas/darts_git/darts-master";
 
   // Path to Python
-  private String _pythonCall = "@PYTHONCALL@";
+  private String _pythonCall = "/vol/home/minakovas/.pyenv/shims/python";
 
   // Path to the project
-  private String _prefix = "@prefix@";
+  private String _prefix = "/vol/home/minakovas/espamAI/espam";
 
   // Output directory files
   private String _outputDir = "./";
 
   //absolute path to the application sources
-  private String _appPath = "@APPPATH@";
+  private String _appPath = "/vol/home/minakovas/espamAI/espam";
 }
