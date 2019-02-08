@@ -21,9 +21,9 @@ SUBPACKAGES = \
 	ymlPN \
 	expression \
 	json \
-	onnx \ 
-        sesame \
-    	pthread
+	onnx \
+	sesame \
+	pthread
 
 # Java files in this directory
 JSRCS = \
@@ -36,7 +36,7 @@ JSRCS = \
 	StatementVisitor.java \
 	MappingVisitor.java \
 	ExpressionVisitor.java \
-	SDFGraphVisitor.java \
+	CSDFGraphVisitor.java \
 	CNNGraphVisitor.java
 
 # Include the shared compilation rules
