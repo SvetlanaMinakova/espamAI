@@ -1,12 +1,9 @@
 package espam.visitor.pthread.h;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
-import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.sesame.h.HSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
-
-import java.util.Vector;
 
 public class HSDFGVisitorPthread extends HSDFGVisitor{
 

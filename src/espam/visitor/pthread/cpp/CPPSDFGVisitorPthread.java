@@ -254,46 +254,20 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
       }
 
       MemoryUnit inp_mu = inp.getAssignedMemory();
-      String inp_desc ="&" + inp_mu.getName();
-      for(int i=0; i<inp_mu.getDimensionality(); i++)
-          inp_desc+="[0]";
+      String inp_desc = _getArrayAddress(inp_mu.getName(),inp_mu.getDimensionality());
 
       /**weights*/
       MemoryUnit w_mu = node.getMemoryUnit("weights");
-      String w_desc;
-      if(w_mu==null)
-          w_desc ="NULL";
-      else {
-          w_desc ="&" + w_mu.getName();
-           w_desc+="[n]";
-            for(int i=0; i<w_mu.getDimensionality()-1; i++)
-                w_desc+="[0]";
-      }
+      String w_desc = _getArrayNeuronSliceAddress(w_mu, kernels);
 
       /**output*/
       CSDFPort outp = node.getNonOverlapHandlingOutPorts().firstElement();
-      if(inp==null){
-          _printStream.println(_prefix + "cout<<\"" + node.getName() + "EXEC ERROR: no output found!\"<<endl;");
-          return;
-      }
 
       MemoryUnit outp_mu = outp.getAssignedMemory();
-
-      String outp_desc ="&" + outp_mu.getName() + "[n]";
-
-
-      for(int i=0; i<outp_mu.getDimensionality()-1; i++)
-          outp_desc+="[0]";
+      String outp_desc = _getArrayNeuronSliceAddress(outp_mu,kernels);
 
       prefixInc();
       _printStream.println(_prefix + "for (int n = 0; n < " + kernels + "; n++) {");
-
-
-    /**  if(opRepetitionsNum>1){
-          prefixInc();
-          _printStream.println(_prefix + "for (int i = 0; i < " + opRepetitionsNum + "; i++) {");
-      } */
-
 
       //exec primitive call, format : exec(input, weights, output, vector<int*>* int_params_ptr);
       _printStream.print(_prefix + execPrimitiveName +"(std::string(\"" + operation + "\"),");
@@ -302,11 +276,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
       _printStream.print(w_desc + ", ");
       _printStream.print(outp_desc + ", ");
       _printStream.println("&int_params);");
-
-    /**  if(opRepetitionsNum>1) {
-          prefixDec();
-          _printStream.println(_prefix + "}");
-      } */
 
          prefixDec();
          _printStream.println(_prefix + "}");
@@ -332,39 +301,20 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
       /** input*/
       CSDFPort inp = node.getNonOverlapHandlingInPorts().firstElement();
-      if(inp==null){
-          _printStream.println(_prefix + "cout<<\"" + node.getName() + "EXEC ERROR: no input found!\"<<endl;");
-          return;
-      }
 
       MemoryUnit inp_mu = inp.getAssignedMemory();
-      String inp_desc ="&" + inp_mu.getName();
-      for(int i=0; i<inp_mu.getDimensionality(); i++)
-          inp_desc+="[0]";
+      String inp_desc = _getArrayAddress(inp_mu.getName(),inp_mu.getDimensionality());
 
       /**weights*/
       MemoryUnit w_mu = node.getMemoryUnit("weights");
-      String w_desc;
-      if(w_mu==null)
-          w_desc ="NULL";
-      else {
-          w_desc ="&" + w_mu.getName();
-            for(int i=0; i<w_mu.getDimensionality(); i++)
-                w_desc+="[0]";
-      }
+      String w_desc = _getArrayNeuronSliceAddress(w_mu,1);
 
       /**output*/
            /** input*/
       CSDFPort outp = node.getNonOverlapHandlingOutPorts().firstElement();
-      if(inp==null){
-          _printStream.println(_prefix + "cout<<\"" + node.getName() + "EXEC ERROR: no output found!\"<<endl;");
-          return;
-      }
 
       MemoryUnit outp_mu = outp.getAssignedMemory();
-      String outp_desc ="&" + outp_mu.getName();
-      for(int i=0; i<outp_mu.getDimensionality(); i++)
-          outp_desc+="[0]";
+      String outp_desc = _getArrayAddress(outp_mu.getName(),outp_mu.getDimensionality());
 
       Vector<CSDFPort> inports = node.getNonOverlapHandlingInPorts();
 
@@ -380,7 +330,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
       _printStream.print(w_desc + ", ");
       _printStream.print(outp_desc + ", ");
       _printStream.println("&int_params);");
-
 
       if(opRepetitionsNum>1) {
           prefixDec();
@@ -959,6 +908,9 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * (only function name is a parameter)
      */
     protected void _writeExecPrimitive(){
+        _printStream.println("");
+        _printStream.println(_prefix + "/**Write execution function primitive simplest MoC ");
+        _printStream.println(_prefix + "(only function name is a parameter)*/ ");
         _printStream.println(_prefix + " void " + _funcClassName +
                     "::execute (std::string function)");
         prefixInc();
@@ -977,6 +929,11 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * TODO extend or replace by DNN library
      */
     protected void _writeExecPrimitive(String tensorParamType){
+        _printStream.println("");
+        _printStream.println(_prefix + "/**Write execution function primitive MoC ");
+        _printStream.println(_prefix + "(with a number of parameters, that can be used by DNN operators)");
+        _printStream.println(_prefix + "TODO extend or replace by DNN library */");
+
         _printStream.println(_prefix + " void " + _funcClassName +
                     "::execute (std::string function," +
                 tensorParamType +"* input, " + tensorParamType + "* weights, "
@@ -1291,7 +1248,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + "if ( " + portName + "_tokens > 0 )" );
         prefixInc();
         _printStream.println(_prefix + operation + "(" + fifoRef +"->fifo, " +
-              getArrayAddress(arrayName,port.getMemoryDim()) + ", "+
+              _getArrayAddress(arrayName,port.getMemoryDim()) + ", "+
                 portName + "_tokens, " + fifoRef +"->fifo_size);");
         _prefixDec();
     }
@@ -1316,7 +1273,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + "if ( " + portName + "_tokens > 0 )" );
         prefixInc();
         _printStream.println(_prefix + operation + "(" + fifoRef +"->fifo, "+
-                getArrayAddress(arrayName,port.getMemoryDim()) + " + " + portName + "_shift*sizeof("+
+                _getArrayAddress(arrayName,port.getMemoryDim()) + " + " + portName + "_shift*sizeof("+
                 portDataType + "), " + portName + "_tokens, " + fifoRef +"->fifo_size);");
         prefixDec();
     }
@@ -1327,13 +1284,33 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param arrayDim array dimensionality
      * @return  address of the first element of the array
      */
-    private String getArrayAddress(String arrayName,int arrayDim){
+    private String _getArrayAddress(String arrayName,int arrayDim){
          String arrayAdress = "&" + arrayName;
         for(int i=0; i<arrayDim;i++)
             arrayAdress+="[0]";
 
         return arrayAdress;
     }
+
+
+      /**
+     * Get address of the first element of the array
+     * @return  address of the first element of the array
+     */
+    private String _getArrayNeuronSliceAddress(MemoryUnit mu, int kernels){
+        if(mu==null)
+            return "nullptr";
+         String arrayAdress = "&" + mu.getName();
+         if(kernels==1)
+                 arrayAdress += "[0]";
+         else
+            arrayAdress += "[n]";
+        for(int i=0; i<mu.getDimensionality()-1;i++)
+            arrayAdress+="[0]";
+
+        return arrayAdress;
+    }
+
 
       /**
      * Get data type of CSDF port. If there is a memory unit, assigned to
