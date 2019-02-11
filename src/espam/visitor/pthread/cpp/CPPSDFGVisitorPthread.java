@@ -179,8 +179,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println("void " + y.getName() + "::main(void *threadarg) {");
         _prefixInc();
         _createCommunicationChannel(y);
-      //  _printStream.println(_prefix + "// assign thread port sizes to local class variables");
-      //  _redefinePortSizes(y);
         _printStream.println(_prefix + "// repetition parameters definition");
         _printStream.println(_prefix + "int q = " + y.getRepetitions() + ";");
         _printStream.println(_prefix + "int phase_len = " + y.getLength() + ";");
@@ -299,6 +297,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
       //exec primitive call, format : exec(input, weights, output, vector<int*>* int_params_ptr);
       _printStream.print(_prefix + execPrimitiveName +"(std::string(\"" + operation + "\"),");
+
       _printStream.print(inp_desc + ", ");
       _printStream.print(w_desc + ", ");
       _printStream.print(outp_desc + ", ");
@@ -377,7 +376,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
       //exec primitive call, format : exec(input, weights, output, vector<int*>* int_params_ptr);
       _printStream.print(_prefix + execPrimitiveName +"(std::string(\"" + operation + "\"),");
-      _printStream.print(inp_desc + ", ");
+     _printStream.print(inp_desc + ", ");
       _printStream.print(w_desc + ", ");
       _printStream.print(outp_desc + ", ");
       _printStream.println("&int_params);");
@@ -438,8 +437,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
             _printStream.println("#include \""+ node.getName() + ".h\"");
         }
     }
-
-
 
     /**
      * Write application main class .cpp beginning
@@ -601,7 +598,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     protected void _fillInThreadInfo(CSDFNode node, int threadId){
         _printStream.println("");
         _printStream.println(_prefix + "//" + node.getName() + " thread info");
-        _printStream.println(_prefix + "thread_info[" + threadId +"].core_id = " + threadId + ";");
+        _printStream.println(_prefix + "thread_info[" + threadId +"].core_id = " + _assignFreeCore() + ";");
 
          for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
              _fillInThreadInfo(inport,false);
@@ -958,40 +955,9 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     }
 
     /**
-     * Write r/w primitive functions templates
+     * Write execution function primitive simplest MoC
+     * (only function name is a parameter)
      */
-    protected void _writeRWPrimitives(){
-        for (int dim=1;dim <=_maxPrimitiveDimensionality; dim++){
-        // _writeMocRWPrimitive("read"+ _externalRWPostfix ,dim);
-        // _writeMocRWPrimitive("write"+ _externalRWPostfix ,dim);
-       //  _writeMocRWPrimitive("read" + _internalRWPostfix ,dim);
-       //  _writeMocRWPrimitive("write" + _internalRWPostfix,dim);
-        }
-    }
-
-    /**
-     *
-     * @param primitiveName
-     */
-    private void _writeMocRWPrimitive(String primitiveName, int dim){
-        _printStream.println(_prefix + " void " + _funcClassName +
-                    "::" + primitiveName +"_"+ dim + "D " +
-                    "(void* fifo, void* memobj_cpu, int len, int fifo_size)");
-        prefixInc();
-        _printStream.println(_prefix + "{");
-        prefixInc();
-        _printStream.println(_prefix + "cout<<\"" + primitiveName + "(\"<<len<<\" tokens)\"<<endl;");
-        prefixDec();
-        _printStream.println(_prefix + "}");
-        prefixDec();
-        _printStream.println(" ");
-    }
-
-    /**
-     * Write execution function primitive
-     */
-
-    //;
     protected void _writeExecPrimitive(){
         _printStream.println(_prefix + " void " + _funcClassName +
                     "::execute (std::string function)");
@@ -1004,11 +970,12 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         prefixDec();
     }
 
-       /**
-     * Write execution function primitive
-     */
 
-    //;
+    /**
+     * Write execution function primitive MoC
+     * (with a number of parameters, that can be used by DNN operators)
+     * TODO extend or replace by DNN library
+     */
     protected void _writeExecPrimitive(String tensorParamType){
         _printStream.println(_prefix + " void " + _funcClassName +
                     "::execute (std::string function," +
@@ -1017,7 +984,14 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         prefixInc();
         _printStream.println(_prefix + "{");
         prefixInc();
-        _printStream.println(_prefix + "// cout<<function<<endl;");
+        _printStream.println(_prefix + "if (function.find(\"CONV\") != std::string::npos)");
+        prefixInc();
+        _printStream.println(_prefix + "dnnFunc::execute_conv(input, weights, output,int_params_ptr);");
+        prefixDec();
+        _printStream.println(_prefix + "if (function.find(\"DENSEBLOCK\") != std::string::npos)");
+        prefixInc();
+        _printStream.println(_prefix + "dnnFunc::execute_dense_block(function,input, weights, output,int_params_ptr);");
+        prefixDec();
         prefixDec();
         _printStream.println(_prefix + "}");
         prefixDec();
@@ -1150,14 +1124,34 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      /**
      * Write FIFO sizes for CSDF node
      * @param node CSDF node
+      * TODO check why min FIFO sizes (without repetitions) are not always applicable
      */
     protected void _writeFIFOsizes(CSDFNode node){
         _printStream.println(_prefix + "//assign FIFO sizes");
         for(CSDFPort inport: node.getNonOverlapHandlingInPorts())
-            _writeFIFOsize(inport);
+            _writeFIFOsize(inport,node.getRepetitions());
         for(CSDFPort outport: node.getNonOverlapHandlingOutPorts())
-            _writeFIFOsize(outport);
+            _writeFIFOsize(outport,node.getRepetitions());
         _printStream.println("");
+    }
+
+
+        /**
+     * Write FIFO sizes for CSDF node
+     * @param port CSDF port
+     */
+     protected void _writeFIFOsize(CSDFPort port, int repetitions){
+      MemoryUnit mu = port.getAssignedMemory();
+      if(mu==null) {
+          _printStream.println(_prefix + port.getName() + "_fifo_size = 0;");
+          return;
+      }
+      if(mu.getDimensionality()<1) {
+          _printStream.println(_prefix + port.getName() + "_fifo_size = 0;");
+          return;
+      }
+      _printStream.println(_prefix + port.getName() + "_fifo_size = "
+              + mu.getShape().getElementsNumber() * repetitions + ";");
     }
 
      /**
@@ -1246,7 +1240,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      /**
      * print reading template
      * @param port SDF input port
-      *             TODO swith read local/external arrays
      */
      @Override
       public void printReadTemplate(CSDFPort port) {
@@ -1294,9 +1287,13 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
        String fifoRef = port.getNode().getName() + "_" + portName + "_buf_ptr";
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
+                /** check, if there are any tokens to r/w*/
+        _printStream.println(_prefix + "if ( " + portName + "_tokens > 0 )" );
+        prefixInc();
         _printStream.println(_prefix + operation + "(" + fifoRef +"->fifo, " +
               getArrayAddress(arrayName,port.getMemoryDim()) + ", "+
                 portName + "_tokens, " + fifoRef +"->fifo_size);");
+        _prefixDec();
     }
 
      /**
@@ -1315,9 +1312,13 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
+        /** check, if there are any tokens to r/w*/
+        _printStream.println(_prefix + "if ( " + portName + "_tokens > 0 )" );
+        prefixInc();
         _printStream.println(_prefix + operation + "(" + fifoRef +"->fifo, "+
                 getArrayAddress(arrayName,port.getMemoryDim()) + " + " + portName + "_shift*sizeof("+
                 portDataType + "), " + portName + "_tokens, " + fifoRef +"->fifo_size);");
+        prefixDec();
     }
 
     /**
@@ -1393,6 +1394,19 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _schedule = schedule;
     }
 
+    /**
+     * get next free core id
+     * TODO should be replaced by the mapping specification
+     * @return next free core id
+     */
+    private int _assignFreeCore(){
+        if(_curCore>=_maxCores)
+            _curCore=0;
+        else
+            _curCore++;
+        return _curCore;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ///                private variables                           ///
 
@@ -1408,12 +1422,17 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     /** CSDF graph node functions class*/
     private static String _funcClassName = "appFunc";
 
-    /** max r/w primitives dimensionality */
-    private static int _maxPrimitiveDimensionality = 3;
-
     /** CSDFG nodes schedule : get from the repetition vector of CSDFG??*/
     Vector<String> _schedule;
 
-    /** TODO shift primitive???*/
+    /**TODO should be replaced by mapping specification
+     * Number of cores
+     */
+    private static int _maxCores = 6;
 
+    /**
+     * TODO should be replaced by mapping specification
+     * Current core Id
+     */
+    private static int _curCore = 0;
 }
