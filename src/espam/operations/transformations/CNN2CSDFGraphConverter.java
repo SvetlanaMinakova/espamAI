@@ -889,22 +889,19 @@ public class CNN2CSDFGraphConverter {
      */
     private void _processNegativeDataTail(Vector<IndexPair> rates, int dif){
         int difToRemove = dif;
-        int zeroratesNum = 0;
-        IndexPair lastRatePair;
-        /** decrement last rate and replace it by zero-rate*/
-        while (difToRemove>0 && rates.size()>0) {
-            lastRatePair = rates.lastElement();
-            difToRemove -= lastRatePair.getFirst();
+        if(rates.size()<1)
+            return;
 
-            if (lastRatePair.getSecond() == 1)
-                rates.remove(lastRatePair);
-            else
-                lastRatePair.setSecond(lastRatePair.getSecond() - 1);
-            zeroratesNum++;
+        IndexPair lastRatePair = rates.lastElement();
+        /** increment last rate to read one more min data chunk*/
+        while (difToRemove>0) {
+            lastRatePair = rates.lastElement();
+            lastRatePair.setSecond(lastRatePair.getSecond()+1);
+            difToRemove -= lastRatePair.getFirst();
         }
+        /** if one more min data chunk is too much, process it as positive data tail*/
         if(difToRemove<0)
-            _processPositiveDataTail(rates,Math.abs(dif));
-        rates.add(new IndexPair(0,zeroratesNum));
+            _processPositiveDataTail(rates,lastRatePair.getFirst() - Math.abs(dif));
     }
 
     /**

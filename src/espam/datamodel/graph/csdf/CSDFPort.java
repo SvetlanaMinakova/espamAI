@@ -116,7 +116,7 @@ public class CSDFPort extends NPort {
      *
      * @return SDFG Edge
      */
-    public CSDFEdge getEdge() { return this.getEdge(); }
+    public CSDFEdge getEdge() { return (CSDFEdge)super.getEdge(); }
 
     /**
      * Get port unique identifier

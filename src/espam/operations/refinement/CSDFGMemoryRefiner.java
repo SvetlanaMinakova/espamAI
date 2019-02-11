@@ -299,6 +299,7 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
         _addMU("output",x.getOutputDataFormat());
     }
 
+
        /**
      * Visit a Data component.
      *

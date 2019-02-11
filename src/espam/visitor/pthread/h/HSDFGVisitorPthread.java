@@ -130,7 +130,7 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
         _printStream.println("");
         _printStream.println(_prefix + "void main(void *threadarg) override;");
         _printStream.println(_prefix + "// specific const parameters definition");
-        _printStream.println(_prefix + "std::map<std::string,const int*>int_params;");
+        _printStream.println(_prefix + "std::map<std::string,int> int_params;");
 
         _prefixDec();
     }
@@ -296,7 +296,7 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
     protected void _writeExecPrimitive(String tensorParamType){
         _printStream.println(_prefix + "static void execute (std::string function," +
                 tensorParamType +"* input, " + tensorParamType + "* weights, "
-                + tensorParamType + "* output, std::map<std::string,const int*>* int_params_ptr );");
+                + tensorParamType + "* output, std::map<std::string,int>* int_params_ptr );");
     }
 
     /**

@@ -76,7 +76,7 @@ public class CNNDotVisitor extends CNNGraphVisitor {
         _printStream.println(_prefix + "center = true;");
         _printStream.println("");
         _printStream.println(_prefix + "node [ fontsize=12, height=0.4, width=0.5, style=filled, color=\"0.650 0.200 1.000\"]");
-        _printStream.println(_prefix + "edge [ fontsize=10, arrowhead=none, style=bold]");
+        _printStream.println(_prefix + "edge [ fontsize=10, arrowhead=none, style=bold ]");
         _printStream.println("");
         Iterator i;
 
@@ -146,7 +146,7 @@ public class CNNDotVisitor extends CNNGraphVisitor {
      * @param  x The node that needs to be rendered.
      */
     public void visitComponent(Connection x) {
-        String color = "dimgray";
+        String color = "black";
 
         _printStream.print( _prefix + "\"" + x.getSrc().getName() +x.getSrc().getId() + "\" -> " +
                 "\"" + x.getDest().getName() + x.getDest().getId() + "\" [" );

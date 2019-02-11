@@ -92,7 +92,7 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
     @Override
     public String getStrParameters() {
      StringBuilder strParams = new StringBuilder();
-     strParams.append("\n parameters: [\n");
+     strParams.append("\n [\n");
      strParams.append("inputs number: "+getInputsNumber() + "]");
      return strParams.toString();
     }

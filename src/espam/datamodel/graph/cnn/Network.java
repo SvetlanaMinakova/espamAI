@@ -1593,9 +1593,9 @@ public class Network implements Cloneable, ReferenceResolvable {
 
     /** TODO change if not the same for all the layers*/
     /** I/O data type description*/
-    @SerializedName("dataType")private String _dataType = "float";
+    @SerializedName("dataType")private String _dataType = "int";
 
     /** Weights type description*/
-    @SerializedName("weightsType")private String _weightsType = "float";
+    @SerializedName("weightsType")private String _weightsType = "int";
 
 }

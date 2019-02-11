@@ -148,6 +148,15 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
     public void removeDimension() {
     _shape.removeElementAt(getDimensionality()-1);
     }
+
+        /**
+     * Removes last dimension
+     */
+    public void removeDimension(int pos) {
+    _shape.removeElementAt(pos);
+    }
+
+
     /**
      * Returns subtensor of current tensor
      * @param startDim start dimension of the subtensor
@@ -637,22 +646,16 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      * @param tensor tensor for reshape
      * @return equivalent Tensor with omitted one-sized dims
      */
-    public static Tensor omitOneSizedDims(Tensor tensor){
+    public static Tensor omitOneSizedDimsFromTail(Tensor tensor, int minDims){
         if(isNullTensor(tensor))
             return null;
+        if(tensor.getDimensionality()<2)
+            return tensor;
 
-        Tensor result = new Tensor();
+        Tensor result = new Tensor(tensor);
 
-        for(int i = 0;i<tensor.getDimensionality();i++){
-            if(tensor.getDimSize(i)==1) {
-             /** if there is only one dim=1, it shoul not be omitted*/
-                if(result.getDimensionality()==0)
-                    result.addDimension(1);
-
-                return result;
-            }
-            else
-                result.addDimension(tensor.getDimSize(i));
+        while (tensor.getLastDimSize()==1 && tensor.getDimensionality()>minDims){
+            tensor.removeDimension();
         }
 
         return result;

@@ -75,7 +75,7 @@ public class Data extends Neuron implements DataContainer{
     @Override
     public String getStrParameters() {
      StringBuilder strParams = new StringBuilder();
-     strParams.append("\n parameters: [\n");
+     strParams.append("\n [\n");
      strParams.append("data format: "+getOutputDataFormat() + "]");
      return strParams.toString();
     }

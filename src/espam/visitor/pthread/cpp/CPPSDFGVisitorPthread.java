@@ -408,6 +408,9 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         for(CSDFPort outport:node.getNonOverlapHandlingOutPorts())
             _createCommunicationChannel(node.getName(),outport.getName(),true);
 
+        _printStream.println(" ");
+        _printStream.println(_prefix + "setaffinity(thread_data->core_id);");
+
     }
 
     /**
@@ -421,9 +424,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         String bufName = nodeName + "_" + portName;
         _printStream.println(_prefix + "fifo_buf* " + bufName +
                 "_buf_ptr = thread_data->get_fifo_buf_by_" + getByPostfix +"(\"" + bufName + "\");");
-
-        _printStream.println(" ");
-        _printStream.println(_prefix + "setaffinity(thread_data->core_id);");
         _printStream.println(" ");
     }
 
@@ -509,19 +509,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _writeGetBufFunc("dst");
     }
 
-        /**
+     /**
      * Print functions of getting buffer from vector of buffers
-     */
-
-    /**
-     *
-     *
-     *
-     *
      * @param bufPrefix
      */
-
-
     protected void _writeGetBufFunc(String bufPrefix){
      _printStream.println("");
      _printStream.println(_prefix+"// get fifo buffer by " + bufPrefix);
@@ -1022,7 +1013,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + " void " + _funcClassName +
                     "::execute (std::string function," +
                 tensorParamType +"* input, " + tensorParamType + "* weights, "
-                + tensorParamType + "* output, std::map<std::string,const int*>* int_params_ptr )");
+                + tensorParamType + "* output, std::map<std::string,int>* int_params_ptr )");
         prefixInc();
         _printStream.println(_prefix + "{");
         prefixInc();
@@ -1079,11 +1070,11 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         Vector<MemoryUnit> constParams = node.getUnitParams();
         if(constParams.size()>0) {
             _printStream.println("//const int parameters");
-            _printStream.println(_prefix + "int_params[\"neurons\"] = &neurons;");
+            _printStream.println(_prefix + "int_params[\"neurons\"] = neurons;");
 
             for (MemoryUnit mu : constParams) {
                 if(mu.getTypeDesc().equals("int"))
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() + "\"] = &" + mu.getName() + ";");
+                    _printStream.println(_prefix + "int_params[\"" + mu.getName() + "\"] = " + mu.getName() + ";");
             }
         }
 
@@ -1091,10 +1082,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
                 MemoryUnit mu = inport.getAssignedMemory();
                 if (mu!=null) {
                     _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                                "_dims\"] = &" + mu.getName()+"_dims;");
+                                "_dims\"] = " + mu.getName()+"_dims;");
                     for(int i=0;i<mu.getDimensionality();i++){
                         _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                                "_dim_" + i + "\"] = &" + mu.getName() + "_dim_" + i + ";");
+                                "_dim_" + i + "\"] = " + mu.getName() + "_dim_" + i + ";");
                     }
                 }
         }
@@ -1106,10 +1097,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
                 if (mu!=null) {
                     if(!defined.contains(mu.getName())) {
                         _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                                "_dims\"] = &" + mu.getName()+"_dims;");
+                                "_dims\"] = " + mu.getName()+"_dims;");
                         for(int i=0;i<mu.getDimensionality();i++) {
                             _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                                    "_dim_" + i + "\"] = &" + mu.getName() + "_dim_" + i + ";");
+                                    "_dim_" + i + "\"] = " + mu.getName() + "_dim_" + i + ";");
                             defined.add(mu.getName());
                         }
                     }

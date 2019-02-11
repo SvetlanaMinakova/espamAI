@@ -96,7 +96,7 @@ public class DenseBlock extends Neuron {
     @Override
     public String getStrParameters() {
      StringBuilder strParams = new StringBuilder();
-     strParams.append("\n parameters: [\n");
+     strParams.append("\n [\n");
      strParams.append("neurons: "+_neuronsNum + "]\n");
      return strParams.toString();
     }

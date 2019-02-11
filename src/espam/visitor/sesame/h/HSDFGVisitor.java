@@ -51,33 +51,34 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * @param node SDF graph node
      */
     protected void _writeDNNRefinedContainerTemplates(CSDFNode node){
-        for(CSDFPort inport: node.getInPorts()){
-            if(!inport.isOverlapHandler()) {
+        for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
                 MemoryUnit mu = inport.getAssignedMemory();
                 if (mu!=null) {
+                    _printStream.println(_prefix +"const int " + mu.getName() +
+                                "_dims = " + mu.getDimensionality() + ";");
                     _writeTensorToCPPArrayDefinition(mu.getShape(),mu.getName(),mu.getTypeDesc());
                 }
-            }
         }
 
         /** define only distinct out ports*/
         Vector<String> defined = new Vector<>();
-        for(CSDFPort outport: node.getOutPorts()){
-            if(!outport.isOverlapHandler()) {
+        for(CSDFPort outport: node.getNonOverlapHandlingOutPorts()){
                 MemoryUnit mu = outport.getAssignedMemory();
                 if (mu!=null) {
                     if(!defined.contains(mu.getName())) {
+                        _printStream.println(_prefix +"const int " + mu.getName() +
+                                "_dims = " + mu.getDimensionality() + ";");
                          _writeTensorToCPPArrayDefinition(mu.getShape(), mu.getName(), mu.getTypeDesc());
                         defined.add(mu.getName());
                     }
                 }
-            }
         }
         defined.clear();
+
         /** define weights, if any*/
         MemoryUnit weights = node.getMemoryUnit("weights");
         if(weights!=null){
-           _writeTensorToCPPArrayDefinition(weights.getShape(), weights.getName(), weights.getTypeDesc());
+           _writeTensorToCPPArrayDefinitionWeights(weights.getShape(), weights.getName(), weights.getTypeDesc());
         }
         /** define constant parameters, if any*/
         Vector<MemoryUnit> constParams = node.getUnitParams();
@@ -88,6 +89,9 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
             }
         }
     }
+
+
+
 
      /**
      * Write container templates for each container, associated with the node
@@ -107,6 +111,8 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
           _writeContainerTemplate(port);
         }
     }
+
+
 
   /**
      * Write container templates for each port
@@ -211,14 +217,60 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         _prefixInc();
         int tensorDimensionality = tensor.getDimensionality();
        // int revId = tensorDimensionality-1;
-        for (int i = 0; i< tensorDimensionality; i++)
-            _printStream.println(_prefix + "const int " + name + "_dim_" + i +" = " +tensor.getDimSize(i)+";");
+        for (int i = tensorDimensionality-1; i>=0; i--)
+            _printStream.println(_prefix + "const int " + name + "_dim_" + (tensorDimensionality-i-1) +" = " +tensor.getDimSize(i)+";");
 
         StringBuilder defsb = new StringBuilder(typeDesc);
         defsb.append(" ");
         defsb.append(name);
 
         for (int i = tensorDimensionality-1; i>=0; i--)
+            defsb.append("[" + tensor.getDimSize(i) + "]");
+
+          /** static array definition*/
+        defsb.append(" = ");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("{");
+
+        defsb.append("0");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("}");
+
+        defsb.append(";");
+
+        _printStream.println(_prefix + defsb.toString());
+        prefixDec();
+        _printStream.println("");
+    }
+
+    /**
+     * Get C++ definition of static multidimensional array,
+     * corresponding to  espam. Tensor
+     * @param tensor espam. Tensor
+     * @param name name of the array
+     * @param typeDesc description of array type;
+     * @return C++ description of static multidimensional array,
+     * corresponding to  espam. Tensor
+     * TODO do smth with tensor reverse!!
+     */
+    public void _writeTensorToCPPArrayDefinitionWeights(Tensor tensor, String name, String typeDesc){
+        if(Tensor.isNullOrEmpty(tensor))
+            return;
+
+        _printStream.println(_prefix + "//"+ name +" array definition");
+        _prefixInc();
+        int tensorDimensionality = tensor.getDimensionality();
+       // int revId = tensorDimensionality-1;
+        for (int i =0;i< tensorDimensionality; i++)
+            _printStream.println(_prefix + "const int " + name + "_dim_" + i +" = " +tensor.getDimSize(i)+";");
+
+        StringBuilder defsb = new StringBuilder(typeDesc);
+        defsb.append(" ");
+        defsb.append(name);
+
+        for (int i =0;i< tensorDimensionality; i++)
             defsb.append("[" + tensor.getDimSize(i) + "]");
 
           /** static array definition*/
