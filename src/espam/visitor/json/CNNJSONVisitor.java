@@ -120,6 +120,7 @@ public class CNNJSONVisitor extends CNNGraphVisitor {
         _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
         _printStream.println(_prefix + "\"inputLayerId\": " + x.getInputLayerId()+",");
         _printStream.println(_prefix + "\"outputLayerId\": " + x.getOutputLayerId()+",");
+        _printStream.println(_prefix + "\"crop\": " + x.isCrop()+",");
          prefixInc();
 
         Iterator i;

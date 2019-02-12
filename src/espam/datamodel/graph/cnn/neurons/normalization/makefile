@@ -12,6 +12,8 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
     LRN.java \
+    BN.java \
+    ImageScaler.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -73,6 +73,7 @@ public class Network implements Cloneable, ReferenceResolvable {
             newObj.setOutputLayerId(_outputLayerId);
             newObj.setDataType(_dataType);
             newObj.setWeightsType(_weightsType);
+            newObj.setCropMode(_crop);
             return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -112,6 +113,8 @@ public class Network implements Cloneable, ReferenceResolvable {
 
          _dataType = network._dataType;
          _weightsType = network._weightsType;
+
+         setCropMode(network._crop);
     }
 
     /**
@@ -872,18 +875,18 @@ public class Network implements Cloneable, ReferenceResolvable {
      * @param dst name of the output layer of connection
      * @throws Exception if connection could not be set up
      */
-     public void addConnection(String src, String dst) throws Exception {
+     public void addConnection(String src, String dst){
          Layer srcLayer = getLayer(src);
           if(srcLayer == null) {
-             System.err.println("Connection set up error, null src layer: "+src);
-             throw new Exception("Connection set up error");
+             System.err.println(_name + " connection set up error, null src layer: "+src);
+             return;
 
          }
 
          Layer dstLayer = getLayer(dst);
          if(dstLayer == null) {
-            System.err.println("Connection set up error, null dst layer: "+dst);
-            throw new Exception("Connection set up error");
+            System.err.println(_name + " connection set up error, null dst layer: "+dst);
+            return;
          }
 
          updateConnectionDependentLayer(dstLayer,srcLayer);
@@ -1240,6 +1243,8 @@ public class Network implements Cloneable, ReferenceResolvable {
                 ((MultipleInputsProcessor)destLayerNeuron).addInput(srcLayer);
             }
 
+            setCropMode(_crop);
+
             }
         catch (Exception e) {
             throw  new NullPointerException("connection reference resolving error");
@@ -1564,6 +1569,30 @@ public class Network implements Cloneable, ReferenceResolvable {
         return neuronNames;
     }
 
+    /**
+     * For all convolutional/pooling neurons set crop parameter.
+     * If crop = true and input image dims are not divisible on kernel size,
+     *  input images will be cropped to smaller sizes. If crop = false,
+     *  input images will be extended to bigger sizes.
+     */
+    public void setCropMode(boolean crop){
+        _crop = crop;
+        for(Layer layer:_layers){
+            if(layer.getNeuron() instanceof CNNNeuron) {
+               ((CNNNeuron) layer.getNeuron()).setCrop(crop);
+            }
+        }
+
+    }
+
+    /**
+     * Check, if the crop mode is set
+     * @return true, if the crop mode is set and false otherwise
+     */
+    public boolean isCrop() {
+        return _crop;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                ////
 
@@ -1597,5 +1626,13 @@ public class Network implements Cloneable, ReferenceResolvable {
 
     /** Weights type description*/
     @SerializedName("weightsType")private String _weightsType = "int";
+
+    /** Crop mode flag
+     *  If crop == true and input image dims are not divisible on kernel size,
+     *  input images will be cropped to smaller sizes. If crop = false,
+     *  input images will be extended to bigger sizes.
+     *
+     * */
+    @SerializedName("crop")private boolean _crop = true;
 
 }

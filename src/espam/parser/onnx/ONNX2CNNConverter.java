@@ -46,8 +46,8 @@ public class ONNX2CNNConverter {
                 ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
                 Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
                 traverser.setConnections(layersTraverseOrder);
-                traverser.setDataFormats(layersTraverseOrder);
-                converter.removePureDataLayers(resultNetwork);
+               /* traverser.setDataFormats(layersTraverseOrder);
+                converter.removePureDataLayers(resultNetwork);*/
                 return resultNetwork;
             }
 
@@ -527,6 +527,12 @@ public class ONNX2CNNConverter {
             return;
         }
 
+        if(neuronType.equals("BatchNormalization")) {
+            appendNonLinearLayer(node, NonLinearType.BN, espamDNN);
+            processOperationalNode(node);
+            return;
+        }
+
         if(neuronType.equals("Conv")) {
              appendConvLayer(node,espamDNN);
              processOperationalNode(node);
@@ -576,6 +582,14 @@ public class ONNX2CNNConverter {
              processOperationalNode(node);
             return;
         }
+
+
+        if(neuronType.equals("ImageScaler")) {
+            appendNonLinearLayer(node, NonLinearType.ImageScaler, espamDNN);
+             processOperationalNode(node);
+            return;
+        }
+
 
          if(neuronType.equals("LeakyRelu")) {
             appendNonLinearLayer(node, NonLinearType.LeakyReLu,espamDNN);
@@ -659,6 +673,7 @@ public class ONNX2CNNConverter {
          * If no corresponding espam DNN layer type is found,
          * the NONE-typed layer is appended. By default, non-typed Layer is operational
          */
+        System.err.println("DNN-2-CSDF conversion error: Unknown neuron type: " + neuronType);
         appendNoneTypeLayer(node,neuronType,espamDNN);
         processOperationalNode(node);
         return;
@@ -810,6 +825,8 @@ public class ONNX2CNNConverter {
         String layerName = _uniqueNamedONNXNodes.get(onnxModelInput);
 
         Tensor dataFormat = extractDataAttributeFromIONode(onnxModelInput,false);
+        dataFormat = Tensor.omitZeroSizedDimsFromTail(dataFormat,2);
+
         Tensor.updateChannelsNum(dataFormat);
 
         _extractedDataFormats.put(layerName,dataFormat);

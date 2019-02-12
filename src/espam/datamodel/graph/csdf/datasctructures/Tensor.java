@@ -641,6 +641,23 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
         return tensors;
     }
 
+ /**Omit all dimensions of size 1 from Tensor tail
+     * @param tensor tensor for reshape
+     * @return equivalent Tensor with omitted one-sized dims
+     */
+    public static Tensor omitZeroSizedDimsFromTail(Tensor tensor, int minDims){
+        if(isNullTensor(tensor))
+            return null;
+
+        Tensor result = new Tensor(tensor);
+
+        while (result.getLastDimSize()==0 && result.getDimensionality()>minDims){
+            result.removeDimension();
+        }
+
+        return result;
+    }
+
 
     /**Omit all dimensions of size 1 from Tensor tail
      * @param tensor tensor for reshape
@@ -654,8 +671,8 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
 
         Tensor result = new Tensor(tensor);
 
-        while (tensor.getLastDimSize()==1 && tensor.getDimensionality()>minDims){
-            tensor.removeDimension();
+        while (result.getLastDimSize()==1 && result.getDimensionality()>minDims){
+            result.removeDimension();
         }
 
         return result;
