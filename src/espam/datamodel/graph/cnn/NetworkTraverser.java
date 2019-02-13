@@ -62,6 +62,7 @@ public class NetworkTraverser {
          used = new boolean[_n];
          Arrays.fill(used, false);
          queue = new LinkedList();
+         backBranchIds = new Vector<>();
     }
 
      /**
@@ -157,9 +158,7 @@ public class NetworkTraverser {
      */
     protected void modifiedBFS(int startLayerId) {
         /** if node is already traversed, pass */
-        if (used[startLayerId]) {
-            return;
-        }
+        if (used[startLayerId]) { return; }
 
         /**start traverse*/
         queue.add(startLayerId);
@@ -167,35 +166,55 @@ public class NetworkTraverser {
         /**mark node as visited*/
         used[startLayerId] = true;
 
+        /** while there are layers to visit*/
         while (!queue.isEmpty()) {
             /**get node from the queue*/
             startLayerId = queue.poll();
 
-            /** go back, if layer have non-visited inputs*/
+
+            /** postpone layer traverse, if the layer have non-visited inputs*/
             Vector<Integer> nonVisitedInputs = getNonVisitedInputsList(startLayerId);
-            if(nonVisitedInputs.size()>0) {
+
+            while (nonVisitedInputs.size()>0) {
+
+                /**extent queue by non-visited layers*/
                 for(Integer nonVisitedInput: nonVisitedInputs){
-                    modifiedBFS(nonVisitedInput);
+                    if(!queue.contains(nonVisitedInput)) {
+                        queue.offer(nonVisitedInput);
+                    }
                 }
+
+                queue.add(startLayerId);
+                /**mark node as not visited*/
+                used[startLayerId] = false;
+
+                /** select new node from a queue*/
+                startLayerId = queue.poll();
+                /** postpone layer traverse, if the layer have non-visited inputs*/
+                nonVisitedInputs = getNonVisitedInputsList(startLayerId);
             }
 
             /** add layers to sorted traverse order*/
             _layersTraverseOrder.add(startLayerId);
 
+            /**mark node as visited*/
+            used[startLayerId] = true;
+
             /**visit all nodes, adjusted with current layer*/
             for (int i = 0; i < adj[startLayerId].size(); ++i) {
                 /**if node is already visited, pass */
                 int w = adj[startLayerId].get(i);
-                if (used[w]) {
-                    continue;
-                }
-                /** add node id to queue*/
-                queue.add(w);
 
-                /**mark node as visited*/
-                used[w] = true;
+                if (used[w]) { continue; }
+
+                if(!queue.contains(w)){
+                    /** add node id to queue*/
+                    queue.add(w);
+                    /**mark node as visited*/
+                    used[w] = true;
+                    }
+                }
             }
-        }
     }
 
      /**
@@ -205,18 +224,27 @@ public class NetworkTraverser {
      * and null otherwise
      */
     protected Vector<Integer> getNonVisitedInputsList(int layerId){
-        Vector<Integer> nonVitiedInputs = new Vector<>();
+        Vector<Integer> nonVisitiedInputs = new Vector<>();
 
         Vector<Integer> layerInputs = _connectionsGroupedByDst.get(layerId);
+       /** if(layerId==8) {
+            for (int inp : layerInputs)
+                System.out.println("l8_inp: " + inp);
+        }*/
+
         /** layer have no inputs*/
         if(layerInputs==null)
-            return nonVitiedInputs;
+            return nonVisitiedInputs;
 
         for(int inputLayerId: layerInputs){
-            if(!_layersTraverseOrder.contains(inputLayerId))
-                nonVitiedInputs.add(inputLayerId);
+            if(!_layersTraverseOrder.contains(inputLayerId)) {
+                nonVisitiedInputs.add(inputLayerId);
+                    /**    if(layerId==8) {
+                            System.out.println("l8_unviz_inp: " + inputLayerId);
+                        }*/
+            }
     }
-        return nonVitiedInputs;
+        return nonVisitiedInputs;
 
     }
 
@@ -356,4 +384,6 @@ public class NetworkTraverser {
     protected HashMap<Integer,Vector<Integer>> _connectionsGroupedBySrc;
     /**connections in result DNN, grouped by destination Layer Id*/
     protected HashMap<Integer,Vector<Integer>> _connectionsGroupedByDst;
+    /**TODO optimize*/
+    protected Vector<Integer> backBranchIds;
 }

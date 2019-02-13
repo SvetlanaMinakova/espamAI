@@ -10,6 +10,7 @@ import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
 
+import java.io.Console;
 import java.util.Vector;
 
 /**
@@ -161,6 +162,7 @@ public class Layer implements Cloneable, ReferenceResolvable {
         setInputFormat(layerInputDataFormat);
 
         setOutputFormat(calculateOutputFormat());
+
     }
 
 

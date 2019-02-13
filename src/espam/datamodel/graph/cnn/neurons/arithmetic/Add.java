@@ -140,7 +140,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
         Tensor result = new Tensor(inputDataFormat);
         /** TODO is axis set to 1 or removed/or unchanged after adding??*/
       //  result.setDimSize(result.getDimensionality()-1,1);
-        if(_ownerNeuronsNumber>1)
+        if(_inputOwners.size()==1 && _ownerNeuronsNumber>1)
             result.removeDimension();
 
         return result;
@@ -191,39 +191,23 @@ public class Add extends Neuron implements MultipleInputsProcessor {
      * @throws Exception if an error occurs
      */
     public void setDataFromMultipleInputs(Layer neuronOwner) throws Exception{
-        /** update inputs for dynamic inputs*/
-        Vector<Tensor> _inputs = new Vector<>();
-
-        int inpId = 0;
-        for(Layer inputOwner: _inputOwners) {
-            if(inputOwner!=null)
-                _inputs.set(inpId, inputOwner.getOutputFormat());
-            inpId++;
-        }
-
-        Tensor resultDataFormat = null;
-
-        /** output format of Add node should have the same shape as all its inputs*/
-        if(_inputs.size()>0)
-            resultDataFormat = _inputs.elementAt(0);
+        if(_inputOwners==null)
+            throw new Exception("Add data formats calculation: no inputs found");
 
 
-        int maxNeuronsNum = 1;
-        for(Layer inputOwner: _inputOwners) {
-            if(inputOwner.getNeuronsNum()>maxNeuronsNum)
-                maxNeuronsNum = inputOwner.getNeuronsNum();
-        }
+        Tensor commonInput = _inputOwners.firstElement().getOutputFormat();
 
-        Tensor neuronInputDataFormat = new Tensor(resultDataFormat);
+        setInputDataFormat(commonInput);
+        setOutputDataFormat(calculateOutputDataFormat(getInputDataFormat()));
 
-        if(maxNeuronsNum>1)
-            neuronInputDataFormat.removeDimension();
+        neuronOwner.setInputFormat(commonInput);
+        neuronOwner.setOutputFormat(neuronOwner.calculateOutputFormat());
 
-        setInputDataFormat(neuronInputDataFormat);
-        setOutputDataFormat(neuronInputDataFormat);
+        setInputDataFormat(commonInput);
+        setOutputDataFormat(commonInput);
 
-        neuronOwner.setInputFormat(resultDataFormat);
-        neuronOwner.setOutputFormat(resultDataFormat);
+        neuronOwner.setInputFormat(commonInput);
+        neuronOwner.setOutputFormat(commonInput);
     }
 
     /**

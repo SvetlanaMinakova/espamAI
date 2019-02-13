@@ -207,12 +207,17 @@ public class Network implements Cloneable, ReferenceResolvable {
      * @param connection DNN connection
      */
     public void updateDataFormats(Connection connection){
+    //   System.out.println(connection.getSrcName()+ " (" + connection.getSrcId() + ") --> "
+      //          +connection.getDestName()+ " (" + connection.getDestId() + ")");
+
         Layer src = connection.getSrc();
         Layer dest = connection.getDest();
         Tensor destNeuronInputFormat = src.getNeuron().getOutputDataFormat();
         Tensor destLayerInputFormat = src.getOutputFormat();
 
         dest.updateDataFormatsFromTop(destNeuronInputFormat, destLayerInputFormat);
+
+
     }
 
     /**
@@ -797,7 +802,7 @@ public class Network implements Cloneable, ReferenceResolvable {
                 return layer;
         }
 
-        System.err.println("Layer"+layerId+" not found");
+        System.err.println("Layer "+layerId+" not found");
         throw new NullPointerException();
     }
 
@@ -1504,12 +1509,24 @@ public class Network implements Cloneable, ReferenceResolvable {
     }
 
     /**
+     * Sort list of layers in traverse order
+     */
+    public void sortLayersInTraverseOrder(Vector<Integer> layersTraverseOrder){
+        Vector<Layer> sorted = new Vector<Layer>();
+         for(int layerId: layersTraverseOrder){
+            Layer layer = getLayer(layerId);
+            sorted.add(layer);
+        }
+        _layers = sorted;
+    }
+
+    /**
      * Sorts layer connections in traverse order from output layer of the DNN
      * */
     public Vector<Layer> getLayersInTraverseOrderFromTop() {
         Vector<Layer> sorted = new Vector<Layer>();
         _traverser.initialize(this,false);
-        Vector<Integer> layersTraverseOrder = _traverser.getLayersTraverseOrder(_outputLayerId);
+        Vector<Integer> layersTraverseOrder = _traverser.getLayersTraverseOrder(_inputLayerId);
         for(int layerId: layersTraverseOrder){
             Layer layer = getLayer(layerId);
             sorted.add(layer);
