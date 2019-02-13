@@ -45,9 +45,12 @@ public class ONNX2CNNConverter {
                 Network resultNetwork = converter.convertGraph(model);
                 ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
                 Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
+              //  for(int lId : layersTraverseOrder)
+                //    System.out.println("("+lId+")");//+resultNetwork.getLayer(lId).getName());
                 traverser.setConnections(layersTraverseOrder);
-               /* traverser.setDataFormats(layersTraverseOrder);
-                converter.removePureDataLayers(resultNetwork);*/
+                traverser.setDataFormats(layersTraverseOrder);
+                converter.removePureDataLayers(resultNetwork);
+
                 return resultNetwork;
             }
 
@@ -468,8 +471,9 @@ public class ONNX2CNNConverter {
 
         if (_onnxGraphOutputs.size()==1) {
             ONNX.ValueInfoProto singleModelOutput = _onnxGraphOutputs.get(0);
-
             String outputName = generateNonEmptyName(singleModelOutput);
+      //      String outputName = generateSpecialName(singleModelOutput,"_output_");
+          //  System.out.println(outputName);
            // _onnxGraphOutputsNames.add(graphOutputname);
             _uniqueNamedONNXNodes.put(singleModelOutput,outputName);
 
@@ -1870,6 +1874,23 @@ public class ONNX2CNNConverter {
         return nonEmptyName;
     }
 
+        /**
+     * Return current valueProto name, if it is not empty.
+     * otherwise create and return default valueProto name.
+     * @param node ONNX.NodeProto
+     * @return non-empty node name
+     */
+    private String generateSpecialName(ONNX.NodeProto node, String name){
+        String nonEmptyName = node.getName();
+        if(isEmptyName(nonEmptyName)) {
+            nonEmptyName = "node_" + node.getOpType() +_nextUniqueNodeId;
+            _nextUniqueNodeId++;
+        }
+
+        nonEmptyName+=name;
+        return nonEmptyName;
+    }
+
      /**
      * Return current valueProto name, if it is not empty.
      * otherwise create and return default valueProto name.
@@ -1885,6 +1906,27 @@ public class ONNX2CNNConverter {
             nonEmptyName = "value_" + _nextUniqueNodeId;
             _nextUniqueNodeId++;
         }
+
+        return nonEmptyName;
+    }
+
+    /**
+     * Return current valueProto name, if it is not empty.
+     * otherwise create and return default valueProto name.
+     * @param valueInfo ONNX.ValueInfoProto
+     * @return non-empty node name
+     */
+    private String generateSpecialName(ONNX.ValueInfoProto valueInfo, String name){
+        String nonEmptyName = valueInfo.getName();
+        /** if node, provided by ONNX Model have empty name,
+         * create default name
+         */
+        if(isEmptyName(nonEmptyName)) {
+            nonEmptyName = "value_" + _nextUniqueNodeId;
+            _nextUniqueNodeId++;
+        }
+
+        nonEmptyName += name;
 
         return nonEmptyName;
     }
