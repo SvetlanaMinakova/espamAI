@@ -91,7 +91,7 @@ public class Options {
                         }
                         /** CNNESPAM options*/
 
-                        if (arg.equals("--evaluate") || arg.equals("-e")) {
+                        else if (arg.equals("--evaluate") || arg.equals("-e")) {
                            // _cnnui.evaluate(args[++i]);
                             _cnnui.setSrcPath(args[++i]);
                             _cnnui.setEval(true);
