@@ -687,7 +687,6 @@ public class UI {
             if(_verbose)
                 System.out.println(_curPhase + "...");
 
-
             CSDFEvalResult result = _edInterface.evaluateCSDFGraph(sdfg);
 
             if(result instanceof CSDFEvalError) {
