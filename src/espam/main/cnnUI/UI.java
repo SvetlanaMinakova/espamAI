@@ -5,6 +5,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.main.Config;
+import espam.parser.json.platform.NeurAghePlatformParser;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
 import espam.visitor.dot.cnn.CNNDotVisitor;
@@ -31,7 +32,9 @@ import espam.visitor.json.CSDFGraphJSONVisitor;
 import espam.visitor.xml.csdf.CSDFGraphXMLVisitor;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /** Class include CNN-espam user interface, both command-line and API*/
@@ -687,9 +690,6 @@ public class UI {
 
             CSDFEvalResult result = _edInterface.evaluateCSDFGraph(sdfg);
 
-            if(_verbose)
-                System.out.println("Evaluation finished");
-
             if(result instanceof CSDFEvalError) {
                 throw new Exception(((CSDFEvalError) result).getErrorMessage());
             }
@@ -699,11 +699,17 @@ public class UI {
             /**refine memory evaluation*/
             RefinedCSDFEvaluator.getInstance().refineMemoryEval(sdfg,result);
 
-            /**TODO REFINEMENT THROUGH THE JSON GENERATION??*/
+            /**refine time evaluation*/
+            if(_execTimeScale!=1.0)
+                RefinedCSDFEvaluator.getInstance().refineTimingEval(result,_execTimeScale);
 
             /** refine energy evaluation*/
             Double refinedEnergy = _getRefinedEnergy(sdfg);
             result.setEnergy(refinedEnergy);
+
+
+            if(_verbose)
+                System.out.println("Evaluation finished");
 
             return result;
     }
@@ -1153,6 +1159,61 @@ public class UI {
     }
 
     /**
+     * TODO extend operators list or replace it??
+     * Set CSDF model operators execution time specification
+     * @param platform path to platform specification
+     * */
+    public void setNEURAgheExecTimesSpec(String platform) {
+       HashMap<String,Integer> newSpecInGops = NeurAghePlatformParser.parseTimingSpecTemplate(platform);
+       HashMap<String,Double> newSpecInDoubleSec = _fromGOPSPerSecToSeconds(newSpecInGops);
+        /** set time scale, that allow to represent times as Ints (Int times are required by DaedalusRT)*/
+        _execTimeScale = _calculateTimeScale(newSpecInDoubleSec.values());
+       HashMap<String,Integer> newSpec = _fromDoubleToInt(newSpecInDoubleSec,_execTimeScale);
+
+       /** add only R/W basic operators*/
+       CSDFTimingRefiner.getInstance().initRWOperationsDefault();
+
+       /** extend basic operators by parsed specification*/
+       CSDFTimingRefiner.getInstance().updateBasicOperationsTiming(newSpec);
+    }
+
+    /**change op times measurement units from GOPS (10^9 Ops)/sec to sec*/
+    private HashMap<String,Double> _fromGOPSPerSecToSeconds(HashMap<String, Integer> timesInGops){
+       HashMap<String,Double> timesInSec = new HashMap<>();
+       //1 Gop = 10^9 Ops
+       double GOP = 1000000000.0;
+        for(Map.Entry<String,Integer> timeInGops: timesInGops.entrySet())
+            timesInSec.put(timeInGops.getKey(),1.0/((double)timeInGops.getValue() * GOP));
+
+        return timesInSec;
+    }
+
+    /**
+     * calcualete time scale for NEURAghe platform time refinement
+     * @param times all supported operators times
+     * @return scale, that allow to represent all operator times as integers (as required by daedalusRT)
+     */
+    private double _calculateTimeScale(Collection<Double> times){
+        double scale = 1.0;
+        for(double time: times){
+            if(scale>time)
+                scale = time;
+        }
+
+        return scale;
+    }
+
+       /**change op times measurement units from GOPS (10^9 Ops)/sec to sec*/
+    private HashMap<String,Integer> _fromDoubleToInt(HashMap<String, Double> doubleTimes, double scale){
+       HashMap<String,Integer> intTimes= new HashMap<>();
+
+        for(Map.Entry<String,Double> doubleTime: doubleTimes.entrySet())
+            intTimes.put(doubleTime.getKey(),(int)(doubleTime.getValue()/scale));
+
+        return intTimes;
+    }
+
+    /**
     * Set energy template generation flag
     * @param energyTemplateGen energy template generation flag
     */
@@ -1359,4 +1420,7 @@ public class UI {
 
     /** input model consistency checkout*/
     private boolean _consistencyCheckout = false;
+
+    /** execution time scale - required for NEURAghe exec_times */
+    private double _execTimeScale = 1.0;
 }

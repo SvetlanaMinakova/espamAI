@@ -43,6 +43,16 @@ public class Convolution extends CNNNeuron {
         setBoundaryMode(boundaryMode);
     }
 
+    /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
+    public Convolution(int kernelSize, BoundaryMode boundaryMode, int stride, boolean transpose) {
+        super(NeuronType.CONV.toString(), kernelSize, stride);
+        setNeuronType(NeuronType.CONV);
+        setBoundaryMode(boundaryMode);
+        setTranspose(transpose);
+    }
+
      /**
      * Accept a Visitor
      *

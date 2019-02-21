@@ -118,6 +118,11 @@ public class Options {
                             catch (Exception e){ System.err.println("Invalid path to CSDF model time (wcet) specification"); }
                         }
 
+                        else if(arg.equals("--na-arch")){
+                            try { _cnnui.setNEURAgheExecTimesSpec(args[++i]); }
+                            catch (Exception e){ System.err.println("Invalid path to NeurAghe platform specification"); }
+                        }
+
                          else if(arg.equals("--energy-spec")){
                             try { _cnnui.setEnergySpec(args[++i]); }
                             catch (Exception e){ System.err.println("Invalid path to CSDF model energy specification"); }

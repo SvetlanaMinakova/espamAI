@@ -188,6 +188,18 @@ import java.util.Vector;
     /**
      * Initialize basic operations list by dummy default values
      */
+    public void initRWOperationsDefault() {
+        _basicOperationsTiming = new HashMap<>();
+        /** read /write ops*/
+        _basicOperationsTiming.put("read", 1);
+        _basicOperationsTiming.put("write", 1);
+        _basicOperationsTiming.put("input", 1);
+        _basicOperationsTiming.put("output", 1);
+    }
+
+    /**
+     * Initialize basic operations list by dummy default values
+     */
     public void initBasicOperationsDefault(){
         _basicOperationsTiming = new HashMap<>();
         /** read /write ops*/

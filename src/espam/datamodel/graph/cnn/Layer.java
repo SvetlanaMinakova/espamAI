@@ -185,7 +185,7 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
         if(_neuron.setMinDataHeight(minOutputDataHeight)) {
           setInputHeight(_neuron.getInputHeight());
-          setOutputHeight(minOutputDataHeight);
+          setOutputHeight(_neuron.getOutputH());
        }
     }
 

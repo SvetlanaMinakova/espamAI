@@ -25,6 +25,20 @@ public class RefinedCSDFEvaluator {
         return _refinedMemEvaluator;
     }
 
+     /**
+     * Refine memory evaluation, provided by DARTS
+     * @param dartsEval DARTS evaluation of CSDF graph
+     */
+    public void refineTimingEval(CSDFEvalResult dartsEval, double execTimeScale){
+        try{
+            dartsEval.setPerformance(dartsEval.getPerformance() * execTimeScale);
+        }
+        catch (Exception e){
+            System.err.println("DNN-CSDF memory evaluation refinement error");
+        }
+    }
+
+
     /**
      * Refine memory evaluation, provided by DARTS
      * @param graph CSDF graph

@@ -49,6 +49,25 @@ public class Pooling extends CNNNeuron implements ConnectionDependent {
         setSampleDim(2);
     }
 
+          /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
+    public Pooling(PoolingType name, int kernelSize, int stride, BoundaryMode boundaryMode) {
+        super(name.toString(), kernelSize, stride);
+        setNeuronType(NeuronType.POOL);
+        setBoundaryMode(boundaryMode);
+    }
+
+       /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
+    public Pooling(PoolingType name, int kernelSize, int stride, BoundaryMode boundaryMode, boolean transpose) {
+        super(name.toString(), kernelSize, stride);
+        setNeuronType(NeuronType.POOL);
+        setBoundaryMode(boundaryMode);
+        setTranspose(transpose);
+    }
+
     /** Accept a Visitor
      *  @param x A Visitor Object.
      *  @exception EspamException If an error occurs.
