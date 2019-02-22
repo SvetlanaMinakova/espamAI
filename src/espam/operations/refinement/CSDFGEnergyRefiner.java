@@ -3,6 +3,8 @@ package espam.operations.refinement;
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.graph.Graph;
 import espam.datamodel.graph.csdf.CSDFNode;
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -37,6 +39,49 @@ public class CSDFGEnergyRefiner {
         return _energyRefiner;
     }
 
+
+       /**
+     * Get refined energy value for csdf graph
+     * @param procUtilization processors utilization
+     * @return refined energy
+     * @throws Exception if an error occurs
+     */
+    public Double getRefinedEnergy(Collection<Double> procUtilization)throws Exception {
+        double dynProcUtil = 0;
+        for(double procUtil: procUtilization)
+            dynProcUtil+=procUtil;
+
+        return dynProcUtil * _maxprocEnergy;
+    }
+
+
+    /**
+     * Get refined energy value for csdf graph
+     * @param csdfg CSDF graph
+     * @param utilization utilization vector of csdf graph actors
+     * @return refined energy evaluation for CSDF graph
+     * @throws Exception if an error occurs
+     */
+    public Double getRefinedEnergy(Graph csdfg, HashMap<Integer, Double> utilization, double staticEnergy)throws Exception {
+           /**TODO: refactoring for neurAghe*/
+           if(_maxprocEnergy>0.0)
+               return getRefinedEnergy(utilization.values());
+
+            Double dynamicEnergy = 0.0;
+            CSDFNode node;
+            Double util;
+
+            Iterator i = csdfg.getNodeList().iterator();
+            while (i.hasNext()) {
+                node = (CSDFNode) i.next();
+                util = utilization.get(node.getId());
+
+                /** TODO: common static energy for all the system is not taken into account */
+                dynamicEnergy += _getDynamicEnergy(node.getName(),util);
+            }
+            return dynamicEnergy + staticEnergy;
+    }
+
     /**
      * Get refined energy value for csdf graph
      * @param csdfg CSDF graph
@@ -45,9 +90,12 @@ public class CSDFGEnergyRefiner {
      * @throws Exception if an error occurs
      */
     public Double getRefinedEnergy(Graph csdfg, HashMap<Integer, Double> utilization)throws Exception {
+        /**TODO: refactoring for neurAghe*/
+           if(_maxprocEnergy>0.0)
+               return getRefinedEnergy(utilization.values());
+
             Double summaryEnergy = 0.0;
             CSDFNode node;
-            String proc;
             Double util;
 
             Iterator i = csdfg.getNodeList().iterator();
@@ -58,6 +106,7 @@ public class CSDFGEnergyRefiner {
                 /** TODO: common static energy for all the system is not taken into account */
                 summaryEnergy += _getDynamicEnergy(node.getName(),util);
             }
+
             return summaryEnergy;
     }
 
@@ -72,7 +121,7 @@ public class CSDFGEnergyRefiner {
     private Double _getDynamicEnergy(String nodeName, Double utilization) throws Exception{
         if(utilization==null)
             throw new Exception("dynamic energy calculation error: actor" +
-                    nodeName + " utilizations is not defined");
+                    nodeName + " utilization is not defined");
 
         if(_alpha==null)
             throw new Exception("dynamic energy calculation error: actor alpha-parameter is not defined");
@@ -85,11 +134,10 @@ public class CSDFGEnergyRefiner {
      * estimated for ODROID XU-3 (see paper)
      */
     private void _initDefault(){
-        _alpha = 3.03 /1000000000.0;
-        _b = 2.621;
+        _alpha = 3.03 /1000000000.0; //(W/MHz) one-processor dynamic power consumption
+        _b = 2.621; //static power consumption of one processor (W)
         _beta = 0.155;
     }
-
 
     /**
      * Get alpha-parameter
@@ -133,6 +181,20 @@ public class CSDFGEnergyRefiner {
         this._b = b;
     }
 
+    /**max dynamic energy consumption per platform processor
+     * @return max dynamic energy consumption per platform processor
+     */
+    public Double getMaxprocEnergy() {
+        return _maxprocEnergy;
+    }
+
+    /**max dynamic energy consumption per platform processor
+     * @param maxprocEnergy  max dynamic energy consumption per platform processor
+     */
+    public void setMaxprocEnergy(Double maxprocEnergy) {
+        this._maxprocEnergy = maxprocEnergy;
+    }
+
     /////////////////////////////////////////////////////////////////////
     ////                      private methods                       ////
     /**Singleton instance of energy refiner*/
@@ -150,6 +212,9 @@ public class CSDFGEnergyRefiner {
 
     /** beta - parameter*/
     @SerializedName("beta")private Double _beta;
+
+    /** max dynamic energy consumption per platform processor*/
+    @SerializedName("maxprocEnergy")private Double _maxprocEnergy = 0.0;
 
     /**Singleton instance of energy refiner*/
     private static CSDFGEnergyRefiner _energyRefiner = new CSDFGEnergyRefiner();

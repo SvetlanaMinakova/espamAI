@@ -1158,9 +1158,19 @@ public class UI {
     }
 
     /**
-     * TODO extend operators list or replace it??
-     * Set CSDF model operators execution time specification
-     * @param platform path to platform specification
+     * Parse NeurAghe platform specification
+     * @param platform path to NeurAghe platform specification
+     */
+    public void parseNeuraghePlatform(String platform){
+        setNEURAgheExecTimesSpec(platform);
+        double maxEnergy = NeurAghePlatformParser.getWCEnergy(platform);
+        CSDFGEnergyRefiner.getInstance().setMaxprocEnergy(maxEnergy);
+    }
+
+    /**
+     * Set CSDF model operators execution time specification,
+     * extracted from NeurAghe platform specification
+     * @param platform path to NeurAghe platform specification
      * */
     public void setNEURAgheExecTimesSpec(String platform) {
        HashMap<String,Integer> newSpecInGops = NeurAghePlatformParser.parseTimingSpecTemplate(platform);

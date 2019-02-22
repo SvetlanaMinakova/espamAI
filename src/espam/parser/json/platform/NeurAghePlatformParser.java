@@ -11,7 +11,7 @@ import java.util.Map;
 /** ALOHA project NeurAghe Platform parser*/
 public class NeurAghePlatformParser {
     /**
-     * print setup times from configuration in .json format
+     * extract time specification
      * This version of timing template does not support mapping.
      * TODO: version supports evaluation with mapping
      * @param path path to the timing specification
@@ -63,6 +63,39 @@ public class NeurAghePlatformParser {
         catch(Exception e){
             System.err.println("NeurAghe Platform parsing error: " + e.getMessage());
             return null;
+        }
+
+    }
+
+    /**
+     * extract time specification
+     * This version of timing template does not support mapping.
+     * TODO: version supports evaluation with mapping
+     * @param path path to the timing specification
+     */
+    public static double getWCEnergy(String path){
+        try {
+
+            Double curEnergy;
+            Double WCEnergy  = 0.0;
+
+            String strJSON =  FileWorker.read(path);
+
+            JsonObject pla = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
+            /**get cores*/
+            JsonArray cores = pla.get("cores").getAsJsonArray();
+            for(JsonElement core: cores) {
+                /**for each core get max power*/
+                curEnergy = ((JsonObject)core).get("max_power").getAsDouble();
+                if(curEnergy>WCEnergy)
+                    WCEnergy = curEnergy;
+
+                }
+            return WCEnergy;
+        }
+        catch(Exception e){
+            System.err.println("NeurAghe Platform parsing error: " + e.getMessage());
+            return 0.0;
         }
 
     }

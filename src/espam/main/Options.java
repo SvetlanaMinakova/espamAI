@@ -119,8 +119,8 @@ public class Options {
                         }
 
                         else if(arg.equals("--na-arch")){
-                            try { _cnnui.setNEURAgheExecTimesSpec(args[++i]); }
-                            catch (Exception e){ System.err.println("Invalid path to NeurAghe platform specification"); }
+                            try { _cnnui.parseNeuraghePlatform(args[++i]); }
+                            catch (Exception e){ System.err.println("Invalid NeurAghe platform specification"); }
                         }
 
                          else if(arg.equals("--energy-spec")){
@@ -392,7 +392,8 @@ public class Options {
         {"--split-step     ", "none", " <Integer>"},
         {"--time-spec      ", "none", " <FilePath>"},
         {"--energy-spec    ", "none", " <FilePath>"},
-        {"--consistency    ", "-c  ", " <FilePath>"}
+        {"--consistency    ", "-c  ", " <FilePath>"},
+        {"--na-arch    ", "none", " <FilePath>"}
        };
 
     /**

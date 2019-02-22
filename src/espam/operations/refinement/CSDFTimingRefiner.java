@@ -165,7 +165,7 @@ import java.util.Vector;
 
         try { time = _extrapolateParametrizedOperationTime(operation.toLowerCase()); }
         catch (Exception e){
-            System.out.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
+            System.err.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
             time = 1;
         }
         return time;
@@ -246,6 +246,10 @@ import java.util.Vector;
             return _extrapolateDenseOpTime(operation,paramStart);
         }
 
+        /**TODO refactoring*/
+        if(basicOpName.contains("add"))
+            basicOpName = "add";
+
         Integer basicOpTime = _basicOperationsTiming.get(basicOpName);
         if(basicOpTime==null)
             throw new Exception("unknown operation: " + basicOpName);
@@ -254,11 +258,9 @@ import java.util.Vector;
 
        if(basicOpName.contains("lrn") || basicOpName.contains("relu")||
                 basicOpName.contains("sigm")||basicOpName.contains("softmax")||
-                basicOpName.contains("thn")) {
-            return _extrapolateNonLinOpTime(_basicOperationsTiming.get(basicOpName),operation);
-
-        }
-
+                basicOpName.contains("thn") || basicOpName.contains("add")) {
+           return _extrapolateNonLinOpTime(_basicOperationsTiming.get(basicOpName), operation);
+       }
 
         throw new Exception("Exec_time extrapolation error, unknown operation: " + operation);
     }
