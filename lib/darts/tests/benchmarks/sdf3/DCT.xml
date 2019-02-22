@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="DCT">
+		<sdf name="DCT" type="DCT">
+
+			<actor name="FileReader__258" type="Node">
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a0__263" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__269" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="iDCT_1D_reference_fine__286" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__292" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="iDCT_1D_reference_fine__309" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a1__319" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="o0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__322" type="Node">
+				<port name="i0" type="in" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__258" srcPort="o0" dstActor="AnonFilter_a0__263" dstPort="i0"/>
+			<channel name="ch1" srcActor="AnonFilter_a0__263" srcPort="o0" dstActor="Pre_CollapsedDataParallel_1__269" dstPort="i0"/>
+			<channel name="ch2" srcActor="Pre_CollapsedDataParallel_1__269" srcPort="o0" dstActor="iDCT_1D_reference_fine__286" dstPort="i0"/>
+			<channel name="ch3" srcActor="iDCT_1D_reference_fine__286" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__292" dstPort="i0"/>
+			<channel name="ch4" srcActor="Post_CollapsedDataParallel_2__292" srcPort="o0" dstActor="iDCT_1D_reference_fine__309" dstPort="i0"/>
+			<channel name="ch5" srcActor="iDCT_1D_reference_fine__309" srcPort="o0" dstActor="AnonFilter_a1__319" dstPort="i0"/>
+			<channel name="ch6" srcActor="AnonFilter_a1__319" srcPort="o0" dstActor="FileWriter__322" dstPort="i0"/>
+			<channel name="_ch1" srcActor="FileReader__258" srcPort="_p1" dstActor="FileReader__258" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="AnonFilter_a0__263" srcPort="_p1" dstActor="AnonFilter_a0__263" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="Pre_CollapsedDataParallel_1__269" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__269" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="iDCT_1D_reference_fine__286" srcPort="_p1" dstActor="iDCT_1D_reference_fine__286" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="Post_CollapsedDataParallel_2__292" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__292" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="iDCT_1D_reference_fine__309" srcPort="_p1" dstActor="iDCT_1D_reference_fine__309" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="AnonFilter_a1__319" srcPort="_p1" dstActor="AnonFilter_a1__319" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="FileWriter__322" srcPort="_p1" dstActor="FileWriter__322" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__322" srcPort="_psco" dstActor="FileReader__258" dstPort="_psci" initialTokens='1000'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__258">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a0__263">
+				<processor type="p1" default="true">
+					<executionTime time="1536"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__269">
+				<processor type="p1" default="true">
+					<executionTime time="2595"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="iDCT_1D_reference_fine__286">
+				<processor type="p1" default="true">
+					<executionTime time="47616"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__292">
+				<processor type="p1" default="true">
+					<executionTime time="2851"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="iDCT_1D_reference_fine__309">
+				<processor type="p1" default="true">
+					<executionTime time="47616"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a1__319">
+				<processor type="p1" default="true">
+					<executionTime time="19456"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__322">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

@@ -1,0 +1,53 @@
+::
+
+    name:pipeline
+    type:csdf
+    node_number:3
+    node:
+	    id:1
+	    name:src
+	    function:src
+	    length:1
+	    wcet:1
+	    port_number:1
+	    port:
+		    type:out
+		    id:0
+		    rate:256
+    node:
+	    id:2
+	    name:process
+	    function:process
+	    length:1
+	    wcet:1
+	    port_number:2
+	    port:
+		    type:in
+		    id:0
+		    rate:256
+	    port:
+		    type:out
+		    id:1
+		    rate:256
+    node:
+	    id:3
+	    name:snk
+	    function:snk
+	    length:1
+	    wcet:1
+	    port_number:1
+	    port:
+		    type:in
+		    id:0
+		    rate:256
+    edge_number:2
+    edge:
+	    id:1
+	    name:ED_0
+	    src:1 0
+	    dst:2 0
+    edge:
+	    id:2
+	    name:ED_1
+	    src:2 1
+	    dst:3 0

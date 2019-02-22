@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+  <applicationGraph name='h263decoder'>
+    <sdf name="h263decoder" type="H263decoder">
+      <actor name="vld" type="A0">
+        <port name="p0" type="out" rate="594"/>
+        <port name="p1" type="in" rate="1"/>
+        <port name="p2" type="out" rate="1"/>
+        <port name="_psci" type="in" rate="1"/>
+      </actor>
+      <actor name="iq" type="A1">
+        <port name="p0" type="in" rate="1"/>
+        <port name="p1" type="out" rate="1"/>
+        <port name="p2" type="in" rate="1"/>
+        <port name="p3" type="out" rate="1"/>
+      </actor>
+      <actor name="idct" type="A2">
+        <port name="p0" type="in" rate="1"/>
+        <port name="p1" type="out" rate="1"/>
+        <port name="p2" type="in" rate="1"/>
+        <port name="p3" type="out" rate="1"/>
+      </actor>
+      <actor name="mc" type="A3">
+        <port name="p0" type="in" rate="594"/>
+        <port name="p1" type="in" rate="1"/>
+        <port name="p2" type="out" rate="1"/>
+        <port name="_psco" type="out" rate="1"/>
+      </actor>
+      <channel name="ED_1" srcActor="vld" srcPort="p0" dstActor="iq" dstPort="p0"/>
+      <channel name="ED_2" srcActor="iq" srcPort="p1" dstActor="idct" dstPort="p0"/>
+      <channel name="ED_3" srcActor="idct" srcPort="p1" dstActor="mc" dstPort="p0"/>
+      <channel name="vld2vld" srcActor="vld" srcPort="p2" dstActor="vld" dstPort="p1" initialTokens='1'/>
+      <channel name="iq2iq" srcActor="iq" srcPort="p3" dstActor="iq" dstPort="p2" initialTokens='1'/>
+	  <channel name="idct2idct" srcActor="idct" srcPort="p3" dstActor="idct" dstPort="p2" initialTokens='1'/>
+      <channel name="mc2mc" srcActor="mc" srcPort="p2" dstActor="mc" dstPort="p1" initialTokens='1'/>
+      <channel name="_chsc" srcActor="mc" srcPort="_psco" dstActor="vld" dstPort="_psci" initialTokens='600'/>
+    </sdf>
+    <sdfProperties>
+      <actorProperties actor="vld">
+        <processor type="arm" default="true">
+          <executionTime time="26018"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="iq">
+        <processor type="arm" default="true">
+          <executionTime time="559"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="idct">
+        <processor type="arm" default="true">
+          <executionTime time="486"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="mc">
+        <processor type="arm" default="true">
+          <executionTime time="10958"/>
+        </processor>
+      </actorProperties>
+    </sdfProperties>
+  </applicationGraph>
+</sdf3>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="csdf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-csdf.xsd">
+  <applicationGraph name='cd2dat'>
+    <csdf name='cd2dat' type='cd2dat'>
+
+        <actor name='src' type='a'>
+            <port type='out' name='p2' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+
+        <actor name='fir1' type='a'>
+            <port type='in'  name='p1' rate='1,0'/>
+            <port type='out' name='p2' rate='1,1'/>
+            <port type='out' name='p3' rate='1,1'/>
+			<port type='in' name='p4' rate='1,1'/>
+        </actor>
+
+        <actor name='fir2' type='a'>
+            <port type='in'  name='p1' rate='1,1,1,0'/>
+            <port type='out' name='p2' rate='1,1,1,1'/>
+            <port type='out' name='p3' rate='1,1,1,1'/>
+			<port type='in' name='p4' rate='1,1,1,1'/>
+        </actor>
+
+        <actor name='fir3' type='a'>
+            <port type='in'  name='p1'  rate='1,1,1,1,1,1,1'/>
+            <port type='out'  name='p2' rate='0,1,1,0,1,1,1'/>
+            <port type='out' name='p3' rate='1,1,1,1,1,1,1'/>
+			<port type='in' name='p4' rate='1,1,1,1,1,1,1'/>
+        </actor>
+
+        <actor name='fir4' type='a'>
+            <port type='in'  name='p1' rate='1,1,1,1,1,1,1'/>
+            <port type='out' name='p2' rate='0,1,0,1,0,1,1'/>
+            <port type='out' name='p3' rate='1,1,1,1,1,1,1'/>
+			<port type='in' name='p4' rate='1,1,1,1,1,1,1'/>
+        </actor>
+
+        <actor name='sink' type='a'>
+            <port type='in'  name='p1' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+
+		<channel name='_ch0' srcActor='src' srcPort='p3' dstActor='src' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch1' srcActor='fir1' srcPort='p3' dstActor='fir1' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch2' srcActor='fir2' srcPort='p3' dstActor='fir2' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch3' srcActor='fir3' srcPort='p3' dstActor='fir3' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch4' srcActor='fir4' srcPort='p3' dstActor='fir4' dstPort='p4' initialTokens='1'/>
+		<channel name='_ch5' srcActor='sink' srcPort='p3' dstActor='sink' dstPort='p4' initialTokens='1'/>
+
+
+        <channel name='ED_1' srcActor='src' srcPort='p2' dstActor='fir1' dstPort='p1'/>
+        <channel name='ED_2' srcActor='fir1' srcPort='p2' dstActor='fir2' dstPort='p1'/>
+        <channel name='ED_3' srcActor='fir2' srcPort='p2' dstActor='fir3' dstPort='p1'/>
+        <channel name='ED_4' srcActor='fir3' srcPort='p2' dstActor='fir4' dstPort='p1'/>
+        <channel name='ED_5' srcActor='fir4' srcPort='p2' dstActor='sink' dstPort='p1'/>
+
+    </csdf>
+    <csdfProperties>
+        <actorProperties actor='src'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='5'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='fir1'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='2,2'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='fir2'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='3,3,3,3'/>
+            </processor>                  
+        </actorProperties>
+        <actorProperties actor='fir3'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='1,1,1,1,1,1,1'/>
+            </processor>             
+        </actorProperties>
+        <actorProperties actor='fir4'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='4,4,4,4,4,4,4'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='sink'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='5'/>
+            </processor>
+        </actorProperties>
+    </csdfProperties>
+</applicationGraph>
+</sdf3>

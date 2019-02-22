@@ -1,0 +1,2312 @@
+{
+    "edge_number": 60, 
+    "edges": [
+        {
+            "dst": [
+                2, 
+                0
+            ], 
+            "id": 1, 
+            "name": "ED_0", 
+            "src": [
+                1, 
+                0
+            ]
+        }, 
+        {
+            "dst": [
+                3, 
+                0
+            ], 
+            "id": 2, 
+            "name": "ED_1", 
+            "src": [
+                2, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                4, 
+                0
+            ], 
+            "id": 3, 
+            "name": "ED_2", 
+            "src": [
+                3, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                13, 
+                0
+            ], 
+            "id": 4, 
+            "name": "ED_3", 
+            "src": [
+                3, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                5, 
+                0
+            ], 
+            "id": 5, 
+            "name": "ED_4", 
+            "src": [
+                4, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                10, 
+                0
+            ], 
+            "id": 6, 
+            "name": "ED_5", 
+            "src": [
+                4, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                6, 
+                0
+            ], 
+            "id": 7, 
+            "name": "ED_6", 
+            "src": [
+                5, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                7, 
+                0
+            ], 
+            "id": 8, 
+            "name": "ED_7", 
+            "src": [
+                6, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                8, 
+                0
+            ], 
+            "id": 9, 
+            "name": "ED_8", 
+            "src": [
+                7, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                9, 
+                0
+            ], 
+            "id": 10, 
+            "name": "ED_9", 
+            "src": [
+                8, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                11, 
+                0
+            ], 
+            "id": 11, 
+            "name": "ED_10", 
+            "src": [
+                9, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                12, 
+                0
+            ], 
+            "id": 12, 
+            "name": "ED_11", 
+            "src": [
+                11, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                14, 
+                0
+            ], 
+            "id": 13, 
+            "name": "ED_12", 
+            "src": [
+                12, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                15, 
+                0
+            ], 
+            "id": 14, 
+            "name": "ED_13", 
+            "src": [
+                14, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                16, 
+                0
+            ], 
+            "id": 15, 
+            "name": "ED_14", 
+            "src": [
+                15, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                25, 
+                0
+            ], 
+            "id": 16, 
+            "name": "ED_15", 
+            "src": [
+                15, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                17, 
+                0
+            ], 
+            "id": 17, 
+            "name": "ED_16", 
+            "src": [
+                16, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                22, 
+                0
+            ], 
+            "id": 18, 
+            "name": "ED_17", 
+            "src": [
+                16, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                18, 
+                0
+            ], 
+            "id": 19, 
+            "name": "ED_18", 
+            "src": [
+                17, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                19, 
+                0
+            ], 
+            "id": 20, 
+            "name": "ED_19", 
+            "src": [
+                18, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                20, 
+                0
+            ], 
+            "id": 21, 
+            "name": "ED_20", 
+            "src": [
+                19, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                21, 
+                0
+            ], 
+            "id": 22, 
+            "name": "ED_21", 
+            "src": [
+                20, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                23, 
+                0
+            ], 
+            "id": 23, 
+            "name": "ED_22", 
+            "src": [
+                21, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                24, 
+                0
+            ], 
+            "id": 24, 
+            "name": "ED_23", 
+            "src": [
+                23, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                26, 
+                0
+            ], 
+            "id": 25, 
+            "name": "ED_24", 
+            "src": [
+                24, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                27, 
+                0
+            ], 
+            "id": 26, 
+            "name": "ED_25", 
+            "src": [
+                26, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                28, 
+                0
+            ], 
+            "id": 27, 
+            "name": "ED_26", 
+            "src": [
+                27, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                37, 
+                0
+            ], 
+            "id": 28, 
+            "name": "ED_27", 
+            "src": [
+                27, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                29, 
+                0
+            ], 
+            "id": 29, 
+            "name": "ED_28", 
+            "src": [
+                28, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                34, 
+                0
+            ], 
+            "id": 30, 
+            "name": "ED_29", 
+            "src": [
+                28, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                30, 
+                0
+            ], 
+            "id": 31, 
+            "name": "ED_30", 
+            "src": [
+                29, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                31, 
+                0
+            ], 
+            "id": 32, 
+            "name": "ED_31", 
+            "src": [
+                30, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                32, 
+                0
+            ], 
+            "id": 33, 
+            "name": "ED_32", 
+            "src": [
+                31, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                33, 
+                0
+            ], 
+            "id": 34, 
+            "name": "ED_33", 
+            "src": [
+                32, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                35, 
+                0
+            ], 
+            "id": 35, 
+            "name": "ED_34", 
+            "src": [
+                33, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                36, 
+                0
+            ], 
+            "id": 36, 
+            "name": "ED_35", 
+            "src": [
+                35, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                38, 
+                0
+            ], 
+            "id": 37, 
+            "name": "ED_36", 
+            "src": [
+                36, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                39, 
+                0
+            ], 
+            "id": 38, 
+            "name": "ED_37", 
+            "src": [
+                38, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                40, 
+                0
+            ], 
+            "id": 39, 
+            "name": "ED_38", 
+            "src": [
+                39, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                49, 
+                0
+            ], 
+            "id": 40, 
+            "name": "ED_39", 
+            "src": [
+                39, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                41, 
+                0
+            ], 
+            "id": 41, 
+            "name": "ED_40", 
+            "src": [
+                40, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                46, 
+                0
+            ], 
+            "id": 42, 
+            "name": "ED_41", 
+            "src": [
+                40, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                42, 
+                0
+            ], 
+            "id": 43, 
+            "name": "ED_42", 
+            "src": [
+                41, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                43, 
+                0
+            ], 
+            "id": 44, 
+            "name": "ED_43", 
+            "src": [
+                42, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                44, 
+                0
+            ], 
+            "id": 45, 
+            "name": "ED_44", 
+            "src": [
+                43, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                45, 
+                0
+            ], 
+            "id": 46, 
+            "name": "ED_45", 
+            "src": [
+                44, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                47, 
+                0
+            ], 
+            "id": 47, 
+            "name": "ED_46", 
+            "src": [
+                45, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                48, 
+                0
+            ], 
+            "id": 48, 
+            "name": "ED_47", 
+            "src": [
+                47, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                50, 
+                0
+            ], 
+            "id": 49, 
+            "name": "ED_48", 
+            "src": [
+                48, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                51, 
+                0
+            ], 
+            "id": 50, 
+            "name": "ED_49", 
+            "src": [
+                50, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                52, 
+                0
+            ], 
+            "id": 51, 
+            "name": "ED_50", 
+            "src": [
+                51, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                53, 
+                0
+            ], 
+            "id": 52, 
+            "name": "ED_51", 
+            "src": [
+                52, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                47, 
+                2
+            ], 
+            "id": 53, 
+            "name": "ED_52", 
+            "src": [
+                46, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                50, 
+                2
+            ], 
+            "id": 54, 
+            "name": "ED_53", 
+            "src": [
+                49, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                35, 
+                2
+            ], 
+            "id": 55, 
+            "name": "ED_54", 
+            "src": [
+                34, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                38, 
+                2
+            ], 
+            "id": 56, 
+            "name": "ED_55", 
+            "src": [
+                37, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                23, 
+                2
+            ], 
+            "id": 57, 
+            "name": "ED_56", 
+            "src": [
+                22, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                26, 
+                2
+            ], 
+            "id": 58, 
+            "name": "ED_57", 
+            "src": [
+                25, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                11, 
+                2
+            ], 
+            "id": 59, 
+            "name": "ED_58", 
+            "src": [
+                10, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                14, 
+                2
+            ], 
+            "id": 60, 
+            "name": "ED_59", 
+            "src": [
+                13, 
+                1
+            ]
+        }
+    ], 
+    "name": "DES", 
+    "node_number": 53, 
+    "nodes": [
+        {
+            "code_size": 0, 
+            "function": "FileReader__2", 
+            "id": 1, 
+            "length": 1, 
+            "name": "FileReader__2", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doIP__10", 
+            "id": 2, 
+            "length": 1, 
+            "name": "doIP__10", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1024
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "DUPLICATE_Splitter_253", 
+            "id": 3, 
+            "length": 1, 
+            "name": "DUPLICATE_Splitter_253", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_255", 
+            "id": 4, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_255", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doE__18", 
+            "id": 5, 
+            "length": 1, 
+            "name": "doE__18", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                688
+            ]
+        }, 
+        {
+            "code_size": 52, 
+            "function": "AnonFilter_a2__46", 
+            "id": 6, 
+            "length": 1, 
+            "name": "AnonFilter_a2__46", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                624
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__52", 
+            "id": 7, 
+            "length": 1, 
+            "name": "Xor__52", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                576
+            ]
+        }, 
+        {
+            "code_size": 262, 
+            "function": "Sboxes__83", 
+            "id": 8, 
+            "length": 1, 
+            "name": "Sboxes__83", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                424
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doP__91", 
+            "id": 9, 
+            "length": 1, 
+            "name": "doP__91", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                512
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_256", 
+            "id": 11, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_256", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__101", 
+            "id": 12, 
+            "length": 1, 
+            "name": "Xor__101", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                384
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_254", 
+            "id": 14, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_254", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "DUPLICATE_Splitter_257", 
+            "id": 15, 
+            "length": 1, 
+            "name": "DUPLICATE_Splitter_257", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_259", 
+            "id": 16, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_259", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doE__115", 
+            "id": 17, 
+            "length": 1, 
+            "name": "doE__115", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                688
+            ]
+        }, 
+        {
+            "code_size": 52, 
+            "function": "AnonFilter_a2__143", 
+            "id": 18, 
+            "length": 1, 
+            "name": "AnonFilter_a2__143", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                624
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__149", 
+            "id": 19, 
+            "length": 1, 
+            "name": "Xor__149", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                576
+            ]
+        }, 
+        {
+            "code_size": 262, 
+            "function": "Sboxes__180", 
+            "id": 20, 
+            "length": 1, 
+            "name": "Sboxes__180", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                424
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doP__188", 
+            "id": 21, 
+            "length": 1, 
+            "name": "doP__188", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                512
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_260", 
+            "id": 23, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_260", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__198", 
+            "id": 24, 
+            "length": 1, 
+            "name": "Xor__198", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                384
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_258", 
+            "id": 26, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_258", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "DUPLICATE_Splitter_261", 
+            "id": 27, 
+            "length": 1, 
+            "name": "DUPLICATE_Splitter_261", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_263", 
+            "id": 28, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_263", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doE__212", 
+            "id": 29, 
+            "length": 1, 
+            "name": "doE__212", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                688
+            ]
+        }, 
+        {
+            "code_size": 52, 
+            "function": "AnonFilter_a2__240", 
+            "id": 30, 
+            "length": 1, 
+            "name": "AnonFilter_a2__240", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                624
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__246", 
+            "id": 31, 
+            "length": 1, 
+            "name": "Xor__246", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                576
+            ]
+        }, 
+        {
+            "code_size": 262, 
+            "function": "Sboxes__277", 
+            "id": 32, 
+            "length": 1, 
+            "name": "Sboxes__277", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                424
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doP__285", 
+            "id": 33, 
+            "length": 1, 
+            "name": "doP__285", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                512
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_264", 
+            "id": 35, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_264", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__295", 
+            "id": 36, 
+            "length": 1, 
+            "name": "Xor__295", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                384
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_262", 
+            "id": 38, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_262", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "DUPLICATE_Splitter_265", 
+            "id": 39, 
+            "length": 1, 
+            "name": "DUPLICATE_Splitter_265", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_267", 
+            "id": 40, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_267", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doE__309", 
+            "id": 41, 
+            "length": 1, 
+            "name": "doE__309", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                688
+            ]
+        }, 
+        {
+            "code_size": 52, 
+            "function": "AnonFilter_a2__337", 
+            "id": 42, 
+            "length": 1, 
+            "name": "AnonFilter_a2__337", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                624
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__343", 
+            "id": 43, 
+            "length": 1, 
+            "name": "Xor__343", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        96
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                576
+            ]
+        }, 
+        {
+            "code_size": 262, 
+            "function": "Sboxes__374", 
+            "id": 44, 
+            "length": 1, 
+            "name": "Sboxes__374", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                424
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doP__382", 
+            "id": 45, 
+            "length": 1, 
+            "name": "doP__382", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                512
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_268", 
+            "id": 47, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_268", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 28, 
+            "function": "Xor__392", 
+            "id": 48, 
+            "length": 1, 
+            "name": "Xor__392", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                384
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_266", 
+            "id": 50, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_266", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 68, 
+            "function": "CrissCross__407", 
+            "id": 51, 
+            "length": 1, 
+            "name": "CrissCross__407", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                704
+            ]
+        }, 
+        {
+            "code_size": 60, 
+            "function": "doIPm1__415", 
+            "id": 52, 
+            "length": 1, 
+            "name": "doIPm1__415", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1024
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "FileWriter__418", 
+            "id": 53, 
+            "length": 1, 
+            "name": "FileWriter__418", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 12, 
+            "function": "Identity__386", 
+            "id": 46, 
+            "length": 1, 
+            "name": "Identity__386", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                192
+            ]
+        }, 
+        {
+            "code_size": 38, 
+            "function": "nextL__398", 
+            "id": 49, 
+            "length": 1, 
+            "name": "nextL__398", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                416
+            ]
+        }, 
+        {
+            "code_size": 12, 
+            "function": "Identity__289", 
+            "id": 34, 
+            "length": 1, 
+            "name": "Identity__289", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                192
+            ]
+        }, 
+        {
+            "code_size": 38, 
+            "function": "nextL__301", 
+            "id": 37, 
+            "length": 1, 
+            "name": "nextL__301", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                416
+            ]
+        }, 
+        {
+            "code_size": 12, 
+            "function": "Identity__192", 
+            "id": 22, 
+            "length": 1, 
+            "name": "Identity__192", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                192
+            ]
+        }, 
+        {
+            "code_size": 38, 
+            "function": "nextL__204", 
+            "id": 25, 
+            "length": 1, 
+            "name": "nextL__204", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                416
+            ]
+        }, 
+        {
+            "code_size": 12, 
+            "function": "Identity__95", 
+            "id": 10, 
+            "length": 1, 
+            "name": "Identity__95", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                192
+            ]
+        }, 
+        {
+            "code_size": 38, 
+            "function": "nextL__107", 
+            "id": 13, 
+            "length": 1, 
+            "name": "nextL__107", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        64
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        32
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                416
+            ]
+        }
+    ], 
+    "type": "sdf"
+}

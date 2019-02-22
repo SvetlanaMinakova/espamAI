@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="FFT">
+		<sdf name="FFT" type="FFT">
+
+			<actor name="FileReader__2" type="Node">
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__13" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__24" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__35" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__46" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__57" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__68" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FFTReorderSimple__79" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__101" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__123" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__145" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__167" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__189" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__211" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__233" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CombineDFT__255" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="o0" type="out" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__258" type="Node">
+				<port name="i0" type="in" rate="512"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__2" srcPort="o0" dstActor="FFTReorderSimple__13" dstPort="i0"/>
+			<channel name="ch1" srcActor="FFTReorderSimple__13" srcPort="o0" dstActor="FFTReorderSimple__24" dstPort="i0"/>
+			<channel name="ch2" srcActor="FFTReorderSimple__24" srcPort="o0" dstActor="FFTReorderSimple__35" dstPort="i0"/>
+			<channel name="ch3" srcActor="FFTReorderSimple__35" srcPort="o0" dstActor="FFTReorderSimple__46" dstPort="i0"/>
+			<channel name="ch4" srcActor="FFTReorderSimple__46" srcPort="o0" dstActor="FFTReorderSimple__57" dstPort="i0"/>
+			<channel name="ch5" srcActor="FFTReorderSimple__57" srcPort="o0" dstActor="FFTReorderSimple__68" dstPort="i0"/>
+			<channel name="ch6" srcActor="FFTReorderSimple__68" srcPort="o0" dstActor="FFTReorderSimple__79" dstPort="i0"/>
+			<channel name="ch7" srcActor="FFTReorderSimple__79" srcPort="o0" dstActor="CombineDFT__101" dstPort="i0"/>
+			<channel name="ch8" srcActor="CombineDFT__101" srcPort="o0" dstActor="CombineDFT__123" dstPort="i0"/>
+			<channel name="ch9" srcActor="CombineDFT__123" srcPort="o0" dstActor="CombineDFT__145" dstPort="i0"/>
+			<channel name="ch10" srcActor="CombineDFT__145" srcPort="o0" dstActor="CombineDFT__167" dstPort="i0"/>
+			<channel name="ch11" srcActor="CombineDFT__167" srcPort="o0" dstActor="CombineDFT__189" dstPort="i0"/>
+			<channel name="ch12" srcActor="CombineDFT__189" srcPort="o0" dstActor="CombineDFT__211" dstPort="i0"/>
+			<channel name="ch13" srcActor="CombineDFT__211" srcPort="o0" dstActor="CombineDFT__233" dstPort="i0"/>
+			<channel name="ch14" srcActor="CombineDFT__233" srcPort="o0" dstActor="CombineDFT__255" dstPort="i0"/>
+			<channel name="ch15" srcActor="CombineDFT__255" srcPort="o0" dstActor="FileWriter__258" dstPort="i0"/>
+			<channel name="_ch1" srcActor="FileReader__2" srcPort="_p1" dstActor="FileReader__2" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="FFTReorderSimple__13" srcPort="_p1" dstActor="FFTReorderSimple__13" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="FFTReorderSimple__24" srcPort="_p1" dstActor="FFTReorderSimple__24" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="FFTReorderSimple__35" srcPort="_p1" dstActor="FFTReorderSimple__35" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="FFTReorderSimple__46" srcPort="_p1" dstActor="FFTReorderSimple__46" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="FFTReorderSimple__57" srcPort="_p1" dstActor="FFTReorderSimple__57" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="FFTReorderSimple__68" srcPort="_p1" dstActor="FFTReorderSimple__68" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="FFTReorderSimple__79" srcPort="_p1" dstActor="FFTReorderSimple__79" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="CombineDFT__101" srcPort="_p1" dstActor="CombineDFT__101" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="CombineDFT__123" srcPort="_p1" dstActor="CombineDFT__123" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="CombineDFT__145" srcPort="_p1" dstActor="CombineDFT__145" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="CombineDFT__167" srcPort="_p1" dstActor="CombineDFT__167" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="CombineDFT__189" srcPort="_p1" dstActor="CombineDFT__189" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="CombineDFT__211" srcPort="_p1" dstActor="CombineDFT__211" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="CombineDFT__233" srcPort="_p1" dstActor="CombineDFT__233" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="CombineDFT__255" srcPort="_p1" dstActor="CombineDFT__255" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="FileWriter__258" srcPort="_p1" dstActor="FileWriter__258" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__258" srcPort="_psco" dstActor="FileReader__2" dstPort="_psci" initialTokens='100'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__2">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__13">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__24">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__35">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__46">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__57">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__68">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FFTReorderSimple__79">
+				<processor type="p1" default="true">
+					<executionTime time="6400"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__101">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__123">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__145">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__167">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__189">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__211">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__233">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CombineDFT__255">
+				<processor type="p1" default="true">
+					<executionTime time="12032"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__258">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

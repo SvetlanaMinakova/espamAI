@@ -1,0 +1,664 @@
+{
+    "edge_number": 16, 
+    "edges": [
+        {
+            "dst": [
+                2, 
+                0
+            ], 
+            "id": 1, 
+            "name": "ED_0", 
+            "src": [
+                1, 
+                0
+            ]
+        }, 
+        {
+            "dst": [
+                3, 
+                0
+            ], 
+            "id": 2, 
+            "name": "ED_1", 
+            "src": [
+                2, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                4, 
+                0
+            ], 
+            "id": 3, 
+            "name": "ED_2", 
+            "src": [
+                3, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                5, 
+                0
+            ], 
+            "id": 4, 
+            "name": "ED_3", 
+            "src": [
+                4, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                6, 
+                0
+            ], 
+            "id": 5, 
+            "name": "ED_4", 
+            "src": [
+                5, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                7, 
+                0
+            ], 
+            "id": 6, 
+            "name": "ED_5", 
+            "src": [
+                6, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                8, 
+                0
+            ], 
+            "id": 7, 
+            "name": "ED_6", 
+            "src": [
+                7, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                9, 
+                0
+            ], 
+            "id": 8, 
+            "name": "ED_7", 
+            "src": [
+                8, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                10, 
+                0
+            ], 
+            "id": 9, 
+            "name": "ED_8", 
+            "src": [
+                9, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                11, 
+                0
+            ], 
+            "id": 10, 
+            "name": "ED_9", 
+            "src": [
+                10, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                12, 
+                0
+            ], 
+            "id": 11, 
+            "name": "ED_10", 
+            "src": [
+                11, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                13, 
+                0
+            ], 
+            "id": 12, 
+            "name": "ED_11", 
+            "src": [
+                12, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                14, 
+                0
+            ], 
+            "id": 13, 
+            "name": "ED_12", 
+            "src": [
+                13, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                15, 
+                0
+            ], 
+            "id": 14, 
+            "name": "ED_13", 
+            "src": [
+                14, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                16, 
+                0
+            ], 
+            "id": 15, 
+            "name": "ED_14", 
+            "src": [
+                15, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                17, 
+                0
+            ], 
+            "id": 16, 
+            "name": "ED_15", 
+            "src": [
+                16, 
+                1
+            ]
+        }
+    ], 
+    "name": "FFT", 
+    "node_number": 17, 
+    "nodes": [
+        {
+            "code_size": 0, 
+            "function": "FileReader__2", 
+            "id": 1, 
+            "length": 1, 
+            "name": "FileReader__2", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__13", 
+            "id": 2, 
+            "length": 1, 
+            "name": "FFTReorderSimple__13", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__24", 
+            "id": 3, 
+            "length": 1, 
+            "name": "FFTReorderSimple__24", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__35", 
+            "id": 4, 
+            "length": 1, 
+            "name": "FFTReorderSimple__35", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__46", 
+            "id": 5, 
+            "length": 1, 
+            "name": "FFTReorderSimple__46", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__57", 
+            "id": 6, 
+            "length": 1, 
+            "name": "FFTReorderSimple__57", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__68", 
+            "id": 7, 
+            "length": 1, 
+            "name": "FFTReorderSimple__68", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 108, 
+            "function": "FFTReorderSimple__79", 
+            "id": 8, 
+            "length": 1, 
+            "name": "FFTReorderSimple__79", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6400
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__101", 
+            "id": 9, 
+            "length": 1, 
+            "name": "CombineDFT__101", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__123", 
+            "id": 10, 
+            "length": 1, 
+            "name": "CombineDFT__123", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__145", 
+            "id": 11, 
+            "length": 1, 
+            "name": "CombineDFT__145", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__167", 
+            "id": 12, 
+            "length": 1, 
+            "name": "CombineDFT__167", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__189", 
+            "id": 13, 
+            "length": 1, 
+            "name": "CombineDFT__189", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__211", 
+            "id": 14, 
+            "length": 1, 
+            "name": "CombineDFT__211", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__233", 
+            "id": 15, 
+            "length": 1, 
+            "name": "CombineDFT__233", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 244, 
+            "function": "CombineDFT__255", 
+            "id": 16, 
+            "length": 1, 
+            "name": "CombineDFT__255", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12032
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "FileWriter__258", 
+            "id": 17, 
+            "length": 1, 
+            "name": "FileWriter__258", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        512
+                    ], 
+                    "type": "in"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }
+    ], 
+    "type": "sdf"
+}

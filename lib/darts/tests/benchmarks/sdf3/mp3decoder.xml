@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+  <applicationGraph name='mp3decoder'>
+    <sdf name='mp3decoder' type='MP3decoder'>
+      <actor name='huffman' type='Huffman'>
+          <port name='p0' type='out' rate='2'/>
+          <port name='p1' type='out' rate='2'/>
+          <port name='p2' type='in' rate='1'/>
+          <port name='p3' type='out' rate='1'/>
+          <port name='_psci1' type='in' rate='2'/>
+          <port name='_psci2' type='in' rate='2'/>
+      </actor>
+      <actor name='req0' type='Req'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+          <port name='p2' type='in' rate='1'/>
+          <port name='p3' type='out' rate='1'/>
+          <port name='p4' type='out' rate='1'/>
+      </actor>
+      <actor name='reorder0' type='Reorder'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+      </actor>
+      <actor name='req1' type='Req'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+          <port name='p2' type='in' rate='1'/>
+          <port name='p3' type='out' rate='1'/>
+          <port name='p4' type='out' rate='1'/>
+      </actor>
+      <actor name='reorder1' type='Reorder'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+      </actor>
+      <actor name='stereo' type='Stereo'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='in' rate='1'/>
+          <port name='p2' type='out' rate='1'/>
+          <port name='p3' type='out' rate='1'/>
+          <port name='p4' type='in' rate='1'/>
+          <port name='p5' type='in' rate='1'/>
+          <port name='p6' type='out' rate='1'/>
+          <port name='p7' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='aliasreduct0' type='AliasReduct'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='IMDCT0' type='IMDCT'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+          <port name='p2' type='in' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='freqinv0' type='FreqInv'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='synth0' type='Synth'>
+          <port name='p0' type='in' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+		  <port name='_psco' type='out' rate='1'/>
+
+      </actor>
+      <actor name='aliasreduct1' type='AliasReduct'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='IMDCT1' type='IMDCT'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+          <port name='p2' type='in' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='freqinv1' type='FreqInv'>
+          <port name='p0' type='in' rate='1'/>
+          <port name='p1' type='out' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+
+      </actor>
+      <actor name='synth1' type='Synth'>
+          <port name='p0' type='in' rate='1'/>
+		  <port name='_p1' type='out' rate='1'/>
+		  <port name='_p2' type='in' rate='1'/>
+		  <port name='_psco' type='out' rate='1'/>
+
+      </actor>
+      <channel name='ED_0' srcActor='huffman' srcPort='p0' dstActor='req0' dstPort='p0'/>
+      <channel name='ED_1' srcActor='huffman' srcPort='p1' dstActor='req1' dstPort='p0'/>
+      <channel name='ED_2' srcActor='req0' srcPort='p1' dstActor='reorder0' dstPort='p0'/>
+      <channel name='ED_3' srcActor='req1' srcPort='p1' dstActor='reorder1' dstPort='p0'/>
+      <channel name='ED_4' srcActor='reorder0' srcPort='p1' dstActor='stereo' dstPort='p0'/>
+      <channel name='ED_5' srcActor='reorder1' srcPort='p1' dstActor='stereo' dstPort='p1'/>
+      <channel name='ED_6' srcActor='stereo' srcPort='p2' dstActor='aliasreduct0' dstPort='p0'/>
+      <channel name='ED_7' srcActor='stereo' srcPort='p3' dstActor='aliasreduct1' dstPort='p0'/>
+      <channel name='ED_8' srcActor='aliasreduct0' srcPort='p1' dstActor='IMDCT0' dstPort='p0'/>
+      <channel name='ED_9' srcActor='aliasreduct1' srcPort='p1' dstActor='IMDCT1' dstPort='p0'/>
+      <channel name='ED_10' srcActor='IMDCT0' srcPort='p1' dstActor='freqinv0' dstPort='p0'/>
+      <channel name='ED_11' srcActor='IMDCT1' srcPort='p1' dstActor='freqinv1' dstPort='p0'/>
+      <channel name='ED_12' srcActor='freqinv0' srcPort='p1' dstActor='synth0' dstPort='p0'/>
+      <channel name='ED_13' srcActor='freqinv1' srcPort='p1' dstActor='synth1' dstPort='p0'/>
+      <channel name='ED_14' srcActor='req0' srcPort='p4' dstActor='stereo' dstPort='p4'/>
+      <channel name='ED_15' srcActor='req1' srcPort='p4' dstActor='stereo' dstPort='p5'/>
+      <channel name='ED_16' srcActor='stereo' srcPort='p6' dstActor='IMDCT0' dstPort='p2'/>
+      <channel name='ED_17' srcActor='stereo' srcPort='p7' dstActor='IMDCT1' dstPort='p2'/>
+      <channel name='_ch1' srcActor='huffman' srcPort='p3' dstActor='huffman' dstPort='p2' initialTokens='1'/>
+      <channel name='_ch2' srcActor='req0' srcPort='p3' dstActor='req0' dstPort='p2' initialTokens='1'/>
+      <channel name='_ch3' srcActor='req1' srcPort='p3' dstActor='req1' dstPort='p2' initialTokens='1'/>
+      <channel name='_ch4' srcActor='reorder0' srcPort='_p1' dstActor='reorder0' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch5' srcActor='reorder1' srcPort='_p1' dstActor='reorder1' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch6' srcActor='stereo' srcPort='_p1' dstActor='stereo' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch7' srcActor='aliasreduct0' srcPort='_p1' dstActor='aliasreduct0' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch8' srcActor='IMDCT0' srcPort='_p1' dstActor='IMDCT0' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch9' srcActor='IMDCT1' srcPort='_p1' dstActor='IMDCT1' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch10' srcActor='freqinv0' srcPort='_p1' dstActor='freqinv0' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch11' srcActor='freqinv1' srcPort='_p1' dstActor='freqinv1' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch12' srcActor='aliasreduct1' srcPort='_p1' dstActor='aliasreduct1' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch13' srcActor='synth1' srcPort='_p1' dstActor='synth1' dstPort='_p2' initialTokens='1'/>
+      <channel name='_ch14' srcActor='synth0' srcPort='_p1' dstActor='synth0' dstPort='_p2' initialTokens='1'/>
+      <channel name='_chsc1' srcActor='synth0' srcPort='_psco' dstActor='huffman' dstPort='_psci1' initialTokens='1000'/>
+      <channel name='_chsc2' srcActor='synth1' srcPort='_psco' dstActor='huffman' dstPort='_psci2' initialTokens='1000'/>
+
+    </sdf>
+
+  <sdfProperties>
+      <actorProperties actor='huffman'>
+        <processor type="arm" default="true">
+          <executionTime time="236070"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='req0'>
+        <processor type="arm" default="true">
+          <executionTime time="139325"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='reorder0'>
+        <processor type="arm" default="true">
+          <executionTime time="69385"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='req1'>
+        <processor type="arm" default="true">
+          <executionTime time="139325"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='reorder1'>
+        <processor type="arm" default="true">
+          <executionTime time="69385"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='stereo'>
+        <processor type="arm" default="true">
+          <executionTime time="73618"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='aliasreduct0'>
+        <processor type="arm" default="true">
+          <executionTime time="13088"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='IMDCT0'>
+        <processor type="arm" default="true">
+          <executionTime time="711744"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='freqinv0'>
+        <processor type="arm" default="true">
+          <executionTime time="157184"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='synth0'>
+        <processor type="arm" default="true">
+          <executionTime time="1866138"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='aliasreduct1'>
+        <processor type="arm" default="true">
+          <executionTime time="13088"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='IMDCT1'>
+        <processor type="arm" default="true">
+          <executionTime time="711744"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='freqinv1'>
+        <processor type="arm" default="true">
+          <executionTime time="157184"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor='synth1'>
+        <processor type="arm" default="true">
+          <executionTime time="1866138"/>
+        </processor>
+      </actorProperties>
+    </sdfProperties>
+  </applicationGraph>
+</sdf3>

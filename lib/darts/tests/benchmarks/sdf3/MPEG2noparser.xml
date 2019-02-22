@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="MPEG2noparser">
+		<sdf name="MPEG2noparser" type="MPEG2noparser">
+
+			<actor name="FileReader__130" type="Node">
+				<port name="o0" type="out" rate="403"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_310" type="Node">
+				<port name="i0" type="in" rate="403"/>
+				<port name="o1" type="out" rate="16"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="o2" type="out" rate="3"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ZigZagUnordering__138" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_312" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o1" type="out" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_314" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o1" type="out" rate="378"/>
+				<port name="o0" type="out" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InverseQuantization_DC_Intra_Coeff__144" type="Node">
+				<port name="i0" type="in" rate="6"/>
+				<port name="o0" type="out" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_315" type="Node">
+				<port name="i0" type="in" rate="6"/>
+				<port name="i1" type="in" rate="378"/>
+				<port name="o0" type="out" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_313" type="Node">
+				<port name="i0" type="in" rate="6"/>
+				<port name="i1" type="in" rate="384"/>
+				<port name="o0" type="out" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InverseQuantizationJoinerSubstitute__171" type="Node">
+				<port name="i0" type="in" rate="6"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Saturation__175" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="MismatchControl__183" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="iDCT8x8_1D_row_fast__206" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__212" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="iDCT8x8_1D_col_fast_fine__235" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__241" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BoundedSaturation__250" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_311" type="Node">
+				<port name="i1" type="in" rate="48"/>
+				<port name="i2" type="in" rate="18"/>
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__297" type="Node">
+				<port name="i0" type="in" rate="6"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+
+			<actor name="InverseQuantization_AC_Coeff__154" type="Node">
+				<port name="i0" type="in" rate="378"/>
+				<port name="o0" type="out" rate="378"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InverseQuantization_AC_Coeff__165" type="Node">
+				<port name="i0" type="in" rate="384"/>
+				<port name="o0" type="out" rate="384"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="MotionVectorDecode__280" type="Node">
+				<port name="i0" type="in" rate="16"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Repeat__287" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Repeat__294" type="Node">
+				<port name="i0" type="in" rate="3"/>
+				<port name="o0" type="out" rate="18"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__130" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_310" dstPort="i0"/>
+			<channel name="ch1" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_310" srcPort="o0" dstActor="ZigZagUnordering__138" dstPort="i0"/>
+			<channel name="ch2" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_310" srcPort="o1" dstActor="MotionVectorDecode__280" dstPort="i0"/>
+			<channel name="ch3" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_310" srcPort="o2" dstActor="Repeat__294" dstPort="i0"/>
+			<channel name="ch4" srcActor="ZigZagUnordering__138" srcPort="o0" dstActor="DUPLICATE_Splitter_312" dstPort="i0"/>
+			<channel name="ch5" srcActor="DUPLICATE_Splitter_312" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_314" dstPort="i0"/>
+			<channel name="ch6" srcActor="DUPLICATE_Splitter_312" srcPort="o1" dstActor="InverseQuantization_AC_Coeff__165" dstPort="i0"/>
+			<channel name="ch7" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_314" srcPort="o0" dstActor="InverseQuantization_DC_Intra_Coeff__144" dstPort="i0"/>
+			<channel name="ch8" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_314" srcPort="o1" dstActor="InverseQuantization_AC_Coeff__154" dstPort="i0"/>
+			<channel name="ch9" srcActor="InverseQuantization_DC_Intra_Coeff__144" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_315" dstPort="i0"/>
+			<channel name="ch10" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_315" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_313" dstPort="i0"/>
+			<channel name="ch11" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_313" srcPort="o0" dstActor="InverseQuantizationJoinerSubstitute__171" dstPort="i0"/>
+			<channel name="ch12" srcActor="InverseQuantizationJoinerSubstitute__171" srcPort="o0" dstActor="Saturation__175" dstPort="i0"/>
+			<channel name="ch13" srcActor="Saturation__175" srcPort="o0" dstActor="MismatchControl__183" dstPort="i0"/>
+			<channel name="ch14" srcActor="MismatchControl__183" srcPort="o0" dstActor="iDCT8x8_1D_row_fast__206" dstPort="i0"/>
+			<channel name="ch15" srcActor="iDCT8x8_1D_row_fast__206" srcPort="o0" dstActor="Pre_CollapsedDataParallel_1__212" dstPort="i0"/>
+			<channel name="ch16" srcActor="Pre_CollapsedDataParallel_1__212" srcPort="o0" dstActor="iDCT8x8_1D_col_fast_fine__235" dstPort="i0"/>
+			<channel name="ch17" srcActor="iDCT8x8_1D_col_fast_fine__235" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__241" dstPort="i0"/>
+			<channel name="ch18" srcActor="Post_CollapsedDataParallel_2__241" srcPort="o0" dstActor="BoundedSaturation__250" dstPort="i0"/>
+			<channel name="ch19" srcActor="BoundedSaturation__250" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_311" dstPort="i0"/>
+			<channel name="ch20" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_311" srcPort="o0" dstActor="FileWriter__297" dstPort="i0"/>
+			<channel name="ch21" srcActor="InverseQuantization_AC_Coeff__154" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_315" dstPort="i1"/>
+			<channel name="ch22" srcActor="InverseQuantization_AC_Coeff__165" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_313" dstPort="i1"/>
+			<channel name="ch23" srcActor="MotionVectorDecode__280" srcPort="o0" dstActor="Repeat__287" dstPort="i0"/>
+			<channel name="ch24" srcActor="Repeat__287" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_311" dstPort="i1"/>
+			<channel name="ch25" srcActor="Repeat__294" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_311" dstPort="i2"/>
+			<channel name="_ch1" srcActor="FileReader__130" srcPort="_p1" dstActor="FileReader__130" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_310" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_310" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="ZigZagUnordering__138" srcPort="_p1" dstActor="ZigZagUnordering__138" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="DUPLICATE_Splitter_312" srcPort="_p1" dstActor="DUPLICATE_Splitter_312" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_314" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_314" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="InverseQuantization_DC_Intra_Coeff__144" srcPort="_p1" dstActor="InverseQuantization_DC_Intra_Coeff__144" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_315" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_315" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_313" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_313" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="InverseQuantizationJoinerSubstitute__171" srcPort="_p1" dstActor="InverseQuantizationJoinerSubstitute__171" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="Saturation__175" srcPort="_p1" dstActor="Saturation__175" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="MismatchControl__183" srcPort="_p1" dstActor="MismatchControl__183" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="iDCT8x8_1D_row_fast__206" srcPort="_p1" dstActor="iDCT8x8_1D_row_fast__206" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="Pre_CollapsedDataParallel_1__212" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__212" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="iDCT8x8_1D_col_fast_fine__235" srcPort="_p1" dstActor="iDCT8x8_1D_col_fast_fine__235" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="Post_CollapsedDataParallel_2__241" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__241" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="BoundedSaturation__250" srcPort="_p1" dstActor="BoundedSaturation__250" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_311" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_311" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch18" srcActor="FileWriter__297" srcPort="_p1" dstActor="FileWriter__297" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch19" srcActor="InverseQuantization_AC_Coeff__154" srcPort="_p1" dstActor="InverseQuantization_AC_Coeff__154" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch20" srcActor="InverseQuantization_AC_Coeff__165" srcPort="_p1" dstActor="InverseQuantization_AC_Coeff__165" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch21" srcActor="MotionVectorDecode__280" srcPort="_p1" dstActor="MotionVectorDecode__280" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch22" srcActor="Repeat__287" srcPort="_p1" dstActor="Repeat__287" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch23" srcActor="Repeat__294" srcPort="_p1" dstActor="Repeat__294" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__297" srcPort="_psco" dstActor="FileReader__130" dstPort="_psci" initialTokens='100'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__130">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_310">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ZigZagUnordering__138">
+				<processor type="p1" default="true">
+					<executionTime time="4608"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_312">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_314">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InverseQuantization_DC_Intra_Coeff__144">
+				<processor type="p1" default="true">
+					<executionTime time="42"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_315">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_313">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InverseQuantizationJoinerSubstitute__171">
+				<processor type="p1" default="true">
+					<executionTime time="4992"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Saturation__175">
+				<processor type="p1" default="true">
+					<executionTime time="3456"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="MismatchControl__183">
+				<processor type="p1" default="true">
+					<executionTime time="3474"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="iDCT8x8_1D_row_fast__206">
+				<processor type="p1" default="true">
+					<executionTime time="6624"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__212">
+				<processor type="p1" default="true">
+					<executionTime time="3954"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="iDCT8x8_1D_col_fast_fine__235">
+				<processor type="p1" default="true">
+					<executionTime time="6864"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__241">
+				<processor type="p1" default="true">
+					<executionTime time="4338"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BoundedSaturation__250">
+				<processor type="p1" default="true">
+					<executionTime time="3456"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_311">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__297">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InverseQuantization_AC_Coeff__154">
+				<processor type="p1" default="true">
+					<executionTime time="6426"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InverseQuantization_AC_Coeff__165">
+				<processor type="p1" default="true">
+					<executionTime time="7680"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="MotionVectorDecode__280">
+				<processor type="p1" default="true">
+					<executionTime time="406"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Repeat__287">
+				<processor type="p1" default="true">
+					<executionTime time="292"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Repeat__294">
+				<processor type="p1" default="true">
+					<executionTime time="117"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

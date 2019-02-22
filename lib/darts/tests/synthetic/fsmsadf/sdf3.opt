@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="fsmsadf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-fsmsadf.xsd">
+  <settings type="generate">
+    <!-- number of scenario graphs (integer) -->
+    <nrScenarioGraphs n="2"/> 
+    <!-- number of actors in a scenario graph (integer) -->
+    <nrActors n="3"/> 
+    <!-- in/out degree of actors (real) -->
+    <degree avg="1.1" var="0.1" min="1" max="3"/> 
+    <!-- repetition vector entry of actors (real) -->
+    <iterCnt avg="2" var="1" min="1" max="3"/> 
+    <!-- probablity that additional channels are selected to store initial
+         tokens (real) -->
+    <initialTokenChannelProp p="0.001"/>
+    <!-- probability that more then the minimal number of initial tokens are
+         placed on a channel (real) -->
+    <initialTokenProp p="0.001"/>
+    <!-- number of scenarios (integer) -->
+    <nrScenarios n="3"/>
+    <!-- number of different processor type (integer) -->
+    <nrProcTypes n="2"/>
+    <!-- probability that actor supports a processor type (real) -->
+    <mapChance p="0.7"/>
+    <!-- generate unified actor properties (i.e. same processor types supported
+         on actors with the same name in different scenario graphs) -->
+    <unifiedActorProperties/>
+    <!-- execution time of an actor (real) - when this element is not specified,
+         no execution times are generated -->
+    <execTime avg="2" var="1" min="1" max="3"/>
+    <!-- state size of an actor (real) - when this element is not specified,
+         no state sizes are generated -->
+    <stateSize avg="2" var="1" min="1" max="3"/>
+    <!-- token size of an token (real) - when this element is not specified,
+         no token sizes are generated -->
+    <tokenSize avg="2" var="1" min="1" max="3"/>
+    <!-- when this element is specified, a throughput constraint is generated.
+         this throughput constraint takes into account the 
+         autoConcurrencyDegree (integer) and throughput scale factor (real). -->
+    <throughputConstraint autoConcurrencyDegree="1" throughputScaleFactor="0.1"/>
+  </settings>
+</sdf3>

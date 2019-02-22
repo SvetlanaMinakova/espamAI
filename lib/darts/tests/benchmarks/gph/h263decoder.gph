@@ -1,0 +1,144 @@
+{
+    "name": "h263decoder",
+    "edge_number": 3,
+    "edges": [
+        {
+            "src": [
+                0,
+                0
+            ],
+            "dst": [
+                1,
+                0
+            ],
+            "id": 0,
+            "name": "ED_1"
+        },
+        {
+            "src": [
+                1,
+                1
+            ],
+            "dst": [
+                2,
+                0
+            ],
+            "id": 1,
+            "name": "ED_2"
+        },
+        {
+            "src": [
+                2,
+                1
+            ],
+            "dst": [
+                3,
+                0
+            ],
+            "id": 2,
+            "name": "ED_3"
+        }
+    ],
+    "node_number": 4,
+    "nodes": [
+        {
+            "function": "vld",
+            "name": "vld",
+            "ports": [
+                {
+                    "rate": [
+                        594
+                    ],
+                    "type": "out",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                26018
+            ],
+            "code_size": 1,
+            "id": 0
+        },
+        {
+            "function": "iq",
+            "name": "iq",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                559
+            ],
+            "code_size": 1,
+            "id": 1
+        },
+        {
+            "function": "idct",
+            "name": "idct",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                486
+            ],
+            "code_size": 1,
+            "id": 2
+        },
+        {
+            "function": "mc",
+            "name": "mc",
+            "ports": [
+                {
+                    "rate": [
+                        594
+                    ],
+                    "type": "in",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                10958
+            ],
+            "code_size": 1,
+            "id": 3
+        }
+    ],
+    "type": "csdf"
+}

@@ -1,0 +1,775 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="DES">
+		<sdf name="DES" type="DES">
+
+			<actor name="FileReader__2" type="Node">
+				<port name="o0" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doIP__10" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_253" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="o1" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_255" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="o1" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doE__18" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a2__46" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="96"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__52" type="Node">
+				<port name="i0" type="in" rate="96"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Sboxes__83" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doP__91" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_256" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="i1" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__101" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_254" type="Node">
+				<port name="i1" type="in" rate="32"/>
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_257" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="o1" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_259" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o1" type="out" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doE__115" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a2__143" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="96"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__149" type="Node">
+				<port name="i0" type="in" rate="96"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Sboxes__180" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doP__188" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_260" type="Node">
+				<port name="i1" type="in" rate="32"/>
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__198" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_258" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="i1" type="in" rate="32"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_261" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="o1" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_263" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o1" type="out" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doE__212" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a2__240" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="96"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__246" type="Node">
+				<port name="i0" type="in" rate="96"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Sboxes__277" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doP__285" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_264" type="Node">
+				<port name="i1" type="in" rate="32"/>
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__295" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_262" type="Node">
+				<port name="i1" type="in" rate="32"/>
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_265" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="o1" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_267" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o1" type="out" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doE__309" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="AnonFilter_a2__337" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="96"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__343" type="Node">
+				<port name="i0" type="in" rate="96"/>
+				<port name="o0" type="out" rate="48"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Sboxes__374" type="Node">
+				<port name="i0" type="in" rate="48"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doP__382" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_268" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="i1" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Xor__392" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_266" type="Node">
+				<port name="i1" type="in" rate="32"/>
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CrissCross__407" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="doIPm1__415" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__418" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+
+			<actor name="Identity__386" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="nextL__398" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Identity__289" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="nextL__301" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Identity__192" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="nextL__204" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Identity__95" type="Node">
+				<port name="i0" type="in" rate="32"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="nextL__107" type="Node">
+				<port name="i0" type="in" rate="64"/>
+				<port name="o0" type="out" rate="32"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__2" srcPort="o0" dstActor="doIP__10" dstPort="i0"/>
+			<channel name="ch1" srcActor="doIP__10" srcPort="o0" dstActor="DUPLICATE_Splitter_253" dstPort="i0"/>
+			<channel name="ch2" srcActor="DUPLICATE_Splitter_253" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_255" dstPort="i0"/>
+			<channel name="ch3" srcActor="DUPLICATE_Splitter_253" srcPort="o1" dstActor="nextL__107" dstPort="i0"/>
+			<channel name="ch4" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="o0" dstActor="doE__18" dstPort="i0"/>
+			<channel name="ch5" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="o1" dstActor="Identity__95" dstPort="i0"/>
+			<channel name="ch6" srcActor="doE__18" srcPort="o0" dstActor="AnonFilter_a2__46" dstPort="i0"/>
+			<channel name="ch7" srcActor="AnonFilter_a2__46" srcPort="o0" dstActor="Xor__52" dstPort="i0"/>
+			<channel name="ch8" srcActor="Xor__52" srcPort="o0" dstActor="Sboxes__83" dstPort="i0"/>
+			<channel name="ch9" srcActor="Sboxes__83" srcPort="o0" dstActor="doP__91" dstPort="i0"/>
+			<channel name="ch10" srcActor="doP__91" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="i0"/>
+			<channel name="ch11" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_256" srcPort="o0" dstActor="Xor__101" dstPort="i0"/>
+			<channel name="ch12" srcActor="Xor__101" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="i0"/>
+			<channel name="ch13" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_254" srcPort="o0" dstActor="DUPLICATE_Splitter_257" dstPort="i0"/>
+			<channel name="ch14" srcActor="DUPLICATE_Splitter_257" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_259" dstPort="i0"/>
+			<channel name="ch15" srcActor="DUPLICATE_Splitter_257" srcPort="o1" dstActor="nextL__204" dstPort="i0"/>
+			<channel name="ch16" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_259" srcPort="o0" dstActor="doE__115" dstPort="i0"/>
+			<channel name="ch17" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_259" srcPort="o1" dstActor="Identity__192" dstPort="i0"/>
+			<channel name="ch18" srcActor="doE__115" srcPort="o0" dstActor="AnonFilter_a2__143" dstPort="i0"/>
+			<channel name="ch19" srcActor="AnonFilter_a2__143" srcPort="o0" dstActor="Xor__149" dstPort="i0"/>
+			<channel name="ch20" srcActor="Xor__149" srcPort="o0" dstActor="Sboxes__180" dstPort="i0"/>
+			<channel name="ch21" srcActor="Sboxes__180" srcPort="o0" dstActor="doP__188" dstPort="i0"/>
+			<channel name="ch22" srcActor="doP__188" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_260" dstPort="i0"/>
+			<channel name="ch23" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_260" srcPort="o0" dstActor="Xor__198" dstPort="i0"/>
+			<channel name="ch24" srcActor="Xor__198" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="i0"/>
+			<channel name="ch25" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_258" srcPort="o0" dstActor="DUPLICATE_Splitter_261" dstPort="i0"/>
+			<channel name="ch26" srcActor="DUPLICATE_Splitter_261" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_263" dstPort="i0"/>
+			<channel name="ch27" srcActor="DUPLICATE_Splitter_261" srcPort="o1" dstActor="nextL__301" dstPort="i0"/>
+			<channel name="ch28" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_263" srcPort="o0" dstActor="doE__212" dstPort="i0"/>
+			<channel name="ch29" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_263" srcPort="o1" dstActor="Identity__289" dstPort="i0"/>
+			<channel name="ch30" srcActor="doE__212" srcPort="o0" dstActor="AnonFilter_a2__240" dstPort="i0"/>
+			<channel name="ch31" srcActor="AnonFilter_a2__240" srcPort="o0" dstActor="Xor__246" dstPort="i0"/>
+			<channel name="ch32" srcActor="Xor__246" srcPort="o0" dstActor="Sboxes__277" dstPort="i0"/>
+			<channel name="ch33" srcActor="Sboxes__277" srcPort="o0" dstActor="doP__285" dstPort="i0"/>
+			<channel name="ch34" srcActor="doP__285" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_264" dstPort="i0"/>
+			<channel name="ch35" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_264" srcPort="o0" dstActor="Xor__295" dstPort="i0"/>
+			<channel name="ch36" srcActor="Xor__295" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_262" dstPort="i0"/>
+			<channel name="ch37" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_262" srcPort="o0" dstActor="DUPLICATE_Splitter_265" dstPort="i0"/>
+			<channel name="ch38" srcActor="DUPLICATE_Splitter_265" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_267" dstPort="i0"/>
+			<channel name="ch39" srcActor="DUPLICATE_Splitter_265" srcPort="o1" dstActor="nextL__398" dstPort="i0"/>
+			<channel name="ch40" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_267" srcPort="o0" dstActor="doE__309" dstPort="i0"/>
+			<channel name="ch41" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_267" srcPort="o1" dstActor="Identity__386" dstPort="i0"/>
+			<channel name="ch42" srcActor="doE__309" srcPort="o0" dstActor="AnonFilter_a2__337" dstPort="i0"/>
+			<channel name="ch43" srcActor="AnonFilter_a2__337" srcPort="o0" dstActor="Xor__343" dstPort="i0"/>
+			<channel name="ch44" srcActor="Xor__343" srcPort="o0" dstActor="Sboxes__374" dstPort="i0"/>
+			<channel name="ch45" srcActor="Sboxes__374" srcPort="o0" dstActor="doP__382" dstPort="i0"/>
+			<channel name="ch46" srcActor="doP__382" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_268" dstPort="i0"/>
+			<channel name="ch47" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_268" srcPort="o0" dstActor="Xor__392" dstPort="i0"/>
+			<channel name="ch48" srcActor="Xor__392" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_266" dstPort="i0"/>
+			<channel name="ch49" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_266" srcPort="o0" dstActor="CrissCross__407" dstPort="i0"/>
+			<channel name="ch50" srcActor="CrissCross__407" srcPort="o0" dstActor="doIPm1__415" dstPort="i0"/>
+			<channel name="ch51" srcActor="doIPm1__415" srcPort="o0" dstActor="FileWriter__418" dstPort="i0"/>
+			<channel name="ch52" srcActor="Identity__386" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_268" dstPort="i1"/>
+			<channel name="ch53" srcActor="nextL__398" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_266" dstPort="i1"/>
+			<channel name="ch54" srcActor="Identity__289" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_264" dstPort="i1"/>
+			<channel name="ch55" srcActor="nextL__301" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_262" dstPort="i1"/>
+			<channel name="ch56" srcActor="Identity__192" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_260" dstPort="i1"/>
+			<channel name="ch57" srcActor="nextL__204" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="i1"/>
+			<channel name="ch58" srcActor="Identity__95" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="i1"/>
+			<channel name="ch59" srcActor="nextL__107" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="i1"/>
+			<channel name="_ch1" srcActor="FileReader__2" srcPort="_p1" dstActor="FileReader__2" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="doIP__10" srcPort="_p1" dstActor="doIP__10" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="DUPLICATE_Splitter_253" srcPort="_p1" dstActor="DUPLICATE_Splitter_253" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_255" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="doE__18" srcPort="_p1" dstActor="doE__18" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="AnonFilter_a2__46" srcPort="_p1" dstActor="AnonFilter_a2__46" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="Xor__52" srcPort="_p1" dstActor="Xor__52" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="Sboxes__83" srcPort="_p1" dstActor="Sboxes__83" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="doP__91" srcPort="_p1" dstActor="doP__91" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_256" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="Xor__101" srcPort="_p1" dstActor="Xor__101" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_254" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="DUPLICATE_Splitter_257" srcPort="_p1" dstActor="DUPLICATE_Splitter_257" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_259" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_259" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="doE__115" srcPort="_p1" dstActor="doE__115" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="AnonFilter_a2__143" srcPort="_p1" dstActor="AnonFilter_a2__143" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="Xor__149" srcPort="_p1" dstActor="Xor__149" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch18" srcActor="Sboxes__180" srcPort="_p1" dstActor="Sboxes__180" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch19" srcActor="doP__188" srcPort="_p1" dstActor="doP__188" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch20" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_260" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_260" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch21" srcActor="Xor__198" srcPort="_p1" dstActor="Xor__198" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch22" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_258" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch23" srcActor="DUPLICATE_Splitter_261" srcPort="_p1" dstActor="DUPLICATE_Splitter_261" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch24" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_263" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_263" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch25" srcActor="doE__212" srcPort="_p1" dstActor="doE__212" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch26" srcActor="AnonFilter_a2__240" srcPort="_p1" dstActor="AnonFilter_a2__240" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch27" srcActor="Xor__246" srcPort="_p1" dstActor="Xor__246" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch28" srcActor="Sboxes__277" srcPort="_p1" dstActor="Sboxes__277" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch29" srcActor="doP__285" srcPort="_p1" dstActor="doP__285" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch30" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_264" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_264" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch31" srcActor="Xor__295" srcPort="_p1" dstActor="Xor__295" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch32" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_262" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_262" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch33" srcActor="DUPLICATE_Splitter_265" srcPort="_p1" dstActor="DUPLICATE_Splitter_265" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch34" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_267" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_267" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch35" srcActor="doE__309" srcPort="_p1" dstActor="doE__309" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch36" srcActor="AnonFilter_a2__337" srcPort="_p1" dstActor="AnonFilter_a2__337" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch37" srcActor="Xor__343" srcPort="_p1" dstActor="Xor__343" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch38" srcActor="Sboxes__374" srcPort="_p1" dstActor="Sboxes__374" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch39" srcActor="doP__382" srcPort="_p1" dstActor="doP__382" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch40" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_268" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_268" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch41" srcActor="Xor__392" srcPort="_p1" dstActor="Xor__392" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch42" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_266" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_266" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch43" srcActor="CrissCross__407" srcPort="_p1" dstActor="CrissCross__407" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch44" srcActor="doIPm1__415" srcPort="_p1" dstActor="doIPm1__415" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch45" srcActor="FileWriter__418" srcPort="_p1" dstActor="FileWriter__418" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch46" srcActor="Identity__386" srcPort="_p1" dstActor="Identity__386" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch47" srcActor="nextL__398" srcPort="_p1" dstActor="nextL__398" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch48" srcActor="Identity__289" srcPort="_p1" dstActor="Identity__289" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch49" srcActor="nextL__301" srcPort="_p1" dstActor="nextL__301" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch50" srcActor="Identity__192" srcPort="_p1" dstActor="Identity__192" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch51" srcActor="nextL__204" srcPort="_p1" dstActor="nextL__204" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch52" srcActor="Identity__95" srcPort="_p1" dstActor="Identity__95" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch53" srcActor="nextL__107" srcPort="_p1" dstActor="nextL__107" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__418" srcPort="_psco" dstActor="FileReader__2" dstPort="_psci" initialTokens='100'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__2">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doIP__10">
+				<processor type="p1" default="true">
+					<executionTime time="1024"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_253">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_255">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doE__18">
+				<processor type="p1" default="true">
+					<executionTime time="688"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a2__46">
+				<processor type="p1" default="true">
+					<executionTime time="624"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__52">
+				<processor type="p1" default="true">
+					<executionTime time="576"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Sboxes__83">
+				<processor type="p1" default="true">
+					<executionTime time="424"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doP__91">
+				<processor type="p1" default="true">
+					<executionTime time="512"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_256">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__101">
+				<processor type="p1" default="true">
+					<executionTime time="384"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_254">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_257">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_259">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doE__115">
+				<processor type="p1" default="true">
+					<executionTime time="688"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a2__143">
+				<processor type="p1" default="true">
+					<executionTime time="624"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__149">
+				<processor type="p1" default="true">
+					<executionTime time="576"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Sboxes__180">
+				<processor type="p1" default="true">
+					<executionTime time="424"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doP__188">
+				<processor type="p1" default="true">
+					<executionTime time="512"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_260">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__198">
+				<processor type="p1" default="true">
+					<executionTime time="384"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_258">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_261">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_263">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doE__212">
+				<processor type="p1" default="true">
+					<executionTime time="688"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a2__240">
+				<processor type="p1" default="true">
+					<executionTime time="624"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__246">
+				<processor type="p1" default="true">
+					<executionTime time="576"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Sboxes__277">
+				<processor type="p1" default="true">
+					<executionTime time="424"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doP__285">
+				<processor type="p1" default="true">
+					<executionTime time="512"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_264">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__295">
+				<processor type="p1" default="true">
+					<executionTime time="384"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_262">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_265">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_267">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doE__309">
+				<processor type="p1" default="true">
+					<executionTime time="688"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="AnonFilter_a2__337">
+				<processor type="p1" default="true">
+					<executionTime time="624"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__343">
+				<processor type="p1" default="true">
+					<executionTime time="576"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Sboxes__374">
+				<processor type="p1" default="true">
+					<executionTime time="424"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doP__382">
+				<processor type="p1" default="true">
+					<executionTime time="512"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_268">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Xor__392">
+				<processor type="p1" default="true">
+					<executionTime time="384"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_266">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CrissCross__407">
+				<processor type="p1" default="true">
+					<executionTime time="704"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="doIPm1__415">
+				<processor type="p1" default="true">
+					<executionTime time="1024"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__418">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Identity__386">
+				<processor type="p1" default="true">
+					<executionTime time="192"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="nextL__398">
+				<processor type="p1" default="true">
+					<executionTime time="416"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Identity__289">
+				<processor type="p1" default="true">
+					<executionTime time="192"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="nextL__301">
+				<processor type="p1" default="true">
+					<executionTime time="416"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Identity__192">
+				<processor type="p1" default="true">
+					<executionTime time="192"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="nextL__204">
+				<processor type="p1" default="true">
+					<executionTime time="416"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Identity__95">
+				<processor type="p1" default="true">
+					<executionTime time="192"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="nextL__107">
+				<processor type="p1" default="true">
+					<executionTime time="416"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<sdf3 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" type="sdf" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+  <applicationGraph>
+    <sdf name="modem" type="modem">
+      <actor name="In" type="In">
+        <port name="o0" type="out" rate="1"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+        <port name="_psci" type="in" rate="1"/>
+      </actor>
+      <actor name="Filt" type="Filt">
+        <port name="i0" type="in" rate="1"/>
+        <port name="o0" type="out" rate="1"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+      </actor>
+      <actor name="Hil" type="Hil">
+        <port name="i0" type="in" rate="8"/>
+        <port name="o0" type="out" rate="2"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+      </actor>
+      <actor name="Omega" type="Omega">
+        <port name="i0" type="in" rate="4"/>
+        <port name="o0" type="out" rate="2"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+      </actor>
+      <actor name="Deco" type="Deco">
+        <port name="i0" type="in" rate="2"/>
+        <port name="o0" type="out" rate="1"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+      </actor>
+      <actor name="Out" type="Out">
+        <port name="i0" type="in" rate="1"/>
+        <port name="_p1" type="out" rate="1"/>
+        <port name="_p2" type="in" rate="1"/>
+        <port name="_psco" type="out" rate="16"/>
+      </actor>
+
+      <channel name="ED_1" srcActor="In" srcPort="o0" dstActor="Filt" dstPort="i0"/>
+      <channel name="ED_2" srcActor="Filt" srcPort="o0" dstActor="Hil" dstPort="i0"/>
+      <channel name="ED_3" srcActor="Hil" srcPort="o0" dstActor="Omega" dstPort="i0"/>
+      <channel name="ED_4" srcActor="Omega" srcPort="o0" dstActor="Deco" dstPort="i0"/>
+      <channel name="ED_5" srcActor="Deco" srcPort="o0" dstActor="Out" dstPort="i0"/>
+      <channel name="_ch1" srcActor="In" srcPort="_p1" dstActor="In" dstPort="_p2" initialTokens="1"/>
+      <channel name="_ch2" srcActor="Filt" srcPort="_p1" dstActor="Filt" dstPort="_p2" initialTokens="1"/>
+      <channel name="_ch3" srcActor="Hil" srcPort="_p1" dstActor="Hil" dstPort="_p2" initialTokens="1"/>
+      <channel name="_ch4" srcActor="Omega" srcPort="_p1" dstActor="Omega" dstPort="_p2" initialTokens="1"/>
+      <channel name="_ch5" srcActor="Deco" srcPort="_p1" dstActor="Deco" dstPort="_p2" initialTokens="1"/>
+      <channel name="_ch6" srcActor="Out" srcPort="_p1" dstActor="Out" dstPort="_p2" initialTokens="1"/>
+      <channel name="_chsc" srcActor="Out" srcPort="_psco" dstActor="In" dstPort="_psci" initialTokens="16"/> 
+
+    </sdf>
+    <sdfProperties>
+      <actorProperties actor="In">
+        <processor type="p1" default="true">
+          <executionTime time="1"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="Filt">
+        <processor type="p1" default="true">
+          <executionTime time="1"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="Hil">
+        <processor type="p1" default="true">
+          <executionTime time="1"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="Omega">
+        <processor type="p1" default="true">
+          <executionTime time="11"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="Deco">
+        <processor type="p1" default="true">
+          <executionTime time="1"/>
+        </processor>
+      </actorProperties>
+      <actorProperties actor="Out">
+        <processor type="p1" default="true">
+          <executionTime time="1"/>
+        </processor>
+      </actorProperties>
+      <graphProperties/>
+    </sdfProperties>
+  </applicationGraph>
+</sdf3>

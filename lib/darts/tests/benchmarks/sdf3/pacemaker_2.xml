@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="csdf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+  <applicationGraph name='pacemaker'>
+    <csdf name='pacemaker' type='pacemaker'>
+
+        <actor name='ME' type='a'>
+            <port type='out' name='p2' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+
+        <actor name='RA' type='a'>
+            <port type='in'  name='p1' rate='40'/>
+            <port type='out' name='p2' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+        <actor name='PL' type='a'>
+            <port type='in'  name='p1' rate='0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1'/>
+            <port type='in' name='p2' rate='1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1'/>
+            <port type='out' name='p3' rate='1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1'/>
+			<port type='in' name='p4' rate='1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1'/>
+        </actor>
+
+        <actor name='EKG' type='a'>
+            <port type='out'  name='p2' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+
+		<channel name='_ch0' srcActor='ME' srcPort='p3' dstActor='ME' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch1' srcActor='RA' srcPort='p3' dstActor='RA' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch2' srcActor='PL' srcPort='p3' dstActor='PL' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch3' srcActor='EKG' srcPort='p3' dstActor='EKG' dstPort='p4' initialTokens='1'/>  
+
+        <channel name='ch0' srcActor='ME' srcPort='p2' dstActor='RA' dstPort='p1'/>
+        <channel name='ch1' srcActor='RA' srcPort='p2' dstActor='PL' dstPort='p1'/>
+        <channel name='ch2' srcActor='EKG' srcPort='p2' dstActor='PL' dstPort='p2'/>
+
+    </csdf>
+    <csdfProperties>
+        <actorProperties actor='ME'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='4'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='RA'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='3'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='PL'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5'/>
+            </processor>                  
+        </actorProperties>
+        <actorProperties actor='EKG'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='2'/>
+            </processor>             
+        </actorProperties>
+    </csdfProperties>
+</applicationGraph>
+</sdf3>

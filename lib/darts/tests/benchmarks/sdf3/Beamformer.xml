@@ -1,0 +1,854 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="Beamformer">
+		<sdf name="Beamformer" type="Beamformer">
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_111" type="Node">
+				<port name="p_11" type="out" rate="1"/>
+				<port name="p_10" type="out" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="p_0" type="out" rate="1"/>
+				<port name="p_3" type="out" rate="1"/>
+				<port name="p_2" type="out" rate="1"/>
+				<port name="p_5" type="out" rate="1"/>
+				<port name="p_4" type="out" rate="1"/>
+				<port name="p_7" type="out" rate="1"/>
+				<port name="p_6" type="out" rate="1"/>
+				<port name="p_9" type="out" rate="1"/>
+				<port name="p_8" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__19" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__42" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__65" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_112" type="Node">
+				<port name="p_11" type="in" rate="2"/>
+				<port name="p_10" type="in" rate="2"/>
+				<port name="p_12" type="in" rate="2"/>
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_3" type="in" rate="2"/>
+				<port name="p_2" type="in" rate="2"/>
+				<port name="p_5" type="in" rate="2"/>
+				<port name="p_4" type="in" rate="2"/>
+				<port name="p_7" type="in" rate="2"/>
+				<port name="p_6" type="in" rate="2"/>
+				<port name="p_9" type="in" rate="2"/>
+				<port name="p_8" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_113" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="24"/>
+				<port name="p_3" type="out" rate="24"/>
+				<port name="p_2" type="out" rate="24"/>
+				<port name="p_4" type="out" rate="24"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamForm__811" type="Node">
+				<port name="p_0" type="in" rate="24"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__834" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Magnitude__847" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Detector__853" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_114" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_3" type="in" rate="1"/>
+				<port name="p_2" type="in" rate="1"/>
+				<port name="p_4" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__1042" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+
+			<actor name="BeamForm__873" type="Node">
+				<port name="p_0" type="in" rate="24"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__896" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Magnitude__909" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Detector__915" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamForm__935" type="Node">
+				<port name="p_0" type="in" rate="24"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__958" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Magnitude__971" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Detector__977" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamForm__997" type="Node">
+				<port name="p_0" type="in" rate="24"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__1020" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Magnitude__1033" type="Node">
+				<port name="p_0" type="in" rate="2"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Detector__1039" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__85" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__108" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__131" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__151" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__174" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__197" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__217" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__240" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__263" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__283" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__306" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__329" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__349" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__372" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__395" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__415" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__438" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__461" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__481" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__504" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__527" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__547" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__570" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__593" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__613" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__636" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__659" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__679" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__702" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__725" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="InputGenerate__745" type="Node">
+				<port name="p_0" type="in" rate="1"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__768" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="BeamFirFilter__791" type="Node">
+				<port name="p_0" type="in" rate="4"/>
+				<port name="p_1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+			
+			<channel name="ED_0" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_0" dstActor="InputGenerate__19" dstPort="p_0"/>
+			<channel name="ED_1" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_1" dstActor="InputGenerate__85" dstPort="p_0"/>
+			<channel name="ED_2" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_2" dstActor="InputGenerate__151" dstPort="p_0"/>
+			<channel name="ED_3" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_3" dstActor="InputGenerate__217" dstPort="p_0"/>
+			<channel name="ED_4" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_4" dstActor="InputGenerate__283" dstPort="p_0"/>
+			<channel name="ED_5" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_5" dstActor="InputGenerate__349" dstPort="p_0"/>
+			<channel name="ED_6" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_6" dstActor="InputGenerate__415" dstPort="p_0"/>
+			<channel name="ED_7" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_7" dstActor="InputGenerate__481" dstPort="p_0"/>
+			<channel name="ED_8" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_8" dstActor="InputGenerate__547" dstPort="p_0"/>
+			<channel name="ED_9" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_9" dstActor="InputGenerate__613" dstPort="p_0"/>
+			<channel name="ED_10" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_10" dstActor="InputGenerate__679" dstPort="p_0"/>
+			<channel name="ED_11" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="p_11" dstActor="InputGenerate__745" dstPort="p_0"/>
+			<channel name="ED_12" srcActor="InputGenerate__19" srcPort="p_1" dstActor="BeamFirFilter__42" dstPort="p_0"/>
+			<channel name="ED_13" srcActor="BeamFirFilter__42" srcPort="p_1" dstActor="BeamFirFilter__65" dstPort="p_0"/>
+			<channel name="ED_14" srcActor="BeamFirFilter__65" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_0"/>
+			<channel name="ED_15" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_112" srcPort="p_1" dstActor="DUPLICATE_Splitter_113" dstPort="p_0"/>
+			<channel name="ED_16" srcActor="DUPLICATE_Splitter_113" srcPort="p_1" dstActor="BeamForm__811" dstPort="p_0"/>
+			<channel name="ED_17" srcActor="DUPLICATE_Splitter_113" srcPort="p_2" dstActor="BeamForm__873" dstPort="p_0"/>
+			<channel name="ED_18" srcActor="DUPLICATE_Splitter_113" srcPort="p_3" dstActor="BeamForm__935" dstPort="p_0"/>
+			<channel name="ED_19" srcActor="DUPLICATE_Splitter_113" srcPort="p_4" dstActor="BeamForm__997" dstPort="p_0"/>
+			<channel name="ED_20" srcActor="BeamForm__811" srcPort="p_1" dstActor="BeamFirFilter__834" dstPort="p_0"/>
+			<channel name="ED_21" srcActor="BeamFirFilter__834" srcPort="p_1" dstActor="Magnitude__847" dstPort="p_0"/>
+			<channel name="ED_22" srcActor="Magnitude__847" srcPort="p_1" dstActor="Detector__853" dstPort="p_0"/>
+			<channel name="ED_23" srcActor="Detector__853" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_114" dstPort="p_0"/>
+			<channel name="ED_24" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_114" srcPort="p_1" dstActor="FileWriter__1042" dstPort="p_0"/>
+			<channel name="ED_25" srcActor="BeamForm__873" srcPort="p_1" dstActor="BeamFirFilter__896" dstPort="p_0"/>
+			<channel name="ED_26" srcActor="BeamFirFilter__896" srcPort="p_1" dstActor="Magnitude__909" dstPort="p_0"/>
+			<channel name="ED_27" srcActor="Magnitude__909" srcPort="p_1" dstActor="Detector__915" dstPort="p_0"/>
+			<channel name="ED_28" srcActor="Detector__915" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_114" dstPort="p_2"/>
+			<channel name="ED_29" srcActor="BeamForm__935" srcPort="p_1" dstActor="BeamFirFilter__958" dstPort="p_0"/>
+			<channel name="ED_30" srcActor="BeamFirFilter__958" srcPort="p_1" dstActor="Magnitude__971" dstPort="p_0"/>
+			<channel name="ED_31" srcActor="Magnitude__971" srcPort="p_1" dstActor="Detector__977" dstPort="p_0"/>
+			<channel name="ED_32" srcActor="Detector__977" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_114" dstPort="p_3"/>
+			<channel name="ED_33" srcActor="BeamForm__997" srcPort="p_1" dstActor="BeamFirFilter__1020" dstPort="p_0"/>
+			<channel name="ED_34" srcActor="BeamFirFilter__1020" srcPort="p_1" dstActor="Magnitude__1033" dstPort="p_0"/>
+			<channel name="ED_35" srcActor="Magnitude__1033" srcPort="p_1" dstActor="Detector__1039" dstPort="p_0"/>
+			<channel name="ED_36" srcActor="Detector__1039" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_114" dstPort="p_4"/>
+			<channel name="ED_37" srcActor="InputGenerate__85" srcPort="p_1" dstActor="BeamFirFilter__108" dstPort="p_0"/>
+			<channel name="ED_38" srcActor="BeamFirFilter__108" srcPort="p_1" dstActor="BeamFirFilter__131" dstPort="p_0"/>
+			<channel name="ED_39" srcActor="BeamFirFilter__131" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_2"/>
+			<channel name="ED_40" srcActor="InputGenerate__151" srcPort="p_1" dstActor="BeamFirFilter__174" dstPort="p_0"/>
+			<channel name="ED_41" srcActor="BeamFirFilter__174" srcPort="p_1" dstActor="BeamFirFilter__197" dstPort="p_0"/>
+			<channel name="ED_42" srcActor="BeamFirFilter__197" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_3"/>
+			<channel name="ED_43" srcActor="InputGenerate__217" srcPort="p_1" dstActor="BeamFirFilter__240" dstPort="p_0"/>
+			<channel name="ED_44" srcActor="BeamFirFilter__240" srcPort="p_1" dstActor="BeamFirFilter__263" dstPort="p_0"/>
+			<channel name="ED_45" srcActor="BeamFirFilter__263" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_4"/>
+			<channel name="ED_46" srcActor="InputGenerate__283" srcPort="p_1" dstActor="BeamFirFilter__306" dstPort="p_0"/>
+			<channel name="ED_47" srcActor="BeamFirFilter__306" srcPort="p_1" dstActor="BeamFirFilter__329" dstPort="p_0"/>
+			<channel name="ED_48" srcActor="BeamFirFilter__329" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_5"/>
+			<channel name="ED_49" srcActor="InputGenerate__349" srcPort="p_1" dstActor="BeamFirFilter__372" dstPort="p_0"/>
+			<channel name="ED_50" srcActor="BeamFirFilter__372" srcPort="p_1" dstActor="BeamFirFilter__395" dstPort="p_0"/>
+			<channel name="ED_51" srcActor="BeamFirFilter__395" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_6"/>
+			<channel name="ED_52" srcActor="InputGenerate__415" srcPort="p_1" dstActor="BeamFirFilter__438" dstPort="p_0"/>
+			<channel name="ED_53" srcActor="BeamFirFilter__438" srcPort="p_1" dstActor="BeamFirFilter__461" dstPort="p_0"/>
+			<channel name="ED_54" srcActor="BeamFirFilter__461" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_7"/>
+			<channel name="ED_55" srcActor="InputGenerate__481" srcPort="p_1" dstActor="BeamFirFilter__504" dstPort="p_0"/>
+			<channel name="ED_56" srcActor="BeamFirFilter__504" srcPort="p_1" dstActor="BeamFirFilter__527" dstPort="p_0"/>
+			<channel name="ED_57" srcActor="BeamFirFilter__527" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_8"/>
+			<channel name="ED_58" srcActor="InputGenerate__547" srcPort="p_1" dstActor="BeamFirFilter__570" dstPort="p_0"/>
+			<channel name="ED_59" srcActor="BeamFirFilter__570" srcPort="p_1" dstActor="BeamFirFilter__593" dstPort="p_0"/>
+			<channel name="ED_60" srcActor="BeamFirFilter__593" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_9"/>
+			<channel name="ED_61" srcActor="InputGenerate__613" srcPort="p_1" dstActor="BeamFirFilter__636" dstPort="p_0"/>
+			<channel name="ED_62" srcActor="BeamFirFilter__636" srcPort="p_1" dstActor="BeamFirFilter__659" dstPort="p_0"/>
+			<channel name="ED_63" srcActor="BeamFirFilter__659" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_10"/>
+			<channel name="ED_64" srcActor="InputGenerate__679" srcPort="p_1" dstActor="BeamFirFilter__702" dstPort="p_0"/>
+			<channel name="ED_65" srcActor="BeamFirFilter__702" srcPort="p_1" dstActor="BeamFirFilter__725" dstPort="p_0"/>
+			<channel name="ED_66" srcActor="BeamFirFilter__725" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_11"/>
+			<channel name="ED_67" srcActor="InputGenerate__745" srcPort="p_1" dstActor="BeamFirFilter__768" dstPort="p_0"/>
+			<channel name="ED_68" srcActor="BeamFirFilter__768" srcPort="p_1" dstActor="BeamFirFilter__791" dstPort="p_0"/>
+			<channel name="ED_69" srcActor="BeamFirFilter__791" srcPort="p_1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="p_12"/>
+			<channel name="_ch1" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_111" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_111" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="InputGenerate__19" srcPort="_p1" dstActor="InputGenerate__19" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="BeamFirFilter__42" srcPort="_p1" dstActor="BeamFirFilter__42" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="BeamFirFilter__65" srcPort="_p1" dstActor="BeamFirFilter__65" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_112" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_112" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="DUPLICATE_Splitter_113" srcPort="_p1" dstActor="DUPLICATE_Splitter_113" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="BeamForm__811" srcPort="_p1" dstActor="BeamForm__811" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="BeamFirFilter__834" srcPort="_p1" dstActor="BeamFirFilter__834" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="Magnitude__847" srcPort="_p1" dstActor="Magnitude__847" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="Detector__853" srcPort="_p1" dstActor="Detector__853" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_114" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_114" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="FileWriter__1042" srcPort="_p1" dstActor="FileWriter__1042" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="BeamForm__873" srcPort="_p1" dstActor="BeamForm__873" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="BeamFirFilter__896" srcPort="_p1" dstActor="BeamFirFilter__896" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="Magnitude__909" srcPort="_p1" dstActor="Magnitude__909" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="Detector__915" srcPort="_p1" dstActor="Detector__915" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="BeamForm__935" srcPort="_p1" dstActor="BeamForm__935" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch18" srcActor="BeamFirFilter__958" srcPort="_p1" dstActor="BeamFirFilter__958" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch19" srcActor="Magnitude__971" srcPort="_p1" dstActor="Magnitude__971" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch20" srcActor="Detector__977" srcPort="_p1" dstActor="Detector__977" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch21" srcActor="BeamForm__997" srcPort="_p1" dstActor="BeamForm__997" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch22" srcActor="BeamFirFilter__1020" srcPort="_p1" dstActor="BeamFirFilter__1020" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch23" srcActor="Magnitude__1033" srcPort="_p1" dstActor="Magnitude__1033" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch24" srcActor="Detector__1039" srcPort="_p1" dstActor="Detector__1039" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch25" srcActor="InputGenerate__85" srcPort="_p1" dstActor="InputGenerate__85" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch26" srcActor="BeamFirFilter__108" srcPort="_p1" dstActor="BeamFirFilter__108" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch27" srcActor="BeamFirFilter__131" srcPort="_p1" dstActor="BeamFirFilter__131" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch28" srcActor="InputGenerate__151" srcPort="_p1" dstActor="InputGenerate__151" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch29" srcActor="BeamFirFilter__174" srcPort="_p1" dstActor="BeamFirFilter__174" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch30" srcActor="BeamFirFilter__197" srcPort="_p1" dstActor="BeamFirFilter__197" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch31" srcActor="InputGenerate__217" srcPort="_p1" dstActor="InputGenerate__217" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch32" srcActor="BeamFirFilter__240" srcPort="_p1" dstActor="BeamFirFilter__240" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch33" srcActor="BeamFirFilter__263" srcPort="_p1" dstActor="BeamFirFilter__263" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch34" srcActor="InputGenerate__283" srcPort="_p1" dstActor="InputGenerate__283" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch35" srcActor="BeamFirFilter__306" srcPort="_p1" dstActor="BeamFirFilter__306" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch36" srcActor="BeamFirFilter__329" srcPort="_p1" dstActor="BeamFirFilter__329" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch37" srcActor="InputGenerate__349" srcPort="_p1" dstActor="InputGenerate__349" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch38" srcActor="BeamFirFilter__372" srcPort="_p1" dstActor="BeamFirFilter__372" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch39" srcActor="BeamFirFilter__395" srcPort="_p1" dstActor="BeamFirFilter__395" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch40" srcActor="InputGenerate__415" srcPort="_p1" dstActor="InputGenerate__415" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch41" srcActor="BeamFirFilter__438" srcPort="_p1" dstActor="BeamFirFilter__438" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch42" srcActor="BeamFirFilter__461" srcPort="_p1" dstActor="BeamFirFilter__461" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch43" srcActor="InputGenerate__481" srcPort="_p1" dstActor="InputGenerate__481" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch44" srcActor="BeamFirFilter__504" srcPort="_p1" dstActor="BeamFirFilter__504" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch45" srcActor="BeamFirFilter__527" srcPort="_p1" dstActor="BeamFirFilter__527" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch46" srcActor="InputGenerate__547" srcPort="_p1" dstActor="InputGenerate__547" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch47" srcActor="BeamFirFilter__570" srcPort="_p1" dstActor="BeamFirFilter__570" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch48" srcActor="BeamFirFilter__593" srcPort="_p1" dstActor="BeamFirFilter__593" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch49" srcActor="InputGenerate__613" srcPort="_p1" dstActor="InputGenerate__613" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch50" srcActor="BeamFirFilter__636" srcPort="_p1" dstActor="BeamFirFilter__636" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch51" srcActor="BeamFirFilter__659" srcPort="_p1" dstActor="BeamFirFilter__659" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch52" srcActor="InputGenerate__679" srcPort="_p1" dstActor="InputGenerate__679" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch53" srcActor="BeamFirFilter__702" srcPort="_p1" dstActor="BeamFirFilter__702" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch54" srcActor="BeamFirFilter__725" srcPort="_p1" dstActor="BeamFirFilter__725" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch55" srcActor="InputGenerate__745" srcPort="_p1" dstActor="InputGenerate__745" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch56" srcActor="BeamFirFilter__768" srcPort="_p1" dstActor="BeamFirFilter__768" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch57" srcActor="BeamFirFilter__791" srcPort="_p1" dstActor="BeamFirFilter__791" dstPort="_p2" initialTokens='1'/>
+
+            <channel name="_chsc1" srcActor="FileWriter__1042" srcPort="_psco" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_111" dstPort="_psci" initialTokens='1000'/>
+	
+		</sdf>
+		<sdfProperties>
+			
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_111">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			
+			<actorProperties actor="InputGenerate__19">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__42">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__65">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_112">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_113">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamForm__811">
+				<processor type="p1" default="true">
+					<executionTime time="390"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__834">
+				<processor type="p1" default="true">
+					<executionTime time="5034"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Magnitude__847">
+				<processor type="p1" default="true">
+					<executionTime time="332"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Detector__853">
+				<processor type="p1" default="true">
+					<executionTime time="21"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_114">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__1042">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamForm__873">
+				<processor type="p1" default="true">
+					<executionTime time="390"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__896">
+				<processor type="p1" default="true">
+					<executionTime time="5034"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Magnitude__909">
+				<processor type="p1" default="true">
+					<executionTime time="332"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Detector__915">
+				<processor type="p1" default="true">
+					<executionTime time="21"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamForm__935">
+				<processor type="p1" default="true">
+					<executionTime time="390"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__958">
+				<processor type="p1" default="true">
+					<executionTime time="5034"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Magnitude__971">
+				<processor type="p1" default="true">
+					<executionTime time="332"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Detector__977">
+				<processor type="p1" default="true">
+					<executionTime time="21"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamForm__997">
+				<processor type="p1" default="true">
+					<executionTime time="390"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__1020">
+				<processor type="p1" default="true">
+					<executionTime time="5034"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Magnitude__1033">
+				<processor type="p1" default="true">
+					<executionTime time="332"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Detector__1039">
+				<processor type="p1" default="true">
+					<executionTime time="21"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__85">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__108">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__131">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__151">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__174">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__197">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__217">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__240">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__263">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__283">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__306">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__329">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__349">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__372">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__395">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__415">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__438">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__461">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__481">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__504">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__527">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__547">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__570">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__593">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__613">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__636">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__659">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__679">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__702">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__725">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="InputGenerate__745">
+				<processor type="p1" default="true">
+					<executionTime time="1286"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__768">
+				<processor type="p1" default="true">
+					<executionTime time="5076"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="BeamFirFilter__791">
+				<processor type="p1" default="true">
+					<executionTime time="2548"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>
