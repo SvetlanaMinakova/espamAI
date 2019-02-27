@@ -5,7 +5,7 @@ Installation instructions for ESPAMAI
 I. Installing Java and Python
 --------------------------------------------------------------------------------------------------------------------------------- 
 
-Before installing ESPAMAI, you might need to install Java SDK and/or Python 2.7. See below:
+Before installing ESPAMAI, you need Java SDK and Python 2.7. In you do not have these tools installed:
 
 #### Installing Java SDK:####
 
