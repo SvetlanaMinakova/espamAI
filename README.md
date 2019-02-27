@@ -5,9 +5,9 @@ Installation instructions for ESPAMAI
 I. Installing Java and Python
 --------------------------------------------------------------------------------------------------------------------------------- 
 
-Before installing ESPAMAI, you need Java SDK 8.0+ and Python 2.7. In you do not have these tools installed:
+Before installing ESPAMAI, you need Java SDK 8.0+ and Python 2.7. If you do not have these tools installed:
 
-#### Installing Java SDK:####
+#### Installing Java SDK:
 
 - download JAVA JDK (J2SE Development Kit) version 8.0 or later from
 http://java.sun.com/javase/downloads/index.jsp
@@ -94,8 +94,7 @@ in the "--prefix" option). So, do not use --prefix=`pwd`.
 b)Second, you might need to build onnx.jar. See below:
 
 b.1) Get compiled Google protocol buffers library.
-The 3.5.1 version of protocol buffers is provided with espamAI by default in .../espam/lib/protobuf-java.jar.
-You also can download the library from https://mvnrepository.com/artifact/com.google.protobuf/
+You can download the library from https://mvnrepository.com/artifact/com.google.protobuf/
 The downloaded jar should be renamed to "protobuf-java.jar" and placed to .../espam/lib
 
 b.2) Unzip protobuf-java.jar into src_lib/onnx:
