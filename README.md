@@ -32,8 +32,6 @@ pre-build EspamAI related libraries.
 git clone https://gitlab.com/aloha.eu/power_perf_sources.git
 
 cd ./espam 
- 
-git checkout espamAI
 
 NOTE: The directory "./lib/" should contain at least the following 
 pre-build libraries:
@@ -125,7 +123,6 @@ d.1) _First_ install the Espam tool
 - download ESPAM from the GIT repo as follows ->
 
 git clone https://gitlab.com/aloha.eu/power_perf_sources.git
-git checkout espamAI  
 
 - configure and install Espam as follows ->
 
