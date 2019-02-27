@@ -133,6 +133,14 @@ public class Options {
                             _cnnui.setConsistencyCheckout(true);
                         }
 
+                        else if (arg.equals("--python")) {
+                            Config.getInstance().setPythonCall(args[++i]);
+                        }
+
+                        else if (arg.equals("--darts")) {
+                            Config.getInstance().setDartsPath(args[++i]);
+                        }
+
                         else {
                             // Unrecognized option.
                             throw new IllegalArgumentException("Unrecognized option: " + arg);

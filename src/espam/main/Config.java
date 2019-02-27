@@ -50,12 +50,25 @@ public class Config {
     return _dartsPath;
   }
 
-  /**
+    /**
+     * Forcely set path to darts
+     * @param dartsPath path to darts
+     */
+  public void setDartsPath(String dartsPath) {
+        this._dartsPath = dartsPath;
+    }
+
+    /**
    * Returns path to Python installation.
    */
   public String getPythonCall() {
     return _pythonCall;
   }
+
+    /**
+   * Forcely set path to Python installation.
+   */
+  public void setPythonCall(String pythonCall){ _pythonCall = pythonCall; }
 
  /**
    * Returns path to project

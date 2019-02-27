@@ -99,11 +99,13 @@ public class Main {
         // the user interface
         _ui = UserInterface.getInstance();
         _cnnui = UI.getInstance();
-        
-        System.out.println("********************************************************************************");
-        System.out.println("* ESPAM: Embedded System-level Platform synthesis and Application Mapping Tool *");
-        System.out.println("********************************************************************************");
-        System.out.println(_ui.getCopyright());
+
+        if(_ui.getVerboseFlag()) {
+            System.out.println("********************************************************************************");
+            System.out.println("* ESPAM: Embedded System-level Platform synthesis and Application Mapping Tool *");
+            System.out.println("********************************************************************************");
+            System.out.println(_ui.getCopyright());
+        }
         
         //        if ( !VerifyLicense.getInstance().isLicensed()) {
         //               System.exit(1);
