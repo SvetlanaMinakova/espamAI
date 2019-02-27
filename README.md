@@ -5,11 +5,11 @@ Installation instructions for ESPAMAI
 I. Installing Java and Python
 --------------------------------------------------------------------------------------------------------------------------------- 
 
-Before installing ESPAMAI, you need Java SDK 8.0+ and Python 2.7. If you do not have these tools installed:
+Before installing ESPAMAI, you the Java SDK 8+ and Python 2.7 installed. If you do not have these tools installed:
 
 #### Installing Java SDK:
 
-- download JAVA JDK (J2SE Development Kit) version 8.0 or later from
+- download JAVA JDK (J2SE Development Kit) version 5.0 or later from
 http://java.sun.com/javase/downloads/index.jsp
 - follow the installation instructions on the web-page
 
@@ -29,9 +29,11 @@ pre-build EspamAI related libraries.
 
 - download ESPAMAI from the GIT repo as follows ->
 
-git clone https://gitlab.com/aloha.eu/power_perf_sources.git
+git clone git@git.liacs.nl:lerc/espam.git
 
 cd ./espam 
+ 
+git checkout espamAI
 
 NOTE: The directory "./lib/" should contain at least the following 
 pre-build libraries:
@@ -121,7 +123,8 @@ d.1) _First_ install the Espam tool
 
 - download ESPAM from the GIT repo as follows ->
 
-git clone https://gitlab.com/aloha.eu/power_perf_sources.git
+git clone git@git.liacs.nl:lerc/espam.git  
+git checkout espamAI  
 
 - configure and install Espam as follows ->
 
