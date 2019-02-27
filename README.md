@@ -29,7 +29,7 @@ pre-build EspamAI related libraries.
 
 - download ESPAMAI from the GIT repo as follows ->
 
-git clone git@git.liacs.nl:lerc/espam.git
+git clone https://gitlab.com/aloha.eu/power_perf_sources.git
 
 cd ./espam 
  
@@ -124,7 +124,7 @@ d.1) _First_ install the Espam tool
 
 - download ESPAM from the GIT repo as follows ->
 
-git clone git@git.liacs.nl:lerc/espam.git  
+git clone https://gitlab.com/aloha.eu/power_perf_sources.git
 git checkout espamAI  
 
 - configure and install Espam as follows ->
