@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="BitonicSort">
+		<sdf name="BitonicSort" type="BitonicSort">
+
+			<actor name="FileReader__130" type="Node">
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_245" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o1" type="out" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_247" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o1" type="out" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__137" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_248" type="Node">
+				<port name="i1" type="in" rate="2"/>
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_246" type="Node">
+				<port name="i1" type="in" rate="1"/>
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_251" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="o1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__164" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__171" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__177" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_253" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o1" type="out" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__203" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_254" type="Node">
+				<port name="i1" type="in" rate="2"/>
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_252" type="Node">
+				<port name="i1" type="in" rate="1"/>
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__230" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__237" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__243" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_257" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="o1" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__249" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__256" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__262" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_258" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="i1" type="in" rate="4"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__288" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__291" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__268" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__275" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__281" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__210" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Pre_CollapsedDataParallel_1__183" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__190" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Post_CollapsedDataParallel_2__196" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="4"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_255" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o1" type="out" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__217" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_256" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="i1" type="in" rate="2"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__224" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__144" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Splitter_249" type="Node">
+				<port name="i0" type="in" rate="4"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="o1" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__151" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_250" type="Node">
+				<port name="i1" type="in" rate="2"/>
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="CompareExchange__158" type="Node">
+				<port name="i0" type="in" rate="2"/>
+				<port name="o0" type="out" rate="2"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__130" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_245" dstPort="i0"/>
+			<channel name="ch1" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_245" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_247" dstPort="i0"/>
+			<channel name="ch2" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_245" srcPort="o1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_249" dstPort="i0"/>
+			<channel name="ch3" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_247" srcPort="o0" dstActor="CompareExchange__137" dstPort="i0"/>
+			<channel name="ch4" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_247" srcPort="o1" dstActor="CompareExchange__144" dstPort="i0"/>
+			<channel name="ch5" srcActor="CompareExchange__137" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_248" dstPort="i0"/>
+			<channel name="ch6" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_248" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_246" dstPort="i0"/>
+			<channel name="ch7" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_246" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_251" dstPort="i0"/>
+			<channel name="ch8" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_251" srcPort="o0" dstActor="Pre_CollapsedDataParallel_1__164" dstPort="i0"/>
+			<channel name="ch9" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_251" srcPort="o1" dstActor="Pre_CollapsedDataParallel_1__183" dstPort="i0"/>
+			<channel name="ch10" srcActor="Pre_CollapsedDataParallel_1__164" srcPort="o0" dstActor="CompareExchange__171" dstPort="i0"/>
+			<channel name="ch11" srcActor="CompareExchange__171" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__177" dstPort="i0"/>
+			<channel name="ch12" srcActor="Post_CollapsedDataParallel_2__177" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_253" dstPort="i0"/>
+			<channel name="ch13" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_253" srcPort="o0" dstActor="CompareExchange__203" dstPort="i0"/>
+			<channel name="ch14" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_253" srcPort="o1" dstActor="CompareExchange__210" dstPort="i0"/>
+			<channel name="ch15" srcActor="CompareExchange__203" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="i0"/>
+			<channel name="ch16" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_254" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_252" dstPort="i0"/>
+			<channel name="ch17" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_252" srcPort="o0" dstActor="Pre_CollapsedDataParallel_1__230" dstPort="i0"/>
+			<channel name="ch18" srcActor="Pre_CollapsedDataParallel_1__230" srcPort="o0" dstActor="CompareExchange__237" dstPort="i0"/>
+			<channel name="ch19" srcActor="CompareExchange__237" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__243" dstPort="i0"/>
+			<channel name="ch20" srcActor="Post_CollapsedDataParallel_2__243" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_257" dstPort="i0"/>
+			<channel name="ch21" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_257" srcPort="o0" dstActor="Pre_CollapsedDataParallel_1__249" dstPort="i0"/>
+			<channel name="ch22" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_257" srcPort="o1" dstActor="Pre_CollapsedDataParallel_1__268" dstPort="i0"/>
+			<channel name="ch23" srcActor="Pre_CollapsedDataParallel_1__249" srcPort="o0" dstActor="CompareExchange__256" dstPort="i0"/>
+			<channel name="ch24" srcActor="CompareExchange__256" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__262" dstPort="i0"/>
+			<channel name="ch25" srcActor="Post_CollapsedDataParallel_2__262" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="i0"/>
+			<channel name="ch26" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_258" srcPort="o0" dstActor="CompareExchange__288" dstPort="i0"/>
+			<channel name="ch27" srcActor="CompareExchange__288" srcPort="o0" dstActor="FileWriter__291" dstPort="i0"/>
+			<channel name="ch28" srcActor="Pre_CollapsedDataParallel_1__268" srcPort="o0" dstActor="CompareExchange__275" dstPort="i0"/>
+			<channel name="ch29" srcActor="CompareExchange__275" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__281" dstPort="i0"/>
+			<channel name="ch30" srcActor="Post_CollapsedDataParallel_2__281" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="i1"/>
+			<channel name="ch31" srcActor="CompareExchange__210" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="i1"/>
+			<channel name="ch32" srcActor="Pre_CollapsedDataParallel_1__183" srcPort="o0" dstActor="CompareExchange__190" dstPort="i0"/>
+			<channel name="ch33" srcActor="CompareExchange__190" srcPort="o0" dstActor="Post_CollapsedDataParallel_2__196" dstPort="i0"/>
+			<channel name="ch34" srcActor="Post_CollapsedDataParallel_2__196" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_255" dstPort="i0"/>
+			<channel name="ch35" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="o0" dstActor="CompareExchange__217" dstPort="i0"/>
+			<channel name="ch36" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="o1" dstActor="CompareExchange__224" dstPort="i0"/>
+			<channel name="ch37" srcActor="CompareExchange__217" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="i0"/>
+			<channel name="ch38" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_256" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_252" dstPort="i1"/>
+			<channel name="ch39" srcActor="CompareExchange__224" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="i1"/>
+			<channel name="ch40" srcActor="CompareExchange__144" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_248" dstPort="i1"/>
+			<channel name="ch41" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_249" srcPort="o0" dstActor="CompareExchange__151" dstPort="i0"/>
+			<channel name="ch42" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_249" srcPort="o1" dstActor="CompareExchange__158" dstPort="i0"/>
+			<channel name="ch43" srcActor="CompareExchange__151" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_250" dstPort="i0"/>
+			<channel name="ch44" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_250" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_246" dstPort="i1"/>
+			<channel name="ch45" srcActor="CompareExchange__158" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_250" dstPort="i1"/>
+			<channel name="_ch1" srcActor="FileReader__130" srcPort="_p1" dstActor="FileReader__130" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_245" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_245" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_247" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_247" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="CompareExchange__137" srcPort="_p1" dstActor="CompareExchange__137" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_248" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_248" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_246" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_246" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_251" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_251" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="Pre_CollapsedDataParallel_1__164" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__164" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="CompareExchange__171" srcPort="_p1" dstActor="CompareExchange__171" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="Post_CollapsedDataParallel_2__177" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__177" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_253" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_253" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="CompareExchange__203" srcPort="_p1" dstActor="CompareExchange__203" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_254" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_254" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_252" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_252" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="Pre_CollapsedDataParallel_1__230" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__230" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="CompareExchange__237" srcPort="_p1" dstActor="CompareExchange__237" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="Post_CollapsedDataParallel_2__243" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__243" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch18" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_257" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_257" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch19" srcActor="Pre_CollapsedDataParallel_1__249" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__249" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch20" srcActor="CompareExchange__256" srcPort="_p1" dstActor="CompareExchange__256" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch21" srcActor="Post_CollapsedDataParallel_2__262" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__262" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch22" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_258" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_258" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch23" srcActor="CompareExchange__288" srcPort="_p1" dstActor="CompareExchange__288" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch24" srcActor="FileWriter__291" srcPort="_p1" dstActor="FileWriter__291" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch25" srcActor="Pre_CollapsedDataParallel_1__268" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__268" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch26" srcActor="CompareExchange__275" srcPort="_p1" dstActor="CompareExchange__275" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch27" srcActor="Post_CollapsedDataParallel_2__281" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__281" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch28" srcActor="CompareExchange__210" srcPort="_p1" dstActor="CompareExchange__210" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch29" srcActor="Pre_CollapsedDataParallel_1__183" srcPort="_p1" dstActor="Pre_CollapsedDataParallel_1__183" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch30" srcActor="CompareExchange__190" srcPort="_p1" dstActor="CompareExchange__190" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch31" srcActor="Post_CollapsedDataParallel_2__196" srcPort="_p1" dstActor="Post_CollapsedDataParallel_2__196" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch32" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_255" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_255" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch33" srcActor="CompareExchange__217" srcPort="_p1" dstActor="CompareExchange__217" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch34" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_256" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_256" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch35" srcActor="CompareExchange__224" srcPort="_p1" dstActor="CompareExchange__224" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch36" srcActor="CompareExchange__144" srcPort="_p1" dstActor="CompareExchange__144" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch37" srcActor="WEIGHTED_ROUND_ROBIN_Splitter_249" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Splitter_249" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch38" srcActor="CompareExchange__151" srcPort="_p1" dstActor="CompareExchange__151" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch39" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_250" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_250" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch40" srcActor="CompareExchange__158" srcPort="_p1" dstActor="CompareExchange__158" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__291" srcPort="_psco" dstActor="FileReader__130" dstPort="_psci" initialTokens='100'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__130">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_245">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_247">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__137">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_248">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_246">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_251">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__164">
+				<processor type="p1" default="true">
+					<executionTime time="47"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__171">
+				<processor type="p1" default="true">
+					<executionTime time="28"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__177">
+				<processor type="p1" default="true">
+					<executionTime time="51"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_253">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__203">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_254">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_252">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__230">
+				<processor type="p1" default="true">
+					<executionTime time="91"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__237">
+				<processor type="p1" default="true">
+					<executionTime time="56"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__243">
+				<processor type="p1" default="true">
+					<executionTime time="95"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_257">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__249">
+				<processor type="p1" default="true">
+					<executionTime time="47"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__256">
+				<processor type="p1" default="true">
+					<executionTime time="28"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__262">
+				<processor type="p1" default="true">
+					<executionTime time="51"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_258">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__288">
+				<processor type="p1" default="true">
+					<executionTime time="56"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__291">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__268">
+				<processor type="p1" default="true">
+					<executionTime time="47"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__275">
+				<processor type="p1" default="true">
+					<executionTime time="28"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__281">
+				<processor type="p1" default="true">
+					<executionTime time="51"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__210">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Pre_CollapsedDataParallel_1__183">
+				<processor type="p1" default="true">
+					<executionTime time="47"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__190">
+				<processor type="p1" default="true">
+					<executionTime time="28"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Post_CollapsedDataParallel_2__196">
+				<processor type="p1" default="true">
+					<executionTime time="51"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_255">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__217">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_256">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__224">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__144">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Splitter_249">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__151">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_250">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="CompareExchange__158">
+				<processor type="p1" default="true">
+					<executionTime time="14"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

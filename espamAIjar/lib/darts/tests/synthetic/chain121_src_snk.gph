@@ -1,0 +1,184 @@
+{
+    "edge_number": 4, 
+    "edges": [
+        {
+            "dst": [
+                1, 
+                0
+            ], 
+            "id": 0, 
+            "name": "ED_0", 
+            "src": [
+                0, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                2, 
+                0
+            ], 
+            "id": 1, 
+            "name": "ED_1", 
+            "src": [
+                1, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                3, 
+                0
+            ], 
+            "id": 2, 
+            "name": "ED_2", 
+            "src": [
+                2, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                4, 
+                0
+            ], 
+            "id": 3, 
+            "name": "ED_3", 
+            "src": [
+                3, 
+                2
+            ]
+        }
+    ], 
+    "name": "chain1", 
+    "node_number": 5, 
+    "nodes": [
+        {
+            "code_size": 0, 
+            "function": "source", 
+            "id": 0, 
+            "length": 1, 
+            "name": "ND_0", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 1, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "transform", 
+            "id": 1, 
+            "length": 1, 
+            "name": "ND_1", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        2
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                8
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "transform1", 
+            "id": 2, 
+            "length": 1, 
+            "name": "ND_2", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                12
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "transform2", 
+            "id": 3, 
+            "length": 1, 
+            "name": "ND_3", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        2
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                2
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "sink", 
+            "id": 4, 
+            "length": 1, 
+            "name": "ND_4", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        1
+                    ], 
+                    "type": "in"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }
+    ], 
+    "type": "sdf"
+}

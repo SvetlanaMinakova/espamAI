@@ -1,0 +1,35 @@
+<?xml version="1.0" standalone="no"?>
+
+<implementationMetrics>
+  <functions>
+    <!-- Split-Join -->
+    <function functionName="src">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="2" worstcase="2"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="filter1">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="2" worstcase="2"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="filter2">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="2" worstcase="3"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="snk">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="10" worstcase="20"/>
+        </performance>
+      </implementation>
+    </function>
+  </functions>
+</implementationMetrics>

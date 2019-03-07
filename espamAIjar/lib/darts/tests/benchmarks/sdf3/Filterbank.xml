@@ -1,0 +1,1244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="sdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+	<applicationGraph name="Filterbank">
+		<sdf name="Filterbank" type="Filterbank">
+
+			<actor name="FileReader__2" type="Node">
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psci" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_227" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o3" type="out" rate="8"/>
+				<port name="o2" type="out" rate="8"/>
+				<port name="o5" type="out" rate="8"/>
+				<port name="o4" type="out" rate="8"/>
+				<port name="o7" type="out" rate="8"/>
+				<port name="o6" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__17" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__33" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__38" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__42" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__47" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_229" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__62" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_230" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__83" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_228" type="Node">
+				<port name="i7" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="i1" type="in" rate="8"/>
+				<port name="i2" type="in" rate="8"/>
+				<port name="i5" type="in" rate="8"/>
+				<port name="i4" type="in" rate="8"/>
+				<port name="i3" type="in" rate="8"/>
+				<port name="i6" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__655" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="FileWriter__658" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+				<port name="_psco" type="out" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__78" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__98" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__114" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__119" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__123" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__128" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_231" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__143" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_232" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__164" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__159" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__179" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__195" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__200" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__204" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__209" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_233" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__224" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_234" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__245" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__240" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__260" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__276" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__281" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__285" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__290" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_235" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__305" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_236" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__326" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__321" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__341" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__357" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__362" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__366" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__371" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_237" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__386" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_238" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="i1" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__407" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__402" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__422" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__438" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__443" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__447" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__452" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_239" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__467" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_240" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__488" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__483" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__503" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__519" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__524" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__528" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__533" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_241" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__548" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_242" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__569" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__564" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__584" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__600" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Compressor__605" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="ProcessFilter__609" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="1"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Expander__614" type="Node">
+				<port name="i0" type="in" rate="1"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="DUPLICATE_Splitter_243" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o1" type="out" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="LowPassFilter__629" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="WEIGHTED_ROUND_ROBIN_Joiner_244" type="Node">
+				<port name="i1" type="in" rate="8"/>
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="Adder__650" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="HighPassFilter__645" type="Node">
+				<port name="i0" type="in" rate="8"/>
+				<port name="o0" type="out" rate="8"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+			<channel name="ch0" srcActor="FileReader__2" srcPort="o0" dstActor="DUPLICATE_Splitter_227" dstPort="i0"/>
+			<channel name="ch1" srcActor="DUPLICATE_Splitter_227" srcPort="o0" dstActor="LowPassFilter__17" dstPort="i0"/>
+			<channel name="ch2" srcActor="DUPLICATE_Splitter_227" srcPort="o1" dstActor="LowPassFilter__98" dstPort="i0"/>
+			<channel name="ch3" srcActor="DUPLICATE_Splitter_227" srcPort="o2" dstActor="LowPassFilter__179" dstPort="i0"/>
+			<channel name="ch4" srcActor="DUPLICATE_Splitter_227" srcPort="o3" dstActor="LowPassFilter__260" dstPort="i0"/>
+			<channel name="ch5" srcActor="DUPLICATE_Splitter_227" srcPort="o4" dstActor="LowPassFilter__341" dstPort="i0"/>
+			<channel name="ch6" srcActor="DUPLICATE_Splitter_227" srcPort="o5" dstActor="LowPassFilter__422" dstPort="i0"/>
+			<channel name="ch7" srcActor="DUPLICATE_Splitter_227" srcPort="o6" dstActor="LowPassFilter__503" dstPort="i0"/>
+			<channel name="ch8" srcActor="DUPLICATE_Splitter_227" srcPort="o7" dstActor="LowPassFilter__584" dstPort="i0"/>
+			<channel name="ch9" srcActor="LowPassFilter__17" srcPort="o0" dstActor="HighPassFilter__33" dstPort="i0"/>
+			<channel name="ch10" srcActor="HighPassFilter__33" srcPort="o0" dstActor="Compressor__38" dstPort="i0"/>
+			<channel name="ch11" srcActor="Compressor__38" srcPort="o0" dstActor="ProcessFilter__42" dstPort="i0"/>
+			<channel name="ch12" srcActor="ProcessFilter__42" srcPort="o0" dstActor="Expander__47" dstPort="i0"/>
+			<channel name="ch13" srcActor="Expander__47" srcPort="o0" dstActor="DUPLICATE_Splitter_229" dstPort="i0"/>
+			<channel name="ch14" srcActor="DUPLICATE_Splitter_229" srcPort="o0" dstActor="LowPassFilter__62" dstPort="i0"/>
+			<channel name="ch15" srcActor="DUPLICATE_Splitter_229" srcPort="o1" dstActor="HighPassFilter__78" dstPort="i0"/>
+			<channel name="ch16" srcActor="LowPassFilter__62" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_230" dstPort="i0"/>
+			<channel name="ch17" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_230" srcPort="o0" dstActor="Adder__83" dstPort="i0"/>
+			<channel name="ch18" srcActor="Adder__83" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i0"/>
+			<channel name="ch19" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_228" srcPort="o0" dstActor="Adder__655" dstPort="i0"/>
+			<channel name="ch20" srcActor="Adder__655" srcPort="o0" dstActor="FileWriter__658" dstPort="i0"/>
+			<channel name="ch21" srcActor="HighPassFilter__78" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_230" dstPort="i1"/>
+			<channel name="ch22" srcActor="LowPassFilter__98" srcPort="o0" dstActor="HighPassFilter__114" dstPort="i0"/>
+			<channel name="ch23" srcActor="HighPassFilter__114" srcPort="o0" dstActor="Compressor__119" dstPort="i0"/>
+			<channel name="ch24" srcActor="Compressor__119" srcPort="o0" dstActor="ProcessFilter__123" dstPort="i0"/>
+			<channel name="ch25" srcActor="ProcessFilter__123" srcPort="o0" dstActor="Expander__128" dstPort="i0"/>
+			<channel name="ch26" srcActor="Expander__128" srcPort="o0" dstActor="DUPLICATE_Splitter_231" dstPort="i0"/>
+			<channel name="ch27" srcActor="DUPLICATE_Splitter_231" srcPort="o0" dstActor="LowPassFilter__143" dstPort="i0"/>
+			<channel name="ch28" srcActor="DUPLICATE_Splitter_231" srcPort="o1" dstActor="HighPassFilter__159" dstPort="i0"/>
+			<channel name="ch29" srcActor="LowPassFilter__143" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_232" dstPort="i0"/>
+			<channel name="ch30" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_232" srcPort="o0" dstActor="Adder__164" dstPort="i0"/>
+			<channel name="ch31" srcActor="Adder__164" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i1"/>
+			<channel name="ch32" srcActor="HighPassFilter__159" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_232" dstPort="i1"/>
+			<channel name="ch33" srcActor="LowPassFilter__179" srcPort="o0" dstActor="HighPassFilter__195" dstPort="i0"/>
+			<channel name="ch34" srcActor="HighPassFilter__195" srcPort="o0" dstActor="Compressor__200" dstPort="i0"/>
+			<channel name="ch35" srcActor="Compressor__200" srcPort="o0" dstActor="ProcessFilter__204" dstPort="i0"/>
+			<channel name="ch36" srcActor="ProcessFilter__204" srcPort="o0" dstActor="Expander__209" dstPort="i0"/>
+			<channel name="ch37" srcActor="Expander__209" srcPort="o0" dstActor="DUPLICATE_Splitter_233" dstPort="i0"/>
+			<channel name="ch38" srcActor="DUPLICATE_Splitter_233" srcPort="o0" dstActor="LowPassFilter__224" dstPort="i0"/>
+			<channel name="ch39" srcActor="DUPLICATE_Splitter_233" srcPort="o1" dstActor="HighPassFilter__240" dstPort="i0"/>
+			<channel name="ch40" srcActor="LowPassFilter__224" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_234" dstPort="i0"/>
+			<channel name="ch41" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_234" srcPort="o0" dstActor="Adder__245" dstPort="i0"/>
+			<channel name="ch42" srcActor="Adder__245" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i2"/>
+			<channel name="ch43" srcActor="HighPassFilter__240" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_234" dstPort="i1"/>
+			<channel name="ch44" srcActor="LowPassFilter__260" srcPort="o0" dstActor="HighPassFilter__276" dstPort="i0"/>
+			<channel name="ch45" srcActor="HighPassFilter__276" srcPort="o0" dstActor="Compressor__281" dstPort="i0"/>
+			<channel name="ch46" srcActor="Compressor__281" srcPort="o0" dstActor="ProcessFilter__285" dstPort="i0"/>
+			<channel name="ch47" srcActor="ProcessFilter__285" srcPort="o0" dstActor="Expander__290" dstPort="i0"/>
+			<channel name="ch48" srcActor="Expander__290" srcPort="o0" dstActor="DUPLICATE_Splitter_235" dstPort="i0"/>
+			<channel name="ch49" srcActor="DUPLICATE_Splitter_235" srcPort="o0" dstActor="LowPassFilter__305" dstPort="i0"/>
+			<channel name="ch50" srcActor="DUPLICATE_Splitter_235" srcPort="o1" dstActor="HighPassFilter__321" dstPort="i0"/>
+			<channel name="ch51" srcActor="LowPassFilter__305" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_236" dstPort="i0"/>
+			<channel name="ch52" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_236" srcPort="o0" dstActor="Adder__326" dstPort="i0"/>
+			<channel name="ch53" srcActor="Adder__326" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i3"/>
+			<channel name="ch54" srcActor="HighPassFilter__321" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_236" dstPort="i1"/>
+			<channel name="ch55" srcActor="LowPassFilter__341" srcPort="o0" dstActor="HighPassFilter__357" dstPort="i0"/>
+			<channel name="ch56" srcActor="HighPassFilter__357" srcPort="o0" dstActor="Compressor__362" dstPort="i0"/>
+			<channel name="ch57" srcActor="Compressor__362" srcPort="o0" dstActor="ProcessFilter__366" dstPort="i0"/>
+			<channel name="ch58" srcActor="ProcessFilter__366" srcPort="o0" dstActor="Expander__371" dstPort="i0"/>
+			<channel name="ch59" srcActor="Expander__371" srcPort="o0" dstActor="DUPLICATE_Splitter_237" dstPort="i0"/>
+			<channel name="ch60" srcActor="DUPLICATE_Splitter_237" srcPort="o0" dstActor="LowPassFilter__386" dstPort="i0"/>
+			<channel name="ch61" srcActor="DUPLICATE_Splitter_237" srcPort="o1" dstActor="HighPassFilter__402" dstPort="i0"/>
+			<channel name="ch62" srcActor="LowPassFilter__386" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_238" dstPort="i0"/>
+			<channel name="ch63" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_238" srcPort="o0" dstActor="Adder__407" dstPort="i0"/>
+			<channel name="ch64" srcActor="Adder__407" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i4"/>
+			<channel name="ch65" srcActor="HighPassFilter__402" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_238" dstPort="i1"/>
+			<channel name="ch66" srcActor="LowPassFilter__422" srcPort="o0" dstActor="HighPassFilter__438" dstPort="i0"/>
+			<channel name="ch67" srcActor="HighPassFilter__438" srcPort="o0" dstActor="Compressor__443" dstPort="i0"/>
+			<channel name="ch68" srcActor="Compressor__443" srcPort="o0" dstActor="ProcessFilter__447" dstPort="i0"/>
+			<channel name="ch69" srcActor="ProcessFilter__447" srcPort="o0" dstActor="Expander__452" dstPort="i0"/>
+			<channel name="ch70" srcActor="Expander__452" srcPort="o0" dstActor="DUPLICATE_Splitter_239" dstPort="i0"/>
+			<channel name="ch71" srcActor="DUPLICATE_Splitter_239" srcPort="o0" dstActor="LowPassFilter__467" dstPort="i0"/>
+			<channel name="ch72" srcActor="DUPLICATE_Splitter_239" srcPort="o1" dstActor="HighPassFilter__483" dstPort="i0"/>
+			<channel name="ch73" srcActor="LowPassFilter__467" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_240" dstPort="i0"/>
+			<channel name="ch74" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_240" srcPort="o0" dstActor="Adder__488" dstPort="i0"/>
+			<channel name="ch75" srcActor="Adder__488" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i5"/>
+			<channel name="ch76" srcActor="HighPassFilter__483" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_240" dstPort="i1"/>
+			<channel name="ch77" srcActor="LowPassFilter__503" srcPort="o0" dstActor="HighPassFilter__519" dstPort="i0"/>
+			<channel name="ch78" srcActor="HighPassFilter__519" srcPort="o0" dstActor="Compressor__524" dstPort="i0"/>
+			<channel name="ch79" srcActor="Compressor__524" srcPort="o0" dstActor="ProcessFilter__528" dstPort="i0"/>
+			<channel name="ch80" srcActor="ProcessFilter__528" srcPort="o0" dstActor="Expander__533" dstPort="i0"/>
+			<channel name="ch81" srcActor="Expander__533" srcPort="o0" dstActor="DUPLICATE_Splitter_241" dstPort="i0"/>
+			<channel name="ch82" srcActor="DUPLICATE_Splitter_241" srcPort="o0" dstActor="LowPassFilter__548" dstPort="i0"/>
+			<channel name="ch83" srcActor="DUPLICATE_Splitter_241" srcPort="o1" dstActor="HighPassFilter__564" dstPort="i0"/>
+			<channel name="ch84" srcActor="LowPassFilter__548" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_242" dstPort="i0"/>
+			<channel name="ch85" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_242" srcPort="o0" dstActor="Adder__569" dstPort="i0"/>
+			<channel name="ch86" srcActor="Adder__569" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i6"/>
+			<channel name="ch87" srcActor="HighPassFilter__564" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_242" dstPort="i1"/>
+			<channel name="ch88" srcActor="LowPassFilter__584" srcPort="o0" dstActor="HighPassFilter__600" dstPort="i0"/>
+			<channel name="ch89" srcActor="HighPassFilter__600" srcPort="o0" dstActor="Compressor__605" dstPort="i0"/>
+			<channel name="ch90" srcActor="Compressor__605" srcPort="o0" dstActor="ProcessFilter__609" dstPort="i0"/>
+			<channel name="ch91" srcActor="ProcessFilter__609" srcPort="o0" dstActor="Expander__614" dstPort="i0"/>
+			<channel name="ch92" srcActor="Expander__614" srcPort="o0" dstActor="DUPLICATE_Splitter_243" dstPort="i0"/>
+			<channel name="ch93" srcActor="DUPLICATE_Splitter_243" srcPort="o0" dstActor="LowPassFilter__629" dstPort="i0"/>
+			<channel name="ch94" srcActor="DUPLICATE_Splitter_243" srcPort="o1" dstActor="HighPassFilter__645" dstPort="i0"/>
+			<channel name="ch95" srcActor="LowPassFilter__629" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_244" dstPort="i0"/>
+			<channel name="ch96" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_244" srcPort="o0" dstActor="Adder__650" dstPort="i0"/>
+			<channel name="ch97" srcActor="Adder__650" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="i7"/>
+			<channel name="ch98" srcActor="HighPassFilter__645" srcPort="o0" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_244" dstPort="i1"/>
+			<channel name="_ch1" srcActor="FileReader__2" srcPort="_p1" dstActor="FileReader__2" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="DUPLICATE_Splitter_227" srcPort="_p1" dstActor="DUPLICATE_Splitter_227" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="LowPassFilter__17" srcPort="_p1" dstActor="LowPassFilter__17" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch4" srcActor="HighPassFilter__33" srcPort="_p1" dstActor="HighPassFilter__33" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch5" srcActor="Compressor__38" srcPort="_p1" dstActor="Compressor__38" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch6" srcActor="ProcessFilter__42" srcPort="_p1" dstActor="ProcessFilter__42" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch7" srcActor="Expander__47" srcPort="_p1" dstActor="Expander__47" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch8" srcActor="DUPLICATE_Splitter_229" srcPort="_p1" dstActor="DUPLICATE_Splitter_229" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch9" srcActor="LowPassFilter__62" srcPort="_p1" dstActor="LowPassFilter__62" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch10" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_230" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_230" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch11" srcActor="Adder__83" srcPort="_p1" dstActor="Adder__83" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch12" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_228" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_228" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch13" srcActor="Adder__655" srcPort="_p1" dstActor="Adder__655" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch14" srcActor="FileWriter__658" srcPort="_p1" dstActor="FileWriter__658" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch15" srcActor="HighPassFilter__78" srcPort="_p1" dstActor="HighPassFilter__78" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch16" srcActor="LowPassFilter__98" srcPort="_p1" dstActor="LowPassFilter__98" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch17" srcActor="HighPassFilter__114" srcPort="_p1" dstActor="HighPassFilter__114" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch18" srcActor="Compressor__119" srcPort="_p1" dstActor="Compressor__119" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch19" srcActor="ProcessFilter__123" srcPort="_p1" dstActor="ProcessFilter__123" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch20" srcActor="Expander__128" srcPort="_p1" dstActor="Expander__128" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch21" srcActor="DUPLICATE_Splitter_231" srcPort="_p1" dstActor="DUPLICATE_Splitter_231" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch22" srcActor="LowPassFilter__143" srcPort="_p1" dstActor="LowPassFilter__143" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch23" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_232" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_232" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch24" srcActor="Adder__164" srcPort="_p1" dstActor="Adder__164" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch25" srcActor="HighPassFilter__159" srcPort="_p1" dstActor="HighPassFilter__159" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch26" srcActor="LowPassFilter__179" srcPort="_p1" dstActor="LowPassFilter__179" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch27" srcActor="HighPassFilter__195" srcPort="_p1" dstActor="HighPassFilter__195" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch28" srcActor="Compressor__200" srcPort="_p1" dstActor="Compressor__200" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch29" srcActor="ProcessFilter__204" srcPort="_p1" dstActor="ProcessFilter__204" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch30" srcActor="Expander__209" srcPort="_p1" dstActor="Expander__209" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch31" srcActor="DUPLICATE_Splitter_233" srcPort="_p1" dstActor="DUPLICATE_Splitter_233" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch32" srcActor="LowPassFilter__224" srcPort="_p1" dstActor="LowPassFilter__224" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch33" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_234" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_234" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch34" srcActor="Adder__245" srcPort="_p1" dstActor="Adder__245" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch35" srcActor="HighPassFilter__240" srcPort="_p1" dstActor="HighPassFilter__240" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch36" srcActor="LowPassFilter__260" srcPort="_p1" dstActor="LowPassFilter__260" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch37" srcActor="HighPassFilter__276" srcPort="_p1" dstActor="HighPassFilter__276" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch38" srcActor="Compressor__281" srcPort="_p1" dstActor="Compressor__281" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch39" srcActor="ProcessFilter__285" srcPort="_p1" dstActor="ProcessFilter__285" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch40" srcActor="Expander__290" srcPort="_p1" dstActor="Expander__290" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch41" srcActor="DUPLICATE_Splitter_235" srcPort="_p1" dstActor="DUPLICATE_Splitter_235" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch42" srcActor="LowPassFilter__305" srcPort="_p1" dstActor="LowPassFilter__305" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch43" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_236" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_236" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch44" srcActor="Adder__326" srcPort="_p1" dstActor="Adder__326" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch45" srcActor="HighPassFilter__321" srcPort="_p1" dstActor="HighPassFilter__321" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch46" srcActor="LowPassFilter__341" srcPort="_p1" dstActor="LowPassFilter__341" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch47" srcActor="HighPassFilter__357" srcPort="_p1" dstActor="HighPassFilter__357" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch48" srcActor="Compressor__362" srcPort="_p1" dstActor="Compressor__362" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch49" srcActor="ProcessFilter__366" srcPort="_p1" dstActor="ProcessFilter__366" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch50" srcActor="Expander__371" srcPort="_p1" dstActor="Expander__371" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch51" srcActor="DUPLICATE_Splitter_237" srcPort="_p1" dstActor="DUPLICATE_Splitter_237" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch52" srcActor="LowPassFilter__386" srcPort="_p1" dstActor="LowPassFilter__386" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch53" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_238" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_238" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch54" srcActor="Adder__407" srcPort="_p1" dstActor="Adder__407" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch55" srcActor="HighPassFilter__402" srcPort="_p1" dstActor="HighPassFilter__402" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch56" srcActor="LowPassFilter__422" srcPort="_p1" dstActor="LowPassFilter__422" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch57" srcActor="HighPassFilter__438" srcPort="_p1" dstActor="HighPassFilter__438" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch58" srcActor="Compressor__443" srcPort="_p1" dstActor="Compressor__443" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch59" srcActor="ProcessFilter__447" srcPort="_p1" dstActor="ProcessFilter__447" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch60" srcActor="Expander__452" srcPort="_p1" dstActor="Expander__452" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch61" srcActor="DUPLICATE_Splitter_239" srcPort="_p1" dstActor="DUPLICATE_Splitter_239" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch62" srcActor="LowPassFilter__467" srcPort="_p1" dstActor="LowPassFilter__467" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch63" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_240" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_240" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch64" srcActor="Adder__488" srcPort="_p1" dstActor="Adder__488" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch65" srcActor="HighPassFilter__483" srcPort="_p1" dstActor="HighPassFilter__483" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch66" srcActor="LowPassFilter__503" srcPort="_p1" dstActor="LowPassFilter__503" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch67" srcActor="HighPassFilter__519" srcPort="_p1" dstActor="HighPassFilter__519" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch68" srcActor="Compressor__524" srcPort="_p1" dstActor="Compressor__524" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch69" srcActor="ProcessFilter__528" srcPort="_p1" dstActor="ProcessFilter__528" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch70" srcActor="Expander__533" srcPort="_p1" dstActor="Expander__533" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch71" srcActor="DUPLICATE_Splitter_241" srcPort="_p1" dstActor="DUPLICATE_Splitter_241" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch72" srcActor="LowPassFilter__548" srcPort="_p1" dstActor="LowPassFilter__548" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch73" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_242" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_242" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch74" srcActor="Adder__569" srcPort="_p1" dstActor="Adder__569" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch75" srcActor="HighPassFilter__564" srcPort="_p1" dstActor="HighPassFilter__564" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch76" srcActor="LowPassFilter__584" srcPort="_p1" dstActor="LowPassFilter__584" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch77" srcActor="HighPassFilter__600" srcPort="_p1" dstActor="HighPassFilter__600" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch78" srcActor="Compressor__605" srcPort="_p1" dstActor="Compressor__605" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch79" srcActor="ProcessFilter__609" srcPort="_p1" dstActor="ProcessFilter__609" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch80" srcActor="Expander__614" srcPort="_p1" dstActor="Expander__614" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch81" srcActor="DUPLICATE_Splitter_243" srcPort="_p1" dstActor="DUPLICATE_Splitter_243" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch82" srcActor="LowPassFilter__629" srcPort="_p1" dstActor="LowPassFilter__629" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch83" srcActor="WEIGHTED_ROUND_ROBIN_Joiner_244" srcPort="_p1" dstActor="WEIGHTED_ROUND_ROBIN_Joiner_244" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch84" srcActor="Adder__650" srcPort="_p1" dstActor="Adder__650" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch85" srcActor="HighPassFilter__645" srcPort="_p1" dstActor="HighPassFilter__645" dstPort="_p2" initialTokens='1'/>
+			<channel name="_chsc" srcActor="FileWriter__658" srcPort="_psco" dstActor="FileReader__2" dstPort="_psci" initialTokens='100'/>
+		</sdf>
+		<sdfProperties>
+			<actorProperties actor="FileReader__2">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_227">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__17">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__33">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__38">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__42">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__47">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_229">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__62">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_230">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__83">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_228">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__655">
+				<processor type="p1" default="true">
+					<executionTime time="472"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="FileWriter__658">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__78">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__98">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__114">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__119">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__123">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__128">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_231">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__143">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_232">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__164">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__159">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__179">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__195">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__200">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__204">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__209">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_233">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__224">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_234">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__245">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__240">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__260">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__276">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__281">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__285">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__290">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_235">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__305">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_236">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__326">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__321">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__341">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__357">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__362">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__366">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__371">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_237">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__386">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_238">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__407">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__402">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__422">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__438">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__443">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__447">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__452">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_239">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__467">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_240">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__488">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__483">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__503">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__519">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__524">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__528">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__533">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_241">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__548">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_242">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__569">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__564">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__584">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__600">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Compressor__605">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="ProcessFilter__609">
+				<processor type="p1" default="true">
+					<executionTime time="6"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Expander__614">
+				<processor type="p1" default="true">
+					<executionTime time="41"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="DUPLICATE_Splitter_243">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="LowPassFilter__629">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="WEIGHTED_ROUND_ROBIN_Joiner_244">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="Adder__650">
+				<processor type="p1" default="true">
+					<executionTime time="136"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="HighPassFilter__645">
+				<processor type="p1" default="true">
+					<executionTime time="11312"/>
+				</processor>
+			</actorProperties>
+		</sdfProperties>
+	</applicationGraph>
+</sdf3>

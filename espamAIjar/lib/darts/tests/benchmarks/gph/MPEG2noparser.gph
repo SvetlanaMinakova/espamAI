@@ -1,0 +1,1008 @@
+{
+    "edge_number": 26, 
+    "edges": [
+        {
+            "dst": [
+                2, 
+                0
+            ], 
+            "id": 1, 
+            "name": "ED_0", 
+            "src": [
+                1, 
+                0
+            ]
+        }, 
+        {
+            "dst": [
+                3, 
+                0
+            ], 
+            "id": 2, 
+            "name": "ED_1", 
+            "src": [
+                2, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                19, 
+                0
+            ], 
+            "id": 3, 
+            "name": "ED_2", 
+            "src": [
+                2, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                21, 
+                0
+            ], 
+            "id": 4, 
+            "name": "ED_3", 
+            "src": [
+                2, 
+                3
+            ]
+        }, 
+        {
+            "dst": [
+                4, 
+                0
+            ], 
+            "id": 5, 
+            "name": "ED_4", 
+            "src": [
+                3, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                5, 
+                0
+            ], 
+            "id": 6, 
+            "name": "ED_5", 
+            "src": [
+                4, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                9, 
+                0
+            ], 
+            "id": 7, 
+            "name": "ED_6", 
+            "src": [
+                4, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                6, 
+                0
+            ], 
+            "id": 8, 
+            "name": "ED_7", 
+            "src": [
+                5, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                7, 
+                0
+            ], 
+            "id": 9, 
+            "name": "ED_8", 
+            "src": [
+                5, 
+                2
+            ]
+        }, 
+        {
+            "dst": [
+                8, 
+                0
+            ], 
+            "id": 10, 
+            "name": "ED_9", 
+            "src": [
+                6, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                10, 
+                0
+            ], 
+            "id": 11, 
+            "name": "ED_10", 
+            "src": [
+                8, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                11, 
+                0
+            ], 
+            "id": 12, 
+            "name": "ED_11", 
+            "src": [
+                10, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                12, 
+                0
+            ], 
+            "id": 13, 
+            "name": "ED_12", 
+            "src": [
+                11, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                13, 
+                0
+            ], 
+            "id": 14, 
+            "name": "ED_13", 
+            "src": [
+                12, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                14, 
+                0
+            ], 
+            "id": 15, 
+            "name": "ED_14", 
+            "src": [
+                13, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                15, 
+                0
+            ], 
+            "id": 16, 
+            "name": "ED_15", 
+            "src": [
+                14, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                16, 
+                0
+            ], 
+            "id": 17, 
+            "name": "ED_16", 
+            "src": [
+                15, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                17, 
+                0
+            ], 
+            "id": 18, 
+            "name": "ED_17", 
+            "src": [
+                16, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                18, 
+                0
+            ], 
+            "id": 19, 
+            "name": "ED_18", 
+            "src": [
+                17, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                22, 
+                0
+            ], 
+            "id": 20, 
+            "name": "ED_19", 
+            "src": [
+                18, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                23, 
+                0
+            ], 
+            "id": 21, 
+            "name": "ED_20", 
+            "src": [
+                22, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                8, 
+                2
+            ], 
+            "id": 22, 
+            "name": "ED_21", 
+            "src": [
+                7, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                10, 
+                2
+            ], 
+            "id": 23, 
+            "name": "ED_22", 
+            "src": [
+                9, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                20, 
+                0
+            ], 
+            "id": 24, 
+            "name": "ED_23", 
+            "src": [
+                19, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                22, 
+                2
+            ], 
+            "id": 25, 
+            "name": "ED_24", 
+            "src": [
+                20, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                22, 
+                3
+            ], 
+            "id": 26, 
+            "name": "ED_25", 
+            "src": [
+                21, 
+                1
+            ]
+        }
+    ], 
+    "name": "MPEG2noparser", 
+    "node_number": 23, 
+    "nodes": [
+        {
+            "code_size": 0, 
+            "function": "FileReader__130", 
+            "id": 1, 
+            "length": 1, 
+            "name": "FileReader__130", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        403
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_310", 
+            "id": 2, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_310", 
+            "port_number": 4, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        403
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        16
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 3, 
+                    "rate": [
+                        3
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 66, 
+            "function": "ZigZagUnordering__138", 
+            "id": 3, 
+            "length": 1, 
+            "name": "ZigZagUnordering__138", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                4608
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "DUPLICATE_Splitter_312", 
+            "id": 4, 
+            "length": 1, 
+            "name": "DUPLICATE_Splitter_312", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Splitter_314", 
+            "id": 5, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Splitter_314", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        378
+                    ], 
+                    "type": "out"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 16, 
+            "function": "InverseQuantization_DC_Intra_Coeff__144", 
+            "id": 6, 
+            "length": 1, 
+            "name": "InverseQuantization_DC_Intra_Coeff__144", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                42
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_315", 
+            "id": 8, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_315", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        378
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_313", 
+            "id": 10, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_313", 
+            "port_number": 3, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 2, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 38, 
+            "function": "InverseQuantizationJoinerSubstitute__171", 
+            "id": 11, 
+            "length": 1, 
+            "name": "InverseQuantizationJoinerSubstitute__171", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                4992
+            ]
+        }, 
+        {
+            "code_size": 24, 
+            "function": "Saturation__175", 
+            "id": 12, 
+            "length": 1, 
+            "name": "Saturation__175", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                3456
+            ]
+        }, 
+        {
+            "code_size": 66, 
+            "function": "MismatchControl__183", 
+            "id": 13, 
+            "length": 1, 
+            "name": "MismatchControl__183", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                3474
+            ]
+        }, 
+        {
+            "code_size": 356, 
+            "function": "iDCT8x8_1D_row_fast__206", 
+            "id": 14, 
+            "length": 1, 
+            "name": "iDCT8x8_1D_row_fast__206", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6624
+            ]
+        }, 
+        {
+            "code_size": 50, 
+            "function": "Pre_CollapsedDataParallel_1__212", 
+            "id": 15, 
+            "length": 1, 
+            "name": "Pre_CollapsedDataParallel_1__212", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                3954
+            ]
+        }, 
+        {
+            "code_size": 372, 
+            "function": "iDCT8x8_1D_col_fast_fine__235", 
+            "id": 16, 
+            "length": 1, 
+            "name": "iDCT8x8_1D_col_fast_fine__235", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6864
+            ]
+        }, 
+        {
+            "code_size": 54, 
+            "function": "Post_CollapsedDataParallel_2__241", 
+            "id": 17, 
+            "length": 1, 
+            "name": "Post_CollapsedDataParallel_2__241", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                4338
+            ]
+        }, 
+        {
+            "code_size": 30, 
+            "function": "BoundedSaturation__250", 
+            "id": 18, 
+            "length": 1, 
+            "name": "BoundedSaturation__250", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                3456
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "WEIGHTED_ROUND_ROBIN_Joiner_311", 
+            "id": 22, 
+            "length": 1, 
+            "name": "WEIGHTED_ROUND_ROBIN_Joiner_311", 
+            "port_number": 4, 
+            "ports": [
+                {
+                    "id": 2, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 3, 
+                    "rate": [
+                        18
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "FileWriter__297", 
+            "id": 23, 
+            "length": 1, 
+            "name": "FileWriter__297", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        6
+                    ], 
+                    "type": "in"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 80, 
+            "function": "InverseQuantization_AC_Coeff__154", 
+            "id": 7, 
+            "length": 1, 
+            "name": "InverseQuantization_AC_Coeff__154", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        378
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        378
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                6426
+            ]
+        }, 
+        {
+            "code_size": 80, 
+            "function": "InverseQuantization_AC_Coeff__165", 
+            "id": 9, 
+            "length": 1, 
+            "name": "InverseQuantization_AC_Coeff__165", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        384
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                7680
+            ]
+        }, 
+        {
+            "code_size": 777, 
+            "function": "MotionVectorDecode__280", 
+            "id": 19, 
+            "length": 1, 
+            "name": "MotionVectorDecode__280", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        16
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        8
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                406
+            ]
+        }, 
+        {
+            "code_size": 62, 
+            "function": "Repeat__287", 
+            "id": 20, 
+            "length": 1, 
+            "name": "Repeat__287", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        8
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        48
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                292
+            ]
+        }, 
+        {
+            "code_size": 62, 
+            "function": "Repeat__294", 
+            "id": 21, 
+            "length": 1, 
+            "name": "Repeat__294", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        3
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        18
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                117
+            ]
+        }
+    ], 
+    "type": "sdf"
+}

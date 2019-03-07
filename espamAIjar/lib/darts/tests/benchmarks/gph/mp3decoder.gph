@@ -1,0 +1,674 @@
+{
+    "name": "mp3decoder",
+    "edge_number": 18,
+    "edges": [
+        {
+            "src": [
+                0,
+                0
+            ],
+            "dst": [
+                1,
+                0
+            ],
+            "id": 0,
+            "name": "ED_0"
+        },
+        {
+            "src": [
+                0,
+                1
+            ],
+            "dst": [
+                3,
+                0
+            ],
+            "id": 1,
+            "name": "ED_1"
+        },
+        {
+            "src": [
+                1,
+                1
+            ],
+            "dst": [
+                2,
+                0
+            ],
+            "id": 2,
+            "name": "ED_2"
+        },
+        {
+            "src": [
+                3,
+                1
+            ],
+            "dst": [
+                4,
+                0
+            ],
+            "id": 3,
+            "name": "ED_3"
+        },
+        {
+            "src": [
+                2,
+                1
+            ],
+            "dst": [
+                5,
+                0
+            ],
+            "id": 4,
+            "name": "ED_4"
+        },
+        {
+            "src": [
+                4,
+                1
+            ],
+            "dst": [
+                5,
+                1
+            ],
+            "id": 5,
+            "name": "ED_5"
+        },
+        {
+            "src": [
+                5,
+                2
+            ],
+            "dst": [
+                6,
+                0
+            ],
+            "id": 6,
+            "name": "ED_6"
+        },
+        {
+            "src": [
+                5,
+                3
+            ],
+            "dst": [
+                10,
+                0
+            ],
+            "id": 7,
+            "name": "ED_7"
+        },
+        {
+            "src": [
+                6,
+                1
+            ],
+            "dst": [
+                7,
+                0
+            ],
+            "id": 8,
+            "name": "ED_8"
+        },
+        {
+            "src": [
+                10,
+                1
+            ],
+            "dst": [
+                11,
+                0
+            ],
+            "id": 9,
+            "name": "ED_9"
+        },
+        {
+            "src": [
+                7,
+                1
+            ],
+            "dst": [
+                8,
+                0
+            ],
+            "id": 10,
+            "name": "ED_10"
+        },
+        {
+            "src": [
+                11,
+                1
+            ],
+            "dst": [
+                12,
+                0
+            ],
+            "id": 11,
+            "name": "ED_11"
+        },
+        {
+            "src": [
+                8,
+                1
+            ],
+            "dst": [
+                9,
+                0
+            ],
+            "id": 12,
+            "name": "ED_12"
+        },
+        {
+            "src": [
+                12,
+                1
+            ],
+            "dst": [
+                13,
+                0
+            ],
+            "id": 13,
+            "name": "ED_13"
+        },
+        {
+            "src": [
+                1,
+                2
+            ],
+            "dst": [
+                5,
+                4
+            ],
+            "id": 14,
+            "name": "ED_14"
+        },
+        {
+            "src": [
+                3,
+                2
+            ],
+            "dst": [
+                5,
+                5
+            ],
+            "id": 15,
+            "name": "ED_15"
+        },
+        {
+            "src": [
+                5,
+                6
+            ],
+            "dst": [
+                7,
+                2
+            ],
+            "id": 16,
+            "name": "ED_16"
+        },
+        {
+            "src": [
+                5,
+                7
+            ],
+            "dst": [
+                11,
+                2
+            ],
+            "id": 17,
+            "name": "ED_17"
+        }
+    ],
+    "node_number": 14,
+    "nodes": [
+        {
+            "function": "huffman",
+            "name": "huffman",
+            "ports": [
+                {
+                    "rate": [
+                        2
+                    ],
+                    "type": "out",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        2
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                236070
+            ],
+            "code_size": 0,
+            "id": 0
+        },
+        {
+            "function": "req0",
+            "name": "req0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 2
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 3,
+            "wcet": [
+                139325
+            ],
+            "code_size": 0,
+            "id": 1
+        },
+        {
+            "function": "reorder0",
+            "name": "reorder0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                69385
+            ],
+            "code_size": 0,
+            "id": 2
+        },
+        {
+            "function": "req1",
+            "name": "req1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 2
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 3,
+            "wcet": [
+                139325
+            ],
+            "code_size": 0,
+            "id": 3
+        },
+        {
+            "function": "reorder1",
+            "name": "reorder1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                69385
+            ],
+            "code_size": 0,
+            "id": 4
+        },
+        {
+            "function": "stereo",
+            "name": "stereo",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 1
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 4
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 5
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 2
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 3
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 6
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 7
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 8,
+            "wcet": [
+                73618
+            ],
+            "code_size": 0,
+            "id": 5
+        },
+        {
+            "function": "aliasreduct0",
+            "name": "aliasreduct0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                13088
+            ],
+            "code_size": 0,
+            "id": 6
+        },
+        {
+            "function": "IMDCT0",
+            "name": "IMDCT0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 2
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 3,
+            "wcet": [
+                711744
+            ],
+            "code_size": 0,
+            "id": 7
+        },
+        {
+            "function": "freqinv0",
+            "name": "freqinv0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                157184
+            ],
+            "code_size": 0,
+            "id": 8
+        },
+        {
+            "function": "synth0",
+            "name": "synth0",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                1866138
+            ],
+            "code_size": 0,
+            "id": 9
+        },
+        {
+            "function": "aliasreduct1",
+            "name": "aliasreduct1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                13088
+            ],
+            "code_size": 0,
+            "id": 10
+        },
+        {
+            "function": "IMDCT1",
+            "name": "IMDCT1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 2
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 3,
+            "wcet": [
+                711744
+            ],
+            "code_size": 0,
+            "id": 11
+        },
+        {
+            "function": "freqinv1",
+            "name": "freqinv1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                157184
+            ],
+            "code_size": 0,
+            "id": 12
+        },
+        {
+            "function": "synth1",
+            "name": "synth1",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                1866138
+            ],
+            "code_size": 0,
+            "id": 13
+        }
+    ],
+    "type": "csdf"
+}

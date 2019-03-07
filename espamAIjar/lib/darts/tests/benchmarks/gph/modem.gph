@@ -1,0 +1,224 @@
+{
+    "name": "modem",
+    "edge_number": 5,
+    "edges": [
+        {
+            "src": [
+                0,
+                0
+            ],
+            "dst": [
+                1,
+                0
+            ],
+            "id": 0,
+            "name": "ED_1"
+        },
+        {
+            "src": [
+                1,
+                1
+            ],
+            "dst": [
+                2,
+                0
+            ],
+            "id": 1,
+            "name": "ED_2"
+        },
+        {
+            "src": [
+                2,
+                1
+            ],
+            "dst": [
+                3,
+                0
+            ],
+            "id": 2,
+            "name": "ED_3"
+        },
+        {
+            "src": [
+                3,
+                1
+            ],
+            "dst": [
+                4,
+                0
+            ],
+            "id": 3,
+            "name": "ED_4"
+        },
+        {
+            "src": [
+                4,
+                1
+            ],
+            "dst": [
+                5,
+                0
+            ],
+            "id": 4,
+            "name": "ED_5"
+        }
+    ],
+    "node_number": 6,
+    "nodes": [
+        {
+            "function": "In",
+            "name": "In",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                1
+            ],
+            "code_size": 0,
+            "id": 0
+        },
+        {
+            "function": "Filt",
+            "name": "Filt",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                1
+            ],
+            "code_size": 0,
+            "id": 1
+        },
+        {
+            "function": "Hil",
+            "name": "Hil",
+            "ports": [
+                {
+                    "rate": [
+                        8
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        2
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                1
+            ],
+            "code_size": 0,
+            "id": 2
+        },
+        {
+            "function": "Omega",
+            "name": "Omega",
+            "ports": [
+                {
+                    "rate": [
+                        4
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        2
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                11
+            ],
+            "code_size": 0,
+            "id": 3
+        },
+        {
+            "function": "Deco",
+            "name": "Deco",
+            "ports": [
+                {
+                    "rate": [
+                        2
+                    ],
+                    "type": "in",
+                    "id": 0
+                },
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "out",
+                    "id": 1
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 2,
+            "wcet": [
+                1
+            ],
+            "code_size": 0,
+            "id": 4
+        },
+        {
+            "function": "Out",
+            "name": "Out",
+            "ports": [
+                {
+                    "rate": [
+                        1
+                    ],
+                    "type": "in",
+                    "id": 0
+                }
+            ],
+            "stateful": false,
+            "length": 1,
+            "port_number": 1,
+            "wcet": [
+                1
+            ],
+            "code_size": 0,
+            "id": 5
+        }
+    ],
+    "type": "csdf"
+}

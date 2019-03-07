@@ -1,0 +1,78 @@
+<?xml version="1.0" standalone="no"?>
+<implementationMetrics>
+<functions>
+  
+    <!-- chain     -->
+    <function functionName="source">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="24" worstcase="24"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="transform">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="8" worstcase="8"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="sink">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="4" worstcase="4"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    
+    <!-- FM redueced     -->
+    <function functionName="lp">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1434" worstcase="1434"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    <function functionName="demod">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="221" worstcase="221"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    <function functionName="lp2">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="1414" worstcase="1414"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    <function functionName="sub">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="14" worstcase="14"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    <function functionName="annot">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="10" worstcase="10"/>
+        </performance>
+      </implementation>
+    </function>
+    
+    <function functionName="add">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="10" worstcase="10"/>
+        </performance>
+      </implementation>
+    </function>
+</functions>
+</implementationMetrics>    

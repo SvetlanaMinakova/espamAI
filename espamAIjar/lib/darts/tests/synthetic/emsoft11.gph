@@ -1,0 +1,180 @@
+{
+    "edge_number": 4,
+    "name": "emsoft11",
+    "nodes": [
+        {
+            "length": 3,
+            "stateful": false,
+            "name": "v_0",
+            "port_number": 2,
+            "function": "v_0",
+            "ports": [
+                {
+                    "rate": [
+                        3,
+                        2,
+                        1
+                    ],
+                    "id": 0,
+                    "type": "out"
+                },
+                {
+                    "rate": [
+                        5,
+                        3,
+                        2
+                    ],
+                    "id": 1,
+                    "type": "out"
+                }
+            ],
+            "id": 0,
+            "code_size": 0,
+            "wcet": [
+                5
+            ]
+        },
+        {
+            "length": 1,
+            "stateful": false,
+            "name": "v_1",
+            "port_number": 2,
+            "function": "v_1",
+            "ports": [
+                {
+                    "rate": [
+                        2
+                    ],
+                    "id": 0,
+                    "type": "in"
+                },
+                {
+                    "rate": [
+                        2
+                    ],
+                    "id": 1,
+                    "type": "out"
+                }
+            ],
+            "id": 1,
+            "code_size": 0,
+            "wcet": [
+                2
+            ]
+        },
+        {
+            "length": 3,
+            "stateful": false,
+            "name": "v_2",
+            "port_number": 2,
+            "function": "v_2",
+            "ports": [
+                {
+                    "rate": [
+                        1,
+                        3,
+                        1
+                    ],
+                    "id": 0,
+                    "type": "in"
+                },
+                {
+                    "rate": [
+                        1,
+                        1,
+                        3
+                    ],
+                    "id": 1,
+                    "type": "out"
+                }
+            ],
+            "id": 2,
+            "code_size": 0,
+            "wcet": [
+                3
+            ]
+        },
+        {
+            "length": 2,
+            "stateful": false,
+            "name": "v_3",
+            "port_number": 2,
+            "function": "v_3",
+            "ports": [
+                {
+                    "rate": [
+                        1,
+                        2
+                    ],
+                    "id": 0,
+                    "type": "in"
+                },
+                {
+                    "rate": [
+                        4,
+                        1
+                    ],
+                    "id": 1,
+                    "type": "in"
+                }
+            ],
+            "id": 3,
+            "code_size": 0,
+            "wcet": [
+                2
+            ]
+        }
+    ],
+    "type": "csdf",
+    "edges": [
+        {
+            "dst": [
+                1,
+                0
+            ],
+            "name": "_ch0",
+            "id": 0,
+            "src": [
+                0,
+                0
+            ]
+        },
+        {
+            "dst": [
+                2,
+                0
+            ],
+            "name": "_ch1",
+            "id": 1,
+            "src": [
+                0,
+                1
+            ]
+        },
+        {
+            "dst": [
+                3,
+                0
+            ],
+            "name": "_ch2",
+            "id": 2,
+            "src": [
+                1,
+                1
+            ]
+        },
+        {
+            "dst": [
+                3,
+                1
+            ],
+            "name": "_ch3",
+            "id": 3,
+            "src": [
+                2,
+                1
+            ]
+        }
+    ],
+    "node_number": 4
+}

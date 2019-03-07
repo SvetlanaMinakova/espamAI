@@ -1,0 +1,36 @@
+<?xml version="1.0" standalone="no"?>
+<implementationMetrics>
+<functions>
+  
+    <!-- test -->
+    <function functionName="src">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="5" worstcase="5"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="f1">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="8" worstcase="8"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="f2">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="24" worstcase="24"/>
+        </performance>
+      </implementation>
+    </function>
+    <function functionName="snk">
+      <implementation componentName="MB" implementationType="MicroBlaze">
+        <performance>
+          <delay average="4" worstcase="4"/>
+        </performance>
+      </implementation>
+    </function>
+
+</functions>
+</implementationMetrics>    

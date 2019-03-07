@@ -1,0 +1,58 @@
+::
+
+    graph ::= graph_header nodes_section edges_section | 
+              nodes_section edges_section 
+    graph_header ::= graph_name graph_type 
+    graph_name ::= "name" ":" text EOL 
+    graph_type ::= "type" ":" "csdf" EOL 
+    nodes_section ::= nodes_number nodes_list 
+    nodes_number ::= "node_number" ":" integer EOL 
+    nodes_list ::= node | node nodes_list 
+    node ::= node_marker node_id_field node_name function_name sequences_length  
+              wcet_sequence stateful_flag code_size ports_number ports_list | 
+              node_marker node_id node_name function_name sequences_length 
+              wcet_sequence ports_number ports_list 
+    node_marker ::= "node" ":" EOL 
+    node_id_field ::= TAB "id" ":" node_id EOL 
+    node_id ::= integer 
+    node_name ::= TAB "name" ":" text EOL 
+    function_name ::= TAB "function" ":" text EOL 
+    sequences_length ::= TAB "length" ":" integer EOL 
+    wcet_sequence ::= TAB "wcet" ":" integer_list EOL 
+    integer_list ::= integer | integer " " integer_list 
+    stateful_flag ::= TAB "stateful" ":" "0" EOL | TAB "stateful" ":" "1" EOL 
+    code_size ::= TAB "code_size" ":" integer EOL 
+    ports_number ::= TAB "port_number" ":" integer EOL 
+    ports_list ::= port | port ports_list 
+    port ::= port_marker port_type port_id_field port_rate_sequence 
+    port_marker ::= TAB "port" ":" EOL 
+    port_type ::= TAB TAB "type" ":" "in" EOL | TAB TAB "type" ":" "out" EOL 
+    port_id_field ::= TAB TAB "id" ":" port_id EOL 
+    port_id ::= integer 
+    port_rate_sequence ::= TAB TAB "rate" ":" integer_list EOL 
+    edges_section ::= edges_number edges_list 
+    edges_number ::= TAB "edge_number" ":" integer EOL 
+    edges_list ::= edge | edge edges_list 
+    edge ::= edge_marker edge_id_field edge_name edge_source edge_destination 
+    edge_marker ::= "edge" ":" EOL 
+    edge_id_field ::= TAB "id" ":" edge_id EOL 
+    edge_id ::= integer 
+    edge_name ::= TAB "name" ":" text EOL 
+    edge_source ::= TAB "src" ":" node_id port_id EOL 
+    edge_destination ::= TAB "dst" ":" node_id port_id EOL 
+    text ::= character | character text 
+    character ::= alphabet | digit | special 
+    alphabet ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | 
+                 "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" |
+                 "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d" |
+                 "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" |
+                 "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" |
+                 "y" | "z" 
+    special ::= "?" | "#" | "$" | "@" | "_" | "!" | "(" | ")" | "{" | "}" |
+                "[" | "]" | ":" | "." | "," | "~" | "*" | "/" | "-" | "+" |
+                "=" | "^" | "&" | "<" | ">" | TAB | " " | ";" 
+    integer ::= digit | digit integer 
+    digit ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" 
+    TAB ::= "\t" 
+    EOL ::= "\n" 
+

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="csdf" version="1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-csdf.xsd">
+  <applicationGraph name='pacemaker'>
+    <csdf name='pacemaker' type='pacemaker'>
+
+        <actor name='ADC' type='a'>
+            <port type='out'  name='p2' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+			<port type='in' name='_psci' rate='1'/>
+        </actor>
+
+        <actor name='CD' type='a'>
+            <port type='in' name='p1' rate='768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768'/>
+            <port type='out' name='p2' rate='0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10'/>
+            <port type='out' name='p3' rate='1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1'/>
+			<port type='in' name='p4' rate='1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1'/>
+        </actor>
+
+        <actor name='SD' type='a'>
+			<port type='in' name='p1' rate='1'/>
+            <port type='out'  name='p2' rate='1920'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+        </actor>
+
+        <actor name='DAC' type='a'>
+            <port type='in'  name='p1' rate='1'/>
+            <port type='out' name='p3' rate='1'/>
+			<port type='in' name='p4' rate='1'/>
+			<port type='out' name='_psco' rate='1'/>
+        </actor>
+
+
+		<channel name='_ch0' srcActor='ADC' srcPort='p3' dstActor='ADC' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch1' srcActor='CD' srcPort='p3' dstActor='CD' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch2' srcActor='SD' srcPort='p3' dstActor='SD' dstPort='p4' initialTokens='1'/>
+        <channel name='_ch3' srcActor='DAC' srcPort='p3' dstActor='DAC' dstPort='p4' initialTokens='1'/> 
+        <channel name='_chsc' srcActor='DAC' srcPort='_psco' dstActor='ADC' dstPort='_psci' initialTokens='100000'/>   
+
+        <channel name='ch0' srcActor='ADC' srcPort='p2' dstActor='CD' dstPort='p1'/>
+        <channel name='ch1' srcActor='CD' srcPort='p2' dstActor='SD' dstPort='p1'/>
+        <channel name='ch2' srcActor='SD' srcPort='p2' dstActor='DAC' dstPort='p1'/>
+
+    </csdf>
+    <csdfProperties>
+        <actorProperties actor='ADC'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='21'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='CD'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071, 14071'/>
+            </processor>
+        </actorProperties>
+        <actorProperties actor='SD'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='2202'/>
+            </processor>                  
+        </actorProperties>
+        <actorProperties actor='DAC'>
+            <processor type='proc_0' default='true'>
+                <executionTime time='21'/>
+            </processor>             
+        </actorProperties>
+    </csdfProperties>
+</applicationGraph>
+</sdf3>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="csdf" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-csdf.xsd">
+	<applicationGraph name="myApplication">
+		<csdf name="myApplication" type="myApplication">
+
+			<actor name="src" type="Node">
+				<port name="p_0" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="process" type="Node">
+				<port name="p_0" type="in" rate="256"/>
+				<port name="p_1" type="out" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<actor name="snk" type="Node">
+				<port name="p_0" type="in" rate="256"/>
+				<port name="_p1" type="out" rate="1"/>
+				<port name="_p2" type="in" rate="1"/>
+			</actor>
+
+			<channel name="ED_0" srcActor="src" srcPort="p_0" dstActor="process" dstPort="p_0"/>
+			<channel name="ED_1" srcActor="process" srcPort="p_1" dstActor="snk" dstPort="p_0"/>
+			<channel name="_ch1" srcActor="src" srcPort="_p1" dstActor="src" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch2" srcActor="process" srcPort="_p1" dstActor="process" dstPort="_p2" initialTokens='1'/>
+			<channel name="_ch3" srcActor="snk" srcPort="_p1" dstActor="snk" dstPort="_p2" initialTokens='1'/>
+		</csdf>
+		<csdfProperties>
+			<actorProperties actor="src">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="process">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+			<actorProperties actor="snk">
+				<processor type="p1" default="true">
+					<executionTime time="1"/>
+				</processor>
+			</actorProperties>
+		</csdfProperties>
+	</applicationGraph>
+</sdf3>

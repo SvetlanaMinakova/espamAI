@@ -1,0 +1,304 @@
+{
+    "edge_number": 7, 
+    "edges": [
+        {
+            "dst": [
+                2, 
+                0
+            ], 
+            "id": 1, 
+            "name": "ED_0", 
+            "src": [
+                1, 
+                0
+            ]
+        }, 
+        {
+            "dst": [
+                3, 
+                0
+            ], 
+            "id": 2, 
+            "name": "ED_1", 
+            "src": [
+                2, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                4, 
+                0
+            ], 
+            "id": 3, 
+            "name": "ED_2", 
+            "src": [
+                3, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                5, 
+                0
+            ], 
+            "id": 4, 
+            "name": "ED_3", 
+            "src": [
+                4, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                6, 
+                0
+            ], 
+            "id": 5, 
+            "name": "ED_4", 
+            "src": [
+                5, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                7, 
+                0
+            ], 
+            "id": 6, 
+            "name": "ED_5", 
+            "src": [
+                6, 
+                1
+            ]
+        }, 
+        {
+            "dst": [
+                8, 
+                0
+            ], 
+            "id": 7, 
+            "name": "ED_6", 
+            "src": [
+                7, 
+                1
+            ]
+        }
+    ], 
+    "name": "DCT", 
+    "node_number": 8, 
+    "nodes": [
+        {
+            "code_size": 0, 
+            "function": "FileReader__258", 
+            "id": 1, 
+            "length": 1, 
+            "name": "FileReader__258", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }, 
+        {
+            "code_size": 12, 
+            "function": "AnonFilter_a0__263", 
+            "id": 2, 
+            "length": 1, 
+            "name": "AnonFilter_a0__263", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                1536
+            ]
+        }, 
+        {
+            "code_size": 50, 
+            "function": "Pre_CollapsedDataParallel_1__269", 
+            "id": 3, 
+            "length": 1, 
+            "name": "Pre_CollapsedDataParallel_1__269", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                2595
+            ]
+        }, 
+        {
+            "code_size": 86, 
+            "function": "iDCT_1D_reference_fine__286", 
+            "id": 4, 
+            "length": 1, 
+            "name": "iDCT_1D_reference_fine__286", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                47616
+            ]
+        }, 
+        {
+            "code_size": 54, 
+            "function": "Post_CollapsedDataParallel_2__292", 
+            "id": 5, 
+            "length": 1, 
+            "name": "Post_CollapsedDataParallel_2__292", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                2851
+            ]
+        }, 
+        {
+            "code_size": 86, 
+            "function": "iDCT_1D_reference_fine__309", 
+            "id": 6, 
+            "length": 1, 
+            "name": "iDCT_1D_reference_fine__309", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                47616
+            ]
+        }, 
+        {
+            "code_size": 37, 
+            "function": "AnonFilter_a1__319", 
+            "id": 7, 
+            "length": 1, 
+            "name": "AnonFilter_a1__319", 
+            "port_number": 2, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }, 
+                {
+                    "id": 1, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "out"
+                }
+            ], 
+            "stateful": false, 
+            "wcet": [
+                19456
+            ]
+        }, 
+        {
+            "code_size": 0, 
+            "function": "FileWriter__322", 
+            "id": 8, 
+            "length": 1, 
+            "name": "FileWriter__322", 
+            "port_number": 1, 
+            "ports": [
+                {
+                    "id": 0, 
+                    "rate": [
+                        256
+                    ], 
+                    "type": "in"
+                }
+            ], 
+            "stateful": true, 
+            "wcet": [
+                1
+            ]
+        }
+    ], 
+    "type": "sdf"
+}
