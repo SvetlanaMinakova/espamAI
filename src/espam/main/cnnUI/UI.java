@@ -4,7 +4,9 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
+import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.main.Config;
+import espam.operations.transformations.CNN2CSDFGraphConverter;
 import espam.parser.json.platform.NeurAghePlatformParser;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
@@ -32,6 +34,8 @@ import espam.visitor.json.CSDFGraphJSONVisitor;
 import espam.visitor.xml.csdf.CSDFGraphXMLVisitor;
 
 import java.io.File;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -262,9 +266,6 @@ public class UI {
     /****************    Files generation       *********************/
     /** TODO is there a need in files-generation internal api?     */
 
-
-
-
     ///////////////////////////////////////////////////////////////////
     ////   External jar UI (calling of cnnespam from the console)  ///
 
@@ -274,10 +275,10 @@ public class UI {
      */
     public void runCommands() throws Exception{
         try {
-            if (_multipleModels)
-                _runCommandsMultipleInputs();
-            else
-                _runCommandsSingleInput();
+            //if (_multipleModels)
+                //_runCommandsMultipleInputs();
+            //else
+            _runCommandsSingleInput();
         }
         catch (Exception e){
             if(_verbose)
@@ -309,6 +310,8 @@ public class UI {
             if (network == null)
                 throw new Exception(_srcPath + " DNN model reading error");
 
+            InferenceDNNOptimizer.getInstance().optimize(network,_optimizeForInference);
+
             network.setDataFormats(network.getInputLayer().getOutputFormat());
 
             if(_consistencyCheckout) {
@@ -317,12 +320,19 @@ public class UI {
             }
 
             if(_isTransformationRequired(network.countLayers())){
+                _curPhase = "CNN model transformation ";
+                if (_verbose)
+                    System.out.println(_curPhase + "...");
                 CNNTransformer transformer = new CNNTransformer(network);
                 transformer.splitToBlocks(_blocks,_splitSafeCounter,_splitChildrenNum,_verbose);
             }
         }
 
         if(_inCSDF){
+            _curPhase = "Model reading ";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+
             if(_srcPath.endsWith("json"))
             csdfg = _readSDFGJSONModel(_srcPath);
             if(csdfg == null)
@@ -333,9 +343,11 @@ public class UI {
             }
         }
 
-
         /**generate CSDFG from input DNN model if required*/
         if(_isSDFGenerationRequired()) {
+            _curPhase = "CNN-to-CSDF Model conversion";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
             csdfg = _convertDNN2SDFG(network);
             _refineTiming(csdfg);
         }
@@ -344,18 +356,33 @@ public class UI {
         if(_sesame || _Pthread)
             _edInterface.setRepetitionVector(csdfg);
 
+        if(_mappingFile!=null) {
+            _curPhase = "Mapping file parsing";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+            PthreadSDFGVisitor.parseMapping(_mappingFile);
+        }
+
         if (_sesame) {
+             _curPhase = "Sesame code generation";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+
             if(_inCSDF)
-                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",false);
             if(_inDnn)
-                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",true);
+                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",true);
         }
 
         if(_Pthread){
+            _curPhase = "Pthread code generation";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+
             if(_inCSDF)
-                PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/pthread/",false);
             if(_inDnn)
-                PthreadSDFGVisitor.callVisitor(network, _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/");
+                PthreadSDFGVisitor.callVisitor(network, _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/pthread/");
         }
 
         if(_eval) {
@@ -372,11 +399,14 @@ public class UI {
         if(_wcetTemplateGen) {
             _generateWCETTemplate(network,csdfg);
         }
+
+        if(_verbose)
+             System.out.println("EspamAI finished");
     }
 
     /**
      * Run commands for multiple input models
-     * */
+     *
     private void _runCommandsMultipleInputs() throws Exception{
          _curPhase = "Model reading ";
         if (_verbose)
@@ -400,6 +430,8 @@ public class UI {
                    System.out.println("input dnn " + dnn.getName() + " consistency: " + consistency);
                }
 
+               InferenceDNNOptimizer.getInstance().optimize(dnn,_optimizeForInference);
+
             }
         }
 
@@ -416,7 +448,7 @@ public class UI {
            }
         }
 
-        /**generate CSDFG from input DNN model if required*/
+        /**generate CSDFG from input DNN model if required
         if(_isSDFGenerationRequired()) {
             csdfgs = new CSDFGraph[dnns.length];
             for(int i=0;i< dnns.length;i++){
@@ -425,24 +457,27 @@ public class UI {
             }
         }
 
-        /** generate Sesame template */
+        /** generate Sesame template
         if (_sesame || _Pthread) {
             int csdfgId = 0;
             for(CSDFGraph csdfg:csdfgs) {
                 _edInterface.setRepetitionVector(csdfg);
 
+            if(_mappingFile!=null)
+            PthreadSDFGVisitor.parseMapping(_mappingFile);
+
             if(_sesame) {
                 if (_inCSDF)
-                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/", false);
+                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/sesame/", false);
                 if (_inDnn)
-                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/", true);
+                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/sesame/", true);
             }
 
             if(_Pthread){
                 if(_inCSDF)
-                    PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/",false);
+                    PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/pthread/",false);
                 if(_inDnn)
-                    PthreadSDFGVisitor.callVisitor(dnns[csdfgId], _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/");
+                    PthreadSDFGVisitor.callVisitor(dnns[csdfgId], _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/pthread/");
             }
             csdfgId++;
             }
@@ -496,6 +531,7 @@ public class UI {
             }
         }
     }
+     */
 
     /**
      * Generate DNN output files, if required
@@ -739,7 +775,11 @@ public class UI {
             _curPhase = "Model conversion: onnx to espam.Network ";
             if(_verbose)
                 System.out.println(_curPhase + "...");
-            Network espamNetwork = ONNX2CNNConverter.convertModel(onnxModel);
+            Network espamNetwork;
+            if(_extractONNXWeights)
+                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel,_srcPath, _dstPath + onnxModel.getGraph().getName(),_verbose);
+            else
+                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel);
             return espamNetwork;
     }
 
@@ -775,9 +815,9 @@ public class UI {
                 System.out.println(_curPhase + "...");
         CSDFGraph sdfg;
         if(_dnnInitRepresentation.equals(DNNInitRepresentation.NEURONBASED))
-            sdfg = cnn2CSDFGraphConverter.buildGraph(network);
+            sdfg = _cnn2CSDFGraphConverter.buildGraph(network);
         else
-            sdfg = cnn2CSDFGraphConverter.buildGraphLayerBased(network);
+            sdfg = _cnn2CSDFGraphConverter.buildGraphLayerBased(network);
         return sdfg;
     }
 
@@ -1070,18 +1110,19 @@ public class UI {
     /**
      * Check, if multiple models should be processed
      * @return true, if multiple models should be processed and false otherwise
-     */
+
     public boolean isMultipleModels() {
         return _multipleModels;
     }
+    */
 
     /**
      * Set flag, showing if multiple models should be processed
      * @param multipleModels flag, showing if multiple models should be processed
-     */
+
     public void setMultipleModels(boolean multipleModels) {
         this._multipleModels = multipleModels;
-    }
+    }*/
 
     ///////////////////////////////////////////////////////////////////
     ////                input models settings                      ///
@@ -1142,6 +1183,12 @@ public class UI {
      */
     public void setConsistencyCheckout(boolean consistencyCheckout) {
         this._consistencyCheckout = consistencyCheckout;
+    }
+
+    public void setExternalDartsInterface(boolean externalDartsInterface){
+        _edInterface.setExternalDartsInterface(externalDartsInterface);
+        _edInterface.updatePaths();
+
     }
 
          /**
@@ -1246,6 +1293,77 @@ public class UI {
              this._Pthread = Pthread;
     }
 
+    /**
+     * set optimize for inference
+     * @param optimize optimize for inference flag
+     */
+    public void setOptimizeForInference(Integer optimize){
+        _optimizeForInference = optimize;
+    }
+
+    /**
+     * Set data tiling flag
+     * Input data of every node is processed at once, if data tiling flag is false
+     * Input data of every node is processed by lines, if data tiling flag is true
+     * @param dataTiling  data tiling flag
+     */
+
+    public void setDataTiling(boolean dataTiling){
+        _cnn2CSDFGraphConverter.setDataTiling(dataTiling);
+    }
+
+     /**
+     * Set the number of cores
+     * Specify the number of cores for pThread application, if the mapping is not
+     * specified explicitly
+     * @param cores number of cores
+     */
+
+    public void setCores(Integer cores){
+        if(cores>0)
+            PthreadSDFGVisitor.setMaxCores(cores);
+        else
+            System.err.println("Incorrect number of cores: "+ cores);
+    }
+
+    /**
+     * Set generated pthread code in silent mode
+     * in silent mode no debug information is given on output
+     * @param silent silent mode for pthread generator
+     */
+    public void setPthreadSilent(boolean silent){
+        PthreadSDFGVisitor.setSilent(silent);
+    }
+
+    /**
+     * Set flag,  if the internal library (dnnFunc) generation for CPU is needed
+     * @param dNNFuncCPU  flag, if the internal library (dnnFunc) for CPU generation is needed
+     */
+    public void setPthreadGenerateDNNFuncCPU(boolean dNNFuncCPU) {
+        PthreadSDFGVisitor.setGenerateDNNFuncCPU(dNNFuncCPU);
+    }
+
+       /**
+     * Set flag,  if the internal library (dnnFunc) generation for GPU is needed
+     * @param dNNFuncGPU  flag, if the internal library (dnnFunc) for GPU generation is needed
+     */
+    public void setPthreadGenerateDNNFuncGPU(boolean dNNFuncGPU) {
+        PthreadSDFGVisitor.setGenerateDNNFuncGPU(dNNFuncGPU);
+    }
+
+    /**
+     * Set flag, if the pthread application uses neuraghe functions
+     * @param dNNFuncNA flag, if the pthread application uses neuraghe functions
+     */
+    public void setPthreadGenerateDNNFuncNA(boolean dNNFuncNA) {
+        PthreadSDFGVisitor.setGenerateFuncNA(dNNFuncNA);
+    }
+
+    /** extract weights from onnx model*/
+    public void setExtractONNXWeights(boolean extractONNXWeights){
+        _extractONNXWeights = extractONNXWeights;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
@@ -1281,8 +1399,15 @@ public class UI {
         return phase;
     }
 
+    /**
+     * Set path to .xml mapping file
+     * @param mappingFile path to .xml mapping file
+     */
+    public void setMappingFile(String mappingFile) {
+        this._mappingFile = mappingFile;
+    }
 
-    /**TODO REFACTORING ON ordinary espam/cnnEspam calls*/
+         /**TODO REFACTORING ON ordinary espam/cnnEspam calls*/
          /**
           * Check if cnnespam commands are used.
           * If cnnespam commands are used, original espam is not called.
@@ -1329,6 +1454,8 @@ public class UI {
         _wcetTemplateGen = false;
         _energyTemplateGen = false;
         _consistencyCheckout = false;
+        _optimizeForInference = 2;
+        _extractONNXWeights = false;
 
     }
 
@@ -1382,7 +1509,7 @@ public class UI {
     private String _srcDir = "./";
 
     /** CNN-2-SDFG converter*/
-    private CNN2CSDFGraphConverter cnn2CSDFGraphConverter = new CNN2CSDFGraphConverter();
+    private CNN2CSDFGraphConverter _cnn2CSDFGraphConverter = new CNN2CSDFGraphConverter();
 
     /** espam - to DARTS interface*/
     private Espam2DARTS _edInterface = new Espam2DARTS();
@@ -1402,8 +1529,8 @@ public class UI {
     /** Flag, shows that input model type = CSDF model, default = false*/
     private boolean _inCSDF = false;
 
-     /** Flag, shows, if several input models are processed*/
-    private boolean _multipleModels = false;
+    /** Flag, shows, if several input models are processed*/
+   // private boolean _multipleModels = false;
 
     /** Flag, shows, if application error logs should be written*/
     private boolean _logErr = true;
@@ -1432,4 +1559,13 @@ public class UI {
 
     /** execution time scale - required for NEURAghe exec_times */
     private double _execTimeScale = 1.0;
+
+    /** level of optimization*/
+    private int _optimizeForInference = 2;
+
+    /**maping file*/
+    private String _mappingFile = null;
+
+    /** extract onnx files*/
+    private boolean _extractONNXWeights = false;
 }

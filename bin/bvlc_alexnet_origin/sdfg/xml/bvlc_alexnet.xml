@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sdf3 type="csdf" version="1.0"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.es.ele.tue.nl/sdf3/xsd/sdf3-sdf.xsd">
+  <applicationGraph name="bvlc_alexnet" >
+    <csdf name="bvlc_alexnet" type="BVLC_ALEXNET" >
+
+      <actor name="data_0_0" type="Node">
+        <port name="OP0" type="out" rate="672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672,672" />
+      </actor>
+      <actor name="node_Conv0_1" type="Node">
+        <port name="IP0" type="in" rate="7392,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,2688,672" />
+        <port name="OP0" type="out" rate="4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,0" />
+        <port name="IP1" type="in" rate="0,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704,4704" />
+        <port name="OP1" type="out" rate="0,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184" />
+      </actor>
+      <actor name="node_Relu1_2" type="Node">
+        <port name="IP0" type="in" rate="5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184" />
+        <port name="OP0" type="out" rate="5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184" />
+      </actor>
+      <actor name="node_LRN2_3" type="Node">
+        <port name="IP0" type="in" rate="5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184" />
+        <port name="OP0" type="out" rate="5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184,5184" />
+      </actor>
+      <actor name="node_MaxPool3_4" type="Node">
+        <port name="IP0" type="in" rate="15552,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,10368,5184" />
+        <port name="OP0" type="out" rate="54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,0" />
+        <port name="IP1" type="in" rate="0,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54,54" />
+        <port name="OP1" type="out" rate="0,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496" />
+      </actor>
+      <actor name="node_Conv4_5" type="Node">
+        <port name="IP0" type="in" rate="12480,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,2496,0,0,0,0" />
+        <port name="OP0" type="out" rate="9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,0,0,0,0,0" />
+        <port name="IP1" type="in" rate="0,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,9984,0,0,0,0" />
+        <port name="OP1" type="out" rate="6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656" />
+      </actor>
+      <actor name="node_Relu5_6" type="Node">
+        <port name="IP0" type="in" rate="6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656" />
+        <port name="OP0" type="out" rate="6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656" />
+      </actor>
+      <actor name="node_LRN6_7" type="Node">
+        <port name="IP0" type="in" rate="6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656" />
+        <port name="OP0" type="out" rate="6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656,6656" />
+      </actor>
+      <actor name="node_MaxPool7_8" type="Node">
+        <port name="IP0" type="in" rate="19968,13312,13312,13312,13312,13312,13312,13312,13312,13312,13312,13312,6656" />
+        <port name="OP0" type="out" rate="26,26,26,26,26,26,26,26,26,26,26,26,0" />
+        <port name="IP1" type="in" rate="0,26,26,26,26,26,26,26,26,26,26,26,26" />
+        <port name="OP1" type="out" rate="0,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072" />
+      </actor>
+      <actor name="node_Conv8_9" type="Node">
+        <port name="IP0" type="in" rate="9216,3072,3072,3072,3072,3072,3072,3072,3072,3072,0,0" />
+        <port name="OP0" type="out" rate="6144,6144,6144,6144,6144,6144,6144,6144,6144,0,0,0" />
+        <port name="IP1" type="in" rate="0,6144,6144,6144,6144,6144,6144,6144,6144,6144,0,0" />
+        <port name="OP1" type="out" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+      </actor>
+      <actor name="node_Relu9_10" type="Node">
+        <port name="IP0" type="in" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+        <port name="OP0" type="out" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+      </actor>
+      <actor name="node_Conv10_11" type="Node">
+        <port name="IP0" type="in" rate="13824,4608,4608,4608,4608,4608,4608,4608,4608,4608,0,0" />
+        <port name="OP0" type="out" rate="9216,9216,9216,9216,9216,9216,9216,9216,9216,0,0,0" />
+        <port name="IP1" type="in" rate="0,9216,9216,9216,9216,9216,9216,9216,9216,9216,0,0" />
+        <port name="OP1" type="out" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+      </actor>
+      <actor name="node_Relu11_12" type="Node">
+        <port name="IP0" type="in" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+        <port name="OP0" type="out" rate="4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608,4608" />
+      </actor>
+      <actor name="node_Conv12_13" type="Node">
+        <port name="IP0" type="in" rate="13824,4608,4608,4608,4608,4608,4608,4608,4608,4608,0,0" />
+        <port name="OP0" type="out" rate="9216,9216,9216,9216,9216,9216,9216,9216,9216,0,0,0" />
+        <port name="IP1" type="in" rate="0,9216,9216,9216,9216,9216,9216,9216,9216,9216,0,0" />
+        <port name="OP1" type="out" rate="3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072" />
+      </actor>
+      <actor name="node_Relu13_14" type="Node">
+        <port name="IP0" type="in" rate="3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072" />
+        <port name="OP0" type="out" rate="3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072,3072" />
+      </actor>
+      <actor name="node_MaxPool14_15" type="Node">
+        <port name="IP0" type="in" rate="9216,6144,6144,6144,6144,3072" />
+        <port name="OP0" type="out" rate="12,12,12,12,12,0" />
+        <port name="IP1" type="in" rate="0,12,12,12,12,12" />
+        <port name="OP1" type="out" rate="0,1536,1536,1536,1536,1536" />
+      </actor>
+      <actor name="node_Gemm15_16" type="Node">
+        <port name="IP0" type="in" rate="7680" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Relu16_17" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Dropout17_18" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Gemm18_19" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Relu19_20" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Dropout20_21" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="4096" />
+      </actor>
+      <actor name="node_Gemm21_22" type="Node">
+        <port name="IP0" type="in" rate="4096" />
+        <port name="OP0" type="out" rate="1000" />
+      </actor>
+      <actor name="node_Softmax22_23" type="Node">
+        <port name="IP0" type="in" rate="1000" />
+        <port name="OP0" type="out" rate="1000" />
+      </actor>
+      <actor name="prob_1_24" type="Node">
+        <port name="IP0" type="in" rate="1000" />
+      </actor>
+      <channel name="0to2"  srcActor="data_0_0"  srcPort="OP0" dstActor="node_Conv0_1" dstPort="IP0" ></channel>
+      <channel name="2to2_1"  srcActor="node_Conv0_1"  srcPort="OP0" dstActor="node_Conv0_1" dstPort="IP1" ></channel>
+      <channel name="2to3"  srcActor="node_Conv0_1"  srcPort="OP1" dstActor="node_Relu1_2" dstPort="IP0" ></channel>
+      <channel name="3to4"  srcActor="node_Relu1_2"  srcPort="OP0" dstActor="node_LRN2_3" dstPort="IP0" ></channel>
+      <channel name="4to5"  srcActor="node_LRN2_3"  srcPort="OP0" dstActor="node_MaxPool3_4" dstPort="IP0" ></channel>
+      <channel name="5to5_5"  srcActor="node_MaxPool3_4"  srcPort="OP0" dstActor="node_MaxPool3_4" dstPort="IP1" ></channel>
+      <channel name="5to6"  srcActor="node_MaxPool3_4"  srcPort="OP1" dstActor="node_Conv4_5" dstPort="IP0" ></channel>
+      <channel name="6to6_7"  srcActor="node_Conv4_5"  srcPort="OP0" dstActor="node_Conv4_5" dstPort="IP1" ></channel>
+      <channel name="6to7"  srcActor="node_Conv4_5"  srcPort="OP1" dstActor="node_Relu5_6" dstPort="IP0" ></channel>
+      <channel name="7to8"  srcActor="node_Relu5_6"  srcPort="OP0" dstActor="node_LRN6_7" dstPort="IP0" ></channel>
+      <channel name="8to9"  srcActor="node_LRN6_7"  srcPort="OP0" dstActor="node_MaxPool7_8" dstPort="IP0" ></channel>
+      <channel name="9to9_11"  srcActor="node_MaxPool7_8"  srcPort="OP0" dstActor="node_MaxPool7_8" dstPort="IP1" ></channel>
+      <channel name="9to10"  srcActor="node_MaxPool7_8"  srcPort="OP1" dstActor="node_Conv8_9" dstPort="IP0" ></channel>
+      <channel name="10to10_13"  srcActor="node_Conv8_9"  srcPort="OP0" dstActor="node_Conv8_9" dstPort="IP1" ></channel>
+      <channel name="10to11"  srcActor="node_Conv8_9"  srcPort="OP1" dstActor="node_Relu9_10" dstPort="IP0" ></channel>
+      <channel name="11to12"  srcActor="node_Relu9_10"  srcPort="OP0" dstActor="node_Conv10_11" dstPort="IP0" ></channel>
+      <channel name="12to12_16"  srcActor="node_Conv10_11"  srcPort="OP0" dstActor="node_Conv10_11" dstPort="IP1" ></channel>
+      <channel name="12to13"  srcActor="node_Conv10_11"  srcPort="OP1" dstActor="node_Relu11_12" dstPort="IP0" ></channel>
+      <channel name="13to14"  srcActor="node_Relu11_12"  srcPort="OP0" dstActor="node_Conv12_13" dstPort="IP0" ></channel>
+      <channel name="14to14_19"  srcActor="node_Conv12_13"  srcPort="OP0" dstActor="node_Conv12_13" dstPort="IP1" ></channel>
+      <channel name="14to15"  srcActor="node_Conv12_13"  srcPort="OP1" dstActor="node_Relu13_14" dstPort="IP0" ></channel>
+      <channel name="15to16"  srcActor="node_Relu13_14"  srcPort="OP0" dstActor="node_MaxPool14_15" dstPort="IP0" ></channel>
+      <channel name="16to16_22"  srcActor="node_MaxPool14_15"  srcPort="OP0" dstActor="node_MaxPool14_15" dstPort="IP1" ></channel>
+      <channel name="16to17"  srcActor="node_MaxPool14_15"  srcPort="OP1" dstActor="node_Gemm15_16" dstPort="IP0" ></channel>
+      <channel name="17to18"  srcActor="node_Gemm15_16"  srcPort="OP0" dstActor="node_Relu16_17" dstPort="IP0" ></channel>
+      <channel name="18to19"  srcActor="node_Relu16_17"  srcPort="OP0" dstActor="node_Dropout17_18" dstPort="IP0" ></channel>
+      <channel name="19to20"  srcActor="node_Dropout17_18"  srcPort="OP0" dstActor="node_Gemm18_19" dstPort="IP0" ></channel>
+      <channel name="20to21"  srcActor="node_Gemm18_19"  srcPort="OP0" dstActor="node_Relu19_20" dstPort="IP0" ></channel>
+      <channel name="21to22"  srcActor="node_Relu19_20"  srcPort="OP0" dstActor="node_Dropout20_21" dstPort="IP0" ></channel>
+      <channel name="22to23"  srcActor="node_Dropout20_21"  srcPort="OP0" dstActor="node_Gemm21_22" dstPort="IP0" ></channel>
+      <channel name="23to24"  srcActor="node_Gemm21_22"  srcPort="OP0" dstActor="node_Softmax22_23" dstPort="IP0" ></channel>
+      <channel name="24to1"  srcActor="node_Softmax22_23"  srcPort="OP0" dstActor="prob_1_24" dstPort="IP0" ></channel>
+    </csdf>
+  </applicationGraph>
+</sdf3>

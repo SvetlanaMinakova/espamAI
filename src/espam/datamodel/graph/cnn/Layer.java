@@ -64,7 +64,9 @@ public class Layer implements Cloneable, ReferenceResolvable {
             newObj.setOutputFormat((Tensor)_outputDataFormat.clone());
             newObj.setInputFormat((Tensor)_inputDataFormat.clone());
             newObj.setId(_id);
+            newObj.setstartNeuronId(_startNeuronId);
             newObj.setPads(_pads.clone());
+            newObj.setAutopads(_autopads);
             return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -84,11 +86,17 @@ public class Layer implements Cloneable, ReferenceResolvable {
         setOutputFormat(new Tensor(layer._outputDataFormat));
         setInputFormat(new Tensor(layer._inputDataFormat));
         setId(layer._id);
+        setstartNeuronId(layer._startNeuronId);
 
-        if(_pads!=null) {
-            _pads = new int[layer._pads.length];
-            for (int i = 0; i < _pads.length; i++) {
-                _pads[i] = layer._pads[i];
+        if(_autopads) {
+            setAutopads(true);
+        }
+        else {
+            if (_pads != null) {
+                _pads = new int[layer._pads.length];
+                for (int i = 0; i < _pads.length; i++) {
+                    _pads[i] = layer._pads[i];
+                }
             }
         }
     }
@@ -117,6 +125,7 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
         Layer layer = (Layer)obj;
          return _id==layer._id
+              &&_startNeuronId == layer._startNeuronId
               &&_name.equals(layer._name)
               &&_neuronsNum == layer._neuronsNum
               &&_neuron.equals(layer._neuron)
@@ -140,6 +149,7 @@ public class Layer implements Cloneable, ReferenceResolvable {
      * @param layerInputDataFormat input data format of the layer
      */
     public void updateDataFormatsFromTop(Tensor neuronInputDataFormat,Tensor layerInputDataFormat) {
+         // System.out.println(getName() + " out: ");
         /** process generic neuron as a subnetwork*/
         if(_neuron instanceof GenericNeuron){
             Network subNetwork = ((GenericNeuron) _neuron).getInternalStructure();
@@ -150,7 +160,6 @@ public class Layer implements Cloneable, ReferenceResolvable {
             setOutputFormat(subNetwork.getOutputLayer().getOutputFormat());
             return;
         }
-
         _neuron.setInputDataFormat(neuronInputDataFormat);
 
         Tensor neuronInputDataFormatWithPads = Tensor.addPads(neuronInputDataFormat,_pads);
@@ -398,6 +407,10 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
     public void setId(int id) { this._id = id; }
 
+    public Integer getstartNeuronId() { return _startNeuronId; }
+
+    public void setstartNeuronId(Integer startNeuronId) { this._startNeuronId = startNeuronId; }
+
     public Vector<Connection> getInputConnections() {
         return _inputConnections;
     }
@@ -412,6 +425,14 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
     public void setOutputConnections(Vector<Connection> outputConnections) {
         this._outputConnections = outputConnections;
+    }
+
+    public void setAutopads(boolean autopads) {
+        this._autopads = autopads;
+    }
+
+    public boolean isAutopads() {
+        return _autopads;
     }
 
     /**
@@ -481,6 +502,9 @@ public class Layer implements Cloneable, ReferenceResolvable {
     /**Unique layer identifier*/
     @SerializedName("id")private int _id;
 
+    /**Layer neruon identifier in hight-level block (see block-based model)*/
+    @SerializedName("startNeuronId")private Integer _startNeuronId = 0;
+
     /**name of the layer*/
     @SerializedName("name")private String _name;
 
@@ -510,4 +534,8 @@ public class Layer implements Cloneable, ReferenceResolvable {
     * Pads should contain values >=0
     */
     @SerializedName("pads")private int[] _pads = null;
+
+    /** if autopads mode (VALID/FULL/SAME) is used.If autopads flag is false,
+     *  the explicit pads definition is expected*/
+    @SerializedName("autopads")private boolean _autopads = true;
 }

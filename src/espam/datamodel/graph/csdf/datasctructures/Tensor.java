@@ -658,6 +658,26 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
         return result;
     }
 
+    /**Omit all dimensions of size 1 from Tensor tail
+     * @param tensor tensor for reshape
+     * @return equivalent Tensor with omitted one-sized dims
+     */
+    public static Tensor omitOneSizedFourthDim(Tensor tensor){
+        if(isNullTensor(tensor))
+            return null;
+
+        if(tensor.getDimensionality()<3)
+            return tensor;
+
+        Tensor result = new Tensor(tensor);
+
+        if (tensor.getLastDimSize()==1){
+            result.removeDimension();
+        }
+
+        return result;
+    }
+
 
     /**Omit all dimensions of size 1 from Tensor tail
      * @param tensor tensor for reshape
@@ -728,8 +748,8 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
             return tensor;
 
         Tensor extended = new Tensor(tensor);
-        int sumDeltaH = pads[0] + pads[1];
-        int sumDeltaW = pads[2] + pads[3];
+        int sumDeltaH = pads[0] + pads[2];
+        int sumDeltaW = pads[1] + pads[3];
         extended.setDimSize(0,tensor.getDimSize(0) + sumDeltaW);
         extended.setDimSize(1,tensor.getDimSize(1) + sumDeltaH);
         return extended;

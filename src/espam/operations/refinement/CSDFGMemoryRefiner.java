@@ -317,6 +317,8 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
     public void visitComponent(DenseBlock x) {
        _addLinearMU("input",x.getInputDataFormat());
        _addLinearMU("output",x.getOutputDataFormat());
+       if(x.getBiasName()!=null && x.getBiasName()!="bias")
+           _addUnitParam("bias_ref", "\"" + x.getBiasName() + "\"","std::string");
 
     }
 
@@ -327,6 +329,9 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
     public void visitDenseLayer(Layer x){
         _addLinearMU("input",x.getInputFormat());
         _addLinearMU("output",x.getOutputFormat());
+        if(x.getNeuron().getBiasName()!=null && x.getNeuron().getBiasName()!="bias")
+             _addUnitParam("bias_ref", "\"" + x.getNeuron().getBiasName() + "\"","std::string");
+        _addUnitParam("neuron_start_id",x.getstartNeuronId().toString(),"int");
     }
 
     /**
@@ -419,6 +424,8 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
          _addUnitParam("k_h","" + x.getKernelH(),"int");
          _addUnitParam("k_w","" + x.getKernelW(),"int");
          _addUnitParam("stride","" + x.getStride(),"int");
+         if(x.getBiasName()!=null && x.getBiasName()!="bias")
+             _addUnitParam("bias_ref", "\"" + x.getBiasName() + "\"","std::string");
 
          _addMU("output",x.getOutputDataFormat());
     }
@@ -444,7 +451,9 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
          _addUnitParam("k_h","" + layerNeuron.getKernelH(),"int");
          _addUnitParam("k_w","" + layerNeuron.getKernelW(),"int");
          _addUnitParam("stride","" + layerNeuron.getStride(),"int");
-
+         if(x.getNeuron().getBiasName()!=null && x.getNeuron().getBiasName()!="bias")
+             _addUnitParam("bias_ref", "\"" + x.getNeuron().getBiasName() + "\"","std::string");
+         _addUnitParam("neuron_start_id",x.getstartNeuronId().toString(),"int");
          _addMU("output",x.getOutputFormat());
     }
 
@@ -700,6 +709,37 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
 
     ////////////////////////////////////////////////////////
     //////      Weights processing                /////////
+
+    /**
+     * Create weights description for neuron
+     * @param layer layer
+     * @return weights description
+     */
+    public MemoryUnit createBiasDescription(Layer layer, String dataType){
+        if(layer.getNeuron().getBiasName()==null)
+            return null;
+
+       int size = layer.getNeuronsNum();
+       if(layer.getNeuron() instanceof DenseBlock)
+           size = ((DenseBlock) layer.getNeuron()).getNeuronsNum();
+       Tensor bias = new Tensor(size);
+       MemoryUnit biasMU = new MemoryUnit("bias",bias,dataType);
+       return biasMU;
+    }
+
+    /**
+     * Create weights description for neuron
+     * @param neuron neuron
+     * @return weights description
+     */
+    public MemoryUnit createBiasDescription(Neuron neuron, String dataType){
+        if(neuron.getBiasName()==null)
+            return null;
+       Tensor bias = new Tensor(neuron.getOutputDataFormat());
+       MemoryUnit biasMU = new MemoryUnit("bias",bias,dataType);
+       return biasMU;
+    }
+
     /**
      * Create weights description for neuron
      * @param neuron neuron

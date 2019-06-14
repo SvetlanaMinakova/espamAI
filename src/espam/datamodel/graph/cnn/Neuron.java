@@ -59,6 +59,8 @@ public abstract class Neuron implements Cloneable{
         newObj.setOutputDataFormat((Tensor)_outputDataFormat.clone());
         newObj.setNeuronType(neuronType);
         newObj.setSampleDim(_sampleDim);
+        newObj.setBiasName(_biasName);
+        newObj.setNonlin(_nonlin);
         return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -580,6 +582,34 @@ public abstract class Neuron implements Cloneable{
     }
 
     /////////////////////////////////////////////////////////////////////
+    ////     connection-dependent nodes incapsualtion               ////
+
+    /**
+     * Set bias as a reference to external node/file
+     * @param bias bias as a reference to external node/file
+     */
+    public void setBiasName(String bias) { this._biasName = bias; }
+
+    /**
+     * Get bias as a reference to external node/file
+     * @return  bias as a reference to external node/file
+     */
+
+    public String getBiasName() { return _biasName; }
+
+    /**
+     * Get built-in nonlinearity
+     * @return built-in nonlinearity
+     */
+    public String getNonlin() { return _nonlin; }
+
+    /**
+     * Set built-in nonlinearity
+     * @param nonlin  built-in nonlinearity
+     */
+    public void setNonlin(String nonlin) { this._nonlin = nonlin; }
+
+    /////////////////////////////////////////////////////////////////////
     ////                         protected methods                    ////
      /**
      * Create a deep copy of this neuron
@@ -628,4 +658,10 @@ public abstract class Neuron implements Cloneable{
 
     /**Neuron's output data format*/
     @SerializedName("outputDataFormat")private Tensor _outputDataFormat = null;
+
+    /**Neuron's input data format*/
+    @SerializedName("bias")private String _biasName = null;
+
+    /**Neuron's input data format*/
+    @SerializedName("nonlin")private String _nonlin = null;
 }

@@ -1,0 +1,622 @@
+{
+  "name": "CNTKGraph",
+  "inputLayerId": 0,
+  "outputLayerId": 1,
+  "crop": true,
+    "layers": [
+      {
+        "id": 0,
+        "name": "Input3",
+        "neuronsNum": 1,
+        "neuron": 
+{
+  "name": "INPUT",
+  "type": "DATA",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1,
+      1
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1,
+      1
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1,
+    1
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1,
+    1
+  ]
+}        }
+,
+      {
+        "id": 1,
+        "name": "Plus214_Output_0",
+        "neuronsNum": 1,
+        "neuron": 
+{
+  "name": "OUTPUT",
+  "type": "DATA",
+  "inputDataFormat": {
+    "shape": [
+      10
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      10
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+}        }
+,
+      {
+        "id": 3,
+        "name": "Convolution28",
+        "neuronsNum": 8,
+        "neuron": 
+{
+  "dim": 3,
+  "k_h": 5,
+  "k_w": 5,
+  "stride": 1,
+  "boundaryMode": "SAME",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "CONV",
+  "type": "CONV",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1,
+      1
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1,
+    1
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+}        }
+,
+      {
+        "id": 4,
+        "name": "Plus30",
+        "neuronsNum": 8,
+        "neuron": 
+{
+  "name": "AddConst",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+}        }
+,
+      {
+        "id": 5,
+        "name": "ReLU32",
+        "neuronsNum": 8,
+        "neuron": 
+{
+  "name": "ReLU",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+}        }
+,
+      {
+        "id": 6,
+        "name": "Pooling66",
+        "neuronsNum": 8,
+        "neuron": 
+{
+  "dim": 2,
+  "k_h": 2,
+  "k_w": 2,
+  "stride": 2,
+  "boundaryMode": "VALID",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "MAXPOOL",
+  "type": "POOL",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    8
+  ]
+},        "pads": 
+[
+  0,
+  0,
+  0,
+  0
+]        }
+,
+      {
+        "id": 7,
+        "name": "Convolution110",
+        "neuronsNum": 16,
+        "neuron": 
+{
+  "dim": 3,
+  "k_h": 5,
+  "k_w": 5,
+  "stride": 1,
+  "boundaryMode": "SAME",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "CONV",
+  "type": "CONV",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+}        }
+,
+      {
+        "id": 8,
+        "name": "Plus112",
+        "neuronsNum": 16,
+        "neuron": 
+{
+  "name": "AddConst",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+}        }
+,
+      {
+        "id": 9,
+        "name": "ReLU114",
+        "neuronsNum": 16,
+        "neuron": 
+{
+  "name": "ReLU",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+}        }
+,
+      {
+        "id": 10,
+        "name": "Pooling160",
+        "neuronsNum": 16,
+        "neuron": 
+{
+  "dim": 2,
+  "k_h": 3,
+  "k_w": 3,
+  "stride": 3,
+  "boundaryMode": "VALID",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "MAXPOOL",
+  "type": "POOL",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      4,
+      4
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+},        "pads": 
+[
+  0,
+  0,
+  0,
+  0
+]        }
+,
+      {
+        "id": 11,
+        "name": "Times212_reshape0",
+        "neuronsNum": 1,
+        "neuron": 
+{
+  "_inputsNum": 0,
+  "flatten": false,
+  "name": "RESHAPE",
+  "type": "RESHAPE",
+  "inputDataFormat": {
+    "shape": [
+      4,
+      4
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      4,
+      4,
+      16
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+}        }
+,
+      {
+        "id": 12,
+        "name": "Times212",
+        "neuronsNum": 1,
+        "neuron": 
+{
+  "neuronsNum": 10,
+  "refinedType": "MATMUL",
+  "name": "NONE",
+  "type": "DENSEBLOCK",
+  "inputDataFormat": {
+    "shape": [
+      4,
+      4,
+      16
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      10
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+}        }
+,
+      {
+        "id": 13,
+        "name": "Plus214",
+        "neuronsNum": 1,
+        "neuron": 
+{
+  "name": "AddConst",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      10
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      10
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+}        }
+
+  ],
+  "connections": [
+{
+  "type": "ONETOALL",
+  "src": "Input3",
+  "dest": "Convolution28",
+  "srcId": 0,
+  "destId": 3,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "Convolution28",
+  "dest": "Plus30",
+  "srcId": 3,
+  "destId": 4,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "Plus30",
+  "dest": "ReLU32",
+  "srcId": 4,
+  "destId": 5,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "ReLU32",
+  "dest": "Pooling66",
+  "srcId": 5,
+  "destId": 6,
+  "channels": 1
+},
+{
+  "type": "ALLTOALL",
+  "src": "Pooling66",
+  "dest": "Convolution110",
+  "srcId": 6,
+  "destId": 7,
+  "channels": 8
+},
+{
+  "type": "ONETOONE",
+  "src": "Convolution110",
+  "dest": "Plus112",
+  "srcId": 7,
+  "destId": 8,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "Plus112",
+  "dest": "ReLU114",
+  "srcId": 8,
+  "destId": 9,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "ReLU114",
+  "dest": "Pooling160",
+  "srcId": 9,
+  "destId": 10,
+  "channels": 1
+},
+{
+  "type": "ALLTOALL",
+  "src": "Pooling160",
+  "dest": "Times212_reshape0",
+  "srcId": 10,
+  "destId": 11,
+  "channels": 16
+},
+{
+  "type": "ALLTOALL",
+  "src": "Times212_reshape0",
+  "dest": "Times212",
+  "srcId": 11,
+  "destId": 12,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "Times212",
+  "dest": "Plus214",
+  "srcId": 12,
+  "destId": 13,
+  "channels": 1
+},
+{
+  "type": "ALLTOONE",
+  "src": "Plus214",
+  "dest": "Plus214_Output_0",
+  "srcId": 13,
+  "destId": 1,
+  "channels": 1
+}
+  ]
+}

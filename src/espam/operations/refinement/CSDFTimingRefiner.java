@@ -113,9 +113,14 @@ import java.util.Vector;
          * TODO is considered to be sequental!*/
         opTime*= (Integer)x.getKernelsNum();
 
+       // if(x.getName().contains("node_Conv4_split"))
+         //   System.out.println("kernels_conv_4_split "+x.getKernelsNum());
+
         for(Integer rate: unrolledOutRates){
             if (rate>0)
                 wcet.add(opTime);
+            else
+                wcet.add(0);
         }
         return wcet;
     }
@@ -165,7 +170,7 @@ import java.util.Vector;
 
         try { time = _extrapolateParametrizedOperationTime(operation.toLowerCase()); }
         catch (Exception e){
-            System.err.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
+           // System.err.println(operation + " unknown execution time. Default time = 1 is set for " + operation);
             time = 1;
         }
         return time;
@@ -210,13 +215,13 @@ import java.util.Vector;
 
         /** some specific ops*/
         _basicOperationsTiming.put("addconst",1);
-        _basicOperationsTiming.put("avgpool",2);
-        _basicOperationsTiming.put("conv",3);
+        _basicOperationsTiming.put("avgpool",1);
+        _basicOperationsTiming.put("conv",1);
         _basicOperationsTiming.put("concat",1);
-        _basicOperationsTiming.put("gemm",2);
-        _basicOperationsTiming.put("lrn",3);
-        _basicOperationsTiming.put("maxpool",2);
-        _basicOperationsTiming.put("matmul",2);
+        _basicOperationsTiming.put("gemm",1);
+        _basicOperationsTiming.put("lrn",1);
+        _basicOperationsTiming.put("maxpool",1);
+        _basicOperationsTiming.put("matmul",1);
         _basicOperationsTiming.put("relu",1);
         _basicOperationsTiming.put("reshape",1);
         _basicOperationsTiming.put("sigm",1);

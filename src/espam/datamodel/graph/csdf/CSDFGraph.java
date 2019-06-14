@@ -74,6 +74,25 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
     }
 
     /**
+     * Align each graph node rates according to calculated
+     * node length property
+     */
+    public void alignRatesLength(int maxPhases){
+        for(Object node:getNodeList()){
+            ((CSDFNode)node).alignRatesLength(maxPhases);
+        }
+    }
+
+    public int getMaxLen(){
+        int maxLen=0;
+        for(Object node:getNodeList()){
+            if(((CSDFNode)node).getLength()>maxLen)
+                maxLen=((CSDFNode)node).getLength();
+        }
+        return maxLen;
+    }
+
+    /**
      * Return description of SDF graph
      * @return description of SDF graph
      */
@@ -275,8 +294,9 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
     public int getNextNodeId() {
         return getNodeList().size();
     }
-       /**
-     *  Return a node which has a specific name. Return null if
+
+    /**
+     *  Return a node which has a specific id. Return null if
      *  node cannot be found.
      *
      * @param id unique identifier of the node to search for.
@@ -291,6 +311,44 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
                 return node;
             }
         }
+        return null;
+    }
+
+    /**
+     *  Return a node performs read operation (it should be the single node).
+     *  Return null if the node cannot be found.
+     * TODO refactoring
+     * @return  the node performs read operation
+     */
+    public CSDFNode getSrcNode() {
+        Iterator i;
+        i = getNodeList().iterator();
+        while( i.hasNext() ) {
+            CSDFNode node = (CSDFNode) i.next();
+            if(node.getOperation().toLowerCase().equals("read")) {
+                return node;
+            }
+        }
+
+        return null;
+    }
+
+        /**
+     *  Return a node performs write operation (it should be the single node).
+     *  Return null if the node cannot be found.
+     * TODO refactoring
+     * @return  the node performs write operation
+     */
+    public CSDFNode getSnkNode() {
+        Iterator i;
+        i = getNodeList().iterator();
+        while( i.hasNext() ) {
+            CSDFNode node = (CSDFNode) i.next();
+            if(node.getOperation().toLowerCase().equals("write")) {
+                return node;
+            }
+        }
+
         return null;
     }
 
@@ -413,6 +471,67 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         return true;
        }
 
+    /**
+     * Turn graph into SDF graph by 1) sum up all rates and wcets, 2) remove self-loops
+     */
+    public CSDFGraph getSDF(){
+        CSDFGraph csdfGraph = new CSDFGraph(getName());
+        csdfGraph.setType(SDFGraphType.sdf);
+       for (Object node: getNodeList()) {
+           try {
+               csdfGraph.getNodeList().add(((CSDFNode) node).getSDFNode());
+           }
+           catch (Exception e){System.out.println(node.toString());}
+       }
+       System.out.println("nodes processed");
+
+        /**
+         * add edges for non-selfloops
+         * */
+
+       for(Edge edge: getEdgeList()){
+           CSDFEdge csdfedge = ((CSDFEdge)edge);
+       //    if(csdfedge.getDstId()[0]!=csdfedge.getSrcId()[0]){
+               CSDFPort startPort = csdfGraph.getNode(csdfedge.getSrcId()[0]).getPort(csdfedge.getSrcId()[1]);
+               CSDFPort endPort = csdfGraph.getNode(csdfedge.getDstId()[0]).getPort(csdfedge.getDstId()[1]);
+               csdfGraph.addEdge(csdfedge.getName(),startPort,endPort);
+       //    }
+       }
+       return  csdfGraph;
+
+       }
+
+    /**
+     * multiply rates on 10-3
+     */
+    public void ratesToKB(){
+        for(Object node: getNodeList()){
+            CSDFNode csdfnode = (CSDFNode)node;
+            for(CSDFPort port: csdfnode.getInPorts()) {
+                for (IndexPair rate : port.getRates()) {
+                    int kbRate = rate.getFirst();
+                    if (kbRate != 0 && (kbRate / 1000 == 0))
+                        kbRate = 1;
+                    else
+                        kbRate = kbRate / 1000;
+                    rate.setFirst(kbRate);
+                }
+            }
+
+                for(CSDFPort port: csdfnode.getOutPorts()){
+                    for(IndexPair rate: port.getRates()){
+                        int kbRate = rate.getFirst();
+                        if(kbRate!=0 &&(kbRate/1000==0))
+                            kbRate=1;
+                        else
+                            kbRate=kbRate/1000;
+                        rate.setFirst(kbRate);
+                    }
+            }
+        }
+
+    }
+
     ///////////////////////////////////////////////////////////////////////
     //// resolve references inside the graph after the deserialization ////
 
@@ -424,8 +543,14 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
     private void resolveEdgesReferences() {
         for(Edge edge:getEdgeList()) {
             try {
-                resolveEdgeSrcReferences((CSDFEdge) edge);
-                resolveEdgeDstReferences((CSDFEdge) edge);
+                CSDFEdge csdfge= (CSDFEdge)edge;
+                resolveEdgeSrcReferences(csdfge);
+                resolveEdgeDstReferences(csdfge);
+                if(csdfge.getSrcId()[0]==csdfge.getDstId()[0]) {
+                    csdfge.getSrc().setOverlapHandler(true);
+                    csdfge.getDst().setOverlapHandler(true);
+                }
+
             }
             catch (Exception e) {
                 System.err.println(e.getMessage());
@@ -471,7 +596,6 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
                     " reference resolving error, port" + dstPortId + " not found");
                 throw new EspamException("SDF Edge parse exception");
         }
-
         edge.setDst(dstPort);
     }
     /**

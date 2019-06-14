@@ -21,6 +21,7 @@ target
 out
 .idea
 espam.jar
+espam_exec.jar
 Manifest.txt
 
 output_models

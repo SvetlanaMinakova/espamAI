@@ -204,9 +204,8 @@ public class Mapping implements Cloneable {
         i = _processorList.iterator();
         while (i.hasNext()) {
             MProcessor processor = (MProcessor) i.next();
-            if (processor.getName().equals(name)) {
+            if (processor.getName().contains(name)|| name.contains(processor.getName()))
                 return processor;
-            }
         }
         return null;
     }

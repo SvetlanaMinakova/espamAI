@@ -259,6 +259,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
      * @param inputOwner layer, owns the input
      */
     public void addInput(Layer inputOwner){
+        if(!_inputOwners.contains(inputOwner))
         _inputOwners.add(inputOwner);
     }
 

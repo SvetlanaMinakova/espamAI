@@ -1,0 +1,36 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE platform PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<platform name="myPlatform">
+<processor name="mb_1" type="MB" data_memory="65536" program_memory="65536">
+<port name="IO_1" />
+</processor>
+<processor name="mb_2" type="MB" data_memory="65536" program_memory="65536">
+<port name="IO_1" />
+</processor>
+<processor name="mb_3" type="MB" data_memory="65536" program_memory="65536">
+<port name="IO_1" />
+</processor>
+<network name="CS" type="AXICrossbarSwitch">
+<port name="IO_1" />
+<port name="IO_2" />
+<port name="IO_3" />
+</network>
+<host_interface name="HOST_IF" type="ML605" interface="UART">
+</host_interface>
+<link name="BUS1">
+<resource name="mb_1" port="IO_1" />
+<resource name="CS"
+port="IO_1" />
+</link>
+<link name="BUS2">
+<resource name="mb_2" port="IO_1" />
+<resource name="CS"
+port="IO_2" />
+</link>
+<link name="BUS3">
+<resource name="mb_3" port="IO_1" />
+<resource name="CS"
+port="IO_3" />
+</link>
+</platform>

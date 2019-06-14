@@ -75,11 +75,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         }
         defined.clear();
 
-        /** define weights, if any*/
-        MemoryUnit weights = node.getMemoryUnit("weights");
-        if(weights!=null){
-           _writeTensorToCPPArrayDefinitionWeights(weights.getShape(), weights.getName(), weights.getTypeDesc());
-        }
+
         /** define constant parameters, if any*/
         Vector<MemoryUnit> constParams = node.getUnitParams();
         if(constParams.size()>0) {
@@ -88,6 +84,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
                 _printStream.println(_prefix + "const " + mu.getTypeDesc() + " " + mu.getName() + " = " + mu.getUnitParamDesc() + ";");
             }
         }
+
     }
 
 
@@ -201,7 +198,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
 
     /**
      * Get C++ definition of static multidimensional array,
-     * corresponding to  espam. Tensor
+     * corresponding to  espam. With Tensor dimensions, descibed as const ints
      * @param tensor espam. Tensor
      * @param name name of the array
      * @param typeDesc description of array type;
@@ -219,6 +216,48 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
        // int revId = tensorDimensionality-1;
         for (int i = tensorDimensionality-1; i>=0; i--)
             _printStream.println(_prefix + "const int " + name + "_dim_" + (tensorDimensionality-i-1) +" = " +tensor.getDimSize(i)+";");
+
+        StringBuilder defsb = new StringBuilder(typeDesc);
+        defsb.append(" ");
+        defsb.append(name);
+
+        for (int i = tensorDimensionality-1; i>=0; i--)
+            defsb.append("[" + tensor.getDimSize(i) + "]");
+
+          /** static array definition*/
+        defsb.append(" = ");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("{");
+
+        defsb.append("0");
+
+        for (int i = 0 ;i < tensorDimensionality; i++)
+             defsb.append("}");
+
+        defsb.append(";");
+
+        _printStream.println(_prefix + defsb.toString());
+        prefixDec();
+        _printStream.println("");
+    }
+
+     /**
+     * Get C++ definition of static multidimensional array,
+     * corresponding to  espam.
+     * @param tensor espam. Tensor
+     * @param name name of the array
+     * @param typeDesc description of array type;
+     * @return C++ description of static multidimensional array,
+     * corresponding to  espam. Tensor
+     */
+    public void _writeTensorToCPPArrayDefinitionNoSizes(Tensor tensor, String name, String typeDesc){
+        if(Tensor.isNullOrEmpty(tensor))
+            return;
+
+        _printStream.println(_prefix + "//"+ name +" array definition");
+        _prefixInc();
+        int tensorDimensionality = tensor.getDimensionality();
 
         StringBuilder defsb = new StringBuilder(typeDesc);
         defsb.append(" ");
@@ -266,6 +305,8 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         for (int i =0;i< tensorDimensionality; i++)
             _printStream.println(_prefix + "const int " + name + "_dim_" + i +" = " +tensor.getDimSize(i)+";");
 
+        _printStream.println(_prefix + "const int " + name + "_len = " +tensor.getElementsNumber()+";");
+
         StringBuilder defsb = new StringBuilder(typeDesc);
         defsb.append(" ");
         defsb.append(name);
@@ -290,6 +331,8 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         prefixDec();
         _printStream.println("");
     }
+
+
 
 
      /**
@@ -343,4 +386,10 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
     ////                     protected variables                   ///
     /**flag shows, if the HDNN visitor is refined for CNNs*/
     protected boolean _CNNRefined = false;
+
+    /** if weights should be initialized with external text files*/
+    private static boolean _loadWeights = true;
+
+    /** folder, from where weights should be loaded*/
+    private static String _weightsFolder = "./";
 }

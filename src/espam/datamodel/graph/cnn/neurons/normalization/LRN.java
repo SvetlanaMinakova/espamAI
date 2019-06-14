@@ -317,5 +317,5 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
      /**
      * Bias of LRN
      * */
-     @SerializedName("bias")private float _bias =  1.0f;
+     @SerializedName("_bias")private float _bias =  1.0f;
 }

@@ -3,6 +3,7 @@ package espam.parser.onnx;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.connections.Connection;
+import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
 import espam.datamodel.graph.cnn.neurons.simple.Dropout;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
@@ -22,43 +23,176 @@ public static InferenceDNNOptimizer getInstance(){
     return _inferenceDNNOptimizer;
 }
 
+    /**
+     * Optimize a DNN for inference
+     * @param optLevel optimization level, that determines optimizations
+     * @param dnn deep neural network
+     * over a DNN :
+     * 0 (default) do nothing
+     * 1 (low) remove dropout and reshape nodes
+     * 2 (medium) remove dropout and reshape nodes and incapsulate biases
+     */
+    public void optimize(Network dnn, Integer optLevel){
+        switch (optLevel){
+
+            case 2:{
+                _removeDropouts(dnn);
+                _removeReshapes(dnn);
+                _incapsulateBiases(dnn);
+                return;
+            }
+
+              case 1: {
+                _removeDropouts(dnn);
+                _removeReshapes(dnn);
+               return;
+            }
+
+            case 0: {
+                return;
+            }
+
+            default: {
+                _removeDropouts(dnn);
+                _removeReshapes(dnn);
+                _incapsulateBiases(dnn);
+                break;
+            }
+        }
+
+}
+
+
 /**
  * Remove dropout nodes, that are not used during the inference phase
  * @param dnn deep neural network
  */
-    public void removeDropouts(Network dnn){
-    Vector<Layer> dropouts = new Vector<>();
-    for(Layer layer: dnn.getLayers()){
-        if(layer.getNeuron().getName().equals(NonLinearType.DROPOUT.toString()))
-            dropouts.add(layer);
-    }
+    private void _removeDropouts(Network dnn){
+    _removeLayers(dnn,NonLinearType.DROPOUT.toString());
+}
 
-    for(Layer dropout: dropouts)
-        _removeDropout(dnn, dropout);
+/**
+ * Remove reshape nodes, that are not relevant for linear communication channels
+ * @param dnn deep neural network
+ */
+    private void _removeReshapes(Network dnn){
+    _removeLayers(dnn,NeuronType.RESHAPE.toString());
 }
 
     /**
-     * Remove one dropout layer from the dnn
-     * TODO: to be removed, dropout should have a single input connection.
-     * @param dnn dnn with a Dropout layer
-     * @param dropout dropout layer to be removed
+     * Incapsulate biases, defined as AddConst nodes into
+     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
+     * @param dnn deep neural network
      */
-    private void _removeDropout(Network dnn, Layer dropout){
-        Vector<Connection> dropoutInputs = dnn.getLayerInputConnections(dropout);
-        if(dropoutInputs.size()!=1)
+    private void _incapsulateBiases(Network dnn){
+        Vector<Layer> toIncapsulate = new Vector<>();
+    for(Layer layer: dnn.getLayers()){
+        if(layer.getNeuron().getName().equals(NonLinearType.AddConst.toString()))
+            toIncapsulate.add(layer);
+    }
+
+    for(Layer layer: toIncapsulate)
+        _incapsulateBias(dnn, layer);
+    }
+
+      /**
+     * Incapsulate nonlinear layers into
+     * predcessing nodes, e.g. Conv(node)--> ReLu(node) will be replaced by Conv_relu(node)
+     * @param dnn deep neural network
+     */
+    private void _incapsulateNonlinear(Network dnn){
+        Vector<Layer> toIncapsulate = new Vector<>();
+    for(Layer layer: dnn.getLayers()){
+        if(layer.getNeuron().getName().equals(NonLinearType.AddConst.toString()))
+            toIncapsulate.add(layer);
+    }
+
+    for(Layer layer: toIncapsulate)
+        _incapsulateNonlinear(dnn, layer);
+    }
+
+     /**
+     * Incapsulate biases, defined as AddConst nodes into
+     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
+     * TODO: to be incapsulated, a layer should have a single input connection.
+     * @param dnn dnn with a layer to be incapsulated
+     * @param layer layer to be incapsulated
+     */
+    private void _incapsulateBias(Network dnn, Layer layer){
+        Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
+        if(lInputs.size()!=1)
             return;
-        Connection singleInput = dropoutInputs.firstElement();
-        Vector<Connection> dropoutOutputs = dnn.getLayerOutputConnections(dropout);
+        Connection singleInput = lInputs.firstElement();
+        singleInput.getSrc().getNeuron().setBiasName(layer.getName());
+        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
         /**connect single input and dropout outputs directly*/
         Layer newSrc = singleInput.getSrc();
-        for(Connection outp: dropoutOutputs){
+        for(Connection outp: layerOutputs){
             outp.changeSrc(newSrc);
         }
-        dnn.removeLayer(dropout);
+        dnn.removeLayer(layer);
+}
+
+     /**
+     * Incapsulate biases, defined as AddConst nodes into
+     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
+     * TODO: to be incapsulated, a layer should have a single input connection.
+     * @param dnn dnn with a layer to be incapsulated
+     * @param layer layer to be incapsulated
+     */
+    private void _incapsulateNonlinear(Network dnn, Layer layer){
+        Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
+        if(lInputs.size()!=1)
+            return;
+        Connection singleInput = lInputs.firstElement();
+        singleInput.getSrc().getNeuron().setNonlin(layer.getNeuron().getName());
+
+        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
+        /**connect single input and dropout outputs directly*/
+        Layer newSrc = singleInput.getSrc();
+        for(Connection outp: layerOutputs){
+            outp.changeSrc(newSrc);
+        }
+        dnn.removeLayer(layer);
 }
 
 
 
+    /**
+     * Remove nodes of specific type
+     * @param dnn DNN with nodes to be removed
+     * @param neuronType type of neuron for nodes to be removed
+     */
+  private void _removeLayers(Network dnn, String neuronType){
+   Vector<Layer> toRemove = new Vector<>();
+    for(Layer layer: dnn.getLayers()){
+        if(layer.getNeuron().getName().equals(neuronType))
+            toRemove.add(layer);
+    }
+
+    for(Layer layer: toRemove)
+        _removeLayer(dnn, layer);
+}
+
+    /**
+     * Remove a layer from the dnn
+     * TODO: to be removed, a layer should have a single input connection.
+     * @param dnn dnn with a layer to be removed
+     * @param layer layer to be removed
+     */
+    private void _removeLayer(Network dnn, Layer layer){
+        Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
+        if(lInputs.size()!=1)
+            return;
+        Connection singleInput = lInputs.firstElement();
+        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
+        /**connect single input and dropout outputs directly*/
+        Layer newSrc = singleInput.getSrc();
+        for(Connection outp: layerOutputs){
+            outp.changeSrc(newSrc);
+        }
+        dnn.removeLayer(layer);
+}
 
 /** DNN optimizer is a singletone, so constructor is private*/
 protected InferenceDNNOptimizer(){ }

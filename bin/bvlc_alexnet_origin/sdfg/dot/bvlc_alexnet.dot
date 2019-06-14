@@ -1,0 +1,71 @@
+digraph bvlc_alexnet {
+
+  ratio = auto;
+  rankdir = LR;
+  ranksep = 0.3;
+  nodesep = 0.2;
+  center = true;
+
+  node [ fontsize=12, height=0.4, width=0.4, style=filled, color="0.650 0.200 1.000" ]
+  edge [ fontsize=10, arrowhead=none, style=bold]
+
+  "data_0" [ label="READ"];
+  "node_Conv0" [ label="CONV(11_11_3)"];
+  "node_Relu1" [ label="ReLU"];
+  "node_LRN2" [ label="LRN(5)"];
+  "node_MaxPool3" [ label="MAXPOOL(3_3_96)"];
+  "node_Conv4" [ label="CONV(5_5_96)"];
+  "node_Relu5" [ label="ReLU"];
+  "node_LRN6" [ label="LRN(5)"];
+  "node_MaxPool7" [ label="MAXPOOL(3_3_256)"];
+  "node_Conv8" [ label="CONV(3_3_256)"];
+  "node_Relu9" [ label="ReLU"];
+  "node_Conv10" [ label="CONV(3_3_384)"];
+  "node_Relu11" [ label="ReLU"];
+  "node_Conv12" [ label="CONV(3_3_384)"];
+  "node_Relu13" [ label="ReLU"];
+  "node_MaxPool14" [ label="MAXPOOL(3_3_256)"];
+  "node_Gemm15" [ label="GEMM_NONE(1_7680,7680_4096)"];
+  "node_Relu16" [ label="ReLU"];
+  "node_Dropout17" [ label="DROPOUT"];
+  "node_Gemm18" [ label="GEMM_NONE(1_4096,4096_4096)"];
+  "node_Relu19" [ label="ReLU"];
+  "node_Dropout20" [ label="DROPOUT"];
+  "node_Gemm21" [ label="GEMM_NONE(1_4096,4096_1000)"];
+  "node_Softmax22" [ label="SOFTMAX"];
+  "prob_1" [ label="WRITE"];
+
+  "data_0" -> "node_Conv0" [ label="[p: [224 * 672 ],c: [1 * 7392 ,53 * 2688 ,1 * 672 ]]", color=red ];
+  "node_Conv0" -> "node_Conv0" [ label="[p: [54 * 4704 ,1 * 0 ],c: [1 * 0 ,54 * 4704 ]]", color=green ];
+  "node_Conv0" -> "node_Relu1" [ label="[p: [1 * 0 ,54 * 5184 ],c: [54 * 5184 ]]", color=red ];
+  "node_Relu1" -> "node_LRN2" [ label="[p: [54 * 5184 ],c: [54 * 5184 ]]", color=red ];
+  "node_LRN2" -> "node_MaxPool3" [ label="[p: [54 * 5184 ],c: [1 * 15552 ,25 * 10368 ,1 * 5184 ]]", color=red ];
+  "node_MaxPool3" -> "node_MaxPool3" [ label="[p: [26 * 54 ,1 * 0 ],c: [1 * 0 ,26 * 54 ]]", color=green ];
+  "node_MaxPool3" -> "node_Conv4" [ label="[p: [1 * 0 ,26 * 2496 ],c: [1 * 12480 ,21 * 2496 ,4 * 0 ]]", color=red ];
+  "node_Conv4" -> "node_Conv4" [ label="[p: [21 * 9984 ,1 * 0 ,4 * 0 ],c: [1 * 0 ,21 * 9984 ,4 * 0 ]]", color=green ];
+  "node_Conv4" -> "node_Relu5" [ label="[p: [26 * 6656 ],c: [26 * 6656 ]]", color=red ];
+  "node_Relu5" -> "node_LRN6" [ label="[p: [26 * 6656 ],c: [26 * 6656 ]]", color=red ];
+  "node_LRN6" -> "node_MaxPool7" [ label="[p: [26 * 6656 ],c: [1 * 19968 ,11 * 13312 ,1 * 6656 ]]", color=red ];
+  "node_MaxPool7" -> "node_MaxPool7" [ label="[p: [12 * 26 ,1 * 0 ],c: [1 * 0 ,12 * 26 ]]", color=green ];
+  "node_MaxPool7" -> "node_Conv8" [ label="[p: [1 * 0 ,12 * 3072 ],c: [1 * 9216 ,9 * 3072 ,2 * 0 ]]", color=red ];
+  "node_Conv8" -> "node_Conv8" [ label="[p: [9 * 6144 ,1 * 0 ,2 * 0 ],c: [1 * 0 ,9 * 6144 ,2 * 0 ]]", color=green ];
+  "node_Conv8" -> "node_Relu9" [ label="[p: [12 * 4608 ],c: [12 * 4608 ]]", color=red ];
+  "node_Relu9" -> "node_Conv10" [ label="[p: [12 * 4608 ],c: [1 * 13824 ,9 * 4608 ,2 * 0 ]]", color=red ];
+  "node_Conv10" -> "node_Conv10" [ label="[p: [9 * 9216 ,1 * 0 ,2 * 0 ],c: [1 * 0 ,9 * 9216 ,2 * 0 ]]", color=green ];
+  "node_Conv10" -> "node_Relu11" [ label="[p: [12 * 4608 ],c: [12 * 4608 ]]", color=red ];
+  "node_Relu11" -> "node_Conv12" [ label="[p: [12 * 4608 ],c: [1 * 13824 ,9 * 4608 ,2 * 0 ]]", color=red ];
+  "node_Conv12" -> "node_Conv12" [ label="[p: [9 * 9216 ,1 * 0 ,2 * 0 ],c: [1 * 0 ,9 * 9216 ,2 * 0 ]]", color=green ];
+  "node_Conv12" -> "node_Relu13" [ label="[p: [12 * 3072 ],c: [12 * 3072 ]]", color=red ];
+  "node_Relu13" -> "node_MaxPool14" [ label="[p: [12 * 3072 ],c: [1 * 9216 ,4 * 6144 ,1 * 3072 ]]", color=red ];
+  "node_MaxPool14" -> "node_MaxPool14" [ label="[p: [5 * 12 ,1 * 0 ],c: [1 * 0 ,5 * 12 ]]", color=green ];
+  "node_MaxPool14" -> "node_Gemm15" [ label="[p: [1 * 0 ,5 * 1536 ],c: [1 * 7680 ]]", color=red ];
+  "node_Gemm15" -> "node_Relu16" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Relu16" -> "node_Dropout17" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Dropout17" -> "node_Gemm18" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Gemm18" -> "node_Relu19" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Relu19" -> "node_Dropout20" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Dropout20" -> "node_Gemm21" [ label="[p: [1 * 4096 ],c: [1 * 4096 ]]", color=red ];
+  "node_Gemm21" -> "node_Softmax22" [ label="[p: [1 * 1000 ],c: [1 * 1000 ]]", color=red ];
+  "node_Softmax22" -> "prob_1" [ label="[p: [1 * 1000 ],c: [1 * 1000 ]]", color=red ];
+
+}

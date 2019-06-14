@@ -31,7 +31,7 @@ public class FileWorker {
 
       }
 
-        /**
+     /**
      *Get all the abs paths to files with specified extension
      * in the specified directory
      * @param dir directory with files
@@ -47,6 +47,29 @@ public class FileWorker {
           for(File f: files){
               String absPath = f.getAbsolutePath();
               if(absPath.endsWith(extension))
+                filePaths.add(absPath);
+          }
+
+          return filePaths;
+
+      }
+
+      /**
+     *Get all the abs paths to files with specified extension
+     * in the specified directory
+     * @param dir directory with files
+     * @param extension files extension (filter)
+     * @return abs path to all the files in the specified directory
+     */
+      public static Vector<String> getAllFilePaths(String dir, String extension, String fileNamePart){
+
+          Vector<String> filePaths = new Vector<>();
+
+          File myFolder = new File(dir);
+          File[] files = myFolder.listFiles();
+          for(File f: files){
+              String absPath = f.getAbsolutePath();
+              if(absPath.endsWith(extension) && f.getName().contains(fileNamePart))
                 filePaths.add(absPath);
           }
 
@@ -169,6 +192,26 @@ public class FileWorker {
     }
 
     /**
+     * @param path path to file
+     * @return stream of file
+     * @throws FileNotFoundException
+     */
+    public static PrintStream openFile(String path) throws Exception{
+
+        PrintStream printStream = null;
+
+        try {
+                OutputStream file = null;
+                file = new FileOutputStream(path);
+                printStream = new PrintStream(file);
+            }
+        catch(Exception e ) {
+            System.out.println("Open file exception: " + e.getMessage());
+        }
+        return printStream;
+    }
+
+    /**
      * delete file if it exists
      * @param dir file directory (abs path)
      * @param fileName file name
@@ -232,6 +275,60 @@ public class FileWorker {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Copy data from src file to dst file
+     * @param srcPath path to source file
+     * @param dstPath path to destination file
+     * @throws FileNotFoundException, if source or destination file was not found
+     */
+    public static void copy(String srcPath, String dstPath, boolean append) throws FileNotFoundException {
+        File srcFile = new File(srcPath);
+        if(!srcFile.exists())
+            throw new FileNotFoundException();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader( srcFile.getAbsoluteFile()));
+
+            try {
+                String s;
+                while ((s = in.readLine()) != null) {
+                   write(dstPath,s,append);
+                }
+            } finally {
+                in.close();
+            }
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+     /**
+     * Copy data from src file to dst file
+     * @param srcPath path to source file
+     * @param dstStream output stream to destination file
+     * @throws FileNotFoundException, if source or destination file was not found
+     */
+    public static void insert(String srcPath, PrintStream dstStream) throws FileNotFoundException {
+        File srcFile = new File(srcPath);
+        if(!srcFile.exists())
+            throw new FileNotFoundException();
+
+        try {
+            BufferedReader in = new BufferedReader(new FileReader( srcFile.getAbsoluteFile()));
+
+            try {
+                String s;
+                while ((s = in.readLine()) != null) {
+                   dstStream.println(s);
+                }
+            } finally {
+                in.close();
+            }
+        } catch(IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////

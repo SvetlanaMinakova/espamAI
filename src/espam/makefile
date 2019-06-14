@@ -14,7 +14,8 @@ SUBPACKAGES = \
 	visitor \
 	parser \
 	operations \
-	utils
+	utils \
+	interfaces
 
 # Java files in this directory
 JSRCS = 

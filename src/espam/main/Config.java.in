@@ -50,19 +50,6 @@ public class Config {
     return _dartsPath;
   }
 
-      /**
-     * Forcely set path to darts
-     * @param dartsPath path to darts
-     */
-  public void setDartsPath(String dartsPath) {
-        this._dartsPath = dartsPath;
-    }
-
-    /**
-   * Forcely set path to Python installation.
-   */
-  public void setPythonCall(String pythonCall){ _pythonCall = pythonCall; }
-
   /**
    * Returns path to Python installation.
    */
@@ -122,7 +109,7 @@ public class Config {
   private String _prefix = "@prefix@";
 
   // Output directory files
-  private String _outputDir = "./";
+  private String _outputDir = "./output_models";
 
   //absolute path to the application sources
   private String _appPath = "@APPPATH@";

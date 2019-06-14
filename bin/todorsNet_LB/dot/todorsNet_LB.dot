@@ -1,0 +1,28 @@
+digraph todorsNet_LB {
+
+  ratio = auto;
+  rankdir = LR;
+  ranksep = 0.3;
+  nodesep = 0.2;
+  center = true;
+
+  node [ fontsize=12, height=0.4, width=0.5, style=filled, color="0.650 0.200 1.000"]
+  edge [ fontsize=10, arrowhead=none, style=bold ]
+
+  "input0" [ label="input \n neurons: 1 \n neuron: INPUT(DATA) \n  [ data format: [32,32]]\n ", shape=box, color=lightskyblue, margin=0.4];
+  "C11" [ label="C1 \n neurons: 2 \n neuron: CONV(CONV) \n  [ k: 17x17,   s: 1,   boundary_mode: VALID ]\n ", shape=box, color=lightcoral, margin=0.4];
+  "C1_split_0_05" [ label="C1_split_0_0 \n neurons: 2 \n neuron: CONV(CONV) \n  [ k: 17x17,   s: 1,   boundary_mode: VALID ]\n ", shape=box, color=lightcoral, margin=0.4];
+  "C1_output_concat_06" [ label="C1_output_concat_0 \n neurons: 1 \n neuron: CONCAT(CONCAT) \n  [ inputs number: 2]\n ", shape=box, color=gainsboro, margin=0.4];
+  "C22" [ label="C2 \n neurons: 3 \n neuron: CONV(CONV) \n  [ k: 5x5,   s: 3,   boundary_mode: VALID ]\n ", shape=box, color=lightcoral, margin=0.4];
+  "SM3" [ label="SM \n neurons: 1 \n neuron: SOFTMAX(DENSEBLOCK) \n  [ neurons: 2] \n ", shape=box, color=palegreen, margin=0.4];
+  "output4" [ label="output \n neurons: 1 \n neuron: OUTPUT(DATA) \n  [ data format: [2]]\n ", shape=box, color=lightskyblue, margin=0.4];
+
+  "input0" -> "C11" [ label="ONETOALL", color=black];
+  "input0" -> "C1_split_0_05" [ label="ONETOALL", color=black];
+  "C11" -> "C1_output_concat_06" [ label="ALLTOALL", color=black];
+  "C1_split_0_05" -> "C1_output_concat_06" [ label="ALLTOALL", color=black];
+  "C1_output_concat_06" -> "C22" [ label="CUSTOM", color=black];
+  "C22" -> "SM3" [ label="ALLTOALL", color=black];
+  "SM3" -> "output4" [ label="ALLTOONE", color=black];
+
+}

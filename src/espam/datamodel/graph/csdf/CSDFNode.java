@@ -69,6 +69,36 @@ import java.util.Iterator;
         
     }
 
+       /**
+        * Get sdf analogue of the node
+        * @return sdf analogue of the node
+        */
+    public  CSDFNode getSDFNode(){
+        CSDFNode sdfNode = new CSDFNode(getName(),_id);
+       /** for(CSDFPort inport:getNonOverlapHandlingInPorts()){
+            sdfNode.addPort(inport.getSDFPort());
+        }
+
+        for (CSDFPort outport:getNonOverlapHandlingOutPorts()){
+            sdfNode.addPort(outport.getSDFPort());
+        } */
+
+       for(NPort port:getPortList()){
+               sdfNode.addPort(((CSDFPort) port).getSDFPort());
+       }
+
+        sdfNode.setOperation(_operation);
+       if(_group!=null)
+        sdfNode.setGroup(_group);
+        sdfNode.setLength(1);
+        sdfNode.setRepetitions(1);
+        Vector<MemoryUnit> memoryUnits = new Vector<>();
+        sdfNode.setMemoryUnits(memoryUnits);
+        sdfNode.setKernelsNum(_kernelsNum);
+
+        return sdfNode;
+    }
+
      /**
      * Return description of the CSDFNode (Actor).
      * @return description of the CSDFNode (Actor).
@@ -395,6 +425,44 @@ import java.util.Iterator;
      */
        public void setKernelsNum(int kernelsNum) {
            this._kernelsNum = kernelsNum;
+       }
+
+       /**
+        * Align rates according ro calculated length property
+        */
+       public void alignRatesLength(int maxPhases){
+      //     setAutoLength();
+           setLength(maxPhases);
+           Vector<IndexPair> curRates;
+           int dif;
+           int curPhases = 0;
+           /** align reading rates*/
+           for(CSDFPort inport: getInPorts()){
+               curRates = inport._rates;
+               for (IndexPair rate: curRates){
+                   curPhases+=rate.getSecond();
+               }
+               dif = _length - curPhases;
+               if(dif>0)
+                   inport.getRates().add(new IndexPair(0,dif));
+
+               curPhases =0;
+           }
+           /** align writing rates*/
+           for(CSDFPort outport: getOutPorts()){
+               curRates = outport._rates;
+               for (IndexPair rate: curRates){
+                   curPhases+=rate.getSecond();
+               }
+               dif = _length - curPhases;
+               if(dif>0) {
+                   if(outport.isOverlapHandler())
+                       outport.getRates().add(new IndexPair(0, dif));
+                   else
+                       outport.getRates().insertElementAt(new IndexPair(0, dif), 0);
+               }
+               curPhases =0;
+           }
        }
 
        /**

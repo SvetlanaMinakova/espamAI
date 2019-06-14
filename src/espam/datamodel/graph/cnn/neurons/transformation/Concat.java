@@ -263,7 +263,8 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
      * @param inputOwner layer, owns the input
      */
     public void addInput(Layer inputOwner){
-        _inputOwners.add(inputOwner);
+        if(!_inputOwners.contains(inputOwner))
+            _inputOwners.add(inputOwner);
     }
 
      /**

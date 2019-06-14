@@ -1,0 +1,31 @@
+digraph todorsNet_LB {
+
+  ratio = auto;
+  rankdir = LR;
+  ranksep = 0.3;
+  nodesep = 0.2;
+  center = true;
+
+  node [ fontsize=12, height=0.4, width=0.4, style=filled, color="0.650 0.200 1.000" ]
+  edge [ fontsize=10, arrowhead=none, style=bold]
+
+  "input" [ label="READ"];
+  "C1" [ label="CONV(17_17)"];
+  "C1_split_0_0" [ label="CONV(17_17)"];
+  "C1_output_concat_0" [ label="CONCAT"];
+  "C2" [ label="CONV(5_5_4)"];
+  "SM" [ label="DENSEBLOCK_SOFTMAX(1_48,48_2)"];
+  "output" [ label="WRITE"];
+
+  "input" -> "C1" [ label="[p: [32 * 32 ],c: [1 * 544 ,15 * 32 ]]", color=red ];
+  "C1" -> "C1" [ label="[p: [15 * 512 ,1 * 0 ],c: [1 * 0 ,15 * 512 ]]", color=green ];
+  "input" -> "C1_split_0_0" [ label="[p: [32 * 32 ],c: [1 * 544 ,15 * 32 ]]", color=red ];
+  "C1_split_0_0" -> "C1_split_0_0" [ label="[p: [15 * 512 ,1 * 0 ],c: [1 * 0 ,15 * 512 ]]", color=green ];
+  "C1" -> "C1_output_concat_0" [ label="[p: [16 * 32 ],c: [16 * 32 ]]", color=red ];
+  "C1_split_0_0" -> "C1_output_concat_0" [ label="[p: [16 * 32 ],c: [16 * 32 ]]", color=red ];
+  "C1_output_concat_0" -> "C2" [ label="[p: [15 * 0 ,1 * 1024 ],c: [1 * 320 ,3 * 192 ,1 * 128 ]]", color=red ];
+  "C2" -> "C2" [ label="[p: [4 * 128 ,1 * 0 ],c: [1 * 0 ,4 * 128 ]]", color=green ];
+  "C2" -> "SM" [ label="[p: [1 * 0 ,4 * 12 ],c: [1 * 48 ]]", color=red ];
+  "SM" -> "output" [ label="[p: [1 * 2 ],c: [1 * 2 ]]", color=red ];
+
+}

@@ -585,7 +585,6 @@ ac_unique_file="./config/cpinvoke.in"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 APPPATH
-OUTPUT
 PYTHONCALL
 DARTS_HOME
 SYSTEMC_HOME
@@ -640,7 +639,6 @@ with_java
 with_systemc
 with_darts
 with_python
-with_output
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1266,7 +1264,6 @@ Optional Packages:
   --with-systemc=DIR      Location of SystemC installation
   --with-darts=DIR      Location of darts installation
   --with-python=DIR         Location of python installation
-  --with-output=DIR
 
 Report bugs to the package provider.
 _ACEOF
@@ -1848,26 +1845,6 @@ fi
 # Application absolute path
 #--------------------------------------------------------------------
 APPPATH=`(pwd)`
-
-#--------------------------------------------------------------------
-# Output files directory
-#--------------------------------------------------------------------
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OUTPUT" >&5
-$as_echo_n "checking for OUTPUT... " >&6; }
-
-# Check whether --with-output was given.
-if test "${with_output+set}" = set; then :
-  withval=$with_output; OUTPUT=$withval
-else
-  OUTPUT=$prefix
-fi
-
-    OUTPUT=$OUTPUT/output_models
-if test ! -d  $OUTPUT; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Output path doesn't exist. Please check path supplied with  \"--with-output=path\" option" >&5
-$as_echo "$as_me: WARNING: Output path doesn't exist. Please check path supplied with  \"--with-output=path\" option" >&2;}
-fi
-
 #--------------------------------------------------------------------
 #	Figure out which separator to use for CLASSPATH
 #	So much for write once, run everywhere.
@@ -1929,8 +1906,6 @@ $as_echo "$as_me: SystemC Home         = '$SYSTEMC_HOME' ($SYSTEMC_HOME_STATUS)"
 $as_echo "$as_me: darts Home           = '$DARTS_HOME' ($DARTS_HOME_STATUS)" >&6;}
 { $as_echo "$as_me:${as_lineno-$LINENO}: python path          = '$PYTHONCALL'" >&5
 $as_echo "$as_me: python path          = '$PYTHONCALL'" >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}: output files path    = '$OUTPUT'" >&5
-$as_echo "$as_me: output files path    = '$OUTPUT'" >&6;}
 
 #---- Keep these substitutions alphabetical, with a description ----#
 
@@ -1952,9 +1927,6 @@ $as_echo "$as_me: output files path    = '$OUTPUT'" >&6;}
 
 
 # Location of PYTHON installation
-
-
-# Output directory
 
 
 # Application sources absolute path

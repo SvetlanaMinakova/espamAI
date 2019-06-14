@@ -73,7 +73,9 @@ public class Options {
                             _ui.setADGFileName(args[++i]);
                             //_ui.setADGFileName(args[++i], cntrAdg++);
                         } else if( arg.equals("--mapping") || arg.equals("-m") ) {
-                            _ui.setMappingFileName(args[++i]);
+                            String mappingFileName = args[++i];
+                            _ui.setMappingFileName(mappingFileName);
+                            _cnnui.setMappingFile(mappingFileName);
                         } else if( arg.equals("--scheduler") || arg.equals("-s") ) {
                             _ui.setSchedulerFileName(args[++i]);
                         } else if( arg.equals("--impldata") ) {
@@ -133,12 +135,25 @@ public class Options {
                             _cnnui.setConsistencyCheckout(true);
                         }
 
+                        else if(arg.equals("--opt-fi")){
+                        _cnnui.setOptimizeForInference(Integer.parseInt(args[++i]));
+                        }
+
+                         else if(arg.equals("--cores")){
+                        _cnnui.setCores(Integer.parseInt(args[++i]));
+                        }
+
                         else if (arg.equals("--python")) {
-                            Config.getInstance().setPythonCall(args[++i]);
+                          //  Config.getInstance().setPythonCall(args[++i]);
                         }
 
                         else if (arg.equals("--darts")) {
-                            Config.getInstance().setDartsPath(args[++i]);
+                          //  Config.getInstance().setDartsPath(args[++i]);
+                        }
+
+                        else if (arg.equals("--dartswithinterface")) {
+                          //  Config.getInstance().setDartsPath(args[++i]);
+                         //   _cnnui.setExternalDartsInterface(true);
                         }
 
                         else {
@@ -207,6 +222,7 @@ public class Options {
             _ui.setDecomposeFlag();
         } else if( arg.equals("--debug") ) {
             _ui.setDebugFlag();
+            _cnnui. setPthreadSilent(false);
         } else if( arg.equals("--debugger") ) {
             _ui.setDebuggerFlag();
         } else if( arg.equals("--dot-ppn") ) {
@@ -231,9 +247,9 @@ public class Options {
             _cnnui.setDnnInitRepresentation(DNNInitRepresentation.NEURONBASED);
         }
 
-        else if (arg.equals("--multiple-models")|| arg.equals("-m")) {
-            _cnnui.setMultipleModels(true);
-        }
+       // else if (arg.equals("--multiple-models")|| arg.equals("-m")) {
+         //   _cnnui.setMultipleModels(true);
+       // }
 
         else if (arg.equals("--json")) {
             _cnnui.setJson(true);
@@ -264,6 +280,10 @@ public class Options {
             _cnnui.setGenerateCsdfg(true);
         }
 
+        else if(arg.equals("--tiling")){
+            _cnnui.setDataTiling(true);
+        }
+
         else if(arg.equals("--wcet")){
             _cnnui.setWcetTemplateGen(true);
             _cnnui.setGenerateCsdfg(true);
@@ -271,6 +291,23 @@ public class Options {
 
         else if(arg.equals("--wcenergy")){
             _cnnui.setEnergyTemplateGen(true);
+        }
+
+         else if(arg.equals("--libCPU")){
+            _cnnui.setPthreadGenerateDNNFuncCPU(true);
+        }
+
+        else if(arg.equals("--libGPU")){
+            _cnnui.setPthreadGenerateDNNFuncGPU(true);
+        }
+
+
+        else if(arg.equals("--libNA")){
+            _cnnui.setPthreadGenerateDNNFuncNA(true);
+        }
+
+        else if(arg.equals("--onnx-weights")){
+            _cnnui.setExtractONNXWeights(true);
         }
 
         else if( arg.equals("") ) {
@@ -358,7 +395,7 @@ public class Options {
             {"--neuron-based    ", "-nb "},
 
             /** generation flags*/
-            {"--multiple-models ", "-m  "},
+           // {"--multiple-models ", "-m  "},
             {"--sesame          ", "none"},
             {"--pthread          ", "none"},
             {"--dot             ", "none"},
@@ -367,7 +404,11 @@ public class Options {
             {"--json-csdf       ", "none"},
             {"--xml-csdf        ", "none"},
             {"--wcet            ", "none"},
-            {"--wcenergy        ", "none"}
+            {"--wcenergy        ", "none"},
+            {"--libCPU          ", "none"},
+            {"--libGPU          ", "none"},
+            {"--libNA           ", "none"},
+            {"--onnx-weights    ", "none"}
 
     };
     
@@ -401,7 +442,9 @@ public class Options {
         {"--time-spec      ", "none", " <FilePath>"},
         {"--energy-spec    ", "none", " <FilePath>"},
         {"--consistency    ", "-c  ", " <FilePath>"},
-        {"--na-arch    ", "none", " <FilePath>"}
+        {"--na-arch        ", "none", " <FilePath>"},
+        {"--opt-fi         ", "none", " <Integer>"},
+        {"--cores          ", "none", " <Integer>"}
        };
 
     /**

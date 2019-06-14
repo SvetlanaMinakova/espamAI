@@ -60,6 +60,23 @@ public class CSDFPort extends NPort {
     }
 
     /**
+     * Get analogue SDF port
+     * @return analogur sdf port
+     */
+    public CSDFPort getSDFPort(){
+        CSDFPort port = new CSDFPort(getName(),getId(),getType());
+        int sumRate = 0;
+        for(IndexPair rate :_rates)
+            sumRate+=rate.getFirst()*rate.getSecond();
+        port._rates = new Vector<>();
+        port._rates.add(new IndexPair(sumRate,1));
+
+        if(_overlapHandler)
+            port._overlapHandler=true;
+        return port;
+    }
+
+    /**
      *  Return a description of the CSDFPort.
      * @return  a description of the CSDFPort.
      */

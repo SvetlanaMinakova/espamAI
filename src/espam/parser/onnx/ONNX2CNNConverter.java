@@ -15,8 +15,14 @@ import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
+import espam.interfaces.python.ONNXWeightsExtractor;
+import espam.main.Config;
+import espam.parser.json.JSONParser;
+import espam.utils.fileworker.FileWorker;
 import onnx.ONNX;
 
+import java.io.File;
+import java.io.PrintStream;
 import java.util.*;
 
 
@@ -34,15 +40,26 @@ public class ONNX2CNNConverter {
     ///////////////////////////////////////////////////////////////////
     ////                        convert elements                   ///
 
-     /**
+         /**
      * Convert ONNX model to espam.Network model
      * @param model ONNX DNN model
      * @return espam.Network model, corresponding to provided ONNX DNN model
      */
-    public static Network convertModel(ONNX.ModelProto model)
-        {   ONNX2CNNConverter converter = new ONNX2CNNConverter();
+    public static Network convertModel(ONNX.ModelProto model, String modelPath, String saveWeightsPath, boolean verbose){
+        ONNX2CNNConverter converter = new ONNX2CNNConverter();
+
+        if(saveWeightsPath!=null && modelPath!=null) {
+            converter.setWeightsSavePath(saveWeightsPath);
+            converter.setSaveWeights(true);
+            converter.setModelPath(modelPath);
+            converter.setSaveWeightsVerbose(verbose);
+        }
+        else {System.err.println(" incorrect parameters for weights saving: mode path: "+modelPath +
+                ", weights dir: "+saveWeightsPath + " . Weights would not be extracted.");}
+
             try{
                 Network resultNetwork = converter.convertGraph(model);
+              //  resultNetwork.setName("yolo");
                 ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
                 Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
               //  for(int lId : layersTraverseOrder)
@@ -50,7 +67,35 @@ public class ONNX2CNNConverter {
                 traverser.setConnections(layersTraverseOrder);
                 traverser.setDataFormats(layersTraverseOrder);
                 converter.removePureDataLayers(resultNetwork);
+                return resultNetwork;
+            }
 
+             catch (Exception e){
+                System.err.println("Model conversion failed "+e.getMessage());
+                return null;
+            }
+
+    }
+
+
+     /**
+     * Convert ONNX model to espam.Network model
+     * @param model ONNX DNN model
+     * @return espam.Network model, corresponding to provided ONNX DNN model
+     */
+    public static Network convertModel(ONNX.ModelProto model)
+        {   ONNX2CNNConverter converter = new ONNX2CNNConverter();
+
+            try{
+                Network resultNetwork = converter.convertGraph(model);
+               // resultNetwork.setName("yolo");
+                ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
+                Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
+              //  for(int lId : layersTraverseOrder)
+                //    System.out.println("("+lId+")");//+resultNetwork.getLayer(lId).getName());
+                traverser.setConnections(layersTraverseOrder);
+                traverser.setDataFormats(layersTraverseOrder);
+                converter.removePureDataLayers(resultNetwork);
                 return resultNetwork;
             }
 
@@ -87,7 +132,6 @@ public class ONNX2CNNConverter {
             if(!_uniqueNamedONNXNodes.containsValue(node)) {
                 String nonEmptyName = generateNonEmptyName(node);
                 _uniqueNamedONNXNodes.put(node, nonEmptyName);
-
                 try {
                     processONNXNode(node, resultNetwork);
                 }
@@ -97,9 +141,36 @@ public class ONNX2CNNConverter {
                 }
             }
         }
-    // removePureDataNodes(resultNetwork);
-     return resultNetwork;
+        if(_saveWeights)
+            _saveParametersAsNPYArrays(resultNetwork.getName());
+
+        resultNetwork.setWeightsType(_modelWeightsType);
+        resultNetwork.setDataType(_modelDataType);
+        return resultNetwork;
     }
+
+    /**Save parameters as numpy arrays
+     * @param modelName name of the model
+     */
+
+    private void _saveParametersAsNPYArrays(String modelName) {
+      /** add file extension if not mentioned*/
+      try {
+          String metaFileDir = _weightsSavePath;
+          String weightsDir =  _weightsSavePath + File.separator + "weights_npz";
+          String metadataFileName = "inits_metadata";
+          String metadataFilePath = metaFileDir + File.separator + metadataFileName + ".json";
+          _saveParametersAsJSONMetaData(metaFileDir, metadataFileName);
+          boolean weightsExtracted =  _weightsExtractor.extractWeights(_modelPath,metadataFilePath,weightsDir,_saveWeightsVerbose);
+          if(!weightsExtracted)
+              System.err.println("Weights extraction error for: " + modelName + ". Python script error.");
+          }
+
+      catch (Exception e){
+          System.err.println("Weights extraction error: " + e.getMessage());
+      }
+  }
+
 
    /**
      * Converts ONNX Tensor to espam.Tensor by changing the dimensions order
@@ -141,6 +212,8 @@ public class ONNX2CNNConverter {
     public static BoundaryMode convertBoundaryMode(String boundaryMode){
     if(boundaryMode.equals("VALID"))
         return BoundaryMode.VALID;
+    //if(boundaryMode.equals("NOTSET"))
+    //    return BoundaryMode.NOTSET;
     else
         return BoundaryMode.SAME;
     }
@@ -404,6 +477,29 @@ public class ONNX2CNNConverter {
         /** resolving of multiple inputs of ONNX.MatMul and GEMM nodes
          *  while transferring to DenseBlock*/
         _denseInputs = new HashMap<>();
+
+          /** List of all nodes that contain weights*/
+        _nodesWithWeights = new Vector<String>();
+
+        /** list of operational nodes, contains data*/
+         _dataParameterNodesOutputs = new HashMap<>();
+
+         /** weights initializers: <operational node name,weights initializer name> */
+         _convWeightsInits = new HashMap<>();
+         _denseWeightsInits = new HashMap<>();
+
+         /** bias initializers: <operational node name, bias initializer name> */
+         _biasInits = new HashMap<>();
+
+         /** weights nodes: <operational node name,weights node name> */
+         _convWeightsNodeInits = new HashMap<>();
+         _denseWeightsNodeInits = new HashMap<>();
+
+         /** bias nodes: <operational node name, bias node name> */
+         _biasNodeInits = new HashMap<>();
+
+         /** number of neurons in dense blocks*/
+         _denseNeurons = new HashMap<>();
     }
 
     /**
@@ -449,6 +545,7 @@ public class ONNX2CNNConverter {
             _uniqueNamedONNXNodes.put(singleModelInput,inputNodeName);
             appendInputLayer(singleModelInput, resultNetwork);
             _ILayersNames.add(inputNodeName);
+            _extractDataTypeFromInputNode(singleModelInput);
         }
 
         else {
@@ -522,6 +619,7 @@ public class ONNX2CNNConverter {
         if(neuronType.equals("Add")) {
             appendAddLayer(node,espamDNN);
             processOperationalNode(node);
+           _extractParamsMetaData(node,false,true);
             return;
         }
 
@@ -540,6 +638,7 @@ public class ONNX2CNNConverter {
         if(neuronType.equals("Conv")) {
              appendConvLayer(node,espamDNN);
              processOperationalNode(node);
+              _extractParamsMetaData(node,true,true);
             return;
         }
 
@@ -566,6 +665,8 @@ public class ONNX2CNNConverter {
            appendGemmLayer(node,espamDNN);
            processOperationalNode(node);
            processDenseNode(node);
+           _extractParamsMetaData(node,true,true);
+
           return;
         }
 
@@ -618,6 +719,8 @@ public class ONNX2CNNConverter {
            appendMatMulLayer(node,espamDNN);
             processOperationalNode(node);
             processDenseNode(node);
+
+           _extractParamsMetaData(node,true,false);
            return;
         }
 
@@ -658,6 +761,9 @@ public class ONNX2CNNConverter {
         if(neuronType.equals("Softmax")) {
             appendNonLinearLayer(node, NonLinearType.SOFTMAX,espamDNN);
             processOperationalNode(node);
+
+            //_printstrWeights(node);
+
             return;
         }
 
@@ -682,6 +788,7 @@ public class ONNX2CNNConverter {
         processOperationalNode(node);
         return;
     }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                 layers adders                             ///
@@ -751,8 +858,14 @@ public class ONNX2CNNConverter {
 
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
         Layer addedLayer = dnn.getLayers().lastElement();
-        int[] pads = extractPads(node);
-        addedLayer.setPads(pads);
+
+       // if(((CNNNeuron) neuron).getBoundaryMode().equals(BoundaryMode.NOTSET)) {
+            int[] pads = extractPads(node);
+            addedLayer.setPads(pads);
+        //    ((CNNNeuron) neuron).setBoundaryMode(BoundaryMode.SAME);
+
+        //}
+
         _layersMapping.put(addedLayer,node);
     }
 
@@ -764,6 +877,7 @@ public class ONNX2CNNConverter {
     private void appendConvLayer(ONNX.NodeProto node, Network dnn){
 
         Neuron neuron = createConvNeuron(node);
+        neuron.setBiasName("bias");
         /**
          * Number of neurons of Conv layer is determined from corresponding
          * Layer weights shape
@@ -772,8 +886,13 @@ public class ONNX2CNNConverter {
 
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
         Layer addedLayer = dnn.getLayers().lastElement();
-        int[] pads = extractPads(node);
-        addedLayer.setPads(pads);
+
+        //if(((CNNNeuron) neuron).getBoundaryMode().equals(BoundaryMode.NOTSET)) {
+            int[] pads = extractPads(node);
+            addedLayer.setPads(pads);
+        //    ((CNNNeuron) neuron).setBoundaryMode(BoundaryMode.SAME);
+
+        //}
 
         _layersMapping.put(addedLayer,node);
     }
@@ -829,7 +948,7 @@ public class ONNX2CNNConverter {
         String layerName = _uniqueNamedONNXNodes.get(onnxModelInput);
 
         Tensor dataFormat = extractDataAttributeFromIONode(onnxModelInput,false);
-        dataFormat = Tensor.omitZeroSizedDimsFromTail(dataFormat,2);
+        dataFormat = Tensor.omitOneSizedFourthDim(dataFormat);
 
         Tensor.updateChannelsNum(dataFormat);
 
@@ -852,6 +971,8 @@ public class ONNX2CNNConverter {
         /** save mapping info*/
         _layersMapping.put(dataLayer,onnxModelInput);
   }
+
+
 
 
    /**
@@ -946,6 +1067,7 @@ public class ONNX2CNNConverter {
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
         Layer addedLayer = dnn.getLayers().lastElement();
         _layersMapping.put(addedLayer,node);
+        _denseNeurons.put(addedLayer.getName(),neuron.getNeuronsNum());
     }
 
     /**
@@ -956,11 +1078,13 @@ public class ONNX2CNNConverter {
     private void appendGemmLayer(ONNX.NodeProto node,Network dnn){
 
          DenseBlock neuron = createGemmNeuron(node);
+         neuron.setBiasName("bias");
         /**For Gemm layers, number of neurons =1 by default*/
         int neurons_number = 1;
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
         Layer addedLayer = dnn.getLayers().lastElement();
         _layersMapping.put(addedLayer,node);
+        _denseNeurons.put(addedLayer.getName(),neuron.getNeuronsNum());
     }
 
     /**
@@ -1095,7 +1219,6 @@ public class ONNX2CNNConverter {
      */
     private int extractDenseBlockNeuronsNum(ONNX.NodeProto onnxNode){
         int inputsCount = onnxNode.getInputCount();
-        int neuronsNum = _default_neurons_number;
 
         switch(inputsCount){
             case 1: {
@@ -1282,6 +1405,30 @@ public class ONNX2CNNConverter {
                 return result;
        }
 
+        /**
+         * TODO: REFACTORING!
+         */
+      if(_dataParameterNodesOutputs.containsKey(matmulInput)) {
+          //  System.out.println(matmulInput + " dpn for neurons");
+           for(ONNX.NodeProto dpn: _dataParameterNodes.values()) {
+               for (String out : dpn.getOutputList()) {
+                   if(out.equals(matmulInput)) {
+                     //  System.out.println(matmulInput + " dpn for neurons, source: " + _uniqueNamedONNXNodes.get(dpn));
+                       for(String dpnInput: dpn.getInputList()) {
+                           Tensor fromInitDpn = _extractedDataFormats.get(dpnInput);
+                           if(fromInitDpn!=null) {
+                               if(fromInitDpn.getDimensionality()>1) {
+                                  return  fromInitDpn;
+                                   // System.out.println("result = " + fromInitDpn);
+                               }
+                           }
+                       }
+                   }
+               }
+           }
+
+       }
+
         return null;
     }
 
@@ -1357,6 +1504,8 @@ public class ONNX2CNNConverter {
      */
     public void processDataParamNode(ONNX.NodeProto node){
         _dataParameterNodes.put(_uniqueNamedONNXNodes.get(node),node);
+        for(String outp: node.getOutputList())
+            _dataParameterNodesOutputs.put(outp,node);
     }
 
     /**
@@ -1409,6 +1558,367 @@ public class ONNX2CNNConverter {
 
     ///////////////////////////////////////////////////////////////////
     ////                    parameter extractors                   ///
+
+     /**
+     * Extract metadata about the node parameters such as weights and biases
+     * @param node node
+     * @param weights if weights should be found
+     * @param bias if bias should be found
+     */
+    private void _extractParamsMetaData(ONNX.NodeProto node, boolean weights, boolean bias){
+        boolean weightsFound = false;
+        boolean biasFound = false;
+        HashMap<String,String> initsList = _denseWeightsInits;
+        HashMap<String,String> nodeInitsList = _denseWeightsNodeInits;
+        if(node.getOpType().toLowerCase().contains("conv")){
+            initsList = _convWeightsInits;
+            nodeInitsList = _convWeightsNodeInits;
+        }
+
+        if(weights){
+           weightsFound = _findInitWeights(node,initsList);
+
+           if(!weightsFound)
+            weightsFound = _findWeightsNode(node, initsList, nodeInitsList);
+
+           if(!weightsFound)
+               System.err.println("weights not found for "+_uniqueNamedONNXNodes.get(node));
+        }
+
+        if(bias){
+            biasFound = _findInitBias(node);
+            if(!biasFound)
+                biasFound = _findBiasNode(node);
+
+           // if(!biasFound)
+             //   System.err.println("bias not found for "+_uniqueNamedONNXNodes.get(node));
+        }
+
+    }
+
+    /** Save list of extracted parameters as JSON metadata file
+     * @param dir directory
+     * @param fileName name of the file
+     */
+   private void _saveParametersAsJSONMetaData(String dir, String fileName){
+        initializersMetaData initM = new initializersMetaData();
+        initM.set_conv_weights(_convWeightsInits);
+        initM.set_dense_weights(_denseWeightsInits);
+        initM.setBiases(_biasInits);
+        initM.set_conv_weights_nodes(_convWeightsNodeInits);
+        initM.set_dense_weights_nodes(_denseWeightsNodeInits);
+        initM.setBiasesNodes(_biasNodeInits);
+        initM.setDense_neurons(_denseNeurons);
+
+        try {
+            String jsonInintM = JSONParser.getInstance().toJson(initM);
+            FileWorker.write(dir,fileName,"json",jsonInintM);
+           // System.out.println(dir + fileName + ".json saved");
+        }
+        catch (Exception e){
+            System.out.println("Initializers metadata saving error: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Find weights initializer
+     * @param node onnx node
+     */
+    private boolean _findInitWeights(ONNX.NodeProto node, HashMap<String,String> initWeightsList){
+    ProtocolStringList nodeInputs = node.getInputList();
+    Layer layer = findEspamLayerInMapping(node);
+
+        for(String input: nodeInputs) {
+            ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+            if (externalInitializer != null) {
+               Vector<Integer> dims = _getDimsList(externalInitializer);
+                if(_isInitWeights(layer,dims)) {
+                    initWeightsList.put(_uniqueNamedONNXNodes.get(node),externalInitializer.getName());
+                    // System.out.println(externalInitializer.getName() + " is weights init for " + layer.getName());
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Calculates number of neurons, using information about weights shape.
+     * If no weights were found for a neuron, the number of neuron is set up
+     * to default_neurons_number
+     * @param node corresponding ONNX.NodeProto
+     * @return number of neurons for neurons with weights
+     */
+    private boolean _findWeightsNode(ONNX.NodeProto node, HashMap<String,String> initsList, HashMap<String,String> nodeInitsList){
+        Layer layer = findEspamLayerInMapping(node);
+        ProtocolStringList nodeInputs = node.getInputList();
+        String opNodeName = _uniqueNamedONNXNodes.get(node);
+
+        for(String input: nodeInputs) {
+            /** References to I/O nodes and another operational nodes are
+             *  processed separately
+             * */
+            if (!(_ILayersNames.contains(input) || _OLayersNames.contains(input) ||
+                    _operationalNodesOutputs.containsKey(input))) {
+                ONNX.NodeProto weightsParamNode = _parameterNodes.get(input);
+                /** search weight-node in graph nodes*/
+                if (weightsParamNode != null) {
+
+                    ONNX.TensorProto w = getONNXAttribute(weightsParamNode, "value").getT();
+                    Vector<Integer> dims = _getDimsList(w);
+                    if(_isInitWeights(layer,dims)) {
+                        nodeInitsList.put(opNodeName,weightsParamNode.getName());
+                        return true;
+                    }
+                }
+
+                ONNX.NodeProto dataParamNode = _dataParameterNodes.get(input);
+                if (dataParamNode != null) {
+                    ONNX.TensorProto w = getONNXAttribute(dataParamNode, "value").getT();
+                    Vector<Integer> dims = _getDimsList(w);
+                    if(_isInitWeights(layer,dims)) {
+                        nodeInitsList.put(opNodeName,dataParamNode.getName());
+                        return true;
+                    }
+                }
+
+            }
+
+            if (_dataParameterNodesOutputs.containsKey(input)) {
+                if(_findWeightsInDPN(opNodeName, input, layer,initsList,nodeInitsList))
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    /**
+     * Extract weights from data parameter node
+     * @return weights, extracted from data parameter node
+     */
+    private boolean _findWeightsInDPN(String opNodeName, String inp, Layer layer, HashMap<String,String> initsList, HashMap<String,String> nodeInitsList){
+        for (ONNX.NodeProto dpn:_dataParameterNodes.values()) {
+            if (dpn.getOutputList().contains(inp)) {
+
+                for (String input : dpn.getInputList()) {
+                    {
+                        if (!(_ILayersNames.contains(input) || _OLayersNames.contains(input))) {
+                            ONNX.NodeProto weightsParamNode = _parameterNodes.get(input);
+                            /** search weight-node in graph nodes*/
+                            if (weightsParamNode != null) {
+                                ONNX.TensorProto w = getONNXAttribute(weightsParamNode, "value").getT();
+                                Vector<Integer> dims = _getDimsList(w);
+                                if (_isInitWeights(layer, dims)) {
+                                    nodeInitsList.put(opNodeName, _uniqueNamedONNXNodes.get(weightsParamNode));
+                                    return true;
+                                }
+                            }
+
+                            ONNX.NodeProto dataParamNode = _dataParameterNodes.get(input);
+                            if (dataParamNode != null) {
+                                ONNX.TensorProto w = getONNXAttribute(dataParamNode, "value").getT();
+                                Vector<Integer> dims = _getDimsList(w);
+                                if (_isInitWeights(layer, dims)) {
+                                    nodeInitsList.put(opNodeName, _uniqueNamedONNXNodes.get(dataParamNode));
+                                    return true;
+                                }
+                            }
+                        }
+
+                        ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+                        if (externalInitializer != null) {
+                            Vector<Integer> dims = _getDimsList(externalInitializer);
+                            if (_isInitWeights(layer, dims)) {
+                                initsList.put(opNodeName, externalInitializer.getName());
+                                // System.out.println(externalInitializer.getName() + " is weights init for " + layer.getName());
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    return false;
+    }
+
+      /**
+     * Calculates number of neurons, using information about weights shape.
+     * If no weights were found for a neuron, the number of neuron is set up
+     * to default_neurons_number
+     * @param node corresponding ONNX.NodeProto
+     * @return number of neurons for neurons with weights
+     */
+    private boolean _findBiasNode(ONNX.NodeProto node){
+        Layer layer = findEspamLayerInMapping(node);
+        ProtocolStringList nodeInputs = node.getInputList();
+        String opNodeName = _uniqueNamedONNXNodes.get(node);
+        boolean addConstLayer = false;
+        if(layer.getNeuron().getName().equals(NonLinearType.AddConst.toString()))
+            addConstLayer = true;
+        for(String input: nodeInputs) {
+            /** References to I/O nodes and another operational nodes are
+             *  processed separately
+             * */
+            if (!(_ILayersNames.contains(input) || _OLayersNames.contains(input) ||
+                    _operationalNodesOutputs.containsKey(input))) {
+
+                ONNX.NodeProto biasParamNode = _parameterNodes.get(input);
+                /** search weight-node in graph nodes*/
+                if (biasParamNode != null) {
+                    ONNX.TensorProto b = getONNXAttribute(biasParamNode, "value").getT();
+                    Vector<Integer> dims = _getDimsList(b);
+                    if(dims.size()==1 || addConstLayer) {
+                        if (_isInitBias(layer, dims.get(0))|| addConstLayer) {
+                            _biasNodeInits.put(opNodeName, biasParamNode.getName());
+                            // System.out.println(externalInitializer.getName() + " is bias init for " + layer.getName());
+                            return true;
+                        }
+                    }
+                }
+
+                ONNX.NodeProto biasDataParamNode = _dataParameterNodes.get(input);
+                if (biasDataParamNode != null) {
+                    ONNX.TensorProto b = getONNXAttribute(biasDataParamNode, "value").getT();
+                    Vector<Integer> dims = _getDimsList(b);
+                    if(dims.size()==1 || addConstLayer) {
+                        if (_isInitBias(layer, dims.get(0))|| addConstLayer) {
+                            _biasNodeInits.put(opNodeName, biasParamNode.getName());
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+
+
+
+    /**
+     * Find bias initializer
+     * @param node onnx node
+     */
+    private boolean _findInitBias(ONNX.NodeProto node){
+    ProtocolStringList nodeInputs = node.getInputList();
+    Layer layer = findEspamLayerInMapping(node);
+    boolean addConstLayer = false;
+        if(layer.getNeuron().getName().equals(NonLinearType.AddConst.toString()))
+            addConstLayer = true;
+
+        for(String input: nodeInputs) {
+            ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+            if (externalInitializer != null) {
+                /** get dims and represent them as int values*/
+                List<Long> dims = externalInitializer.getDimsList();
+                /** TODO we assume that all biases are linear*/
+                if(dims.size()==1 || addConstLayer) {
+                    Integer initSize = Integer.parseInt(dims.get(0).toString());
+
+                    if (_isInitBias(layer, initSize)|| addConstLayer) {
+                        _biasInits.put(_uniqueNamedONNXNodes.get(node),externalInitializer.getName());
+                       // System.out.println(externalInitializer.getName() + " is bias init for " + layer.getName());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check, if initializer is bias
+     * @param layer a layer
+     * @param initSize number of elements in the initializer
+     * @return true, if initializer is bias and false otherwise
+     */
+    private boolean _isInitBias(Layer layer, int initSize){
+        int neurons = layer.getNeuronsNum();
+
+        if(layer.getNeuron().getNeuronType().equals(NeuronType.DENSEBLOCK))
+            neurons = ((DenseBlock)layer.getNeuron()).getNeuronsNum();
+
+        if(neurons==initSize)
+            return true;
+
+        return false;
+    }
+
+    /**
+     * get list of the ONNX.TensorProto dimensions as list of integers
+     * @param onnxTensor ONNX.TensorProto
+     * @return list of the ONNX.TensorProto dimensions as list of integers
+     */
+    private Vector<Integer> _getDimsList(ONNX.TensorProto onnxTensor){
+        Vector<Integer> intDims = new Vector<>();
+        /** get dims and represent them as int values*/
+        List<Long> dims = onnxTensor.getDimsList();
+        for(Long dim: dims)
+            intDims.add(Integer.parseInt(dim.toString()));
+        return intDims;
+    }
+
+    /**
+     * Check, if initializer is weights
+     * @param layer a layer
+     * @param dims initializer dimensions
+     * @return true, if initializer is weights and false otherwise
+     */
+    private boolean _isInitWeights(Layer layer, Vector<Integer> dims){
+        if(layer.getNeuron().getNeuronType().equals(NeuronType.CONV))
+            return _isInitConvWeights(layer,dims);
+        if(layer.getNeuron().getNeuronType().equals(NeuronType.DENSEBLOCK))
+            return _isInitDenseWeights(layer,dims);
+
+        return false;
+    }
+
+
+
+    /**
+     * Check, if initializer is Convolutional node weights
+     * @param convLayer a convolutional layer
+     * @param dims initializer dimensions
+     * @return true, if initializer is convolutional neuron weights and false otherwise
+     */
+    private boolean _isInitConvWeights(Layer convLayer, Vector<Integer> dims){
+        try {
+            CNNNeuron cnnNeuron = (CNNNeuron) convLayer.getNeuron();
+
+            if (dims.contains(cnnNeuron.getKernelH()) && dims.contains(cnnNeuron.getKernelW()) &&
+                    dims.contains(convLayer.getNeuronsNum()) && dims.size()>2)
+                return true;
+        }
+        catch (Exception e){
+            System.err.println(convLayer.getName() + " CNN layer weights checkout error: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Check, if initializer is Convolutional node weights
+     * @param denseLayer a dense layer
+     * @param dims initializer dimensions
+     * @return true, if initializer is convolutional neuron weights and false otherwise
+     */
+    private boolean _isInitDenseWeights(Layer denseLayer, Vector<Integer> dims){
+        try {
+            DenseBlock denseNeuron = (DenseBlock) denseLayer.getNeuron();
+            if (dims.contains(denseNeuron.getNeuronsNum()) && dims.size()>1)
+                return true;
+           // System.out.println(denseLayer.getName()+" neurons: "+ denseNeuron.getNeuronsNum());
+        }
+        catch (Exception e){
+            System.err.println(denseLayer.getName() + " dense layer weights checkout error: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+
     /**
      * Calculates number of neurons, using information about weights shape.
      * If no weights were found for a neuron, the number of neuron is set up
@@ -1660,6 +2170,30 @@ public class ONNX2CNNConverter {
         if(omitOneSizedDims)
             dataFormat = Tensor.omitOneSizedDims(dataFormat);
         return dataFormat;
+    }
+
+    /**
+     * Extract string description of data type
+     * @param node ONNX.ValueInfoProto onnx model input node
+     * @return string description of data type
+     */
+    private void _extractDataTypeFromInputNode(ONNX.ValueInfoProto node){
+        try {
+            String dataType = node.getType().getTensorType().getElemType().toString().toLowerCase();
+            //System.out.println(dataType);
+            if(dataType.equals("int")||dataType.equals("float")||dataType.equals("double")) {
+                _modelDataType = dataType;
+                _modelWeightsType = dataType;
+            }
+            else {
+                System.err.println("ONNX model input type extraction error, unknown data type: " + dataType
+                        + " .Data type is set to float");
+            }
+
+        }
+        catch (Exception e){
+            System.err.println("ONNX model input type extraction error. Data type is set to float");
+        }
     }
 
     /**
@@ -1969,8 +2503,35 @@ public class ONNX2CNNConverter {
         return _denseInputs.get(layerName);
     }
 
+    /**
+     * Set save weights flag
+     * @param saveWeights save weights flag
+     */
+    public void setSaveWeights(boolean saveWeights) { this._saveWeights = saveWeights; }
 
-    ///////////////////////////////////////////////////////////////////
+    /**
+     * Set the path, where numpy weights should be saved
+     * @param weightsSavePath path, where numpy weights should be saved
+     */
+    public void setWeightsSavePath(String weightsSavePath) {
+       this._weightsSavePath = weightsSavePath;
+        // this._weightsSavePath = weightsSavePath.replace("./",Config.getInstance().getAppPath()+File.separator);
+    }
+
+    /** if the details of weights saving should be printed*/
+    public void setSaveWeightsVerbose(boolean saveWeightsVerbose) {
+        this._saveWeightsVerbose = saveWeightsVerbose;
+    }
+
+    /**
+     * Set path to ONNX model
+     * @param modelPath  path to ONNX model
+     */
+    public void setModelPath(String modelPath){
+        _modelPath = modelPath;
+    }
+
+  ///////////////////////////////////////////////////////////////////
   ////                     private variables                     ///
   /** Helper, used for naming ONNX nodes with empty names*/
   private  int _nextUniqueNodeId = 0;
@@ -1990,6 +2551,23 @@ public class ONNX2CNNConverter {
   */
   private HashMap<String,ONNX.TensorProto> _onnxModelInitializers;
 
+  /** list of weights initializers */
+  private HashMap<String,String> _convWeightsInits;
+  private HashMap<String,String> _denseWeightsInits;
+
+  /** list of bias initializers */
+  private HashMap<String,String> _biasInits;
+
+  /** list of weights nodes */
+  private HashMap<String,String> _convWeightsNodeInits;
+  private HashMap<String,String> _denseWeightsNodeInits;
+
+  /** number of neurons in dense blocks*/
+  private HashMap<String,Integer> _denseNeurons;
+
+  /** list of bias initializers */
+  private HashMap<String,String> _biasNodeInits;
+
   /** Data shapes, extracted from ONNX.ModelProto */
   private HashMap<String,Tensor> _extractedDataFormats;
 
@@ -2007,6 +2585,9 @@ public class ONNX2CNNConverter {
 
   /** Inputs of operational nodes.used for connections revealing.*/
   private HashMap<String,ONNX.NodeProto> _operationalNodesInputs;
+
+  /** List of all nodes that contain weights*/
+  private Vector<String> _nodesWithWeights;
 
   /**
    *  List of single DenseBlock inputs, used while resolving
@@ -2038,6 +2619,11 @@ public class ONNX2CNNConverter {
   */
   private HashMap<String,ONNX.NodeProto> _parameterNodesOutputs;
 
+  /**
+  * Outputs of data parameter nodes. Used for extracting the additional information
+  */
+  private HashMap<String,ONNX.NodeProto> _dataParameterNodesOutputs;
+
   /**ONNX graph inputs*/
   private List<ONNX.ValueInfoProto> _onnxGraphInputs;
 
@@ -2061,4 +2647,29 @@ public class ONNX2CNNConverter {
   * Default number of neurons in a layer
   */
   private int _default_neurons_number = 1;
+
+  /** DNN model weights type (float by default)*/
+  private String _modelDataType = "float";
+
+  /** DNN model data type (float by default)*/
+  private String _modelWeightsType = "float";
+
+  /** onnx weights extractor*/
+  private ONNXWeightsExtractor _weightsExtractor = new ONNXWeightsExtractor();
+
+  /** if weights should be extracted from the onnx model*/
+  private boolean _saveWeights = false;
+
+  /** if details of weights extraction should be printed*/
+
+  private boolean _saveWeightsVerbose = false;
+
+  /** path to java temporary files directory*/
+  private String _tempDirRelPath = System.getProperty("java.io.tmpdir");
+
+  /** path for saving the weights*/
+  private String _weightsSavePath = "./";
+
+  /** ONNX model path*/
+  private String _modelPath = null;
 }

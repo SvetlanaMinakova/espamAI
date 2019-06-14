@@ -1,6 +1,7 @@
 package espam.visitor.xml.csdf;
 
 import espam.datamodel.graph.csdf.*;
+import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.parser.json.csdf.CSDFSupportResolver;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
@@ -36,6 +37,18 @@ public class CSDFGraphXMLVisitor extends CSDFGraphVisitor {
         _propertiesVisitor = new CSDFGraphPropertiesXMLVisitor(printStream);
         _dummyMapping = dummyMapping;
         _printProperties = dummyMapping;
+    }
+
+    /**
+     * Constructor for the CSDFGraphXMLVisitor object with dummy mapping specified
+     * @param printStream the output Xml print stream
+     */
+    public CSDFGraphXMLVisitor(PrintStream printStream, boolean dummyMapping, int procNum) {
+        _printStream = printStream;
+        _propertiesVisitor = new CSDFGraphPropertiesXMLVisitor(printStream);
+        _dummyMapping = dummyMapping;
+        _printProperties = dummyMapping;
+        _procNumDummyMapping = procNum;
     }
 
     /**
@@ -85,6 +98,27 @@ public class CSDFGraphXMLVisitor extends CSDFGraphVisitor {
             System.err.println("XML CSDFGraph visitor call error."+ e.getMessage());
         }
     }
+
+    /**
+     * Call graph visitor with graph properties printout and
+     * dummy mapping of sdf graph nodes on an abstract processor
+     * (required for analysis by SDF3)
+     * @param graph SDF Graph to be visited
+     * @param dir .xml file output directory
+     */
+    public static void callVisitor(CSDFGraph graph, String dir, boolean dummyMapping, int processors){
+        try {
+            PrintStream printStream = FileWorker.openFile(dir, graph.getName(), "xml");
+            CSDFGraphVisitor xmlVisitor = new CSDFGraphXMLVisitor(printStream, dummyMapping,processors);
+            graph.accept(xmlVisitor);
+            System.out.println("XML File generated: " + dir + graph.getName()+".xml ");
+        }
+        catch (Exception e){
+            System.err.println("XML CSDFGraph visitor call error."+ e.getMessage());
+        }
+    }
+
+
 
      /**
      * Call graph visitor with graph properties printout and
@@ -154,8 +188,12 @@ public class CSDFGraphXMLVisitor extends CSDFGraphVisitor {
          * Print properties pf the graph, if needed
          */
         if(_printProperties){
-            if(_dummyMapping)
+            if(_dummyMapping) {
+                if(_procNumDummyMapping==0)
                 _propertiesVisitor.createOneToOneDummyMapping(x);
+                else
+                    _propertiesVisitor.createToProcDummyMapping(x,_procNumDummyMapping);
+            }
             _propertiesVisitor.setPrefix(_prefix);
             _propertiesVisitor.visitComponent(x);
         }
@@ -174,23 +212,36 @@ public class CSDFGraphXMLVisitor extends CSDFGraphVisitor {
       /**
         * Add src port information
         */
+
+      CSDFNode srcActor;
+      int srcActorId =-1;
       CSDFPort srcPort = x.getSrc();
       if(srcPort!=null) {
-        CSDFNode srcActor = (CSDFNode)srcPort.getNode();
+        srcActor = (CSDFNode)srcPort.getNode();
             if(srcActor!=null)
                 _printStream.print(" srcActor=\"" + srcActor.getUniqueName() + "\" ");
           _printStream.print(" srcPort=\"" + srcPort.getName() + "\" ");
+          srcActorId = srcActor.getId();
       }
 
         /**
          * Add dst port information
          */
+        CSDFNode dstActor;
+        int dstActorId =-1;
          CSDFPort dstPort = x.getDst();
         if(dstPort!=null){
-            CSDFNode dstActor = (CSDFNode)dstPort.getNode();
+            dstActor = (CSDFNode)dstPort.getNode();
             if(dstActor!=null)
                 _printStream.print ("dstActor=\"" + dstActor.getUniqueName() + "\" ");
             _printStream.print("dstPort=\"" + dstPort.getName() + "\" ");
+            dstActorId=dstActor.getId();
+        }
+
+        if(srcActorId==dstActorId){
+            IndexPair firstRate =   x.getDst().getRates().firstElement();
+            int initTokens = firstRate.getFirst();
+            _printStream.print("initialTokens=\"" + initTokens + "\" ");
         }
 
        _printStream.print(">");
@@ -277,6 +328,8 @@ public class CSDFGraphXMLVisitor extends CSDFGraphVisitor {
 
     /**Flag, signals if the properties should be printed*/
     protected boolean _printProperties = false;
+
+    protected int _procNumDummyMapping = 0;
 
     /** graph properties visitor*/
     protected  CSDFGraphPropertiesXMLVisitor _propertiesVisitor;

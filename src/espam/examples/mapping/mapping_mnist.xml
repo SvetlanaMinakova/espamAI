@@ -1,0 +1,28 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE mapping PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<mapping name="myMapping">
+<processor name="cpu_0">
+<process name="Input3" />
+</processor>
+<processor name="cpu_1">
+<process name="ReLU32" />
+<process name="Pooling66" />
+</processor>
+<processor name="cpu_2">
+<process name="Convolution110" />
+<process name="ReLU114" />
+</processor>
+<processor name="cpu_3">
+<process name="Pooling160" />
+<process name="Times212" />
+</processor>
+<processor name="cpu_4">
+<process name="Plus214_Output_0" />
+</processor>
+<processor name="cpu_5">
+</processor>
+<processor name="gpu">
+<process name="Convolution28" />
+</processor>
+</mapping>

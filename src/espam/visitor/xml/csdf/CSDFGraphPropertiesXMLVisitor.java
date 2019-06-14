@@ -99,6 +99,71 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
     }
 
     /**
+     * Imitate mapping of each node of CSDF graph on an abstract processor
+     * type of 'proc_0'
+     * @param graph SDF graph
+     */
+    public void createToProcDummyMapping(CSDFGraph graph, int maxProc){
+        _nodeProcessorsMapping = new HashMap<>();
+        Vector nodeList = graph.getNodeList();
+        int nodesNum = nodeList.size();
+        int procStep = nodesNum/maxProc;
+        int procId =0;
+
+        if( nodeList != null ) {
+            Iterator i = nodeList.iterator();
+            while( i.hasNext() ) {
+                CSDFNode node = (CSDFNode) i.next();
+
+                _nodeProcessorsMapping.put(node.getUniqueName(),"proc_" + procId);
+
+                procId++;
+                if(procId>=procStep)
+                    procId=0;
+            }
+        }
+
+    }
+
+
+    /**
+     * TODO refactoring on 'default' property and exec_time calculation/assignment
+     * Assigns a processor form _nodeProcessorsMapping to an CSDFGraph node,
+     * if specified in a mapping. A processor element requires the type attribute.
+     * The value of this attribute specifies the processor type
+     * for which the properties contained inside the element are valued.
+     * The processor element may also have the default attribute.
+     * This attribute can have the value true or false. When absent, its
+     * default value is false. This default attribute is used in case that more
+     * then one processor element is contained inside a actorProperties element.
+     * One of the processor elements may have then set the value of the default
+     * attribute to true. The analysis algorithms will then use the properties
+     * contained inside this element. The processor element must contain
+     * an executionTime element.
+     * @param node SDF graph node
+     */
+    private void _assignProcessor(CSDFNode node,int maxLen){
+        String proc = _nodeProcessorsMapping.get(node.getUniqueName());
+        if(proc==null)
+            return;
+        prefixInc();
+        _printStream.println(_prefix + "<processor type='" + proc + "' default = 'true'>");
+        prefixInc();
+        Vector<Integer> wcet = _wcet.get(node);
+        if(wcet==null)
+            wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(maxLen);
+        String execTime = vecToCommaSeparatedStr(wcet);
+
+
+        _printStream.println(_prefix + "<executionTime time='" + execTime + "'/>");
+
+
+        prefixDec();
+        _printStream.println(_prefix + "</processor>");
+        prefixDec();
+    }
+
+    /**
      * TODO refactoring on 'default' property and exec_time calculation/assignment
      * Assigns a processor form _nodeProcessorsMapping to an CSDFGraph node,
      * if specified in a mapping. A processor element requires the type attribute.
@@ -125,7 +190,11 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
            if(wcet==null)
                wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(node.getLength());
            String execTime = vecToCommaSeparatedStr(wcet);
+
+
            _printStream.println(_prefix + "<executionTime time='" + execTime + "'/>");
+
+
            prefixDec();
            _printStream.println(_prefix + "</processor>");
            prefixDec();

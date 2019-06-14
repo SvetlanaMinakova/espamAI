@@ -167,6 +167,65 @@ public class XmlMappingParser implements ContentHandler {
         // Return the mapping
         return mapping;
     }
+
+        /**
+     * Do the parsing of an XML file describing a mapping
+     *
+     * @param  url The input XML file
+     * @return  the mapping
+     * @exception  EspamException MyException If such and such occurs
+     */
+    public Mapping doParse(String url, boolean verbose) throws EspamException {
+
+        Mapping mapping = null;
+
+        if(verbose)
+            System.out.println(" - Read Mapping from XML file");
+
+        _parser.setContentHandler(this);
+        _parser.setErrorHandler(new XmlErrorHandler());
+
+        try {
+            // Get only the file name from the URL.
+            String docString = _getFileName(url,verbose);
+            String uri = _makeAbsoluteURL(url);
+
+            if(verbose) {
+                _ui.printlnVerbose(" -- processing XML file: " + uri);
+                _ui.printVerbose(" -- read XML file: ");
+            }
+
+            _parser.parse(new InputSource(uri));
+
+            mapping = (Mapping) _stack.pop();
+
+
+            // All done
+            if(verbose)
+                _ui.printlnVerbose(" [DONE] ");
+
+        } catch( SAXParseException err ) {
+            System.out.println(
+                               "** Parsing error"
+                                   + ", line "
+                                   + err.getLineNumber()
+                                   + ", uri "
+                                   + err.getSystemId());
+            System.out.println("   " + err.getMessage());
+        } catch( SAXException e ) {
+            e.printStackTrace();
+        } catch( Throwable t ) {
+            t.printStackTrace();
+        }
+
+        if(verbose) {
+            System.out.println(" - Mapping Model from XML [Constructed]");
+            System.out.println();
+        }
+
+        // Return the mapping
+        return mapping;
+    }
     
     
     /**
@@ -367,6 +426,42 @@ public class XmlMappingParser implements ContentHandler {
         
         //_ui.setPlatformFileName(fileName);
         
+        return fileName;
+    }
+
+    /**
+     *  Return the orignal filename without any file extension and
+     *  regardless of the wether a file of http reference is used.
+     *
+     * @param  absoluteFileName the absolute filename.
+     * @return  the filename.
+     */
+    private String _getFileName(String absoluteFileName, boolean verbose) {
+
+        String fileSep = System.getProperty("file.separator");
+        String file = absoluteFileName.replace(fileSep.charAt(0), '/') + '/';
+        if( file.charAt(0) != '/' ) {
+            file = "/" + file;
+        }
+
+        StringTokenizer st = new StringTokenizer(file, "/");
+        int count = st.countTokens();
+        for( int i = 0; i < count - 1; i++ ) {
+            st.nextToken();
+        }
+        String fullFileName = st.nextToken();
+        if(verbose)
+            System.out.println(" -- full filename: " + fullFileName);
+
+        // Strip ".xml" if needed
+        st = new StringTokenizer(fullFileName, ".");
+        String fileName = st.nextToken();
+
+        if(verbose)
+            System.out.println(" -- filename: " + fileName);
+
+        //_ui.setPlatformFileName(fileName);
+
         return fileName;
     }
     

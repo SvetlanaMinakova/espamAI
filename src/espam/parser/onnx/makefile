@@ -15,7 +15,8 @@ SUBPACKAGES = \
 JSRCS = \
 	ONNX2CNNConverter.java \
 	ONNXtoESPAMNetworkTraverser.java \
-	InferenceDNNOptimizer.java
+	InferenceDNNOptimizer.java \
+	initializersMetaData.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -9,6 +9,7 @@ import espam.datamodel.graph.cnn.connections.OneToOne;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.csdf.CSDFGraph;
@@ -177,9 +178,13 @@ public class CNNTransformer {
         Layer [] layerCopies = new Layer[copiesNum];
 
         /** add copied layers*/
+        int neuronsStart = layer.getNeuronsNum();
         for(int i=0 ;i<copiesNum;i++){
             _network.addLayer(layer.getName()+"_split_"+_splitId+"_"+i,neuronCopies[i],lNeuronsNum.getDimSize(i+1),layer.getPads());
-            layerCopies[i] = _network.getLastLayer();
+            Layer added = _network.getLastLayer();
+            added.setstartNeuronId(neuronsStart);
+            layerCopies[i] = added;
+            neuronsStart += added.getNeuronsNum();
         }
 
         splitInputConnections(layer,layerCopies);
@@ -586,8 +591,11 @@ public class CNNTransformer {
         if(layer.getNeuron() instanceof MultipleInputsProcessor)
         return false;
 
-        if(layer.getNeuron() instanceof DenseBlock && ((DenseBlock) layer.getNeuron()).getNeuronsNum()>=childrenNum)
-            return true;
+        if(layer.getNeuron() instanceof DenseBlock && ((DenseBlock) layer.getNeuron()).getNeuronsNum()>=childrenNum) {
+         if(layer.getNeuron().getName().toLowerCase().contains("softmax"))
+             return false;
+         return true;
+        }
 
         if(layer.getNeuronsNum()>=childrenNum)
             return true;
@@ -1037,7 +1045,7 @@ public class CNNTransformer {
     private boolean _makeSplitIteration(int iterId,int childrenNum, Tensor networkInputDataFormat,Layer bottleneck, boolean printDetails){
             try {
                 if (printDetails) {
-                    System.out.println("Iteration: " + iterId + ", bottleneck: " + bottleneck.getName());
+                    System.out.println("Iteration: " + iterId + ", bottleneck: " + bottleneck.getName()+", blocks: "+_network.countLayers());
                 }
 
                 boolean splitted = splitChains(bottleneck, childrenNum);
@@ -1088,19 +1096,42 @@ public class CNNTransformer {
      * @return the bottleneck layer
      * @throws Exception if an error occurs
      */
-    private Layer _findBottleneck() throws Exception{
+   private Layer _findBottleneck() throws Exception{
         CSDFGraph csdf = _converter.buildGraphLayerBased(_network);
 
-
-        /**TODO WCETS during json file generation*/
         //CSDFTimingRefiner.getInstance().visitComponent(csdf);
 
         String bottleneckActor = _edInterface.getBottleneckActor(csdf);
         Layer bottleneck = _network.getLayer(bottleneckActor);
         if(bottleneck==null)
-            throw new Exception("bottleneck layer not found!");
+            throw new Exception("bottleneck layer search error!");
         return bottleneck;
     }
+
+     /**
+     * TODO: return back to CSDF-based bottleneck checkout after the
+     * TODO paper experiments are performed
+     * Find bottleneck layer
+     * @return the bottleneck layer
+     * @throws Exception if an error occurs
+
+    private Layer _findBottleneck() throws Exception{
+        int maxNeurons = 0;
+        Layer bottleneck = _network.getInputLayer();
+        for (Layer layer:_network.getLayers()){
+            //we consider Conv layers always to be bottlenecks
+            if (layer.getNeuron().getNeuronType().equals(NeuronType.CONV)){
+                if(layer.getNeuronsNum()>maxNeurons) {
+                    maxNeurons = layer.getNeuronsNum();
+                    bottleneck = layer;
+                }
+
+            }
+
+        }
+
+        return bottleneck;
+    }*/
 
     ///////////////////////////////////////////////////////////////////
     ////                       private variables                  ////

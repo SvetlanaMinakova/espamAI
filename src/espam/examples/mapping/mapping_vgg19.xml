@@ -1,0 +1,64 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE mapping PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<mapping name="myMapping">
+<processor name="cpu_0">
+<process name="data_0" />
+<process name="node_Conv0" />
+<process name="node_Relu1" />
+<process name="node_Conv2" />
+<process name="node_Relu3" />
+<process name="node_MaxPool4" />
+<process name="node_Conv5" />
+<process name="node_Relu6" />
+</processor>
+<processor name="cpu_1">
+<process name="node_Conv7" />
+<process name="node_Relu8" />
+<process name="node_MaxPool9" />
+<process name="node_Conv10" />
+<process name="node_Relu11" />
+<process name="node_Conv12" />
+<process name="node_Relu13" />
+<process name="node_Conv14" />
+</processor>
+<processor name="cpu_2">
+<process name="node_Relu15" />
+<process name="node_Conv16" />
+<process name="node_Relu17" />
+<process name="node_MaxPool18" />
+<process name="node_Conv19" />
+<process name="node_Relu20" />
+<process name="node_Conv21" />
+<process name="node_Relu22" />
+</processor>
+<processor name="cpu_3">
+<process name="node_Conv23" />
+<process name="node_Relu24" />
+<process name="node_Conv25" />
+<process name="node_Relu26" />
+<process name="node_MaxPool27" />
+<process name="node_Conv28" />
+<process name="node_Relu29" />
+<process name="node_Conv30" />
+</processor>
+<processor name="cpu_4">
+<process name="node_Relu31" />
+<process name="node_Conv32" />
+<process name="node_Relu33" />
+<process name="node_Conv34" />
+<process name="node_Relu35" />
+<process name="node_MaxPool36" />
+<process name="node_Gemm38" />
+<process name="node_Relu39" />
+</processor>
+<processor name="cpu_5">
+<process name="node_Gemm41" />
+<process name="node_Relu42" />
+<process name="node_Gemm44" />
+<process name="node_Softmax45" />
+<process name="prob_1" />
+</processor>
+<processor name="gpu">
+</processor>
+</mapping>

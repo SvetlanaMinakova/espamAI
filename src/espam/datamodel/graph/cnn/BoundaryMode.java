@@ -15,7 +15,11 @@ public enum BoundaryMode {
     /**
      * Size of the output tensor is greater then the size of the input tensor
      */
-    FULL;
+    FULL,
+
+    /** explicit pads are expected*/
+
+    NOTSET;
 
     @Override
     public String toString() {

@@ -185,6 +185,7 @@ public class CNNJSONVisitor extends CNNGraphVisitor {
     _printStream.println(_prefix + "\"id\": " + x.getId()+",");
     _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
     _printStream.println(_prefix + "\"neuronsNum\": " + x.getNeuronsNum()+",");
+    _printStream.println(_prefix + "\"startNeuronId\": " + x.getstartNeuronId()+",");
 
     /**Visit neuron*/
     _printStream.println(_prefix + "\"neuron\": ");

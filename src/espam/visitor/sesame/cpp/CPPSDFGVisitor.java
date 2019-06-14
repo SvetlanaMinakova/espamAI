@@ -394,23 +394,26 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
                 result.append("(");
 
             result.append("t/(");
+            int ind;
             /** create nested index*/
             for (int j = 0; j < i; j++) {
-                result.append(arrayName + "_dim_" + j);
+                ind = dataDimensionality-j-1;
+                result.append(arrayName + "_dim_" + ind);
                 if (j != i - 1)
                     result.append("*");
             }
             result.append(")");
             /** add % operation to provide starting with 0 for next id increment*/
             if (i != dataDimensionality - 1) {
-                result.append(")%" + arrayName + "_dim_" + i);
+                ind = dataDimensionality-i-1;
+                result.append(")%" + arrayName + "_dim_" + ind);
             }
 
             result.append("]");
         }
 
         /**construct first dim id*/
-        result.append("[t%" + arrayName + "_dim_0]");
+        result.append("[t%" + arrayName + "_dim_" + (dataDimensionality-1) + "]");
 
         return result.toString();
     }

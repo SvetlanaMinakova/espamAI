@@ -35,49 +35,6 @@ public class CNN2CSDFGraphConverter {
 
     ///////////////////////////////////////////////////////////////////
     ////               Layer-based approach                       ////
-    /**
-     * Builds the whole CSDFGraph from the Network
-     * @param network source Network
-     * @return CSDFGraph from the Network
-     * TODO remove after testing
-     */
-    public CSDFGraph buildGraphLayerBased(Network network, boolean minimizeDF, boolean keepheighDep) {
-        /** sort layer in traverse order*/
-        network.sortLayersInTraverseOrder();
-
-        /**Copy network and calculate min DF for it (not to spoil the original DNN model) */
-        _minimizedDFDNN = new Network(network);
-            if(minimizeDF)
-                _minimizedDFDNN.minimizeDataFlow(keepheighDep);
-        _CSDFG = new CSDFGraph(network.getName(), SDFGraphType.csdf);
-        _CSDFG.setTokenDesc(network.getDataType());
-        _refiner.setIOmemType(network.getDataType());
-        /** Build layers */
-
-        HashMap<Layer,CSDFNode> layersMapping = new HashMap<>();
-        int nextNodeId = 0;
-        for(Layer layer:network.getLayers()) {
-            CSDFNode newSDFLayer = buildLayerLB(layer,nextNodeId);
-            layersMapping.put(layer,newSDFLayer);
-            _CSDFG.addNodes(newSDFLayer);
-            nextNodeId = _CSDFG.getNextNodeId();
-        }
-        /**
-         * build edges
-         */
-        int nextEdgeId = _CSDFG.getNextEdgeId();
-         for(Connection con:network.getConnections()) {
-            CSDFNode l1 = layersMapping.get(con.getSrc());
-            CSDFNode l2 = layersMapping.get(con.getDest());
-            Vector<CSDFEdge> newCSDFEdges = buildEdgesLB(l1,l2,con,nextEdgeId);
-            _CSDFG.addEdges(newCSDFEdges);
-            nextEdgeId=_CSDFG.getNextEdgeId();
-        }
-
-        _CSDFG.alignRatesLength();
-        return _CSDFG;
-    }
-
 
      /**
      * Builds the whole CSDFGraph from the Network
@@ -89,11 +46,17 @@ public class CNN2CSDFGraphConverter {
         network.sortLayersInTraverseOrder();
 
         /**Copy network and calculate min DF for it (not to spoil the original DNN model) */
-        _minimizedDFDNN = new Network(network);
-        _minimizedDFDNN.minimizeDataFlow(false);
+        _minimizedDFDNN = network;
+        //_dataTiling = true;
+        if(_dataTiling) {
+               _minimizedDFDNN = new Network(network);
+               _minimizedDFDNN.minimizeDataFlow(false);
+        }
         _CSDFG = new CSDFGraph(network.getName(), SDFGraphType.csdf);
+
         _CSDFG.setTokenDesc(network.getDataType());
         _refiner.setIOmemType(network.getDataType());
+
         /** Build layers */
 
         HashMap<Layer,CSDFNode> layersMapping = new HashMap<>();
@@ -138,6 +101,15 @@ public class CNN2CSDFGraphConverter {
         MemoryUnit weights = _refiner.createWeightsDescription(layer,_minimizedDFDNN.getWeightsType());
         if(weights!=null)
             node.addMemoryUnit(weights);
+        MemoryUnit bias = _refiner.createBiasDescription(layer,_minimizedDFDNN.getDataType());
+        if(bias!=null){
+            node.addMemoryUnit(bias);
+        }
+        if(layer.getPads()!=null){
+            int[] pads = layer.getPads();
+            MemoryUnit padsDesk = new MemoryUnit("pads[4]","{"+ pads[0] + "," + pads[1] + "," + pads[2] + "," + pads[3]+"}", "int");
+            node.addMemoryUnit(padsDesk);
+        }
 
         /** specify operation */
         String operation = minDFNeuron.getFunctionCallDescription(layer.getInputChannels());
@@ -278,6 +250,7 @@ public class CNN2CSDFGraphConverter {
          * */
         Vector<MemoryUnit> iomemory = _refiner.callVisitor(minDFLayerNeuron);
         MemoryUnit weights = _refiner.createWeightsDescription(minDFLayerNeuron, minDFLayer.getInputChannels(),_minimizedDFDNN.getWeightsType());
+        MemoryUnit bias = _refiner.createBiasDescription(minDFLayerNeuron,_minimizedDFDNN.getDataType());
 
         /** Add neurons */
         int nodeId = nextNodeId;
@@ -287,6 +260,9 @@ public class CNN2CSDFGraphConverter {
            newCSDFNode.setMemoryUnits(iomemory);
            if(weights!=null)
                newCSDFNode.addMemoryUnit(weights);
+           if(bias!=null){
+            newCSDFNode.addMemoryUnit(bias);
+            }
 
            layerSDF.add(newCSDFNode);
            nodeId++;
@@ -1165,6 +1141,13 @@ public class CNN2CSDFGraphConverter {
          _CSDFG.addEdge(selfEdge);
     }
 
+    /**
+     * Set data tiling
+     */
+    public void setDataTiling(boolean dataTiling){
+        _dataTiling = dataTiling;
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ///
@@ -1180,6 +1163,9 @@ public class CNN2CSDFGraphConverter {
 
     /** Dnn to CSDF refiner refines CSDF nodes with specific features of DNN model*/
     CSDFGMemoryRefiner _refiner = new CSDFGMemoryRefiner();
+
+    /** If data tiling is required*/
+    private boolean _dataTiling = false;
 
     /** generic nodes processor*/
  //   CNN2CCSDFGraphConverter _subgraphProcessor = new CNN2CCSDFGraphConverter();

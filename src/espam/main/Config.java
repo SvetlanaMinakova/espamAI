@@ -50,25 +50,12 @@ public class Config {
     return _dartsPath;
   }
 
-    /**
-     * Forcely set path to darts
-     * @param dartsPath path to darts
-     */
-  public void setDartsPath(String dartsPath) {
-        this._dartsPath = dartsPath;
-    }
-
-    /**
+  /**
    * Returns path to Python installation.
    */
   public String getPythonCall() {
     return _pythonCall;
   }
-
-    /**
-   * Forcely set path to Python installation.
-   */
-  public void setPythonCall(String pythonCall){ _pythonCall = pythonCall; }
 
  /**
    * Returns path to project
@@ -113,17 +100,17 @@ public class Config {
   private String _systemcPath = "/vol/home/minakovas/systemc-2.2.0";
 
   // Path to DARTS
-  private String _dartsPath = "/vol/home/minakovas/darts_git/darts-master";
+  private String _dartsPath = "/vol/home/minakovas/espam2/espam/lib/darts";
 
   // Path to Python
   private String _pythonCall = "/vol/home/minakovas/.pyenv/shims/python";
 
   // Path to the project
-  private String _prefix = "/vol/home/minakovas/espamAI/espam";
+  private String _prefix = "/vol/home/minakovas/espam2/espam";
 
   // Output directory files
-  private String _outputDir = "./";
+  private String _outputDir = "./output_models";
 
   //absolute path to the application sources
-  private String _appPath = "/vol/home/minakovas/espamAI/espam";
+  private String _appPath = "/vol/home/minakovas/espam2/espam";
 }

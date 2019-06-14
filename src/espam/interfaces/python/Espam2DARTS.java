@@ -6,21 +6,16 @@ import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.main.Config;
 import espam.main.cnnUI.DNNInitRepresentation;
-import espam.operations.refinement.CSDFTimingRefiner;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
 import espam.parser.json.JSONParser;
 import espam.visitor.json.CSDFGraphJSONVisitor;
 
 import java.io.*;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
 /**
- * TODO REFACTORING: for now Layer-based approach is switched on
- * TODO neuron-based approach could be switched on as well
- * TODO block-based approach is planned
  * Class calls DARTs (DAEDALUS RT) python module through the Java.Runtime environment
  * More details on java Runtime could be found on: https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html
  *
@@ -78,6 +73,7 @@ public class Espam2DARTS {
      */
     public Espam2DARTS(String dartsPath) {
         _dartsAbsPath = dartsPath + "/darts";
+        _appAbsPath = Config.getInstance().getAppPath();
         setPaths();
     }
 
@@ -86,6 +82,7 @@ public class Espam2DARTS {
      */
     public Espam2DARTS() {
         _dartsAbsPath = Config.getInstance().getDartsPath() + "/darts";
+        _appAbsPath = Config.getInstance().getAppPath();
         setPaths();
     }
 
@@ -99,9 +96,39 @@ public class Espam2DARTS {
 
         System.out.println("absClassPath: " + asbInterfacesPath); */
 
+       //System.out.println(_appAbsPath);
         _dartsInterfaceScriptAbsPath = _appAbsPath + File.separator +
                 _interfaceDirRelPath.replace("./","") +
                 File.separator + "espam_cnn_interface.py";
+
+        if(_externalDartsInterface)
+            _dartsInterfaceScriptAbsPath = _dartsAbsPath + File.separator + "espam_cnn_interface.py";
+
+        //System.out.println(_dartsInterfaceScriptAbsPath);
+
+        _dartsTempDirRelPath = System.getProperty("java.io.tmpdir");
+    }
+
+    /**
+     * Set paths
+     */
+    public void updatePaths(){
+        _dartsAbsPath = Config.getInstance().getDartsPath() + "/darts";
+        _appAbsPath = Config.getInstance().getAppPath();
+
+       /** URL asbInterfacesPathURL = Espam2DARTS.class.getProtectionDomain().getCodeSource().getLocation();
+        String asbInterfacesPath = asbInterfacesPathURL.getPath();
+
+        System.out.println("absClassPath: " + asbInterfacesPath); */
+
+       //System.out.println(_appAbsPath);
+        _dartsInterfaceScriptAbsPath = _appAbsPath + File.separator +
+                _interfaceDirRelPath.replace("./","") +
+                File.separator + "espam_cnn_interface.py";
+
+        if(_externalDartsInterface)
+            _dartsInterfaceScriptAbsPath = _dartsAbsPath + File.separator + "espam_cnn_interface.py";
+
         _dartsTempDirRelPath = System.getProperty("java.io.tmpdir");
     }
 
@@ -245,6 +272,48 @@ public class Espam2DARTS {
     }
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                ///
+
+    /**
+     * TODO remove after the tests
+     */
+
+    public CSDFEvalResult evalCSDFGDarts(String fileDir, String filename){
+        String command = "eval";
+        String scriptResult = null;
+        try {
+
+            /** create external command and provide it with arguments*/
+            String[] cmd = new String[5];
+
+            /** check version of installed python: python -V */
+            cmd[0] = Config.getInstance().getPythonCall();
+            cmd[1] = _dartsInterfaceScriptAbsPath;
+            cmd[2] = command;
+            cmd[3] = fileDir;
+            cmd[4] = filename;
+
+            /** call DARTS as external python script*/
+            Process p = Runtime.getRuntime().exec(cmd);
+
+            /** retrieve output from python script*/
+            pythonListener pyl = new pythonListener(filename, p.getInputStream());
+            pyl.start();
+            do {
+                try {
+                    pyl.join(1000);
+                }//check python listener every second, while it works
+                catch (InterruptedException ex) {
+                }
+            }
+            while (pyl.isAlive());
+
+            scriptResult = pyl.returnResult();
+        }
+        catch (IOException e){ scriptResult = "Python script call call failed: IOStream error."; }
+        catch (Exception e)  { scriptResult = "Unknown error."; }
+
+        return convertEvalResultToJavaClass(scriptResult);
+    }
 
 
     /**
@@ -430,6 +499,14 @@ public class Espam2DARTS {
               return utilizations;
       }
 
+    /**
+     * if darts interface is in the same folder as darts
+     * @param externalDartsInterface if darts interface is in the same folder as darts
+     */
+    public void setExternalDartsInterface(boolean externalDartsInterface){
+        _externalDartsInterface = externalDartsInterface;
+      }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ///
 
@@ -449,10 +526,15 @@ public class Espam2DARTS {
     private  String _dartsAbsPath;
 
     /**absolute path to DARTS directory*/
-    private String _dartsInterfaceScriptAbsPath;
+    private String _dartsInterfaceScriptAbsPath = null;
+
+    /** if darts interface script is in the same folder as darts*/
+    private boolean _externalDartsInterface = false;
 
     /** path to temp directory with files*/
     private String _dartsTempDirRelPath = "./";
+
+
 }
 
 
