@@ -48,7 +48,6 @@ public class Mapping implements Cloneable {
     
     /** Accept a Visitor
       *  @param x A Visitor Object.
-      *  @exception If an error occurs.
       */
     public void accept(MappingVisitor x) {
         x.visitComponent(this);

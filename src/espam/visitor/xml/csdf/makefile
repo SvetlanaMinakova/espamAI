@@ -15,7 +15,8 @@ SUBPACKAGES = \
 JSRCS = \
 	CSDFGraphPropertiesXMLVisitor.java \
 	CSDFGraphXMLVisitor.java \
-	CSDFXMLVisitor.java
+	CSDFXMLVisitor.java \
+	MappingXMLVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

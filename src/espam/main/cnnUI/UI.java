@@ -2,20 +2,33 @@ package espam.main.cnnUI;
 
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
+import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
+import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
+import espam.datamodel.mapping.MProcess;
+import espam.datamodel.mapping.MProcessor;
+import espam.datamodel.mapping.Mapping;
+import espam.datamodel.platform.Platform;
+import espam.datamodel.platform.processors.GPU;
+import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.pn.cdpn.CDProcess;
 import espam.main.Config;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
+import espam.operations.transformations.csdf_model_transformations.CSDFTransformer;
 import espam.parser.json.platform.NeurAghePlatformParser;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
+import espam.parser.xml.mapping.XmlMappingParser;
+import espam.parser.xml.platform.XmlPlatformParser;
 import espam.visitor.dot.cnn.CNNDotVisitor;
 import espam.visitor.dot.sdfg.SDFGDotVisitor;
 import espam.visitor.json.refinement.EnergyRefinerVisitor;
 import espam.visitor.json.refinement.TimingRefinerVisitor;
 import espam.visitor.pthread.PthreadSDFGVisitor;
 import espam.visitor.sesame.SesameSDFGVisitor;
+import espam.visitor.xml.csdf.MappingXMLVisitor;
 import onnx.ONNX;
 import espam.interfaces.python.Espam2DARTS;
 import espam.main.ExtensionFilter;
@@ -243,11 +256,9 @@ public class UI {
 
         Network dnnToEval = dnn;
 
-        if(_isTransformationRequired(dnn.countLayers())){
-          //  Network dnnCopy = new Network(dnn);
+        if(_isDNNTransformationRequired(dnn.countLayers())){
             CNNTransformer transformer = new CNNTransformer(dnn);
             transformer.splitToBlocks(_blocks,_splitSafeCounter,_splitChildrenNum,_verbose);
-           // dnnToEval = dnnCopy;
         }
 
         try {
@@ -296,94 +307,38 @@ public class UI {
         Network network = null;
         CSDFGraph csdfg = null;
 
-        _curPhase = "Model reading ";
-        if (_verbose)
-            System.out.println(_curPhase + "...");
-
         if (_inDnn) {
-            if (_srcPath.endsWith("onnx"))
-                network = _readONNXDNNModel(_srcPath);
+            network = _readDNN();
 
-            if (_srcPath.endsWith("json"))
-                network = _readJSONDNNModel(_srcPath);
+            if(_isDNNTransformationRequired(network.countLayers()))
+               _transformDNN(network);
 
-            if (network == null)
-                throw new Exception(_srcPath + " DNN model reading error");
-
-            InferenceDNNOptimizer.getInstance().optimize(network,_optimizeForInference);
-
-            network.setDataFormats(network.getInputLayer().getOutputFormat());
-
-            if(_consistencyCheckout) {
-                boolean consistency = network.checkConsistency();
-                System.out.println("input dnn consistency: " + consistency);
-            }
-
-            if(_isTransformationRequired(network.countLayers())){
-                _curPhase = "CNN model transformation ";
-                if (_verbose)
-                    System.out.println(_curPhase + "...");
-                CNNTransformer transformer = new CNNTransformer(network);
-                transformer.splitToBlocks(_blocks,_splitSafeCounter,_splitChildrenNum,_verbose);
-            }
-        }
-
-        if(_inCSDF){
-            _curPhase = "Model reading ";
-            if (_verbose)
-                System.out.println(_curPhase + "...");
-
-            if(_srcPath.endsWith("json"))
-            csdfg = _readSDFGJSONModel(_srcPath);
-            if(csdfg == null)
-                throw new Exception(_srcPath + " CSDF model reading error");
-            if(_consistencyCheckout){
-                boolean consistency = _edInterface.checkConsistency(csdfg);
-                System.out.println("input csdf graph consistency: " + consistency);
-            }
-        }
-
-        /**generate CSDFG from input DNN model if required*/
-        if(_isSDFGenerationRequired()) {
-            _curPhase = "CNN-to-CSDF Model conversion";
-            if (_verbose)
-                System.out.println(_curPhase + "...");
             csdfg = _convertDNN2SDFG(network);
-            _refineTiming(csdfg);
         }
 
-        /** generate code templates */
-        if(_sesame || _Pthread)
+        if(_inCSDF) csdfg = _readCSDFG();
+
+        if(_sesame || _pthread)
             _edInterface.setRepetitionVector(csdfg);
 
-        if(_mappingFile!=null) {
-            _curPhase = "Mapping file parsing";
-            if (_verbose)
-                System.out.println(_curPhase + "...");
-            PthreadSDFGVisitor.parseMapping(_mappingFile);
-        }
+        if(_consistencyCheckout)
+            _checkConsistency(network,csdfg);
 
-        if (_sesame) {
-             _curPhase = "Sesame code generation";
-            if (_verbose)
-                System.out.println(_curPhase + "...");
+        _refineTiming(csdfg);
 
-            if(_inCSDF)
-                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",false);
-            if(_inDnn)
-                SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",true);
-        }
+       if(_isCSDFGTransformationRequired())
+           _transformCSDFG(csdfg);
 
-        if(_Pthread){
-            _curPhase = "Pthread code generation";
-            if (_verbose)
-                System.out.println(_curPhase + "...");
+        if(_platformFile!=null)
+            parsePlatform();
 
-            if(_inCSDF)
-                PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/pthread/",false);
-            if(_inDnn)
-                PthreadSDFGVisitor.callVisitor(network, _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/pthread/");
-        }
+        _processMapping(csdfg);
+
+        if (_sesame)
+            _generateSesame(csdfg);
+
+        if(_pthread)
+            _generatePthread(network, csdfg);
 
         if(_eval) {
             CSDFEvalResult result = _evaluate(csdfg);
@@ -405,133 +360,176 @@ public class UI {
     }
 
     /**
-     * Run commands for multiple input models
-     *
-    private void _runCommandsMultipleInputs() throws Exception{
-         _curPhase = "Model reading ";
+     * Read Deep neural network
+     * @return deep neural network
+     * @throws Exception if an error occurs
+     */
+    private Network _readDNN() throws Exception{
+        _curPhase = "DNN model reading ";
         if (_verbose)
             System.out.println(_curPhase + "...");
-        Network [] dnns = null;
-        CSDFGraph[] csdfgs = null;
 
-        if (_inDnn) {
-            dnns = _readAllDNNs(_srcPath);
-            if(dnns==null)
-                throw new Exception("no dnn models found in "+_srcPath);
-             for(int i=0;i< dnns.length;i++){
-                 Network dnn = dnns[i];
-                 dnn.setDataFormats(dnn.getInputLayer().getOutputFormat());
-              if(_isTransformationRequired(dnn.countLayers())) {
-                  CNNTransformer transformer = new CNNTransformer(dnn);
-                  transformer.splitToBlocks(_blocks, _splitSafeCounter, _splitChildrenNum, _verbose);
-              }
-               if(_consistencyCheckout) {
-                   boolean consistency = dnn.checkConsistency();
-                   System.out.println("input dnn " + dnn.getName() + " consistency: " + consistency);
-               }
+        Network network = null;
+            if (_srcPath.endsWith("onnx"))
+                network = _readONNXDNNModel(_srcPath);
 
-               InferenceDNNOptimizer.getInstance().optimize(dnn,_optimizeForInference);
+            if (_srcPath.endsWith("json"))
+                network = _readJSONDNNModel(_srcPath);
 
-            }
-        }
+            if (network == null)
+                throw new Exception(_srcPath + " DNN model reading error");
 
-        if(_inCSDF){
-           csdfgs = _readAllSDFGs(_srcPath);
-           if(csdfgs == null)
-                throw new Exception(_srcPath + " CSDF model reading error");
+            InferenceDNNOptimizer.getInstance().optimize(network,_optimizeForInference);
 
-           if(_consistencyCheckout) {
-               for(CSDFGraph csdfg: csdfgs) {
-                   boolean consistency = _edInterface.checkConsistency(csdfg);
-                   System.out.println("input csdf graph " + csdfg.getName()+ " consistency: " + consistency);
-               }
-           }
-        }
+            network.setDataFormats(network.getInputLayer().getOutputFormat());
 
-        /**generate CSDFG from input DNN model if required
-        if(_isSDFGenerationRequired()) {
-            csdfgs = new CSDFGraph[dnns.length];
-            for(int i=0;i< dnns.length;i++){
-                csdfgs[i]= _convertDNN2SDFG(dnns[i]);
-                _refineTiming(csdfgs[i]);
-            }
-        }
+        if (_verbose)
+             System.out.println("[done]");
 
-        /** generate Sesame template
-        if (_sesame || _Pthread) {
-            int csdfgId = 0;
-            for(CSDFGraph csdfg:csdfgs) {
-                _edInterface.setRepetitionVector(csdfg);
+        return network;
+    }
 
-            if(_mappingFile!=null)
-            PthreadSDFGVisitor.parseMapping(_mappingFile);
 
-            if(_sesame) {
-                if (_inCSDF)
-                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/sesame/", false);
-                if (_inDnn)
-                    SesameSDFGVisitor.callVisitor(csdfg, _dstPath + csdfg.getName() + "/sesame/", true);
-            }
+    /**
+    * Read CSDF graph from an input file
+    * @return CSDF graph
+    * @throws Exception if an error occurs
+    */
+    private CSDFGraph _readCSDFG() throws Exception{
+        _curPhase = "CSDF model reading ";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
 
-            if(_Pthread){
-                if(_inCSDF)
-                    PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/pthread/",false);
+        CSDFGraph csdfg = null;
+        if(_srcPath.endsWith("json"))
+        csdfg = _readSDFGJSONModel(_srcPath);
+        if(csdfg == null) throw new Exception(_srcPath + " CSDF model reading error");
+
+        if (_verbose)
+             System.out.println("[done]");
+
+        return csdfg;
+
+    }
+
+             /**
+          * Check input model consistency
+          * @param network DNN
+          * @param csdfg CSDFG
+          * @throws Exception if an error occurs
+          */
+    private void _checkConsistency(Network network, CSDFGraph csdfg) throws Exception{
+        _curPhase = "Model consistency checkout ";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
+
+                boolean consistency;
                 if(_inDnn)
-                    PthreadSDFGVisitor.callVisitor(dnns[csdfgId], _dnnInitRepresentation,csdfg,_dstPath + csdfg.getName()+"/pthread/");
-            }
-            csdfgId++;
+                    consistency = network.checkConsistency();
+                else
+                    consistency = _edInterface.checkConsistency(csdfg);
+                System.out.println("input model consistency: " + consistency);
+        if (_verbose)
+            System.out.println("[done]");
+    }
+
+    /**
+     * Perform transformations over DNN
+     * @param network  DNN
+     */
+    private void _transformDNN(Network network){
+        _curPhase = "CNN model transformation ";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
+        CNNTransformer transformer = new CNNTransformer(network);
+        transformer.splitToBlocks(_blocks,_splitSafeCounter,_splitChildrenNum,_verbose);
+        if (_verbose)
+            System.out.println("[done]");
+    }
+
+        /**
+     * Perform transformations over CSDFG
+     * @param csdfg  CSDFG
+     */
+    private void _transformCSDFG(CSDFGraph csdfg){
+        _curPhase = "CSDF Model transformation: ";
+        if (_verbose)
+            System.out.println(_curPhase);
+
+        if(_incapsulateConcat) {
+            _curPhase = "  - Incapsulation of concatenation nodes";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+            CSDFTransformer transformer = new CSDFTransformer(csdfg);
+            transformer.incapsulateConcatNodes();
+        }
+        if (_verbose)
+            System.out.println("[done]");
+    }
+
+    /**
+     * Process mapping
+     * @param csdfg CSDF graph
+     */
+    private void _processMapping(CSDFGraph csdfg){
+        if(_mappingFile!=null) {
+            _curPhase = "Mapping file parsing";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+            parseMapping();
+            if (_verbose)
+                System.out.println("[done]");
+        }
+        else {
+            if(_platformFile!=null) {
+                _curPhase = "Auto mapping generation";
+                if (_verbose)
+                    System.out.println(_curPhase + "...");
+                generateAutoMapping(_platform, csdfg);
+                if (_verbose)
+                    System.out.println("[done]");
             }
         }
-
-        if(_eval) {
-            if(csdfgs==null)
-                throw new Exception("evaluation error: null CSDF graphs list");
-
-            CSDFEvalResult[] results = new CSDFEvalResult[csdfgs.length];
-             for(int i=0;i< csdfgs.length;i++) {
-                 results[i] = _evaluate(csdfgs[i]);
-             }
-            printResult(results);
-        }
-
-
-        if(_inDnn && dnns!=null){
-            for(Network dnn:dnns){
-                _generateDNNOutputFiles(dnn);
-            }
-        }
-
-        if(_generate_csdfg) {
-            if (csdfgs != null) {
-                for (CSDFGraph csdfg : csdfgs) {
-                    _generateCSDFOutputFiles(csdfg);
-                }
-            }
-        }
-
-        if(_wcetTemplateGen) {
-            if(dnns==null && csdfgs==null)
-                return;
-            if(csdfgs==null){
-                for(Network dnn:dnns){
-                    _generateWCETTemplate(dnn);
-                }
-                return;
-            }
-
-            if(dnns==null){
-                for(CSDFGraph csdfg: csdfgs){
-                    _generateWCETTemplate(csdfg);
-                }
-                return;
-            }
-
-            for(int i=0; i< dnns.length;i++){
-                _generateWCETTemplate(dnns[i],csdfgs[i]);
-            }
+        if(_generateMapping){
+            _curPhase = "Mapping file generation";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+            MappingXMLVisitor.callVisitor(_mapping,_dstPath + csdfg.getName());
         }
     }
+
+    /**
+     * Generate Sesame code templates
+     * @param csdfg CSDF graph
      */
+    private void _generateSesame(CSDFGraph csdfg){
+    _curPhase = "Sesame code generation";
+    if (_verbose)
+        System.out.println(_curPhase + "...");
+
+    if(_inCSDF)
+        SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",false);
+    if(_inDnn)
+        SesameSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/sesame/",true);
+    }
+
+    /**
+     * Generate Pthreade executable code
+     * @param csdfg CSDF graph
+     */
+    private void _generatePthread(Network network, CSDFGraph csdfg){
+        _curPhase = "pthread code generation";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
+
+        if(_mapping!=null)
+            PthreadSDFGVisitor.setMapping(_mapping);
+
+        if(_inCSDF)
+            PthreadSDFGVisitor.callVisitor(csdfg,_dstPath + csdfg.getName()+"/pthread/",false);
+        if(_inDnn)
+            PthreadSDFGVisitor.callVisitor(network,csdfg,_dstPath + csdfg.getName()+"/pthread/");
+    }
 
     /**
      * Generate DNN output files, if required
@@ -583,15 +581,6 @@ public class UI {
             _generateEnergyTemplate();
 
         _dstPath = rootDst;
-    }
-
-    /**
-     * Update flag which shows if csdf model generation is required
-     */
-    private boolean _isSDFGenerationRequired(){
-        if(_inCSDF)
-            return false;
-       return _eval||_sesame||_Pthread||_csdfg_json ||_csdfg_dot||_csdfg_xml||_generate_csdfg;
     }
 
     /**
@@ -810,14 +799,17 @@ public class UI {
      * @return deep neural network model represented as a csdf-graph
      */
     private CSDFGraph _convertDNN2SDFG(Network network){
-        _curPhase = "Model conversion: espam.Network to CSDF Model ";
-            if(_verbose)
+        _curPhase = "CNN-to-CSDF Model conversion";
+            if (_verbose)
                 System.out.println(_curPhase + "...");
         CSDFGraph sdfg;
-        if(_dnnInitRepresentation.equals(DNNInitRepresentation.NEURONBASED))
-            sdfg = _cnn2CSDFGraphConverter.buildGraph(network);
-        else
+        //if(_dnnInitRepresentation.equals(DNNInitRepresentation.NEURONBASED))
+          //  sdfg = _cnn2CSDFGraphConverter.buildGraph(network);
+        //else
             sdfg = _cnn2CSDFGraphConverter.buildGraphLayerBased(network);
+
+        if (_verbose)
+             System.out.println("[done]");
         return sdfg;
     }
 
@@ -869,6 +861,182 @@ public class UI {
     /** Generate energy parameters template */
     private void _generateEnergyTemplate(){
         EnergyRefinerVisitor.printDefaultSpec(_dstPath);
+    }
+
+
+    /** Parse platform file */
+    public void parsePlatform() {
+        _curPhase = "Platform file reading ";
+            if (_verbose)
+                System.out.println(_curPhase + "...");
+        try {
+                if(_platformType.equals(Platformtype.ESPAM)) {
+                    _parserPlatform.initializeParser();
+                    _platform = _parserPlatform.doParse(_platformFile, false);
+                }
+
+                if(_platformType.equals(Platformtype.NEURAGHE))
+                    parseNeuraghePlatform();
+
+        } catch (Exception e) {
+            System.out.println("platform file parsing error " + e.getMessage());
+        }
+
+        if (_verbose)
+             System.out.println("[done]");
+    }
+
+    /**
+     * Parse NeurAghe platform specification
+     */
+    private void parseNeuraghePlatform(){
+        setNEURAgheExecTimesSpec(_platformFile);
+        double maxEnergy = NeurAghePlatformParser.getWCEnergy(_platformFile);
+        CSDFGEnergyRefiner.getInstance().setMaxprocEnergy(maxEnergy);
+        _platform = NeurAghePlatformParser.parsePlatform(_platformFile);
+    }
+
+    /** Parse mapping file */
+    public void parseMapping() {
+        try {
+            _parserMapping.initializeParser();
+            _mapping = _parserMapping.doParse(_mappingFile, false);
+        } catch (Exception e) {
+            System.out.println("mapping file parsing error " + e.getMessage());
+        }
+    }
+
+
+         /**
+          * Generate mapping automatically
+          * @param platform platform
+          * @param csdfg csdf graph
+          */
+    public void generateAutoMapping(Platform platform, CSDFGraph csdfg){
+        try {
+            Vector<Processor> cpuList = _getCPUList(platform);
+            Vector<Processor> gpuList = _getGPUList(platform);
+            Vector<MProcessor> mCPUList = new Vector<>();
+            Vector<MProcessor> mGPUList = new Vector<>();
+            
+            if(cpuList.size()<1){
+                System.err.println("mapping generation error: no CPU found!");
+            }
+            Mapping automapping = new Mapping(csdfg.getName() + "_to_" + platform.getName());
+            Vector<MProcessor> processors = new Vector<>();
+            
+            //init cpu list
+            for (Processor proc: cpuList){
+                MProcessor cpu = new MProcessor(proc.getName());
+                cpu.setResource(proc);
+                cpu.setProcessList(new Vector());
+                processors.add(cpu);
+                mCPUList.add(cpu);
+            }
+
+            //init gpu list
+            for (Processor proc: gpuList){
+                MProcessor gpu = new MProcessor(proc.getName());
+                gpu.setResource(proc);
+                gpu.setProcessList(new Vector());
+                processors.add(gpu);
+                mGPUList.add(gpu);
+            }
+
+            automapping.setProcessorList(processors);
+            _assignNodesToTemplateMapping(csdfg,mCPUList,mGPUList);
+            _mapping = automapping;
+
+           /** mapping.setName("mapping1");
+            Vector<MProcessor> gpuList = _getGPUList(mapping);
+            _assignNodesToTemplateMappingSpread(csdfg,cpuList,gpuList);
+            _mapping = mapping;*/
+        }
+         catch (Exception e){System.out.println("mapping file parsing error "+e.getMessage());
+        }
+    }
+
+       /**
+     * Set dummy mapping for cpu-gpu platform. Map every convolutional and matrix
+     * multiplication core on GPU. Map all other kernels on CPU
+     * @param csdfg CSDF graph to be mapped
+     */
+    protected void _assignNodesToTemplateMapping(CSDFGraph csdfg,Vector<MProcessor> cpuList,Vector<MProcessor> gpuList){
+
+        int cpuNum = cpuList.size();
+        int gpuNum = gpuList.size();
+
+        Vector<CSDFNode> gpuNodes = new Vector<>();
+        boolean useGPU = false;
+        if(gpuNum>0) {
+            gpuNodes = csdfg.getNodesList("conv");
+            useGPU = true;
+        }
+
+        int curCPUId = 0;
+        MProcessor curCPU = cpuList.firstElement();
+
+        int curGPUId = 0;
+        Vector processes;
+
+        for (Object nodeObj: csdfg.getNodeList()) {
+            CSDFNode node = (CSDFNode) nodeObj;
+            MProcess mp = new MProcess(node.getName());
+
+            /** assign process to CPU*/
+            processes = curCPU.getProcessList();
+            processes.add(mp);
+
+            /**select next CPU core for mapping */
+            curCPUId++;
+            if (curCPUId == cpuNum)
+                curCPUId = 0;
+            curCPU = cpuList.elementAt(curCPUId);
+
+            /** add GPU call property*/
+            if (useGPU && gpuNodes.contains(node)) {
+                MemoryUnit gpu = node.getMemoryUnit("gpu");
+                gpu.setUnitParamDesc("" + curGPUId);
+                /**select next GPU core for mapping */
+                curGPUId++;
+                if (curGPUId == gpuNum)
+                    curGPUId = 0;
+            }
+        }
+    }
+
+    /**
+     * Get list of cpu cores in the mapping
+     * @param platform platform
+     * @return list of cpu cores in the mapping
+     */
+    protected Vector<Processor> _getCPUList(Platform platform){
+        Vector<Processor> cpuList = new Vector<>();
+            for (Object resObj: platform.getResourceList()) {
+                if(resObj instanceof Processor) {
+                    if(!(resObj instanceof GPU)){
+                        Processor cpu = (Processor)resObj;
+                        cpuList.add(cpu);
+                    }
+                }
+            }
+        return cpuList;
+    }
+
+        /**
+     * Get list of cpu cores in the mapping
+     * @param platform platform
+     * @return list of cpu cores in the mapping
+     */
+    protected Vector<Processor> _getGPUList(Platform platform){
+        Vector<Processor> gpuList = new Vector<>();
+            for (Object resObj: platform.getResourceList()) {
+                    if(resObj instanceof GPU){
+                        Processor gpu = (Processor)resObj;
+                        gpuList.add(gpu);
+                }
+            }
+        return gpuList;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1083,12 +1251,20 @@ public class UI {
      * @param dnnLayersCount number of the layers in initial dnn model
      * @return true, if transformation is required and false otherwise
      */
-    private  boolean _isTransformationRequired(int dnnLayersCount){
+    private  boolean _isDNNTransformationRequired(int dnnLayersCount){
         if(_blocks==null)
             return false;
         if(dnnLayersCount>=_blocks)
             return false;
         return true;
+    }
+
+        /**
+     * Is CSDFG transformation is required
+     * @return true, if transformation is required and false otherwise
+     */
+    private  boolean _isCSDFGTransformationRequired(){
+        return _incapsulateConcat;
     }
 
     /**
@@ -1204,15 +1380,6 @@ public class UI {
        CSDFTimingRefiner.getInstance().updateBasicOperationsTiming(newSpec);
     }
 
-    /**
-     * Parse NeurAghe platform specification
-     * @param platform path to NeurAghe platform specification
-     */
-    public void parseNeuraghePlatform(String platform){
-        setNEURAgheExecTimesSpec(platform);
-        double maxEnergy = NeurAghePlatformParser.getWCEnergy(platform);
-        CSDFGEnergyRefiner.getInstance().setMaxprocEnergy(maxEnergy);
-    }
 
     /**
      * Set CSDF model operators execution time specification,
@@ -1231,6 +1398,8 @@ public class UI {
 
        /** extend basic operators by parsed specification*/
        CSDFTimingRefiner.getInstance().updateBasicOperationsTiming(newSpec);
+
+
     }
 
     /**change op times measurement units from GOPS (10^9 Ops)/sec to sec*/
@@ -1290,7 +1459,7 @@ public class UI {
      * @param Pthread Pthread code generation flag
      */
     public void setPthread(boolean Pthread) {
-             this._Pthread = Pthread;
+             this._pthread = Pthread;
     }
 
     /**
@@ -1359,12 +1528,59 @@ public class UI {
         PthreadSDFGVisitor.setGenerateFuncNA(dNNFuncNA);
     }
 
+    /**
+     * Set number of inputs to be processed by pthread application.
+     */
+    public void setPthreadGenerateBatch(Integer batch) {
+        PthreadSDFGVisitor.setBatch(batch);
+    }
+
+         /** scale factor for FIFO buffers.
+          * Meaning: max number of inputs to be stored between 2 nodes. Should be >=1.
+          * Default value = 10
+          * @param fifoScale scale factor for FIFO buffers
+          */
+    public void setFIFOScale(Integer fifoScale){
+        PthreadSDFGVisitor.setFifoScale(fifoScale);
+        SesameSDFGVisitor._ymlVisitor._fifoScale = fifoScale;
+    }
+
     /** extract weights from onnx model*/
     public void setExtractONNXWeights(boolean extractONNXWeights){
         _extractONNXWeights = extractONNXWeights;
     }
 
-    ///////////////////////////////////////////////////////////////////
+
+      /** set mapping template file*/
+   public void setPlatformFile(String platformFile){
+       _platformFile = platformFile;
+   }
+
+   /**
+     * Set path to .xml mapping file
+     * @param mappingFile path to .xml mapping file
+     */
+    public void setMappingFile(String mappingFile) {
+        this._mappingFile = mappingFile;
+    }
+
+    /**
+     * Set flag, if mapping should be generated
+     * @param generateMapping if mapping should be generated
+     */
+    public void setGenerateMapping(boolean generateMapping) {
+             this._generateMapping = generateMapping;
+    }
+
+    /**
+    * Set platform specification type
+    * @param platformType platform specification type
+    */
+    public void setPlatformType(Platformtype platformType) {
+        this._platformType = platformType;
+    }
+
+         ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
     /**
@@ -1399,13 +1615,7 @@ public class UI {
         return phase;
     }
 
-    /**
-     * Set path to .xml mapping file
-     * @param mappingFile path to .xml mapping file
-     */
-    public void setMappingFile(String mappingFile) {
-        this._mappingFile = mappingFile;
-    }
+
 
          /**TODO REFACTORING ON ordinary espam/cnnEspam calls*/
          /**
@@ -1500,7 +1710,7 @@ public class UI {
     private boolean _sesame;
 
     /** Pthread-code generation flag*/
-    private boolean _Pthread;
+    private boolean _pthread;
 
     /** flag, shows, if csdf graph generation is required*/
     private boolean _generate_csdfg;
@@ -1563,9 +1773,32 @@ public class UI {
     /** level of optimization*/
     private int _optimizeForInference = 2;
 
+    /** extract onnx files*/
+    private boolean _extractONNXWeights = false;
+
+    /**If concatenation nodes shpuld be incapsulated*/
+    private boolean _incapsulateConcat = true;
+
+    /**maping file*/
+    private String _platformFile = null;
+
     /**maping file*/
     private String _mappingFile = null;
 
-    /** extract onnx files*/
-    private boolean _extractONNXWeights = false;
+    /** if mapping file should be generated*/
+    private boolean _generateMapping = false;
+
+   /**mapping file parser*/
+    public  static XmlMappingParser _parserMapping = new XmlMappingParser();
+
+    /**platform file parser*/
+    public static XmlPlatformParser _parserPlatform = new XmlPlatformParser();
+
+    /** mapping*/
+    Mapping _mapping;
+
+    /** platform*/
+    Platform _platform;
+    /** type of the platform specification*/
+    Platformtype _platformType = Platformtype.ESPAM;
 }

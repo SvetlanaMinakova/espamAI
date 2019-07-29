@@ -23,6 +23,7 @@ public class SesameSDFGVisitor {
      */
      public static void callVisitor(CSDFGraph y, String dir, boolean CNNRefined){
      String templatesDir = dir + "app/";
+     _setDataTypes(y.getTokenDesc(), y.getTokenDesc());
 
      try {
          /** if templates directory already exists,
@@ -48,6 +49,16 @@ public class SesameSDFGVisitor {
 
         }
      }
+
+         /**
+     * Set data types of I/O memory and parameters
+     * @param iotype I/O data type
+     * @param paramtype parameters type
+     */
+   private static void _setDataTypes(String iotype, String paramtype ){
+       _ymlVisitor._IODatatype = iotype;
+       _ymlVisitor._paramDataType = paramtype;
+   }
 
     ///////////////////////////////////////////////////////////////////
     ////                     private variables                     ///

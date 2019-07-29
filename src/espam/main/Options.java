@@ -2,6 +2,7 @@
 package espam.main;
 
 import espam.main.cnnUI.DNNInitRepresentation;
+import espam.main.cnnUI.Platformtype;
 import espam.main.cnnUI.UI;
 
 import java.io.StringWriter;
@@ -66,7 +67,9 @@ public class Options {
                 if( _parseArg(arg) == false ) {
                     if( arg.startsWith("-") && i < args.length - 1 ) {
                         if( arg.equals("--platform") || arg.equals("-p") ) {
-                            _ui.setPlatformFileName(args[++i]);
+                            String platformFile = args[++i];
+                            _ui.setPlatformFileName(platformFile);
+                            _cnnui.setPlatformFile(platformFile);
                         } else if( arg.equals("--kpn") || arg.equals("-k") ) {
                             _ui.setNetworkFileName(args[++i]);
                         } else if( arg.equals("--adg") || arg.equals("-a") ) {
@@ -121,8 +124,11 @@ public class Options {
                         }
 
                         else if(arg.equals("--na-arch")){
-                            try { _cnnui.parseNeuraghePlatform(args[++i]); }
-                            catch (Exception e){ System.err.println("Invalid NeurAghe platform specification"); }
+                            try {
+                                _cnnui.setPlatformFile(args[++i]);
+                                _cnnui.setPlatformType(Platformtype.NEURAGHE);
+                            }
+                            catch (Exception e){ System.err.println("Invalid path to NeurAghe platform specification"); }
                         }
 
                          else if(arg.equals("--energy-spec")){
@@ -154,6 +160,12 @@ public class Options {
                         else if (arg.equals("--dartswithinterface")) {
                           //  Config.getInstance().setDartsPath(args[++i]);
                          //   _cnnui.setExternalDartsInterface(true);
+                        }
+                        else if (arg.equals("--batch")){
+                           _cnnui.setPthreadGenerateBatch(Integer.parseInt(args[++i]));
+                        }
+                        else if(arg.equals("--fifo-scale")){
+                           _cnnui.setFIFOScale(Integer.parseInt(args[++i]));
                         }
 
                         else {
@@ -301,13 +313,16 @@ public class Options {
             _cnnui.setPthreadGenerateDNNFuncGPU(true);
         }
 
-
         else if(arg.equals("--libNA")){
             _cnnui.setPthreadGenerateDNNFuncNA(true);
         }
 
         else if(arg.equals("--onnx-weights")){
             _cnnui.setExtractONNXWeights(true);
+        }
+
+        else if(arg.equals("--map-xml")){
+            _cnnui.setGenerateMapping(true);
         }
 
         else if( arg.equals("") ) {
@@ -395,7 +410,6 @@ public class Options {
             {"--neuron-based    ", "-nb "},
 
             /** generation flags*/
-           // {"--multiple-models ", "-m  "},
             {"--sesame          ", "none"},
             {"--pthread          ", "none"},
             {"--dot             ", "none"},
@@ -408,7 +422,9 @@ public class Options {
             {"--libCPU          ", "none"},
             {"--libGPU          ", "none"},
             {"--libNA           ", "none"},
-            {"--onnx-weights    ", "none"}
+            {"--libDNCPU        ", "none"},
+            {"--onnx-weights    ", "none"},
+            {"--map-xml         ", "none"}
 
     };
     
@@ -444,12 +460,12 @@ public class Options {
         {"--consistency    ", "-c  ", " <FilePath>"},
         {"--na-arch        ", "none", " <FilePath>"},
         {"--opt-fi         ", "none", " <Integer>"},
-        {"--cores          ", "none", " <Integer>"}
+        {"--cores          ", "none", " <Integer>"},
+        {"--batch          ", "none", " <Integer>"},
+        {"--fifo-scale     ", "none", " <Integer>"}
        };
 
-    /**
-     * The form of the command line.
-     */
+    /** The form of the command line.*/
     protected String _commandTemplate = "espam [ options ]";
     
     /**

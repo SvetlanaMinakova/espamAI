@@ -46,8 +46,10 @@ public class RefinedCSDFEvaluator {
      */
     public void refineMemoryEval(CSDFGraph graph, CSDFEvalResult dartsEval){
         try{
-            double refinedMem = evalInternalMemory(graph) + refineTotalBufferSizes(dartsEval.getMemory(),graph.getTokenDesc());
-            dartsEval.setMemory(refinedMem);
+           // double refinedMem = refineTotalBufferSizes(dartsEval.getMemory(),graph.getTokenDesc());
+           double refinedMem = evalInternalMemory(graph) + refineTotalBufferSizes(dartsEval.getMemory(),graph.getTokenDesc());
+
+           dartsEval.setMemory(refinedMem);
         }
         catch (Exception e){
             System.err.println("DNN-CSDF memory evaluation refinement error");
@@ -62,10 +64,16 @@ public class RefinedCSDFEvaluator {
      * @return internal memory of the CSDF graph evaluation
      * @throws Exception if an error occurs
      */
-    public int evalInternalMemory(CSDFGraph graph) throws Exception{
+    public Integer evalInternalMemory(CSDFGraph graph){
         int result = 0;
          for(Object node:graph.getNodeList()){
-            result += evalInternalMemory((CSDFNode)node);
+             try {
+                 result += evalInternalMemory((CSDFNode) node);
+             }
+             catch (Exception e){
+                 System.err.println(((CSDFNode) node).getName() +" DNN-CSDF internal memory evaluation error");
+                 return 0;
+             }
         }
       return result;
     }
@@ -96,8 +104,11 @@ public class RefinedCSDFEvaluator {
         int memUnitSize;
         if(mu.isUnitParam())
             memUnitSize = 1;
-        else
+        else {
             memUnitSize = mu.getShape().getElementsNumber();
+            if(mu.getShape()==null)
+                System.err.println("mu: "+mu.getName() + " has null shape!");
+        }
 
         return memUnitSize * typeSize;
     }
@@ -120,7 +131,7 @@ public class RefinedCSDFEvaluator {
      * @return memory size of data types in bytes
      * @throws Exception if an error occurs
      */
-    public int typeSize(String valueDesc) throws Exception{
+    public int typeSize(String valueDesc){
         if(valueDesc.contains("8"))
             return 1;
         if(valueDesc.contains("16"))
@@ -133,13 +144,39 @@ public class RefinedCSDFEvaluator {
             return 16;
         /** standard shortcuts*/
         /** TODO check*/
-        if(valueDesc.equals("boolean"))
+        if(valueDesc.equals("bool"))
             return 1;
         if(valueDesc.equals("int"))
-            return 2;
+            return 4;
         if(valueDesc.equals("float"))
             return 4;
-        throw new Exception("Unknown data type!");
+        if(valueDesc.contains("string"))
+            return 4;
+
+        System.err.println("mem refinement error: unknown data type " + valueDesc);
+        return 0;
+    }
+
+       /**
+     * Get memory size of data types in bytes
+     * @param valueDesc data type description
+     * @return memory size of data types in bytes
+     * @throws Exception if an error occurs
+     */
+    public String javaType(String valueDesc){
+        /** standard shortcuts*/
+        /** TODO check*/
+        if(valueDesc.equals("bool"))
+            return "boolean";
+        if(valueDesc.equals("int"))
+            return "int";
+        if(valueDesc.equals("float"))
+            return "float";
+        if(valueDesc.contains("string"))
+            return "string";
+
+        System.err.println("mem refinement error: unknown data type " + valueDesc);
+        return "null";
     }
 
     /////////////////////////////////////////////////////////////////////

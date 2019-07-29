@@ -14,15 +14,25 @@ import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
 import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.interfaces.python.ONNXWeightsExtractor;
 import espam.main.Config;
+import espam.operations.refinement.RefinedCSDFEvaluator;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
+import espam.utils.fileworker.ONNXFileWorker;
+import espam.visitor.json.refinement.TimingRefinerVisitor;
+import espam.visitor.onnx.ONNDataFormatsHelper;
 import onnx.ONNX;
+import sun.misc.FloatingDecimal;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.*;
 
 
@@ -59,7 +69,10 @@ public class ONNX2CNNConverter {
 
             try{
                 Network resultNetwork = converter.convertGraph(model);
-              //  resultNetwork.setName("yolo");
+                if(converter._outModelName !=null) {
+                    resultNetwork.setName(converter._outModelName);
+                    converter._weightsSavePath.replace(model.getGraph().getName(),converter._outModelName);
+                }
                 ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
                 Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
               //  for(int lId : layersTraverseOrder)
@@ -67,6 +80,9 @@ public class ONNX2CNNConverter {
                 traverser.setConnections(layersTraverseOrder);
                 traverser.setDataFormats(layersTraverseOrder);
                 converter.removePureDataLayers(resultNetwork);
+               // if(converter._giveReadableNames)
+                 //   resultNetwork.giveLayersReadableNames();
+                resultNetwork.giveIOLayersStandardNames();
                 return resultNetwork;
             }
 
@@ -88,7 +104,10 @@ public class ONNX2CNNConverter {
 
             try{
                 Network resultNetwork = converter.convertGraph(model);
-               // resultNetwork.setName("yolo");
+                if(converter._outModelName !=null) {
+                    resultNetwork.setName(converter._outModelName);
+                    converter._weightsSavePath.replace(model.getGraph().getName(),converter._outModelName);
+                }
                 ONNXtoESPAMNetworkTraverser traverser = new ONNXtoESPAMNetworkTraverser(resultNetwork,converter);
                 Vector<Integer> layersTraverseOrder = traverser.getLayersTraverseOrder();
               //  for(int lId : layersTraverseOrder)
@@ -96,6 +115,8 @@ public class ONNX2CNNConverter {
                 traverser.setConnections(layersTraverseOrder);
                 traverser.setDataFormats(layersTraverseOrder);
                 converter.removePureDataLayers(resultNetwork);
+                resultNetwork.giveIOLayersStandardNames();
+
                 return resultNetwork;
             }
 
@@ -141,13 +162,21 @@ public class ONNX2CNNConverter {
                 }
             }
         }
+
         if(_saveWeights)
             _saveParametersAsNPYArrays(resultNetwork.getName());
+
+
+
+
+
 
         resultNetwork.setWeightsType(_modelWeightsType);
         resultNetwork.setDataType(_modelDataType);
         return resultNetwork;
     }
+
+
 
     /**Save parameters as numpy arrays
      * @param modelName name of the model
@@ -500,6 +529,9 @@ public class ONNX2CNNConverter {
 
          /** number of neurons in dense blocks*/
          _denseNeurons = new HashMap<>();
+
+         /** batchNormalization initializers*/
+         _bnInits = new HashMap<>();
     }
 
     /**
@@ -630,7 +662,9 @@ public class ONNX2CNNConverter {
         }
 
         if(neuronType.equals("BatchNormalization")) {
+
             appendNonLinearLayer(node, NonLinearType.BN, espamDNN);
+            _extractBNParamsMetaData(node);
             processOperationalNode(node);
             return;
         }
@@ -655,6 +689,12 @@ public class ONNX2CNNConverter {
             return;
         }
 
+        if(neuronType.equals("Div")) {
+            appendNonLinearArithmeticLayer(node, NonLinearType.DIVConst, espamDNN);
+            processOperationalNode(node);
+            return;
+        }
+
         if(neuronType.equals("Dropout")) {
             appendNonLinearLayer(node, NonLinearType.DROPOUT, espamDNN);
              processOperationalNode(node);
@@ -672,7 +712,7 @@ public class ONNX2CNNConverter {
 
         if(neuronType.equals("GlobalAveragePool")) {
              appendPoolingLayer(node,PoolingType.GLOBALAVGPOOL,espamDNN);
-              processOperationalNode(node);
+             processOperationalNode(node);
              return;
         }
 
@@ -691,7 +731,7 @@ public class ONNX2CNNConverter {
 
         if(neuronType.equals("ImageScaler")) {
             appendNonLinearLayer(node, NonLinearType.ImageScaler, espamDNN);
-             processOperationalNode(node);
+            processOperationalNode(node);
             return;
         }
 
@@ -730,9 +770,18 @@ public class ONNX2CNNConverter {
             return;
         }
 
+        if(neuronType.equals("Pad")){
+             appendNonLinearLayer(node, NonLinearType.PAD, espamDNN);
+             processOperationalNode(node);
+             int[] pads = extractPads(node);
+             Layer addedLayer = espamDNN.getLastLayer();
+             addedLayer.setPads(pads);
+             return;
+        }
+
         if(neuronType.equals("Relu")) {
            appendNonLinearLayer(node, NonLinearType.ReLU,espamDNN);
-            processOperationalNode(node);
+           processOperationalNode(node);
            return;
         }
 
@@ -743,6 +792,12 @@ public class ONNX2CNNConverter {
             processOperationalNode(node);
             Tensor extractedDataFormat = extractDataAttributeFromReshapeNode(node);
             saveExtractedDataFormat(node,extractedDataFormat);
+            return;
+        }
+
+           if(neuronType.equals("Slice")) {
+            appendSliceLayer(node,espamDNN);
+            processOperationalNode(node);
             return;
         }
 
@@ -773,9 +828,23 @@ public class ONNX2CNNConverter {
             return;
         }
 
+        if(neuronType.equals("Sub")) {
+            appendNonLinearArithmeticLayer(node, NonLinearType.SUBConst, espamDNN);
+            processOperationalNode(node);
+            return;
+        }
+
         if(neuronType.equals("Tanh")) {
             appendNonLinearLayer(node, NonLinearType.THN,espamDNN);
             processOperationalNode(node);
+            return;
+        }
+
+        if(neuronType.equals("Upsample")) {
+            appendUpsampleLayer(node,espamDNN);
+            processOperationalNode(node);
+            if(!_setUpsampleScale(node))
+                System.err.println("scale parameter not found for upsample node: " + _uniqueNamedONNXNodes.get(node));
             return;
         }
 
@@ -877,7 +946,8 @@ public class ONNX2CNNConverter {
     private void appendConvLayer(ONNX.NodeProto node, Network dnn){
 
         Neuron neuron = createConvNeuron(node);
-        neuron.setBiasName("bias");
+        //neuron.setBiasName("bias");
+        neuron.setBiasName(null);
         /**
          * Number of neurons of Conv layer is determined from corresponding
          * Layer weights shape
@@ -933,6 +1003,230 @@ public class ONNX2CNNConverter {
 
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
         Layer addedLayer = dnn.getLayers().lastElement();
+
+        _layersMapping.put(addedLayer,node);
+    }
+
+     /**
+     * Appends Upsample layer to the target DNN
+     * @param node corresponding ONNX node
+     * @param dnn target DNN
+     */
+    private void appendUpsampleLayer(ONNX.NodeProto node, Network dnn){
+
+        Upsample neuron = new Upsample();
+        /**For dense layers, neurons number are determined by their
+         * weights. For activation non-linear layers, following
+         * after the cnn nodes, number of neurons is first set
+         * to default value and then determined after connections set up
+         */
+        int neurons_number = 1;
+
+        dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
+        Layer addedLayer = dnn.getLayers().lastElement();
+
+        _layersMapping.put(addedLayer,node);
+
+    }
+
+     /**
+     * Set upsample scales
+     * @param node onnx node, performs upsample operator
+     */
+
+    /**
+     * Calculates number of neurons, using information about weights shape.
+     * If no weights were found for a neuron, the number of neuron is set up
+     * to default_neurons_number
+     * @param node corresponding ONNX.NodeProto
+     * @return number of neurons for neurons with weights
+     */
+    private boolean _setUpsampleScale(ONNX.NodeProto node){
+        Layer layer = findEspamLayerInMapping(node);
+        Upsample neuron = (Upsample) layer.getNeuron();
+        ProtocolStringList nodeInputs = node.getInputList();
+        String opNodeName = _uniqueNamedONNXNodes.get(node);
+
+        for(String input: nodeInputs) {
+
+              ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+                if (externalInitializer != null) {
+
+                  ByteString rawData = externalInitializer.getRawData();
+                  Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)externalInitializer.getDims(0),externalInitializer.getDataType().toString());
+                  neuron.setScales(scale);
+                  return true;
+             }
+
+             /** References to I/O nodes and another operational nodes are
+             *  processed separately
+             * */
+
+            if (!(_ILayersNames.contains(input) || _OLayersNames.contains(input) ||
+                    _operationalNodesOutputs.containsKey(input))) {
+                ONNX.NodeProto scaleParamNode = _parameterNodes.get(input);
+
+                /** search weight-node in graph nodes*/
+                if (scaleParamNode != null) {
+
+                  ONNX.TensorProto scaleT = getONNXAttribute(scaleParamNode, "value").getT();
+                  ByteString rawData = scaleT.getRawData();
+                  Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)scaleT.getDims(0),scaleT.getDataType().toString());
+                  neuron.setScales(scale);
+                  return true;
+                }
+
+                ONNX.NodeProto dataParamNode = _dataParameterNodes.get(input);
+                if (dataParamNode != null) {
+                    ONNX.TensorProto scaleT = getONNXAttribute(dataParamNode, "value").getT();
+                    ByteString rawData = scaleT.getRawData();
+                    Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)scaleT.getDims(0),scaleT.getDataType().toString());
+                    neuron.setScales(scale);
+                    return true;
+                }
+
+            }
+
+            if (_dataParameterNodesOutputs.containsKey(input)) {
+                if(_findScalesInDPN(opNodeName, input, layer))
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    /**
+     * Convert little indian bytestring to float array
+     * @param buffer bytestring buffer
+     * @param dims number of array dimensions
+     * @return float array, obtained from a little indian byte string
+     */
+    private Vector<Integer> _littleEndianToIntArray(byte[] buffer, int dims, String tensorDataType){
+        String javaType = RefinedCSDFEvaluator.getInstance().javaType(tensorDataType.toLowerCase());
+        Vector<Integer> res = new Vector<>();
+
+        if(!(javaType.equals("int")||javaType.equals("float"))){
+            System.err.println("Little indian to array conversion error: unknown array data type");
+            return res;
+        }
+
+        int typeSize = RefinedCSDFEvaluator.getInstance().typeSize(tensorDataType.toLowerCase());
+        int offset = typeSize;
+        int startId = 0;
+
+        if(javaType.equals("float")){
+            for(int i=0; i<dims; i++){
+                float val = _littleEndianToFloat(buffer,startId);
+                res.add((int)val);
+                startId+=offset;
+            }
+        }
+
+          if(javaType.equals("int")){
+            for(int i=0; i<dims; i++){
+                int val = _littleEndianToInt(buffer,startId);
+                res.add(val);
+                startId+=offset;
+            }
+        }
+
+
+        return res;
+    }
+
+
+    /**
+     * Extract weights from data parameter node
+     * @return weights, extracted from data parameter node
+     */
+    private boolean _findScalesInDPN(String opNodeName, String inp, Layer layer){
+        Upsample neuron = (Upsample)layer.getNeuron();
+        for (ONNX.NodeProto dpn:_dataParameterNodes.values()) {
+            if (dpn.getOutputList().contains(inp)) {
+
+                for (String input : dpn.getInputList()) {
+                    {
+                        if (!(_ILayersNames.contains(input) || _OLayersNames.contains(input))) {
+                            ONNX.NodeProto scaleParamNode = _parameterNodes.get(input);
+                            /** search weight-node in graph nodes*/
+                            if (scaleParamNode != null) {
+                                ONNX.TensorProto scaleT = getONNXAttribute (scaleParamNode, "value").getT();
+                                ByteString rawData = scaleT.getRawData();
+                                Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)scaleT.getDims(0),scaleT.getDataType().toString());
+                                neuron.setScales(scale);
+                                return true;
+                               // }
+                            }
+
+                            ONNX.NodeProto dataParamNode = _dataParameterNodes.get(input);
+                            if (dataParamNode != null) {
+                                ONNX.TensorProto scaleT = getONNXAttribute (dataParamNode, "value").getT();
+                                ByteString rawData = scaleT.getRawData();
+                                Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)scaleT.getDims(0),scaleT.getDataType().toString());
+                                neuron.setScales(scale);
+                                return true;
+                            }
+                        }
+
+                        ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+                        if (externalInitializer != null) {
+                            ByteString rawData = externalInitializer.getRawData();
+                            Vector<Integer> scale = _littleEndianToIntArray(rawData.toByteArray(),(int)externalInitializer.getDims(0),externalInitializer.getDataType().toString());
+                            neuron.setScales(scale);
+                        }
+                    }
+                }
+            }
+        }
+
+    return false;
+    }
+
+
+    /**
+     * Convert little indian value to float
+     * @param buffer bytestring buffer
+     * @param startId value start id in bytestring
+     * @return float value, obtained from a little indian value
+     */
+    private float _littleEndianToFloat(byte[] buffer, int startId) {
+        Float res =  ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN ).getFloat(startId);
+        return res;
+        }
+
+            /**
+     * Convert little indian value to int
+     * @param buffer bytestring buffer
+     * @param startId value start id in bytestring
+     * @return int value, obtained from a little indian value
+     */
+    private int _littleEndianToInt(byte[] buffer, int startId) {
+        Integer res =  ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN ).getInt(startId);
+        return res;
+    }
+
+      /**
+     * Appends NonLinear layer to the target DNN
+     * @param node corresponding ONNX node
+     * @param nonLinearType  specified nonLinear type
+     * @param dnn target DNN
+     */
+    private void appendNonLinearArithmeticLayer(ONNX.NodeProto node,NonLinearType nonLinearType, Network dnn){
+
+        Neuron neuron = new NonLinear(nonLinearType);
+        if(neuron.getParameters()==null)
+            neuron.initParams();
+        neuron.setParameter("constval","-1");
+        /**For dense layers, neurons number are determined by their
+         * weights. For activation non-linear layers, following
+         * after the cnn nodes, number of neurons is first set
+         * to default value and then determined after connections set up
+         */
+        int neurons_number = 1;
+
+        dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
+        Layer addedLayer = dnn.getLayers().lastElement();
+
 
         _layersMapping.put(addedLayer,node);
     }
@@ -1046,6 +1340,22 @@ public class ONNX2CNNConverter {
      */
     private void appendReshapeLayer(ONNX.NodeProto node,Network dnn){
         Reshape neuron = createReshapeNeuron(node);
+        /**For reshape layers, number of neurons =1 by default*/
+        int neurons_number = 1;
+        dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
+        Layer addedLayer = dnn.getLayers().lastElement();
+        _layersMapping.put(addedLayer,node);
+    }
+
+    /**
+     * Append Slice Layer to the target DNN
+     * Slice layer is a special type of Reshape layer
+     * @param node corresponding ONNX node
+     * @param dnn target DNN
+     */
+    private void appendSliceLayer(ONNX.NodeProto node,Network dnn){
+        Reshape neuron = createReshapeNeuron(node);
+        neuron.setSlice(true);
         /**For reshape layers, number of neurons =1 by default*/
         int neurons_number = 1;
         dnn.addLayer(_uniqueNamedONNXNodes.get(node),neuron,neurons_number);
@@ -1459,6 +1769,16 @@ public class ONNX2CNNConverter {
         for (ONNX.AttributeProto attr: onnxNode.getAttributeList()){
             setLRNNeuronParam(resultNeuron,attr);
         }
+        //set default parameters, if none extracted
+        if(resultNeuron.getSize()==0)
+            resultNeuron.setSize(1);
+        if(resultNeuron.getAlpha()==0)
+            resultNeuron.setAlpha(0.0001f);
+        if(resultNeuron.getBeta()==0)
+            resultNeuron.setBeta(0.75f);
+        if(resultNeuron.getBias()==0)
+            resultNeuron.setBias(1.0f);
+
         return resultNeuron;
     }
 
@@ -1560,6 +1880,32 @@ public class ONNX2CNNConverter {
     ////                    parameter extractors                   ///
 
      /**
+     * Extract metadata about the batchNormalization node parameters:
+     * <scale, B, mean, var> (see https://github.com/onnx/onnx/blob/master/docs/Operators.md#BatchNormalization
+     * for more details).
+     * As ONNX format do not preserve the parameters order, the parameters should
+     * contain specialized names prefixes to be found:
+     * scale : scale,weights
+     * B : B,bias
+     * mean : mean
+     * var: var
+     * Otherwise, parameters would not be found and should be obtained manually
+     * (e.g. through the https://lutzroeder.github.io/netron/)
+     * @param node node
+     */
+    private void _extractBNParamsMetaData(ONNX.NodeProto node){
+        boolean paramsFound = false;
+            paramsFound = _findBNInits(node);
+
+            /**System.out.println(" BN init parameters: ");
+            System.out.print("<");
+            for (String init: _bnInits.get(_uniqueNamedONNXNodes.get(node)))
+                System.out.print(init + " ");
+            System.out.println(">");*/
+    }
+
+
+     /**
      * Extract metadata about the node parameters such as weights and biases
      * @param node node
      * @param weights if weights should be found
@@ -1589,9 +1935,13 @@ public class ONNX2CNNConverter {
             biasFound = _findInitBias(node);
             if(!biasFound)
                 biasFound = _findBiasNode(node);
+            if(biasFound)
+                findEspamLayerInMapping(node).getNeuron().setBiasName("bias");
+            //if(node.getOpType().equals("BatchNormalization"))
+                //System.out.println(_uniqueNamedONNXNodes.get(node) + " BN bias found: " + biasFound);
 
-           // if(!biasFound)
-             //   System.err.println("bias not found for "+_uniqueNamedONNXNodes.get(node));
+            //if(!biasFound)
+              //  System.out.println("bias found for "+_uniqueNamedONNXNodes.get(node));
         }
 
     }
@@ -1609,6 +1959,7 @@ public class ONNX2CNNConverter {
         initM.set_dense_weights_nodes(_denseWeightsNodeInits);
         initM.setBiasesNodes(_biasNodeInits);
         initM.setDense_neurons(_denseNeurons);
+        initM.setBNpar(_bnInits);
 
         try {
             String jsonInintM = JSONParser.getInstance().toJson(initM);
@@ -1770,7 +2121,7 @@ public class ONNX2CNNConverter {
                     ONNX.TensorProto b = getONNXAttribute(biasParamNode, "value").getT();
                     Vector<Integer> dims = _getDimsList(b);
                     if(dims.size()==1 || addConstLayer) {
-                        if (_isInitBias(layer, dims.get(0))|| addConstLayer) {
+                        if (_hasLenEqualToNeuronsNum(layer, dims.get(0))|| addConstLayer) {
                             _biasNodeInits.put(opNodeName, biasParamNode.getName());
                             // System.out.println(externalInitializer.getName() + " is bias init for " + layer.getName());
                             return true;
@@ -1783,7 +2134,7 @@ public class ONNX2CNNConverter {
                     ONNX.TensorProto b = getONNXAttribute(biasDataParamNode, "value").getT();
                     Vector<Integer> dims = _getDimsList(b);
                     if(dims.size()==1 || addConstLayer) {
-                        if (_isInitBias(layer, dims.get(0))|| addConstLayer) {
+                        if (_hasLenEqualToNeuronsNum(layer, dims.get(0))|| addConstLayer) {
                             _biasNodeInits.put(opNodeName, biasParamNode.getName());
                             return true;
                         }
@@ -1795,6 +2146,102 @@ public class ONNX2CNNConverter {
         return false;
     }
 
+    /**
+     * Find bias initializer
+     * @param node onnx node
+     */
+    private boolean _findBNInits(ONNX.NodeProto node){
+    ProtocolStringList nodeInputs = node.getInputList();
+    Layer layer = findEspamLayerInMapping(node);
+    String nodeName = _uniqueNamedONNXNodes.get(node);
+    Vector<String> nodeInits = new Vector<>();
+    Vector<String> nodeInitsSorted = new Vector<>();
+    boolean initsFound = true;
+
+        for(String input: nodeInputs) {
+            ONNX.TensorProto externalInitializer = _onnxModelInitializers.get(input);
+            if (externalInitializer != null) {
+                /** get dims and represent them as int values*/
+                List<Long> dims = externalInitializer.getDimsList();
+                /** All BN parameters are linear*/
+                if(dims.size()==1) {
+                    Integer len = Integer.parseInt(dims.get(0).toString());
+
+                    if (_hasLenEqualToNeuronsNum(layer, len)) {
+                        //System.out.println(_uniqueNamedONNXNodes.get(node) +" has bias-len param "+ externalInitializer.getName());
+                        nodeInits.add(externalInitializer.getName());
+                       // _biasInits.put(_uniqueNamedONNXNodes.get(node),externalInitializer.getName());
+                       // System.out.println(externalInitializer.getName() + " is bias init for " + layer.getName());
+                        //return true;
+                    }
+                }
+            }
+        }
+
+        //find scale
+        String scale = "none";
+        for(String nodeInit: nodeInits) {
+            if(nodeInit.contains("scale")||nodeInit.contains("weight"))
+                scale = nodeInit;
+        }
+
+        nodeInitsSorted.add(scale);
+        if(scale.equals("none")) {
+            System.err.println("BN node " + nodeName + "scale not found!");
+            initsFound = false;
+        }
+        else nodeInits.remove(scale);
+
+        //find mean
+        String mean = "none";
+        for(String nodeInit: nodeInits) {
+            if(nodeInit.contains("mean"))
+               mean = nodeInit;
+        }
+        nodeInitsSorted.add(mean);
+
+        if(mean.equals("none")) {
+            System.err.println("BN node " + nodeName + "mean not found!");
+            initsFound = false;
+        }
+        else nodeInits.remove(mean);
+
+        //find var
+        String var = "none";
+        for(String nodeInit: nodeInits) {
+            if(nodeInit.contains("var"))
+               var = nodeInit;
+        }
+
+        nodeInitsSorted.add(var);
+        if(var == "none") {
+            System.err.println("BN node " + nodeName + "var not found!");
+            initsFound = false;
+        }
+        else nodeInits.remove(var);
+
+        //find B
+        if(nodeInits.size()==1) {
+            nodeInitsSorted.add(nodeInits.elementAt(0));
+        }
+        else {
+            if (nodeInits.size() == 0) {
+                System.err.println("BN node " + nodeName + "bias not found!");
+                nodeInitsSorted.add("none");
+                initsFound = false;
+            } else {
+                for (String nodeInit : nodeInits) {
+                    if (nodeInit.contains("bias") || nodeInit.contains("B")) {
+                        nodeInitsSorted.add(nodeInit);
+                    }
+                    else  nodeInitsSorted.add("none");
+                }
+            }
+        }
+
+        _bnInits.put(nodeName,nodeInitsSorted);
+        return initsFound;
+    }
 
 
     /**
@@ -1817,7 +2264,7 @@ public class ONNX2CNNConverter {
                 if(dims.size()==1 || addConstLayer) {
                     Integer initSize = Integer.parseInt(dims.get(0).toString());
 
-                    if (_isInitBias(layer, initSize)|| addConstLayer) {
+                    if (_hasLenEqualToNeuronsNum(layer, initSize)|| addConstLayer) {
                         _biasInits.put(_uniqueNamedONNXNodes.get(node),externalInitializer.getName());
                        // System.out.println(externalInitializer.getName() + " is bias init for " + layer.getName());
                         return true;
@@ -1834,7 +2281,7 @@ public class ONNX2CNNConverter {
      * @param initSize number of elements in the initializer
      * @return true, if initializer is bias and false otherwise
      */
-    private boolean _isInitBias(Layer layer, int initSize){
+    private boolean _hasLenEqualToNeuronsNum(Layer layer, int initSize){
         int neurons = layer.getNeuronsNum();
 
         if(layer.getNeuron().getNeuronType().equals(NeuronType.DENSEBLOCK))
@@ -2087,7 +2534,7 @@ public class ONNX2CNNConverter {
         }*/
 
         /**3. if not found, set default*/
-        System.out.println("no shape set for reshape node: "+_uniqueNamedONNXNodes.get(nodeProto));
+        //System.out.println("no shape set for reshape node: "+_uniqueNamedONNXNodes.get(nodeProto));
         neuron.setDataFormats();
     }
 
@@ -2400,12 +2847,27 @@ public class ONNX2CNNConverter {
      */
     private String generateNonEmptyName(ONNX.NodeProto node){
         String nonEmptyName = node.getName();
-        if(isEmptyName(nonEmptyName)) {
+        if(isEmptyName(nonEmptyName) || _giveReadableNames) {
+
+            if(node.getOpType().equals("Constant"))
+                return getConstantNodeNonEmptyName(node);
+
             nonEmptyName = "node_" + node.getOpType() + _nextUniqueNodeId;
             _nextUniqueNodeId++;
         }
 
         return nonEmptyName;
+    }
+
+    private String getConstantNodeNonEmptyName(ONNX.NodeProto node){
+        ProtocolStringList outputs = node.getOutputList();
+        if(outputs.size()==0){
+            String name = "node_" + node.getOpType() + _nextUniqueNodeId;
+            _nextUniqueNodeId++;
+            return name;
+        }
+
+        return outputs.get(0);
     }
 
         /**
@@ -2558,6 +3020,9 @@ public class ONNX2CNNConverter {
   /** list of bias initializers */
   private HashMap<String,String> _biasInits;
 
+  /** list of batchnormalization initializers */
+  private HashMap<String,Vector<String>> _bnInits;
+
   /** list of weights nodes */
   private HashMap<String,String> _convWeightsNodeInits;
   private HashMap<String,String> _denseWeightsNodeInits;
@@ -2672,4 +3137,11 @@ public class ONNX2CNNConverter {
 
   /** ONNX model path*/
   private String _modelPath = null;
+
+  /** give layers readable names*/
+  /** TODO: make a parameter!*/
+  private boolean _giveReadableNames = false;
+
+  /** non-default output model name*/
+  private String _outModelName = null;
 }

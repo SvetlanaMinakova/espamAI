@@ -11,12 +11,7 @@ import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.Resource;
 import espam.datamodel.platform.Port;
 import espam.datamodel.platform.Link;
-import espam.datamodel.platform.processors.Processor;
-import espam.datamodel.platform.processors.PowerPC;
-import espam.datamodel.platform.processors.MicroBlaze;
-import espam.datamodel.platform.processors.ARM;
-import espam.datamodel.platform.processors.MemoryMap;
-import espam.datamodel.platform.processors.Page;
+import espam.datamodel.platform.processors.*;
 import espam.datamodel.platform.communication.Crossbar;
 import espam.datamodel.platform.communication.AXICrossbar;
 import espam.datamodel.platform.communication.PLBBus;
@@ -132,6 +127,7 @@ public class Xml2Platform {
         String type = (String) attributes.getValue("type");
         String dataMemorySize = (String) attributes.getValue("data_memory");
         String programMemorySize = (String) attributes.getValue("program_memory");
+        String subtype = (String)attributes.getValue("subtype");
         
         if( type.equals("PPC") ) {
             Processor processor = new PowerPC(name);
@@ -146,15 +142,35 @@ public class Xml2Platform {
             return processor;
         
         } else if( type.equals("ARM") ) {
-            Processor processor = new ARM(name);
-            processor.setDataMemSize(Integer.valueOf(dataMemorySize).intValue());
-            processor.setProgMemSize(Integer.valueOf(programMemorySize).intValue());
+            ARM processor = new ARM(name);
+            if(dataMemorySize!=null)
+                processor.setDataMemSize(Integer.valueOf(dataMemorySize).intValue());
+            if(programMemorySize!=null)
+                processor.setProgMemSize(Integer.valueOf(programMemorySize).intValue());
+            if(subtype!=null)
+                processor.setSubType(subtype);
+
             return processor;
            
         } else if( type.equals("CompaanHWNode") ) {
             CompaanHWNode processor = new CompaanHWNode(name);
             return processor;
-        } else {
+        }
+
+        else if( type.toLowerCase().equals("gpu") ) {
+            GPU processor = new GPU(name);
+            String cores = (String)attributes.getValue("cores");
+            if(cores!=null)
+                processor.setCores(Integer.valueOf(cores).intValue());
+            return processor;
+        }
+
+        else if( type.equals("HWCE") ) {
+            HWCE processor = new HWCE(name);
+            return processor;
+        }
+
+        else {
             throw new Error("Unknown Processor Type: " + type);
         }
     }

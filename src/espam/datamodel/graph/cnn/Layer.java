@@ -4,8 +4,12 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
+import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
+import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
+import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
@@ -16,7 +20,7 @@ import java.util.Vector;
 /**
  * represents one Layer of CNN
  */
-public class Layer implements Cloneable, ReferenceResolvable {
+public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
     /**
@@ -133,6 +137,13 @@ public class Layer implements Cloneable, ReferenceResolvable {
               && Tensor.isSame(_outputDataFormat,layer._outputDataFormat);
        }
 
+    @Override
+    public int compareTo(Layer l) {
+        return this.getstartNeuronId().compareTo(l.getstartNeuronId());
+    }
+
+
+
     /**
      * Clear data formats of the layer
      * Sets all data formats as empty tensors
@@ -218,11 +229,21 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
 
     /**
-     * Get layer input height. layer input height should be the same with the neuron's input height
+     * Get layer input height. layer input height should be the same with the neuron's
+     * input height
      * @return layer input height
      */
     public int getInputHeight(){
         return _neuron.getInputHeight();
+    }
+
+    /**
+     * Get layer inputwidth. layer input width should be the same with
+     * the neuron's input width
+     * @return layer input width
+     */
+    public int getInputWidth(){
+        return _neuron.getInputWidth();
     }
 
     /**
@@ -240,8 +261,34 @@ public class Layer implements Cloneable, ReferenceResolvable {
         Tensor outputFormat = new Tensor(_neuron.getOutputDataFormat());
         if(_neuronsNum>1)
             outputFormat.addDimension(_neuronsNum);
-        /**TODO CHECKOUT*/
         return outputFormat;
+    }
+
+    /**
+     * TODO: REFACTORING
+     * Sort inputs for concatenation layer
+     */
+    public void sortInputsInConcatOrder(){
+        if(!(_neuron instanceof Concat))
+            return;
+        ((Concat)_neuron).sortInputsInConcatOrder();
+
+        Vector<Connection> sortedInputConnections = new Vector<>();
+        boolean sortedSuccessfully = true;
+
+        for(Layer sortedInput: ((Concat)_neuron).getInputOwners()){
+            Connection inpCon = getInputConnection(sortedInput.getId());
+            if(inpCon!=null)
+                sortedInputConnections.add(inpCon);
+            else {
+                System.err.println("Connections sort error: connection " +
+                        sortedInput.getName() + "-->" + getName() + " not found!");
+                sortedSuccessfully = false;
+            }
+        }
+
+        if(sortedSuccessfully)
+            _inputConnections = sortedInputConnections;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -403,7 +450,7 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
     public void setNeuronsNum(int neuronsNum) { this._neuronsNum = neuronsNum; }
 
-    public int getId() { return _id; }
+    public Integer getId() { return _id; }
 
     public void setId(int id) { this._id = id; }
 
@@ -413,6 +460,19 @@ public class Layer implements Cloneable, ReferenceResolvable {
 
     public Vector<Connection> getInputConnections() {
         return _inputConnections;
+    }
+
+    /**
+     * Get input connection
+     * @param srcId input connection source id
+     * @return input connection with id == srcId
+     */
+    public Connection getInputConnection(int srcId) {
+        for(Connection con: _inputConnections) {
+            if(con.getSrcId()==srcId)
+                return con;
+        }
+        return null;
     }
 
     public void setInputConnections(Vector<Connection> inputConnections) {
@@ -494,6 +554,39 @@ public class Layer implements Cloneable, ReferenceResolvable {
     public void resolveReferences() {
         if(_neuron instanceof ReferenceResolvable)
             ((ReferenceResolvable)_neuron).resolveReferences();
+    }
+
+         /**
+     * Get function call description. If no execution code is
+      * performed inside of the node, empty description is returned
+     * By default, function call description is a name of a neuron
+     * @return function call description */
+     /** TODO: refactoring*/
+    public String getFunctionCallDescription(int channels){
+        if(_neuron instanceof Convolution){
+            String neuronOpDesc = _neuron.getFunctionCallDescription(channels);
+            String layerOpDesc = neuronOpDesc.replace(")","_" + _neuronsNum + ")");
+            return layerOpDesc;
+        }
+
+        if(_neuron instanceof LRN){
+            String neuronOpDesc = _neuron.getFunctionCallDescription(channels);
+            String layerOpDesc = neuronOpDesc.replace(")","_" +
+                    getInputFormat().getElementsNumber()+ ")");
+            return layerOpDesc;
+        }
+
+        if(_neuron instanceof NonLinear){
+            StringBuilder desc = new StringBuilder(_neuron.getName());
+            desc.append("(");
+            desc.append(getInputFormat().getElementsNumber());
+            desc.append(")");
+        return desc.toString();
+        }
+
+
+
+        else return _neuron.getFunctionCallDescription(channels);
     }
 
     ///////////////////////////////////////////////////////////////////

@@ -2,11 +2,13 @@ package espam.parser.onnx;
 
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
 import espam.datamodel.graph.cnn.neurons.simple.Dropout;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
+import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
 
 import java.util.Vector;
 
@@ -34,17 +36,28 @@ public static InferenceDNNOptimizer getInstance(){
      */
     public void optimize(Network dnn, Integer optLevel){
         switch (optLevel){
+            case 3:{
+                _removeDropouts(dnn);
+                _removeReshapes(dnn);
+                _incapsulateBiases(dnn);
+                _incapsulatePads(dnn);
+                _incapsulateNonlinear(dnn,NonLinearType.ReLU);
+                _incapsulateNonlinear(dnn,NonLinearType.LeakyReLu);
+                return;
+            }
 
             case 2:{
                 _removeDropouts(dnn);
                 _removeReshapes(dnn);
                 _incapsulateBiases(dnn);
+                _incapsulatePads(dnn);
                 return;
             }
 
               case 1: {
                 _removeDropouts(dnn);
                 _removeReshapes(dnn);
+                _incapsulatePads(dnn);
                return;
             }
 
@@ -56,6 +69,7 @@ public static InferenceDNNOptimizer getInstance(){
                 _removeDropouts(dnn);
                 _removeReshapes(dnn);
                 _incapsulateBiases(dnn);
+                _incapsulatePads(dnn);
                 break;
             }
         }
@@ -76,7 +90,21 @@ public static InferenceDNNOptimizer getInstance(){
  * @param dnn deep neural network
  */
     private void _removeReshapes(Network dnn){
-    _removeLayers(dnn,NeuronType.RESHAPE.toString());
+    Vector<Layer> toRemove = new Vector<>();
+    Neuron neuron;
+    for(Layer layer: dnn.getLayers()){
+        neuron = layer.getNeuron();
+        if(neuron.getNeuronType().equals(NeuronType.RESHAPE)) {
+            Reshape rn = (Reshape)neuron;
+            if(!rn.isSlice())
+            toRemove.add(layer);
+        }
+    }
+
+    for(Layer layer: toRemove)
+        _removeLayer(dnn, layer);
+
+
 }
 
     /**
@@ -95,15 +123,31 @@ public static InferenceDNNOptimizer getInstance(){
         _incapsulateBias(dnn, layer);
     }
 
+        /**
+     * Incapsulate biases, defined as AddConst nodes into
+     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
+     * @param dnn deep neural network
+     */
+    private void _incapsulatePads(Network dnn){
+        Vector<Layer> toIncapsulate = new Vector<>();
+    for(Layer layer: dnn.getLayers()){
+        if(layer.getNeuron().getName().equals(NonLinearType.PAD.toString()))
+            toIncapsulate.add(layer);
+    }
+
+    for(Layer layer: toIncapsulate)
+        _incapsulatePad(dnn, layer);
+    }
+
       /**
      * Incapsulate nonlinear layers into
      * predcessing nodes, e.g. Conv(node)--> ReLu(node) will be replaced by Conv_relu(node)
      * @param dnn deep neural network
      */
-    private void _incapsulateNonlinear(Network dnn){
+    private void _incapsulateNonlinear(Network dnn, NonLinearType type){
         Vector<Layer> toIncapsulate = new Vector<>();
     for(Layer layer: dnn.getLayers()){
-        if(layer.getNeuron().getName().equals(NonLinearType.AddConst.toString()))
+        if(layer.getNeuron().getName().equals(type.toString()))
             toIncapsulate.add(layer);
     }
 
@@ -125,11 +169,37 @@ public static InferenceDNNOptimizer getInstance(){
         Connection singleInput = lInputs.firstElement();
         singleInput.getSrc().getNeuron().setBiasName(layer.getName());
         Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
-        /**connect single input and dropout outputs directly*/
+        /**connect single input and outputs directly*/
         Layer newSrc = singleInput.getSrc();
         for(Connection outp: layerOutputs){
             outp.changeSrc(newSrc);
         }
+        dnn.removeLayer(layer);
+}
+
+   /**
+     * Incapsulate biases, defined as AddConst nodes into
+     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
+     * TODO: to be incapsulated, a layer should have a single input connection.
+     * @param dnn dnn with a layer to be incapsulated
+     * @param layer layer to be incapsulated
+     */
+    private void _incapsulatePad(Network dnn, Layer layer){
+        Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
+        if(lInputs.size()!=1)
+            return;
+        Connection singleInput = lInputs.firstElement();
+        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
+
+        /**connect single input and outputs directly*/
+        Layer newSrc = singleInput.getSrc();
+        for(Connection outp: layerOutputs){
+            outp.changeSrc(newSrc);
+
+            /**transfer pads to output layers*/
+            outp.getDest().setPads(layer.getPads());
+        }
+
         dnn.removeLayer(layer);
 }
 
@@ -144,8 +214,14 @@ public static InferenceDNNOptimizer getInstance(){
         Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
         if(lInputs.size()!=1)
             return;
+
         Connection singleInput = lInputs.firstElement();
-        singleInput.getSrc().getNeuron().setNonlin(layer.getNeuron().getName());
+        Neuron srcNeuron = singleInput.getSrc().getNeuron();
+        Neuron nonlinNeuron = layer.getNeuron();
+
+        srcNeuron.setNonlin(nonlinNeuron.getName());
+
+        //srcNeuron.setName(srcNeuron.getName() + "_" + nonlinNeuron.getName());
 
         Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
         /**connect single input and dropout outputs directly*/
@@ -155,8 +231,6 @@ public static InferenceDNNOptimizer getInstance(){
         }
         dnn.removeLayer(layer);
 }
-
-
 
     /**
      * Remove nodes of specific type

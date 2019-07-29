@@ -1,4 +1,6 @@
 package espam.main.cnnUI;
 
-public class Platformtype {
+public enum Platformtype {
+     ESPAM, NEURAGHE
+
 }

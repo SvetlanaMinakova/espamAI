@@ -12,6 +12,7 @@ import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 
 import java.lang.reflect.Type;
 
@@ -40,6 +41,7 @@ public Neuron deserialize(JsonElement json, Type type,
                 case ADD: return gson.fromJson(json,Add.class);
                 case LRN: return gson.fromJson(json,LRN.class);
                 case RESHAPE: return gson.fromJson(json, Reshape.class);
+                case UPSAMPLE: return gson.fromJson(json, Upsample.class);
                 default: throw new JsonParseException("neuron parsing error: unknown type of neuron!");
             }
     }

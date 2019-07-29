@@ -13,6 +13,7 @@ import espam.datamodel.graph.cnn.neurons.simple.*;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
@@ -114,6 +115,9 @@ public abstract class Neuron implements Cloneable{
 
         if (neuron instanceof Reshape)
             return new Reshape((Reshape) neuron);
+
+        if (neuron instanceof Upsample)
+            return new Upsample((Upsample)neuron);
 
         return new NoneTypeNeuron(neuron.getName());
     }
@@ -231,6 +235,17 @@ public abstract class Neuron implements Cloneable{
         return _inputDataFormat.getDimSize(1);
     }
 
+        /**
+     * Get neuron input height
+     * @return neuron input dataFormat height
+     */
+    public int getInputWidth(){
+        if(Tensor.isNullOrEmpty(_inputDataFormat))
+            return 0;
+
+        return _inputDataFormat.getDimSize(0);
+    }
+
       /**
      * Set neuron input height
      * @return true, if neuron input height was updated and false otherwise
@@ -258,6 +273,17 @@ public abstract class Neuron implements Cloneable{
         return _outputDataFormat.getDimSize(1);
     }
 
+    /**
+     * Get neuron output height
+     * @return neuron output dataFormat height
+     */
+      public int getOutputWidth(){
+        if(Tensor.isNullOrEmpty(_outputDataFormat))
+            return 0;
+
+        return _outputDataFormat.getDimSize(0);
+    }
+
    /**
      * Set neuron output height
      * @return true, if neuron output height was updated and false otherwise
@@ -266,6 +292,19 @@ public abstract class Neuron implements Cloneable{
         if(Tensor.isHaveHeight(_outputDataFormat)){
             _outputDataFormat = new Tensor(_outputDataFormat);
             _outputDataFormat.setDimSize(1, newHeight);
+            return true;
+        }
+        return false;
+    }
+
+      /**
+     * Set neuron output height
+     * @return true, if neuron output height was updated and false otherwise
+     */
+    public boolean setOutputWidth(int newWidth){
+        if(!Tensor.isNullOrEmpty(_outputDataFormat)){
+            _outputDataFormat = new Tensor(_outputDataFormat);
+            _outputDataFormat.setDimSize(0, newWidth);
             return true;
         }
         return false;
@@ -621,6 +660,7 @@ public abstract class Neuron implements Cloneable{
         setName(n._name);
         setNeuronType(n.neuronType);
         setSampleDim(n._sampleDim);
+        setBiasName(n._biasName);
         setInputDataFormat(n.getInputDataFormat());
         setOutputDataFormat(n.getOutputDataFormat());
     }

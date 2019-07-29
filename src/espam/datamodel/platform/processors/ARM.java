@@ -54,4 +54,25 @@ public class ARM extends Processor {
     public String toString() {
         return "ARM processor: " + getName();
     }
+
+    /**
+     * Get ARM cpu subtype
+     * @return ARM cpu subtype
+     */
+    public String getSubType() {
+        return _subtype;
+    }
+
+    /**
+     * Set ARM cpu subtype
+     * @param subType ARM cpu subtype
+     */
+    public void setSubType(String subType) {
+        this._subtype = subType;
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ////                        private variables                 ////
+    /** ARM subtype : <none,big,little>*/
+    private String _subtype = "none";
 }

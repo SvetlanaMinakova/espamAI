@@ -51,7 +51,7 @@ public class CSDFGEnergyRefiner {
         for(double procUtil: procUtilization)
             dynProcUtil+=procUtil;
 
-        return dynProcUtil * _maxprocEnergy;
+        return Math.abs(dynProcUtil * _maxprocEnergy);
     }
 
 

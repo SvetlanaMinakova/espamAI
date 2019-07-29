@@ -13,7 +13,8 @@ JSRCS = \
 	MicroBlaze.java \
 	ARM.java \
 	MemoryMap.java \
-	Page.java
+	Page.java \
+	GPU.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

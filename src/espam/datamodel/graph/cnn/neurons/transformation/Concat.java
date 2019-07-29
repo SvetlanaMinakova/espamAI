@@ -5,11 +5,14 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
+import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Vector;
 
 public class Concat extends Neuron implements MultipleInputsProcessor {
@@ -152,7 +155,6 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
         }
     }
 
-
      /**TODO CHECK
      * Automatically calculates the min input height of the neuron
      * for dense block
@@ -188,6 +190,46 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
             return 0;
 
         return _inputOwners.size();
+    }
+
+    /**
+     * Sort the input layers in Concat order
+     */
+    public void sortInputsInConcatOrder(){
+        if(_inputOwners.size()<2)
+            return;
+
+        Vector<Layer> sortedInputs = new Vector<>();
+        /** cluster inputs by source name*/
+        HashMap<String,Vector<Layer>> clusters = new HashMap<>();
+        for(Layer _inputOwner: _inputOwners){
+            String parentName = _getParentLayerName(_inputOwner.getName());
+            if(!clusters.containsKey(parentName)){
+                clusters.put(parentName,new Vector<>());
+            }
+            clusters.get(parentName).add(_inputOwner);
+        }
+
+        /** sort by startNeuronId*/
+        for(Vector<Layer> cluster: clusters.values()){
+            Collections.sort(cluster);
+            sortedInputs.addAll(cluster);
+        }
+        _inputOwners = sortedInputs;
+
+       // for(Layer l : _inputOwners){
+         //   System.out.println(l.getName());
+       // }
+    }
+
+    /** Get name of parent layer (for layers, obtained via split transformation*/
+    private String _getParentLayerName(String layerName){
+    if(!layerName.contains("_split"))
+        return layerName;
+
+    /** remove split part*/
+    int splitStart = layerName.indexOf("_split");
+        return layerName.substring(0,splitStart);
     }
 
     /**

@@ -6,7 +6,7 @@ ROOT  = ../../../..
 
 # Java files in this directory
 JSRCS = \
-	CNNTransformer.java
+	CSDFTransformer.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

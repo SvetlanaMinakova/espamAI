@@ -167,6 +167,62 @@ public class XmlPlatformParser implements ContentHandler {
         // Return the platform
         return platform;
     }
+
+    /**
+     * Do the parsing of an XML file describing a platform
+     *
+     * @param  url The input XML file
+     * @return  the platform
+     * @exception  EspamException MyException If such and such occurs
+     */
+    public Platform doParse(String url, boolean print_details) throws EspamException {
+
+        Platform platform = null;
+        if(print_details)
+            System.out.println(" - Read Platform from XML file");
+
+        _parser.setContentHandler(this);
+        _parser.setErrorHandler(new XmlErrorHandler());
+
+        try {
+            // Get only the file name from the URL.
+            String uri = _makeAbsoluteURL(url);
+
+            if(print_details){
+            _ui.printlnVerbose(" -- processing XML file: " + uri);
+            _ui.printVerbose(" -- read XML file: ");
+            }
+
+            _parser.parse(new InputSource(uri));
+
+            platform = (Platform) _stack.pop();
+
+            // All done
+            if(print_details)
+                _ui.printlnVerbose(" [DONE] ");
+
+        } catch( SAXParseException err ) {
+            System.out.println(
+                               "** Parsing error"
+                                   + ", line "
+                                   + err.getLineNumber()
+                                   + ", uri "
+                                   + err.getSystemId());
+            System.out.println("   " + err.getMessage());
+        } catch( SAXException e ) {
+            e.printStackTrace();
+        } catch( Throwable t ) {
+            t.printStackTrace();
+        }
+
+        if(print_details) {
+                    System.out.println(" - Platform Model from XML [Constructed]");
+                    System.out.println();
+        }
+
+        // Return the platform
+        return platform;
+    }
     
     
     /**
@@ -397,7 +453,7 @@ public class XmlPlatformParser implements ContentHandler {
         
         return fileName;
     }
-    
+
     /**
      *  Return a absolute URL reference for the given URL.
      *

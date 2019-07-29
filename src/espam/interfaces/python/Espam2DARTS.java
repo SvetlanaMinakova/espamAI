@@ -430,7 +430,11 @@ public class Espam2DARTS {
        if(isError(pythonScriptResult))
            result = new CSDFEvalError(pythonScriptResult);
        else {
-           try { result = (CSDFEvalResult) _jsonParser.fromJson(pythonScriptResult, CSDFEvalResult.class); }
+           try {
+               result = (CSDFEvalResult) _jsonParser.fromJson(pythonScriptResult, CSDFEvalResult.class);
+           /** TODO: fix in DARTS!*/
+           result.setProcessors(Math.abs(result.getProcessors()));
+           }
            catch (Exception e) { result = new CSDFEvalError("JSON eval result parsing error " +e.getMessage()); }
        }
      return result;

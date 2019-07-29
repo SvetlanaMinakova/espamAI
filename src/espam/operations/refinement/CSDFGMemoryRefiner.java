@@ -1,4 +1,5 @@
 package espam.operations.refinement;
+import espam.datamodel.graph.cnn.BoundaryMode;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
@@ -7,10 +8,12 @@ import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
+import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
 import espam.datamodel.graph.cnn.neurons.simple.Dropout;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
@@ -20,6 +23,7 @@ import espam.datamodel.graph.cnn.neurons.simple.Data;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 
+import java.math.BigDecimal;
 import java.util.Vector;
 
 /**
@@ -82,6 +86,8 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
     public void visitComponent(Layer x) {
 
         Neuron n = x.getNeuron();
+         /** TODO: replace with merge transformation!*/
+         _addIncapsulatedNonlinear(x);
 
          if (n instanceof Add) {
             visitAddLayer(x);
@@ -131,6 +137,11 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
 
         if (n instanceof Reshape) {
             visitReshapeLayer(x);
+            return;
+        }
+
+          if (n instanceof Upsample) {
+            visitUpsampleLayer(x);
             return;
         }
 
@@ -234,8 +245,11 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
      * @param x A Visitor Object.
      */
     public void visitConcatLayer(Layer x) {
-        _processMultipleInputs((Concat)x.getNeuron());
+        x.sortInputsInConcatOrder();
+        _processMultipleInputs((MultipleInputsProcessor) x.getNeuron());
+
         _addMU("output",x.getOutputFormat());
+
     }
 
     /**
@@ -243,12 +257,16 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
      * @param x neuron, processes inputs from multiple sources
      */
     private void _processMultipleInputs(MultipleInputsProcessor x){
+
         Vector<Layer> inputs = x.getInputOwners();
         if(inputs==null) return;
         if(inputs.size()==0) return;
 
-        for(Layer input: inputs)
-            _memory.add(new MemoryUnit(input.getName(), input.getOutputFormat(),_IOmemType));
+        for(Layer input: inputs) {
+          //  System.out.println(input.getName());
+            _memory.add(new MemoryUnit(input.getName(), input.getOutputFormat(), _IOmemType));
+        }
+
     }
 
      /**
@@ -258,8 +276,12 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
      */
     private void _processMultipleInputsNB(MultipleInputsProcessor x){
         Vector<Layer> inputs = x.getInputOwners();
+
         if(inputs==null) return;
         if(inputs.size()==0) return;
+
+        if(x instanceof Concat)
+            ((Concat) x).sortInputsInConcatOrder();
 
         int portID = 0;
         if(inputs.size()==1){
@@ -374,6 +396,22 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
         _addMU("output",x.getOutputFormat());
     }
 
+    /**
+     * Visit a Reshape component.
+     *
+     * @param x A Visitor Object.
+     */
+    public void visitUpsampleLayer(Layer x) {
+        _addMU("input",x.getInputFormat());
+        _addMU("output",x.getOutputFormat());
+        Upsample neur = (Upsample) x.getNeuron();
+        int scaleId = 0;
+        for (Integer scale: neur.getScales()) {
+            _addUnitParam("scale_"+scaleId, scale.toString(),"int");
+            scaleId++;
+        }
+    }
+
 
     /**
      * Visit a CNNNeuron component.
@@ -451,10 +489,84 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
          _addUnitParam("k_h","" + layerNeuron.getKernelH(),"int");
          _addUnitParam("k_w","" + layerNeuron.getKernelW(),"int");
          _addUnitParam("stride","" + layerNeuron.getStride(),"int");
+
          if(x.getNeuron().getBiasName()!=null && x.getNeuron().getBiasName()!="bias")
              _addUnitParam("bias_ref", "\"" + x.getNeuron().getBiasName() + "\"","std::string");
          _addUnitParam("neuron_start_id",x.getstartNeuronId().toString(),"int");
          _addMU("output",x.getOutputFormat());
+
+         int [] pads = x.getPads();
+
+         if(layerNeuron instanceof Convolution && layerNeuron.getBoundaryMode().equals(BoundaryMode.SAME))
+             pads = _generateSameAutoPads(layerNeuron, pads);
+
+
+         if(pads==null) {
+             _addUnitParam("pads","0","int");
+         }
+
+         else{
+             if(_isZeroPads(pads))
+                _addUnitParam("pads","0","int");
+             else {
+
+                 _addUnitParam("pads", "1", "int");
+                 _addUnitParam("pad_w0", "" + pads[0], "int");
+                 _addUnitParam("pad_h0", "" + pads[1], "int");
+                 _addUnitParam("pad_w1", "" + pads[2], "int");
+                 _addUnitParam("pad_h1", "" + pads[3], "int");
+             }
+        }
+
+        _addUnitParam("gpu","-1","int");
+
+        /**temporary data storage TODO: return if darknet needed
+         if(layerNeuron instanceof Convolution) {
+            int networkspacesize = _getNetworkspaceSize(x);
+            if(networkspacesize!=0) {
+                Tensor networkspace = new Tensor(networkspacesize);
+                _addMU("networkspace", networkspace);
+            }
+        }*/
+    }
+
+
+
+    /**
+     * In pthread/Sesame applications the SAME boundary mode is
+     * imitated as VALID boundary mode + special pads
+     * @param x CNN neuron
+     * @param defaultPads pads, that layer already have
+     * @return autopads, imitating the SAME boundary mode
+     */
+    private int [] _generateSameAutoPads(CNNNeuron x, int[] defaultPads){
+        int x_autopad = (((x.getInputWidth() * (x.getStride()-1) + x.getKernelW()))/x.getStride() - 1)/2;
+        int y_autopad = (((x.getInputHeight() * (x.getStride()-1) + x.getKernelH()))/x.getStride() - 1)/2;
+
+        if(defaultPads==null)
+        { int pads[] = {x_autopad,y_autopad,x_autopad,y_autopad};
+            return pads;
+        }
+
+        {
+            defaultPads[0] += x_autopad;
+            defaultPads[1] += y_autopad;
+            defaultPads[2] += x_autopad;
+            defaultPads[3] += y_autopad;
+            return defaultPads;
+        }
+
+    }
+
+    /**
+     * if all values in pad are equal to zero
+     */
+    private boolean _isZeroPads(int[]pads){
+        for(int i=0; i<4;i++){
+            if(pads[i]!=0)
+                return false;
+        }
+        return true;
     }
 
     /**
@@ -471,7 +583,6 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
     }
 
     /**
-     * TODO check if I/O MUs are not doubled
      * @param x Layer to be visited
      */
     public void visitLRNLayer(Layer x){
@@ -479,8 +590,43 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
         _addLinearMU("output",x.getOutputFormat());
 
         int size = ((LRN)x.getNeuron()).getSize();
-        _addUnitParam("_size","" + size,"int");
+        _addUnitParam("size","" + size*2,"int");
 
+        float alpha = ((LRN)x.getNeuron()).getAlpha();
+        int alphascale = _getScale(alpha);
+        alpha *=alphascale;
+        _addUnitParam("alpha","" + (int)alpha,"int");
+        _addUnitParam("alpha_scale","" + alphascale,"int");
+
+        float beta = ((LRN)x.getNeuron()).getBeta();
+        int betascale = _getScale(beta);
+        beta*=betascale;
+        _addUnitParam("beta","" + (int)beta,"int");
+        _addUnitParam("beta_scale","" + betascale,"int");
+
+        float bias = ((LRN)x.getNeuron()).getBias();
+        int biasscale = _getScale(bias);
+        bias*=biasscale;
+        _addUnitParam("kappa","" + (int)bias,"int");
+        _addUnitParam("kappa_scale","" + biasscale,"int");
+
+        int squaredSize = x.getInputFormat().getElementsNumber();
+        int normsSize = squaredSize;
+
+        _addLinearMU("squared",new Tensor(squaredSize));
+        _addLinearMU("norms",new Tensor(normsSize));
+
+    }
+
+    /**
+     * Scale float/double parameters to int parameters
+     * @param x float/double parameter
+     * @return number of integers after comma
+     */
+    private int _getScale(Float x){
+        String dstring = x.toString();
+        int decimalLen = dstring.length()-(dstring.indexOf(".")+1);
+        return (int)Math.pow(10,decimalLen);
     }
 
 
@@ -499,8 +645,42 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
      * @param x layer, contains nonLinear neuron
      */
     public void visitNonLinearLayer(Layer x){
-        _addLinearMU("input",x.getInputFormat());
-        _addLinearMU("output",x.getOutputFormat());
+        String neuronName = x.getNeuron().getName();
+        if(neuronName.equals(NonLinearType.BN.toString()))
+            visitBNLayer(x);
+        else {
+            _addLinearMU("input", x.getInputFormat());
+            _addLinearMU("output", x.getOutputFormat());
+            if(neuronName.equals(NonLinearType.DIVConst.toString())||
+                    neuronName.equals(NonLinearType.MULconst.toString())||
+                    neuronName.equals(NonLinearType.SUBConst.toString()))
+            {
+               _addConstScaleParam(x);
+            }
+        }
+
+    }
+
+    public void visitBNLayer(Layer x){
+        _addMU("input", x.getInputFormat());
+        _addMU("output",x.getOutputFormat());
+            //System.out.println(x.getName() + " is a batchnorm layer!");
+        int neuronsNum = x.getNeuronsNum();
+        Tensor paramTensor = new Tensor(neuronsNum);
+        _addLinearMU("scale", paramTensor);
+        _addLinearMU("mean", paramTensor);
+        _addLinearMU("variance", paramTensor);
+        _addLinearMU("bias", paramTensor);
+        _addUnitParam("neuron_start_id",x.getstartNeuronId().toString(),"int");
+    }
+
+    private void _addConstScaleParam(Layer x){
+        Float constval = x.getNeuron().getFloatParameter("constval");
+        Integer scale = _getScale(constval);
+        Integer constvalInt = constval.intValue() * scale;
+        _addUnitParam("constval",constvalInt.toString(),"int");
+        _addUnitParam("constval_scale",scale.toString(),"int");
+
     }
 
 
@@ -854,6 +1034,13 @@ public class CSDFGMemoryRefiner extends CNNGraphVisitor {
                 return mu;
         }
         return null;
+    }
+
+    /** TODO: replace with merge transformation!*/
+    private void _addIncapsulatedNonlinear(Layer x){
+        if(x.getNeuron().getNonlin()!=null){
+            _addUnitParam("activation","\"" + x.getNeuron().getNonlin() + "\"","std::string");
+        }
     }
 
     ///////////////////////////////////////////////////////////////////

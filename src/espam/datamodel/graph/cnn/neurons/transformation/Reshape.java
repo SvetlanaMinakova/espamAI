@@ -111,6 +111,7 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         Reshape newObj = (Reshape) super.clone();
         newObj._inputsNum = this._inputsNum;
         newObj._inputOwners = this._inputOwners;
+        newObj._slice = this._slice;
         return newObj;
     }
 
@@ -124,6 +125,7 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         _inputOwners = new Vector<>();
         for(Layer inputOwner: r._inputOwners)
             _inputOwners.add(inputOwner);
+        _slice = r._slice;
     }
 
     /**
@@ -289,8 +291,9 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
                 neuronOwner.setOutputFormat(outputDataFormat);
                 break;
             }
-
         }
+
+
 
     }
 
@@ -351,6 +354,11 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         _inputOwners.add(inputOwner);
     }
 
+    /** Insert new input */
+    public void insertInput(Layer inputOwner, int position) {
+        _inputOwners.insertElementAt(inputOwner,position);
+    }
+
      /**
      * Update neuron parameters after input connection was removed
      * @param neuronOwner, layer, owns this neuron
@@ -396,6 +404,23 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         this._flatten = flatten;
     }
 
+        /**
+     * Check if the neuron is slice neuron
+     * Flatten layer transforms an input tensor into a sequence of subtensors
+     * @return true, if the layer is slice and false otherwise
+     */
+    public boolean isSlice() {
+        return _slice;
+    }
+
+    /**
+     * Set flag, if the neuron is slice neuron
+     * @param slice flag, if the neuron is slice neuron
+     */
+    public void setSlice(boolean slice) {
+        this._slice = slice;
+    }
+
     /**
      * Get function call description. If no execution code is
      * performed inside of the node, empty description is returned
@@ -439,6 +464,11 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
      * Flatten layer transforms any input data shape to a vector
      * */
     @SerializedName("flatten")private boolean _flatten = false;
+
+        /**Flag, shows is the Reshape layer is Flatten layer
+     * Flatten layer transforms any input data shape to a vector
+     * */
+    @SerializedName("slice")private boolean _slice = false;
 
     /** references to input layers*/
     private transient Vector<Layer> _inputOwners = new Vector<>();

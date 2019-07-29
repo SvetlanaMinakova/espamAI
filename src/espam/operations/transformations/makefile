@@ -6,7 +6,8 @@ ROOT  = ../../..
 
 # Java packages in this directory
 SUBPACKAGES = \
-    cnn_model_transformations
+    cnn_model_transformations \
+    csdf_model_transformations
 
 
 # Java files in this directory

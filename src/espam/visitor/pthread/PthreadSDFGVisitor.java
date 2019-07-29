@@ -1,18 +1,24 @@
 package espam.visitor.pthread;
 
 
+import espam.datamodel.graph.Node;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
+import espam.datamodel.mapping.MProcess;
+import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
+import espam.datamodel.platform.processors.Processor;
+import espam.datamodel.pn.cdpn.CDProcess;
 import espam.main.cnnUI.DNNInitRepresentation;
 import espam.parser.xml.mapping.XmlMappingParser;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.pthread.cpp.CPPSDFGVisitorPthread;
 import espam.visitor.pthread.h.HSDFGVisitorPthread;
+import espam.visitor.xml.csdf.MappingXMLVisitor;
 
 import java.io.PrintStream;
 import java.util.Iterator;
@@ -27,10 +33,9 @@ public class PthreadSDFGVisitor {
      * @param y  CSDFGraph
      * @param dir directory for sesame templates
      * @param dnn corresponding deep neural network
-     * @param mode  DNN transformation mode : layer-based, neuron-based or block-based
      */
-     public static void callVisitor(Network dnn, DNNInitRepresentation mode, CSDFGraph y, String dir) {
-         _setDummySchedule(dnn,mode);
+     public static void callVisitor(Network dnn, CSDFGraph y, String dir) {
+         _setDummySchedule(dnn,y);
          setLoadWeightsFolder(dir.replace("/pthread/","/weights/"));
          if(_generateDNNFuncNA) {
              _setDataTypes("DATA", "DATA");
@@ -38,6 +43,7 @@ public class PthreadSDFGVisitor {
          }
          else
             _setDataTypes(dnn.getDataType(),dnn.getWeightsType());
+
          callVisitor(y,dir,true);
      }
 
@@ -88,6 +94,7 @@ public class PthreadSDFGVisitor {
           */
          _generateAppStandardFuncs(templatesDir,y);
 
+
          System.out.println("espamAI-Pthread application generated in: " + templatesDir);
      }
 
@@ -127,19 +134,16 @@ public class PthreadSDFGVisitor {
         _hvisitor.generateDataLoadClassTemplate(dir);
         _cppVisitor.generateDataLoadClassTemplate(dir);
 
+        //algorithm
+        _hvisitor.generateBlockAlgorithmClassTemplate(dir);
+        _cppVisitor.generateAlgorithmClass(dir, csdfGraph);
+
          Vector<String> classesList = _getClassesList(csdfGraph);
 
         boolean makeFileNotGenerated = true;
         /**Internal CNN operators library generation*/
-        if(_generateDNNFuncCPU||_generateDNNFuncGPU) {
-            //dnnFunc
-            _cppVisitor.generateDnnFuncClassTemplate(dir,_generateDNNFuncGPU);
-            _hvisitor.generateDnnClassTemplate(dir);
-        }
 
          if(_generateDNNFuncGPU){
-            //kernel.cu
-             _cppVisitor.generateKernelClassTemplate(dir);
               //_writeMakeFile(dir,csdfGraph.getName(),classesList);
              _writeMakeFileCuda(dir,csdfGraph.getName(),classesList);
              makeFileNotGenerated = false;
@@ -191,15 +195,17 @@ public class PthreadSDFGVisitor {
         if(_generateDNNFuncCPU||_generateDNNFuncGPU)
             classesList.add(_dnnFuncClassName);
 
-            classesList.add(_funcClassName);
+        classesList.add(_funcClassName);
         classesList.add(_baseClassName);
         classesList.add(_mainClassName);
+
 
         if(_loadWeights)
           classesList.add(_loadWeightsClassName);
 
         classesList.add("run");
         classesList.add("fifo");
+        classesList.add("blocks_algorithm");
 
         return classesList;
      }
@@ -371,6 +377,9 @@ public class PthreadSDFGVisitor {
             mf.println("");
             mf.println("CXXFLAGS= -std=c++11 -pthread ");
             mf.println("");
+            /** TODO: a confid param?*/
+            mf.println("CUDA_INCFLAG = -I/usr/local/cuda-9.0/samples/common/inc");
+            mf.println("");
             if(_loadWeights)
                 mf.println("CXXLIB = -L./ -lcnpy -lz");
 
@@ -384,18 +393,11 @@ public class PthreadSDFGVisitor {
             mf.println("");
             mf.println("all: ${PRG}");
             mf.println("");
-            mf.println("");
             mf.println("run:  ${OBJS}");
-
-            mf.println("\tnvcc -o $@ ${OBJS}");
+            mf.println("\tnvcc -o $@ ${OBJS} ${CXXLIB}");
             mf.println("");
             mf.println("kernel.o:");
-            mf.println("\tnvcc -c kernel.cu");
-            mf.println("");
-
-            if(_loadWeights)
-                mf.print(" ${CXXLIB}");
-            mf.println("");
+            mf.println("\tnvcc $(CUDA_INCFLAG) -c kernel.cu");
             mf.println("");
 
             for(String classname: classesList){
@@ -480,65 +482,28 @@ public class PthreadSDFGVisitor {
 
     }
 
-    /**
-     * TODO block-based support!
-     * Set dummy schedule for dnn running
-     * @param dnn deep neural network
-     * @param mode DNN transformation mode : layer-based, neuron-based or block-based
-     */
-     protected static void _setDummySchedule(Network dnn, DNNInitRepresentation mode) {
-         if(mode.equals(DNNInitRepresentation.NEURONBASED))
-             _setDummyScheduleNB(dnn);
-         else
-             _setDummyScheduleLB(dnn);
-
-     }
 
     /**
     * Set dummy schedule for dnn running in Layer-based -mode
      * @param dnn deep neural network
      */
-     protected static void _setDummyScheduleLB(Network dnn){
+     protected static void _setDummySchedule(Network dnn, CSDFGraph csdfg){
          Vector<String> schedule =  new Vector<>();
          dnn.sortLayersInTraverseOrder();
          for (Layer layer : dnn.getLayers()) {
-             schedule.add(layer.getName());
-         }
-         _cppVisitor.setSchedule(schedule);
-     }
-
-     /**
-      * TODO parallel neurons running??
-     * Set dummy schedule for dnn running in Neuron-based -mode
-     * @param dnn deep neural network
-     */
-     protected static void _setDummyScheduleNB(Network dnn){
-          Vector<String> schedule =  new Vector<>();
-          String neuronName;
-         dnn.sortLayersInTraverseOrder();
-         for (Layer layer : dnn.getLayers()) {
-             neuronName = layer.getNeuron().getName();
-             for(int i=0; i<layer.getNeuronsNum();i++) {
-                 schedule.add(layer.getName() + "_" + neuronName + "_" + i);
-             }
+             if(csdfg.getNode(layer.getName())!=null)
+                schedule.add(layer.getName());
          }
          _cppVisitor.setSchedule(schedule);
      }
 
     /**
      * Parse mapping file
-     * @param path path to mapping file
      */
-    public static void parseMapping(String path){
-        try {
-            _parserMapping.initializeParser();
-            Mapping mapping = _parserMapping.doParse(path,false);
-            mapping.setName("mapping1");
-            _cppVisitor.setMapping(mapping);
-        }
-         catch (Exception e){System.out.println("mapping file parsing error "+e.getMessage()); }
-
+    public static void setMapping(Mapping mapping){
+        _cppVisitor.setMapping(mapping);
     }
+
 
     /**
      * Set flag,  if the internal library (dnnFunc) generation for CPU is needed
@@ -561,6 +526,27 @@ public class PthreadSDFGVisitor {
         _generateDNNFuncNA = generateDNNFuncNA;
         _hvisitor.setGenerateFuncNA(generateDNNFuncNA);
         _cppVisitor.setGenerateFuncNA(generateDNNFuncNA);
+    }
+
+    /**Set number of inputs to be processed, until the application stops.
+     * Default batch = 1;
+     * @param batch number of inputs to be processed, until the application stops.
+     */
+    public static void setBatch(Integer batch){
+        if(batch!=null) {
+            _hvisitor.setBatch(batch);
+            _cppVisitor.setBatch(batch);
+        }
+    }
+
+    /**
+     * Set max number of input samples to be stored between two nodes
+     * Default value = 10
+     * @param fifoScale scale factor of fifo buffers
+     */
+    public static void setFifoScale(Integer fifoScale){
+        if(fifoScale!=null)
+            _cppVisitor.setBatch(fifoScale);
     }
 
     /**
@@ -611,6 +597,7 @@ public class PthreadSDFGVisitor {
        _hvisitor._paramDataType = paramtype;
    }
 
+
     ///////////////////////////////////////////////////////////////////
     ////                     private variables                     ///
 
@@ -629,10 +616,7 @@ public class PthreadSDFGVisitor {
     /**C++ code-files visitor*/
     public static CPPSDFGVisitorPthread _cppVisitor = new CPPSDFGVisitorPthread();
 
-    /**mapping file parser*/
-    public  static XmlMappingParser _parserMapping = new XmlMappingParser();
-
-        /** application main class name*/
+    /** application main class name*/
     private static String _mainClassName = "appMain";
 
     /** CSDF graph node base class*/
@@ -658,6 +642,5 @@ public class PthreadSDFGVisitor {
 
     /** if weights should be loaded from external files*/
     private static boolean _loadWeights = false;
-
 
 }

@@ -65,6 +65,8 @@ def extract_weights(dnn, dnn_metadata, out_dir, print_details=False):
             dense_partition = data['dense_partition']
             if dense_partition is None:
                 dense_partition = 100
+	    
+            bn_params = data['BNpar']
 
             if print_details:
                 print("process convolutional weights")
@@ -135,10 +137,55 @@ def extract_weights(dnn, dnn_metadata, out_dir, print_details=False):
                     filename = bias[0] + "_b"
                     save_bias(out_dir, filename, npval, print_details)
 
+            if print_details:
+                print("process batchNormalization parameters")
+            for bn_param in bn_params.items():
+                node = bn_param [0]
+                bn_param_list = bn_param [1]
+                #find scale
+                scale = bn_param_list[0]
+                init = get_initializer(initializers, scale)
+                if init is None:
+                    print("Error: " + scale + " scale initializer not found")
+                else:
+                    npinit = numpy_helper.to_array(init)
+                    filename = node + "_scale"
+                    save_bias(out_dir, filename, npinit, print_details)
+
+		#find mean
+                mean = bn_param_list[1]
+                init = get_initializer(initializers, mean)
+                if init is None:
+                    print("Error: " + mean + " mean initializer not found")
+                else:
+                    npinit = numpy_helper.to_array(init)
+                    filename = node + "_mean"
+                    save_bias(out_dir, filename, npinit, print_details)
+		
+		#find variance
+                variance = bn_param_list[2]
+                init = get_initializer(initializers, variance)
+                if init is None:
+                    print("Error: " + variance + " variance initializer not found")
+                else:
+                    npinit = numpy_helper.to_array(init)
+                    filename = node + "_variance"
+                    save_bias(out_dir, filename, npinit, print_details)
+
+		#find B
+                B = bn_param_list[3]
+                init = get_initializer(initializers, B)
+                if init is None:
+                    print("Error: " + B + " bias initializer not found")
+                else:
+                    npinit = numpy_helper.to_array(init)
+                    filename = node + "_b"
+                    save_bias(out_dir, filename, npinit, print_details)
+
         print("done")
 
     except Exception:
-        print("Error: JSON metadata file not found")
+        print("weights extraction exception")
     return
 
 """ find initializer by its name
@@ -230,7 +277,8 @@ def save_dense_weights(directory, filename, nparr, dims, partition_size, dense_n
     neurs = dims[0]
 
     if len(dims) == 2:
-        if neurs!=dense_neurons and dense_neurons is not None:
+	transpose = (neurs != dense_neurons or dims[0] == dims[1]) and (dense_neurons is not None)
+        if transpose:
             neurs = dense_neurons
             nparr = my_transpose(nparr)
             if print_details:
@@ -244,15 +292,23 @@ def save_dense_weights(directory, filename, nparr, dims, partition_size, dense_n
         lin_inputs *= dims[i]
     linear_dims.append(lin_inputs)
 
-    neurons = dims[len(dims)-1]
-    linear_dims.append(neurons)
-    lin_arr = nparr.reshape(linear_dims)
+    linear_dims.append(dims[-1])
 
-    if neurs != dense_neurons and dense_neurons is not None:
+    lin_arr = nparr.reshape(linear_dims)
+    lin_arr = numpy.asarray(lin_arr)
+    if print_details:
+        print(filename, "array linearized to " + str(linear_dims) +"!")
+
+    neurs = linear_dims[0]
+
+    transpose = (neurs != dense_neurons or linear_dims[0] == linear_dims[1]) and (dense_neurons is not None)
+    if transpose:
+        if print_details:
+            print(filename + "neurons " + str(dense_neurons) +", while has shape "+str(lin_arr.shape())+" first dim is "+str(neurs)+"!")
         neurs = dense_neurons
         lin_arr = my_transpose(lin_arr)
         if print_details:
-            print(filename, "weights transposed!")
+            print(filename + "weights transposed to " + str(lin_arr.shape) +"!")
 
     save2dArr(directory, filename, lin_arr, partition_size, neurs, print_details)
 
@@ -320,7 +376,7 @@ def save2dArr(directory, filename, nparr, partition_size, neurs, print_details=F
             partitions_num = partitions_num + 1
 
         if print_details:
-            print(filename + " has " + str(partitions_num) + " partitions")
+            print(filename + " has " + str(partitions_num) + " partitions of size: " + str(partition_sizes))
 
         start = 0
         end = int(partition_size)

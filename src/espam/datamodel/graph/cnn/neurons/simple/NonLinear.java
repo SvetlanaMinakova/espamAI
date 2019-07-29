@@ -110,9 +110,9 @@ public class NonLinear extends Neuron implements ConnectionDependent {
      * @return function call description*/
     public String getFunctionCallDescription(int channels){
         StringBuilder desc = new StringBuilder(getName());
-      //  Integer operationTokensNum = getOperationTokensNumber(channels);
-      //  desc.append("(" + operationTokensNum + ")");
-
+        desc.append("(");
+        desc.append(getInputDataFormat().getElementsNumber());
+        desc.append(")");
         return desc.toString();
     }
 

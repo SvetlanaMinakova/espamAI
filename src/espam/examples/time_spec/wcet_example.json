@@ -1,0 +1,9 @@
+{
+  "READ": 1, 
+  "WRITE": 1, 
+  "MAXPOOL": 2, 
+  "CONV(5_5)": 75,
+  "CONV": 3, 
+  "DENSEBLOCK_NONE(1_400,400_120)": 10400,
+  "SOFTMAX": 1
+}

@@ -136,6 +136,36 @@ public class CSDFEdge extends Edge {
         _srcId[0]=src.getNodeId();
         _srcId[1]=src.getId();
     }
+
+    /**
+     * Change destination node
+     * @param newDst new destination
+     */
+    public void changeDst(CSDFNode newDst){
+        //1. transfer out port
+        CSDFPort outPort = getDst();
+        CSDFNode oldDstNode = (CSDFNode) getDst().getNode();
+        oldDstNode.removePort(outPort);
+        outPort.setId(newDst.getNextPortId());
+        newDst.addPort(outPort);
+
+        //2.Transfer memory unit, associated with a port
+        if(outPort.getAssignedMemory()!=null)
+            newDst.addMemoryUnit(outPort.getAssignedMemory());
+
+        //2.change dst id
+        _dstId[0] = newDst.getId();
+        _dstId[1] = outPort.getId();
+    }
+
+    /**
+     * Change source node
+     * @param newSrc new source
+     */
+    public void changeSrc(CSDFNode newSrc){
+
+    }
+
     /**
      * Get dest port
      * @return dest port

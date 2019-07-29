@@ -22,6 +22,8 @@ import espam.datamodel.platform.memories.Memory;
 import espam.main.cnnUI.DNNInitRepresentation;
 import espam.operations.refinement.CSDFGMemoryRefiner;
 import espam.operations.refinement.CSDFTimingRefiner;
+import espam.operations.transformations.cnn_model_transformations.CNNTransformer;
+import espam.operations.transformations.csdf_model_transformations.CSDFTransformer;
 
 import java.util.HashMap;
 import java.util.Vector;
@@ -79,7 +81,14 @@ public class CNN2CSDFGraphConverter {
             nextEdgeId=_CSDFG.getNextEdgeId();
         }
 
+        CSDFNode srcNode = (CSDFNode) _CSDFG.getNode(_minimizedDFDNN.getInputLayer().getName());
+        srcNode.setSrc(true);
+
+        CSDFNode snkNode = (CSDFNode) _CSDFG.getNode(_minimizedDFDNN.getOutputLayer().getName());
+        snkNode.setSnk(true);
+
         _CSDFG.alignRatesLength();
+
         return _CSDFG;
     }
 
@@ -105,14 +114,9 @@ public class CNN2CSDFGraphConverter {
         if(bias!=null){
             node.addMemoryUnit(bias);
         }
-        if(layer.getPads()!=null){
-            int[] pads = layer.getPads();
-            MemoryUnit padsDesk = new MemoryUnit("pads[4]","{"+ pads[0] + "," + pads[1] + "," + pads[2] + "," + pads[3]+"}", "int");
-            node.addMemoryUnit(padsDesk);
-        }
 
         /** specify operation */
-        String operation = minDFNeuron.getFunctionCallDescription(layer.getInputChannels());
+        String operation = minDFLayer.getFunctionCallDescription(layer.getInputChannels());
         node.setOperation(operation);
         int dstOperationRepetitions = minDFNeuron.getOperationsNumber(layer.getNeuronsNum());
         node.setOperationRepetitionsNumber(dstOperationRepetitions);
@@ -131,8 +135,8 @@ public class CNN2CSDFGraphConverter {
 
      public Vector<CSDFEdge> buildEdgesLB(CSDFNode startNode, CSDFNode endNode, Connection connection, int lastEdgeId) {
          Vector<CSDFEdge> edges = new Vector<>();
-         String edgeName = connection.getSrcId()+ "to" + connection.getDestId();
-         String dstSelfLoopPrefix = connection.getDestId() + "to" + connection.getDestId();
+         String edgeName = startNode.getId()+ "to" + endNode.getId();
+         String dstSelfLoopPrefix = endNode.getId() + "to" + endNode.getId();
 
          try{
             Neuron l1SampleNeuronMinimized = _minimizedDFDNN.getLayer(connection.getSrc().getName()).getNeuron();
@@ -1166,6 +1170,8 @@ public class CNN2CSDFGraphConverter {
 
     /** If data tiling is required*/
     private boolean _dataTiling = false;
+
+
 
     /** generic nodes processor*/
  //   CNN2CCSDFGraphConverter _subgraphProcessor = new CNN2CCSDFGraphConverter();

@@ -53,7 +53,7 @@ public class ResolveEntityHandler implements EntityResolver {
         + "<!ATTLIST subplatform name CDATA #REQUIRED file CDATA #IMPLIED>"
         
         + "<!ELEMENT processor (port*)>"
-        + "<!ATTLIST processor name CDATA #REQUIRED type CDATA #IMPLIED data_memory CDATA #IMPLIED program_memory CDATA #IMPLIED>"
+        + "<!ATTLIST processor name CDATA #REQUIRED type CDATA #IMPLIED data_memory CDATA #IMPLIED program_memory CDATA #IMPLIED subtype CDATA #IMPLIED cores CDATA #IMPLIED>"
         
         + "<!ELEMENT peripheral (port*)>"
         + "<!ATTLIST peripheral name CDATA #REQUIRED type CDATA #IMPLIED size CDATA #IMPLIED>"

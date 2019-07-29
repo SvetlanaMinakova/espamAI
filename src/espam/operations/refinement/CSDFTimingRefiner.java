@@ -256,9 +256,13 @@ import java.util.Vector;
             basicOpName = "add";
 
         Integer basicOpTime = _basicOperationsTiming.get(basicOpName);
-        if(basicOpTime==null)
-            throw new Exception("unknown operation: " + basicOpName);
-        if(basicOpName.contains("conv")||basicOpName.contains("pool"))
+
+        if(basicOpTime==null) {
+          //  System.err.println("unknown operation: " + basicOpName + ", operation time set to default = 1");
+            basicOpTime = 1;
+            _basicOperationsTiming.put(basicOpName,basicOpTime);
+        }
+        if(basicOpName.contains("conv")||basicOpName.contains("pool")||basicOpName.contains("upsample"))
             return _extrapolateCNNOperationTime(basicOpTime,operation);
 
        if(basicOpName.contains("lrn") || basicOpName.contains("relu")||
@@ -285,7 +289,7 @@ import java.util.Vector;
         for(Integer intParam: intParams)
             complexityFactor*= intParam;
 
-        return execTime * (Integer)complexityFactor;
+        return execTime * complexityFactor;
     }
 
     /**

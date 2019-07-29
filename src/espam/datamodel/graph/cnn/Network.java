@@ -928,11 +928,14 @@ public class Network implements Cloneable, ReferenceResolvable {
         }
     }
 
+
+
     /**
      * Add connection with specified shortcut
      * @param src input layer
      * @param dst output layer
      * @param conType type of the default connection
+     * connection is added to the end of the network's connections list
      */
     public void addConnection(Layer src, Layer dst, ConnectionType conType) {
         try {
@@ -977,6 +980,7 @@ public class Network implements Cloneable, ReferenceResolvable {
             System.err.println(e.getMessage());
         }
     }
+
 
     /**
      * Remove connection from DNN, if possible
@@ -1042,6 +1046,22 @@ public class Network implements Cloneable, ReferenceResolvable {
      */
     private void _processMultipleConnectionsAdding(Layer layer, Layer input){
         ((MultipleInputsProcessor) layer.getNeuron()).addInput(input);
+    }
+
+      /**
+     * Process adding of connection to multiple connection processor
+     * @param layer multiple inputs processor
+     * @param input input layer
+     */
+    private void _processMultipleConnectionsInsertion(Layer layer, Layer input, Layer parent){
+        try {
+          //  int position =
+          //  ((MultipleInputsProcessor) layer.getNeuron()).insertInput(input);
+        }
+        catch (Exception e){
+
+
+        }
     }
 
     /**
@@ -1548,6 +1568,40 @@ public class Network implements Cloneable, ReferenceResolvable {
         return sorted;
     }
 
+    /**
+     * Genetic algorithm returns layers with very long name,
+     * containing special symbols.
+     * IMPOSSIBLE to debug. This function will give layers
+     * Readable names
+     */
+    public void giveLayersReadableNames(){
+        Integer layerId;
+        String newName;
+        for(Layer l:_layers){
+            layerId = l.getId();
+            if(layerId!=_inputLayerId && layerId!= _outputLayerId){
+                newName = l.getNeuron().getNeuronType() + "_" + layerId;
+
+                l.setName(newName);
+
+                for (Connection con:  l.getInputConnections())
+                    con.setDestName(newName);
+
+                for (Connection con:  l.getOutputConnections())
+                    con.setSrcName(newName);
+            }
+        }
+    }
+
+    public void giveIOLayersStandardNames(){
+        _inputLayer.setName("input_data");
+        for (Connection con:  _inputLayer.getOutputConnections())
+            con.setSrcName("input_data");
+        _outputLayer.setName("output_data");
+        for (Connection con:  _outputLayer.getInputConnections())
+                    con.setDestName("output_data");
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////           ONNX-data formats compatibility               ////
 
@@ -1609,6 +1663,7 @@ public class Network implements Cloneable, ReferenceResolvable {
     public boolean isCrop() {
         return _crop;
     }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                ////

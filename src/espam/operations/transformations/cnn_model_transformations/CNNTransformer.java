@@ -11,6 +11,7 @@ import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
+import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
@@ -90,7 +91,7 @@ public class CNNTransformer {
      * @param chain dependent chain
      * @param childSrc copied path begin
      * @param chainEnds copied path output(s): zero ore more CONCAT nodes
-     * @throws Exception
+     * @throws Exception if an error occurs
      */
     public void splitDependentChain(Vector<Layer>chain, Layer childSrc, Vector<Layer> chainEnds)throws Exception{
         if(chain.size()<2)
@@ -101,11 +102,14 @@ public class CNNTransformer {
         Layer layerCopy;
 
         for(int i=1; i<chain.size();i++){
-            Layer layer= chain.elementAt(i);
+            Layer layer = chain.elementAt(i);
 
             Neuron neuronCopy = Neuron.copyNeuron(layer.getNeuron());
-            _network.addLayer(layer.getName() + "_s_" + _splitId,neuronCopy,layer.getNeuronsNum(),layer.getPads());
+            _network.addLayer(layer.getName() + "_split_" + _splitId,neuronCopy,layer.getNeuronsNum(),layer.getPads());
             layerCopy = _network.getLastLayer();
+            /** inherit start neuron id from chain beginning layer*/
+            layerCopy.setstartNeuronId(childSrc.getstartNeuronId());
+            //System.out.println(layerCopy.getName()+" start neur: " + layerCopy.getstartNeuronId());
             /** split input connection for dependent layer copy*/
                 _network.addConnection(prevLayer,layerCopy);
             prevLayer = layerCopy;
@@ -178,7 +182,7 @@ public class CNNTransformer {
         Layer [] layerCopies = new Layer[copiesNum];
 
         /** add copied layers*/
-        int neuronsStart = layer.getNeuronsNum();
+        int neuronsStart = layer.getstartNeuronId() + layer.getNeuronsNum();
         for(int i=0 ;i<copiesNum;i++){
             _network.addLayer(layer.getName()+"_split_"+_splitId+"_"+i,neuronCopies[i],lNeuronsNum.getDimSize(i+1),layer.getPads());
             Layer added = _network.getLastLayer();
@@ -981,12 +985,15 @@ public class CNNTransformer {
                   if (printDetails)
                       System.out.println("Splitting is stopped on iteration: " + curIter +
                               " , blocks number =" + _network.countLayers() + " is reached. Next blocks: " + totalBlocksNumber);
+                //  _network.sortConcatsInputs();
                   return;
               }
 
               boolean continueSplitting = _makeSplitIteration(curIter, childrenNum, networkInputDataFormat, bottleneck, printDetails);
-              if (!continueSplitting)
+              if (!continueSplitting) {
+                 // _network.sortConcatsInputs();
                   return;
+              }
               curIter++;
 
           } catch (Exception e) {
@@ -1019,8 +1026,10 @@ public class CNNTransformer {
             try {
                 Layer bottleneck = _findBottleneck();
                 boolean continueSplitting = _makeSplitIteration(curIter, childrenNum, networkInputDataFormat,bottleneck, printDetails);
-                if (!continueSplitting)
+                if (!continueSplitting) {
+                   // _network.sortConcatsInputs();
                     return;
+                }
             }
             catch (Exception e){
                  System.err.println("iterative splitting error, iteration: " +
@@ -1105,7 +1114,27 @@ public class CNNTransformer {
         Layer bottleneck = _network.getLayer(bottleneckActor);
         if(bottleneck==null)
             throw new Exception("bottleneck layer search error!");
+
+        if(bottleneck.getNeuron() instanceof ConnectionDependent)
+            bottleneck = _findConIndependentBottleneck(bottleneck);
+
+        if(bottleneck==null)
+            throw new Exception("bottleneck layer search error!");
+
         return bottleneck;
+    }
+
+    /** find splittable layer for connection-dependent bottleneck*/
+    private Layer _findConIndependentBottleneck(Layer cdepBottleneck){
+        Layer curBottleneck;
+        if( cdepBottleneck.getInputConnections().size()==0)
+            return null;
+
+        curBottleneck = cdepBottleneck.getInputConnections().firstElement().getSrc();
+        if(!(curBottleneck.getNeuron() instanceof ConnectionDependent))
+            return curBottleneck;
+
+        else return _findConIndependentBottleneck(curBottleneck);
     }
 
      /**

@@ -13,6 +13,7 @@ import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 
 /**
@@ -106,6 +107,11 @@ public class CNNGraphVisitor extends GraphVisitor {
 
         if (x instanceof Reshape) {
             visitComponent((Reshape) x);
+            return;
+        }
+
+        if(x instanceof Upsample) {
+            visitComponent((Upsample) x);
             return;
         }
     }
@@ -231,6 +237,12 @@ public class CNNGraphVisitor extends GraphVisitor {
      * @param  x A Visitor Object.
      */
     public void visitComponent(NonLinear x) { }
+
+     /**
+     *  Visit an Upsample component.
+     * @param  x A Visitor Object.
+     */
+    public void visitComponent(Upsample x) { }
 
 
     /**

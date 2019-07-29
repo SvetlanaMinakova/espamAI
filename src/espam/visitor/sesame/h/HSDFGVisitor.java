@@ -36,8 +36,6 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
              _printStream = FileWorker.openFile(dir, y.getName(), "h");
              _writeCommonBeginning(y.getName(),_getBaseClassName(y));
              _writeContainerTemplates(y);
-             /** write specific data*/
-             _printStream.println(_prefix + "//specific node parameters and functions");
              _writeCommonEnd(y.getName());
 
          }
@@ -51,12 +49,16 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * @param node SDF graph node
      */
     protected void _writeDNNRefinedContainerTemplates(CSDFNode node){
+        _prefixInc();
+
+        _printStream.println();
+        _printStream.println(_prefix + "//I/O memory arrays");
+        _prefixInc();
+
         for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
                 MemoryUnit mu = inport.getAssignedMemory();
                 if (mu!=null) {
-                    _printStream.println(_prefix +"const int " + mu.getName() +
-                                "_dims = " + mu.getDimensionality() + ";");
-                    _writeTensorToCPPArrayDefinition(mu.getShape(),mu.getName(),mu.getTypeDesc());
+                    _writeArrLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
                 }
         }
 
@@ -66,29 +68,85 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
                 MemoryUnit mu = outport.getAssignedMemory();
                 if (mu!=null) {
                     if(!defined.contains(mu.getName())) {
-                        _printStream.println(_prefix +"const int " + mu.getName() +
-                                "_dims = " + mu.getDimensionality() + ";");
-                         _writeTensorToCPPArrayDefinition(mu.getShape(), mu.getName(), mu.getTypeDesc());
+                        _writeArrLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
                         defined.add(mu.getName());
                     }
                 }
         }
         defined.clear();
+        _prefixDec();
 
 
         /** define constant parameters, if any*/
         Vector<MemoryUnit> constParams = node.getUnitParams();
-        if(constParams.size()>0) {
-            _printStream.println("//const parameters");
+            _printStream.println();
+            _printStream.println(_prefix + "//const parameters");
+            _prefixInc();
             for (MemoryUnit mu : constParams) {
                 _printStream.println(_prefix + "const " + mu.getTypeDesc() + " " + mu.getName() + " = " + mu.getUnitParamDesc() + ";");
             }
-        }
+            _printStream.println();
+            _prefixDec();
+
+         /** define lens of additional tensor parameters (weights, biases)
+          *  if they are present*/
+
+        _printStream.println("//node-specific tensor parameters lengths");
+        _prefixInc();
+        Vector<String> additionalTensorParams = new Vector<>();
+        additionalTensorParams.add("weights");
+        additionalTensorParams.add("bias");
+        additionalTensorParams.add("squared");
+        additionalTensorParams.add("norms");
+        additionalTensorParams.add("scale");
+        additionalTensorParams.add("mean");
+        additionalTensorParams.add("variance");
+        _writeAdditionalArrLens(additionalTensorParams,node);
+        _prefixDec();
+        _printStream.println();
+
+        _prefixDec();
 
     }
 
+    /**
+     * Define linear array
+     * @param tensor shape of array (espam. Tensor)
+     * @param arrname name of the array
+     * @param typeDesc description of array type;
+     */
+     private void _writeArrLinear(Tensor tensor, String arrname, String typeDesc){
+        int size = tensor.getElementsNumber();
+        _printStream.println(_prefix + typeDesc + " " + arrname + "[" + size + "] = {0}; ");
+        _printStream.println(_prefix + "const int " + arrname + "_len = " + size + ";");
+     }
 
+    /**
+     * Wtite sizes of additional tensor params
+     * @param additionalArrNames additional array names
+     * @param node CSDF node
+     */
+     private void _writeAdditionalArrLens(Vector<String> additionalArrNames, CSDFNode node){
+         for (String arrName: additionalArrNames){
+             MemoryUnit additionalArr = node.getMemoryUnit(arrName);
+             _writeArrLen(additionalArr);
+         }
 
+     }
+
+     /**
+     * Define size of a tensor memory unit
+     * @param mu a tensor memory unit
+     */
+     private void _writeArrLen(MemoryUnit mu){
+        if (mu==null)
+            return;
+        Tensor muShape = mu.getShape();
+        if(muShape==null)
+            return;
+        int size =muShape.getElementsNumber();
+        _printStream.println(_prefix + "const int " + mu.getName() + "_len = " + size + ";");
+     }
 
      /**
      * Write container templates for each container, associated with the node
@@ -195,6 +253,8 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         String  baseClass = node.getName()+"_Base";
        return baseClass;
     }
+
+
 
     /**
      * Get C++ definition of static multidimensional array,

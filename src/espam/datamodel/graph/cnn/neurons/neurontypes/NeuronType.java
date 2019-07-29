@@ -4,7 +4,7 @@ package espam.datamodel.graph.cnn.neurons.neurontypes;
  * All types of neurons used in modeling
  */
 public enum NeuronType {
-    NONE, CONV, POOL, NONLINEAR, DATA, GENERIC, ADD, CONCAT, DENSEBLOCK, RESHAPE, LRN;
+    NONE, CONV, POOL, NONLINEAR, DATA, GENERIC, ADD, CONCAT, DENSEBLOCK, RESHAPE, LRN, UPSAMPLE;
 
     /**
      * Reconstructs NeuronType from typedDescription, if possible

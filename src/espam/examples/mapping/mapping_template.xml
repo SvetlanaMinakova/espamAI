@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE mapping PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<mapping name="myMapping">
+<processor name="cpu_0">
+</processor>
+<processor name="cpu_1">
+</processor>
+<processor name="cpu_2">
+</processor>
+<processor name="cpu_3">
+</processor>
+<processor name="cpu_4">
+</processor>
+<processor name="cpu_5">
+</processor>
+<processor name="gpu">
+</processor>
+</mapping>

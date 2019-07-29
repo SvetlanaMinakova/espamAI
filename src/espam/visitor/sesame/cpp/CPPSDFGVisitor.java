@@ -108,15 +108,7 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
      /**
       * process execution phase.
       * Execution describes processing of input data
-      * by elementary operations. The general format is
-      * for(each kernel in kernels)
-      *     for(repetition on data chunk)
-      *         run elementary operation;
-      *
-      * Where number of kernels (operation instances, processing the same data
-      * with different context) = number of neurons of DNN block
-      * and =1 by default
-      *
+      * by a CSDF node
       * @param node SDF Node
      *  @param execPrimitiveName name of the execution primitive
      */
@@ -124,36 +116,14 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
       int opRepetitionsNum = node.getOperationRepetitionsNumber();
       if(opRepetitionsNum==0)
           return;
+
       String operation = node.getOperation();
       if(operation==null)
           return;
 
       _printStream.println("");
       _printStream.println(_prefix + "//execution");
-      int kernels = node.getKernelsNum();
-
-      if(kernels>1){
-         prefixInc();
-         _printStream.println(_prefix + "for (int n = 0; n < " + kernels + "; n++) {");
-      }
-
-      if(opRepetitionsNum>1){
-          prefixInc();
-          _printStream.println(_prefix + "for (int i = 0; i < " + opRepetitionsNum + "; i++) {");
-      }
-
       _printStream.println(_prefix + execPrimitiveName +"(\"" + operation + "\");");
-
-      if(opRepetitionsNum>1) {
-          prefixDec();
-          _printStream.println(_prefix + "}");
-      }
-
-      if(kernels>1){
-         prefixDec();
-         _printStream.println(_prefix + "}");
-      }
-
     }
 
       /**
@@ -319,7 +289,8 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
 
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
+       // String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
+        String nestedIndex = "[t]";
         String indexedInputName = arrayName + nestedIndex;
         _printStream.println(_prefix + " for ( int t = 0; t < " + port.getName() + "_tokens; t++) {");
          prefixInc();
@@ -335,11 +306,11 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
     public void printOperationTemplate(CSDFPort groupLeader,String operation, String arrayName, Vector<String> ports){
        if(groupLeader==null || arrayName==null)
            return;
-        int dataDimensionality = groupLeader.getMemoryDim();
 
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
+        String nestedIndex = "[t]";
+       // String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
         String indexedInputName = arrayName + nestedIndex;
         _printStream.println(_prefix + " for ( int t = 0; t < " + groupLeader.getName() + "_tokens; t++) {");
          prefixInc();
@@ -361,7 +332,8 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
         int dataDimensionality = port.getMemoryDim();
         _printStream.println(" ");
         _printStream.println(_prefix + "// " + operation + " to " + arrayName);
-        String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
+       // String nestedIndex = getNestedIndex(dataDimensionality,arrayName);
+        String nestedIndex = "[t]";
         String indexedInputName = arrayName + nestedIndex;
         _printStream.println(_prefix + " for ( int t = " + shiftDesc + "; t < (" + port.getName() + "_tokens + "
                 + shiftDesc + "); t++) {");

@@ -8,6 +8,7 @@ AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVI
 # Java files in this directory
 JSRCS = \
 	DNNInitRepresentation.java \
+	Platformtype.java \
 	UI.java
 
 # Include the shared compilation rules

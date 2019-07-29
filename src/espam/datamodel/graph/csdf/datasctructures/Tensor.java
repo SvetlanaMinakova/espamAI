@@ -671,7 +671,7 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
 
         Tensor result = new Tensor(tensor);
 
-        if (tensor.getLastDimSize()==1){
+        if (tensor.getLastDimSize()==1 || tensor.getLastDimSize()==0 ){
             result.removeDimension();
         }
 
@@ -744,7 +744,7 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
             return tensor;
         if(Tensor.isNullOrEmpty(tensor))
             return tensor;
-        if(pads.length!=4)
+        if(pads.length<4)
             return tensor;
 
         Tensor extended = new Tensor(tensor);

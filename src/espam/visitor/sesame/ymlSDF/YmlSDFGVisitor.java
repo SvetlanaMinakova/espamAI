@@ -1,8 +1,10 @@
 package espam.visitor.sesame.ymlSDF;
 
 import espam.datamodel.graph.csdf.*;
+import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.main.UserInterface;
+import espam.operations.refinement.RefinedCSDFEvaluator;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
 
@@ -107,8 +109,8 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
         _printStream.println(_prefix + "<property name=\"class\" value=\"" + _getBaseClassName(x)+ "\"/>");
         _printStream.println(_prefix + "<property name=\"header\" value=\"" + name + ".h\"/>");
         _printStream.println(_prefix + "<property name=\"source\" value=\"" + name + ".cpp\"/>");
-        /** TODO any ports descriptions?*/
-        _printStream.println("");
+        Integer totalMemory = _getMemoryReq(x);
+        _printStream.println(_prefix + "<property name=\"totalmem\" value=\"" + totalMemory + "\"/>");
 
         //visit the list of ports of this CDProcess
         String dir = "";
@@ -179,16 +181,96 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
         String dstPortName = dst.getName();
         String nameDstNode = dst.getNode().getName();
 
-        _printStream.print(_prefix + "<link innode=\""    + nameSrcNode + "\" " +
+        _printStream.println(_prefix + "<link innode=\""    + nameSrcNode + "\" " +
                              "inport=\""    + srcPortName    + "\" " +
                              "outnode=\""   + nameDstNode   + "\" " +
                              "outport=\""   + dstPortName      + "\" " + ">");
 
-        _prefixInc();
-       // _printStream.println(_prefix + "<property name=\"pos\" value=\"\"/>");
-        _prefixDec();
-        _printStream.println(" </link>");
+       _prefixInc();
+       //buffer size in bytes
+        int bufSize = _getFIFOsize(x);
+       _printStream.println(_prefix + "<property name=\"bufsize\" value=\"" + bufSize + "\"/>");
+       _prefixDec();
+       _printStream.println(" </link>");
     }
+
+     /**
+     * Get FIFO size of CSDF node (in Bytes)
+     */
+    protected Integer _getFIFOsize(CSDFEdge edge){
+        Vector<IndexPair> srcRates = edge.getSrc().getRates();
+        int maxRate = 0;
+        for(IndexPair srcRate: srcRates)
+            if(srcRate.getFirst() > maxRate)
+                maxRate = srcRate.getFirst();
+
+        Vector<IndexPair> dstRates = edge.getDst().getRates();
+        for(IndexPair dstRate: dstRates)
+            if (dstRate.getFirst()>maxRate)
+                maxRate = dstRate.getFirst();
+
+        int token_size = RefinedCSDFEvaluator.getInstance(). typeSize(_IODatatype);
+        int size = maxRate * _fifoScale * token_size;
+        return size;
+     }
+
+    /**get total memory (Bytes), required for node deployment
+     * TODO: finish implementation
+     * @param node CSDF node
+     * @return total memory (Bytes), required for node deployment
+     *
+     */
+     protected Integer _getMemoryReq(CSDFNode node){
+        int totalMem = 0;
+        int IOtokenSize = RefinedCSDFEvaluator.getInstance(). typeSize(_IODatatype);
+        int paramtokenSize = RefinedCSDFEvaluator.getInstance(). typeSize(_paramDataType);
+
+        /** compute input ports*/
+        for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
+                MemoryUnit mu = inport.getAssignedMemory();
+                if (mu!=null)
+                    totalMem += mu.getShape().getElementsNumber() * IOtokenSize;
+
+        }
+
+        /** compute only distinct out ports*/
+        Vector<String> defined = new Vector<>();
+        for(CSDFPort outport: node.getNonOverlapHandlingOutPorts()){
+                MemoryUnit mu = outport.getAssignedMemory();
+                if (mu!=null) {
+                    if(!defined.contains(mu.getName())) {
+                        totalMem +=mu.getShape().getElementsNumber() * IOtokenSize;
+                        defined.add(mu.getName());
+                    }
+                }
+        }
+        defined.clear();
+
+        /** define constant parameters, if any*/
+        Vector<MemoryUnit> constParams = node.getUnitParams();
+        for (MemoryUnit mu : constParams) {
+            totalMem += 1 * RefinedCSDFEvaluator.getInstance(). typeSize(mu.getTypeDesc());
+        }
+
+         /** take into account additional tensor parameters (weights, biases)
+          *  if they are present*/
+        Vector<String> additionalTensorParams = new Vector<>();
+        additionalTensorParams.add("weights");
+        additionalTensorParams.add("bias");
+        additionalTensorParams.add("squared");
+        additionalTensorParams.add("norms");
+        additionalTensorParams.add("scale");
+        additionalTensorParams.add("mean");
+        additionalTensorParams.add("variance");
+          for (String arrName: additionalTensorParams){
+             MemoryUnit additionalArr = node.getMemoryUnit(arrName);
+             if(additionalArr!=null){
+                 totalMem += additionalArr.getShape().getElementsNumber() * paramtokenSize;
+             }
+         }
+
+        return totalMem;
+     }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private methods                   ////
@@ -391,5 +473,15 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
     private String _stdDataType = "int";
 
 
+    /** How many input samples can be stored between two nodes
+     * Default value = 10
+     */
+    public Integer _fifoScale = 10;
+
+    /** DNN input/output data type */
+    public String _IODatatype = "int";
+
+    /** DNN parameters type*/
+    public String _paramDataType = "int";
 
 }

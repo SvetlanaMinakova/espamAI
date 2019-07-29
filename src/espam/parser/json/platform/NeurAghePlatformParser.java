@@ -2,14 +2,92 @@ package espam.parser.json.platform;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import espam.datamodel.platform.Platform;
+import espam.datamodel.platform.Resource;
+import espam.datamodel.platform.processors.ARM;
+import espam.datamodel.platform.processors.GPU;
+import espam.datamodel.platform.processors.HWCE;
+import espam.datamodel.platform.processors.Processor;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
 
 /** ALOHA project NeurAghe Platform parser*/
 public class NeurAghePlatformParser {
+
+/**
+* GET ESPAM platform specification from NEURAGHE platform specification
+* @param path path to NEURAGHE platform specification (in .json format)
+* @return ESPAM platform specification
+*/
+public static Platform parsePlatform(String path){
+        try {
+            Platform platform = new Platform("espam_platform");
+            Vector<Resource> resources = new Vector<>();
+
+           //   System.out.println(strJSON);
+           /** JsonObject opList = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);*/
+            HashMap<String,Integer> operatorsExecTimes = new HashMap<>();
+
+            String strJSON =  FileWorker.read(path);
+
+            JsonObject pla = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
+            /** get platform name*/
+            try {
+                String name = pla.get("name").getAsString();
+                if(name!=null)
+                    platform.setName(name);
+            }
+            catch (Exception e){ }
+
+            /**get cores*/
+            JsonArray cores = pla.get("cores").getAsJsonArray();
+            for(JsonElement core: cores) {
+                /**for each core generate processor*/
+                String coreName = ((JsonObject) core).get("name").getAsString();
+                //System.out.println("core: " + coreName);
+                Processor proc = _generateProcessor(coreName);
+                if(proc!=null) {
+                    resources.add(proc);
+                }
+            }
+
+            platform.setResourceList(resources);
+            return platform;
+        }
+        catch(Exception e){
+            System.err.println("NeurAghe Platform parsing error: " + e.getMessage());
+            return null;
+        }
+
+    }
+
+    /**
+     * TODO: REFACTORING
+     * Generate espam processor from NEURAGHE name
+     * @param name NEURAGHE name
+     * @return espam processor
+     */
+    private static Processor _generateProcessor(String name){
+        if(name.contains("ARM"))
+            return new ARM(name);
+
+        if(name.toLowerCase().contains("gpu"))
+            return new GPU(name);
+
+        if(name.contains("HWCE"))
+            return new HWCE("HWCE");
+
+        System.err.println("Unrecognized processor type: " + name);
+        return null;
+
+       // return new Processor("cpu_" + cpuId);
+    }
+
+
     /**
      * extract time specification
      * This version of timing template does not support mapping.

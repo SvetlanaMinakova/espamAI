@@ -1,0 +1,19 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE platform PUBLIC "-//LIACS//DTD ESPAM 1//EN"
+"http://www.liacs.nl/~cserc/dtd/espam_1.dtd">
+<platform name="Jetson">
+<processor name="cpu_0" type="ARM" subtype ="big" > 
+</processor>
+<processor name="cpu_1" type="ARM" subtype ="big"> 
+</processor>
+<processor name="cpu_2" type="ARM" subtype ="big"> 
+</processor>
+<processor name="cpu_3" type="ARM" subtype ="little"> 
+</processor>
+<processor name="cpu_4" type="ARM" subtype ="little"> 
+</processor>
+<processor name="cpu_5" type="ARM" subtype ="little"> 
+</processor>
+<processor name="gpu_0" type="GPU" cores = "256"> 
+</processor>
+</platform>

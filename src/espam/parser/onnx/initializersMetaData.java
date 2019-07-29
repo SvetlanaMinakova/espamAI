@@ -8,6 +8,10 @@ public class initializersMetaData {
 
     public HashMap<String, String> get_conv_weights() { return conv_weights; }
 
+    public HashMap<String, Vector<String>> getBNpar() { return BNpar; }
+
+    public void setBNpar(HashMap<String, Vector<String>> BNpar) { this.BNpar = BNpar; }
+
     public void set_conv_weights(HashMap<String, String> weights) { this.conv_weights = weights; }
 
     public HashMap<String, String> get_dense_weights() { return dense_weights; }
@@ -58,4 +62,6 @@ public class initializersMetaData {
 
     private Integer dense_partition = 100;
     private Integer conv_partition = 1;
+
+    private HashMap<String,Vector<String>> BNpar;
 }

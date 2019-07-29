@@ -39,6 +39,9 @@ import java.util.Iterator;
             memoryUnits.add(new MemoryUnit(mu));
         nodeCopy.setMemoryUnits(memoryUnits);
         nodeCopy.setKernelsNum(_kernelsNum);
+        nodeCopy.setConcat(_concat);
+        nodeCopy.setSrc(_src);
+        nodeCopy.setSnk(_snk);
         return nodeCopy;
     }
 
@@ -65,6 +68,9 @@ import java.util.Iterator;
         newObj.setLength(_length);
         newObj.setKernelsNum(_kernelsNum);
        // newObj.setInternalMemorySize((Tensor)_internalMemorySize.clone());
+        newObj.setConcat(_concat);
+        newObj.setSnk(_snk);
+        newObj.setSrc(_src);
         return (newObj);
         
     }
@@ -273,7 +279,13 @@ import java.util.Iterator;
      */
 
     public String getNextInPortName() {
-        return "IP" + getInPorts().size();
+       /** String newName = "IP" + getInPorts().size();
+        if(getPort(newName)!=null)
+            System.err.println(getName()+ " node tries to create one more port with name: "+newName);*/
+       if(getInPorts().size()==0)
+           return "IP0";
+
+       return "IP" + (getInPorts().lastElement().getId() + 1);
     }
 
     /**
@@ -281,13 +293,24 @@ import java.util.Iterator;
      * @return new Port name
      */
     public String getNextOutPortName() {
-        return "OP" + getOutPorts().size();
+        /**String newName = "OP" + getInPorts().size();
+        if(getPort(newName)!=null) {
+            System.err.println(getName() + " node tries to create one more output port with name: " + newName);
+        }*/
+        if(getOutPorts().size()==0)
+            return "OP0";
+
+        return "OP" + (getOutPorts().lastElement().getId() + 1);
     }
     /**
      * get next port id
      */
     public int getNextPortId() {
-        return getPortList().size();
+        if(getPortList().size()==0)
+            return 0;
+        CSDFPort lastport = (CSDFPort)getPortList().lastElement();
+        return lastport.getId() + 1;
+        //return getPortList().size();
     }
 
 
@@ -303,8 +326,26 @@ import java.util.Iterator;
     * Add new port to the CSDFNode
     */
     public void addPort(CSDFPort port) {
-        port.setNode(this);
-        getPortList().add(port);
+        if(getPort((port.getId()))!=null || getPort(port.getName())!=null) {
+            if(port.equals(getPort(port.getId()))) {
+             System.out.println(getName() + "node port " + port.getName() + " duplication!");
+             return;
+            }
+            else {
+                System.out.print(getName() + " node: port " + port.getName() + " redeclaration : ");
+                if (getPort((port.getId())) != null)
+                    System.out.print(" , similar Id ");
+                if (getPort(port.getName()) != null) {
+                    System.out.print(" , similar name ");
+                    System.out.println("!");
+                }
+            }
+        }
+
+       // if(getPort(port.getId())==null) {
+            port.setNode(this);
+            getPortList().add(port);
+        //}
     }
 
 
@@ -536,12 +577,41 @@ import java.util.Iterator;
     ////                    memory units processing                  ////
 
        /**
-        * calculate the state size of the node by summing up
-        * all the memory units, owned by a node
+        * Checks, if node performs inputs concatenation
+        * @return true, if node performs inputs concatenation, and false otherwise
         */
-       public void getStateSize(){
+       public boolean isConcat() { return _concat; }
 
-       }
+       /**
+        * Set flag, if node performs inputs concatenation
+        * @param concat Flag, if node performs inputs concatenation
+        */
+       public void setConcat(boolean concat) { this._concat = concat; }
+
+       /**
+        * Checks, if node is a sink node
+        * @return true, if node is a sink node and false otherwise
+        */
+       public boolean isSnk() { return _snk; }
+
+        /**
+        * Set flag, if node is a sink node
+        * @param snk Flag, if node is a sink node
+        */
+       public void setSnk(boolean snk) { this._snk = snk; }
+
+       /**
+        * Checks, if node is source node
+        * @return true, if node is a source node and false otherwise
+        */
+       public boolean isSrc() { return _src; }
+
+       /**
+        * Set flag, if node is a  source node
+        * @param src Flag, if node is a source node
+        */
+       public void setSrc(boolean src) { this._src = src; }
+
 
        /**
         * Add new memory unit description to the node
@@ -559,7 +629,6 @@ import java.util.Iterator;
        public void assignMemoryUnit(String muName, CSDFPort port){
            MemoryUnit mu = getMemoryUnit(muName);
            port.setAssignedMemory(mu);
-
        }
 
        /**
@@ -660,4 +729,13 @@ import java.util.Iterator;
 
     /**SDF Node group (if any)*/
     @SerializedName("group")private String _group = null;
+
+    /**If SDF Node performs inputs concatenation*/
+    @SerializedName("concat")private boolean _concat = false;
+
+    /**If SDF Node is a source node*/
+    @SerializedName("src")private boolean _src = false;
+
+    /**If SDF Node is a sink node*/
+    @SerializedName("snk")private boolean _snk = false;
 }

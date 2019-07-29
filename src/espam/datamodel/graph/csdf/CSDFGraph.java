@@ -6,6 +6,7 @@ import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.Graph;
 import espam.datamodel.graph.NPort;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
+import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CSDFGraphVisitor;
 import java.util.Iterator;
@@ -132,7 +133,8 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
      */
 
     public void addLink(CSDFNode start, CSDFNode end, int prodRate, int consRate) {
-        String edgeName = start.getName()+"_to_"+end.getName();
+        String edgeName = start.getName() + "_to_" + end.getName();
+        //if(!get)
         addLink(start,end,prodRate,consRate,edgeName);
     }
 
@@ -146,7 +148,7 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
      */
 
     public void addLink(CSDFNode start, CSDFNode end, Vector<IndexPair> prodRates, Vector<IndexPair> consRates) {
-        String edgeName = start.getName()+"_to_"+end.getName();
+        String edgeName = start.getId() + "_to_" + end.getId();
         addLink(start,end,prodRates,consRates,edgeName);
     }
 
@@ -224,6 +226,32 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         return false;
     }
 
+         /**
+     * copy data to new destination node
+     * @param newDst new destination
+     */
+    public void broadcastToNewDst(CSDFEdge edge, CSDFNode newDst){
+        addLink((CSDFNode)edge.getSrc().getNode(), newDst,edge.getSrc()._rates, edge.getDst()._rates);
+        MemoryUnit mu = edge.getDst().getAssignedMemory();
+        if(mu!=null){
+            CSDFPort addedInPort = newDst.getInPorts().lastElement();
+            MemoryUnit muCopyDst = new MemoryUnit(mu);
+            //muCopyDst.setName(edge.getSrc().getNode().getName());
+            newDst.addMemoryUnit(muCopyDst);
+            newDst.assignMemoryUnit(muCopyDst.getName(),addedInPort);
+
+            CSDFNode srcNode = ((CSDFNode) edge.getSrc().getNode());
+            MemoryUnit muSrc = srcNode.getMemoryUnit("output");
+            if(muSrc!=null){
+           //     MemoryUnit muCopySrc = new MemoryUnit(muSrc);
+                //muCopySrc.setName(muSrc.getName()+);
+                CSDFPort addedOutPort = ((CSDFNode) edge.getSrc().getNode()).getOutPorts().lastElement();
+                srcNode.assignMemoryUnit(muSrc.getName(),addedOutPort);
+                //addedOutPort.setAssignedMemory(muSrc);
+            }
+        }
+    }
+
     /**
      * Creates new SDF Edge and Links two selected ports of the SDFG Nodes (Actors) with it
      * @param name name of the Edge
@@ -284,7 +312,10 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
      * @return next unique edge id
      */
     public int getNextEdgeId() {
-        return getEdgeList().size();
+        if(getEdgeList().size()==0)
+            return 0;
+        CSDFEdge lastEdge = (CSDFEdge) getEdgeList().lastElement();
+        return lastEdge.getId() + 1;
     }
 
      /**
@@ -317,7 +348,7 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
     /**
      *  Return a node performs read operation (it should be the single node).
      *  Return null if the node cannot be found.
-     * TODO refactoring
+     * TODO refactoring (multiple Src's)
      * @return  the node performs read operation
      */
     public CSDFNode getSrcNode() {
@@ -325,7 +356,7 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         i = getNodeList().iterator();
         while( i.hasNext() ) {
             CSDFNode node = (CSDFNode) i.next();
-            if(node.getOperation().toLowerCase().equals("read")) {
+            if(node.isSrc()) {
                 return node;
             }
         }
@@ -336,7 +367,7 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         /**
      *  Return a node performs write operation (it should be the single node).
      *  Return null if the node cannot be found.
-     * TODO refactoring
+     * TODO refactoring (multiple Snk's)
      * @return  the node performs write operation
      */
     public CSDFNode getSnkNode() {
@@ -344,8 +375,65 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         i = getNodeList().iterator();
         while( i.hasNext() ) {
             CSDFNode node = (CSDFNode) i.next();
-            if(node.getOperation().toLowerCase().equals("write")) {
+            if(node.isSnk()) {
                 return node;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get list of the node output edges
+     * @param nodeId node id
+     * @return list of the node output edges
+     */
+    public Vector<CSDFEdge> getNodeInputEdges(int nodeId){
+        Vector<CSDFEdge> inpEdges = new Vector<>();
+        Iterator i;
+        i = getEdgeList().iterator();
+        while( i.hasNext() ) {
+            CSDFEdge edge = (CSDFEdge) i.next();
+            if(edge.getDstId()[0]==nodeId) {
+                inpEdges.add(edge);
+            }
+        }
+        return inpEdges;
+    }
+
+
+    /**
+     * Get list of the node output edges
+     * @param nodeId node id
+     * @return list of the node output edges
+     */
+    public Vector<CSDFEdge> getNodeOutputEdges(int nodeId){
+        Vector<CSDFEdge> outpEdges = new Vector<>();
+        Iterator i;
+        i = getEdgeList().iterator();
+        while( i.hasNext() ) {
+            CSDFEdge edge = (CSDFEdge) i.next();
+            if(edge.getSrcId()[0]==nodeId) {
+                outpEdges.add(edge);
+            }
+        }
+
+        return outpEdges;
+    }
+
+       /**
+     * Get first output edge of the node
+     * @param nodeId node id
+     * @return first output edge of the node
+     */
+    public CSDFEdge getFirstOutputEdge(int nodeId){
+        Vector<CSDFEdge> outpEdges = new Vector<>();
+        Iterator i;
+        i = getEdgeList().iterator();
+        while( i.hasNext() ) {
+            CSDFEdge edge = (CSDFEdge) i.next();
+            if(edge.getSrcId()[0]==nodeId) {
+                return edge;
             }
         }
 
@@ -556,6 +644,24 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
                 System.err.println(e.getMessage());
             }
         }
+    }
+
+   /**
+     * Get vector of nodes, performing specific operator
+     * @param operator operator
+     * @return  vector of nodes, performing specific operator
+     */
+    public Vector<CSDFNode> getNodesList(String operator){
+        Vector<CSDFNode> opnodes = new Vector();
+        Iterator i;
+        i = getNodeList().iterator();
+        while( i.hasNext() ) {
+            CSDFNode node = (CSDFNode) i.next();
+            if(node.getOperation().toLowerCase().startsWith(operator)) {
+                opnodes.add(node);
+            }
+        }
+        return opnodes;
     }
 
     /**
