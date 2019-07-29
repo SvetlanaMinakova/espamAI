@@ -22,11 +22,9 @@ public:
 
     //convolution
     static void conv (std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
-    static void convolution_3d_inp_gpu(float* input, float* kernel, float* output, int channels, int input_h, int input_w,
-				int output_h,int output_w, int k_h, int k_w, int stride);
-    
     static void convolution_3d_inp_cpu(float* input, float* kernel, float* output,float*bias, int channels, int input_h, int input_w,
 				 int output_d, int output_h,int output_w, int k_h, int k_w, int stride);
+
     //dense(FC): matmul and gemm
     static void execute_dense_block (std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
     static void execute_matmul(float* input, float* weights, float* result, int input_len, int output_len);
@@ -50,8 +48,11 @@ public:
     static void softmax(float *input, int n, float *output);
     
     static void softmax(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+    
+    //timers
+    static double getMicroSecond( void );
+    
     //helpers
-
     static void execute_addconst (float* input, float* weights, float* output, int input_len);
     static void transpose(float *input, int inp_h, int inp_w);
     static void envide_input(float *inp, float* envided, int inp_d, int inp_h, int inp_w, int h_pad, int w_pad);
@@ -65,20 +66,20 @@ public:
     static void normalize_cpu(float *x, float *mean, float *variance, int batch, int filters, int spatial);
 
 
-//const funcs
-	static void sub_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
-	static void div_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
-	static void mul_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+    //const alg funcs
+    static void sub_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+    static void div_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+    static void mul_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
 
-//const cpu funcs
-	static void fill_cpu(int N, float ALPHA, float *X, int INCX);
-	static void copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
-	static void scal_cpu(int N, float ALPHA, float *X, int INCX);
-	static void pow_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
-	static void const_cpu(int N, float ALPHA, float *X, int INCX);
-	static void axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
-	static void mul_cpu(int N, float *X, int INCX, float *Y, int INCY);
-	static void add_bias(float *output, float *biases, int batch, int n, int size);
-	static void scale_bias(float *output, float *scales, int batch, int n, int size);
+    //const cpu funcs (FROM DARKNET)
+    static void fill_cpu(int N, float ALPHA, float *X, int INCX);
+    static void copy_cpu(int N, float *X, int INCX, float *Y, int INCY);
+    static void scal_cpu(int N, float ALPHA, float *X, int INCX);
+    static void pow_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
+    static void const_cpu(int N, float ALPHA, float *X, int INCX);
+    static void axpy_cpu(int N, float ALPHA, float *X, int INCX, float *Y, int INCY);
+    static void mul_cpu(int N, float *X, int INCX, float *Y, int INCY);
+    static void add_bias(float *output, float *biases, int batch, int n, int size);
+    static void scale_bias(float *output, float *scales, int batch, int n, int size);
 };
 #endif /* dnnFunc_H_ */
