@@ -128,17 +128,6 @@ public class MemoryUnit implements Cloneable {
      */
     public boolean isUnitParam() { return _UnitParam; }
 
-    /**
-     *Get description of unit parameter (for non-tensor parameters)
-     * @return description of unit parameter (for non-tensor parameters)
-     */
-    public String getUnitParamDesc() { return _UnitParamDesc; }
-
-    /**
-     * Set description of unit parameter (for non-tensor parameters)
-     * @param UnitParamDesc description of unit parameter (for non-tensor parameters)
-     */
-    public void setUnitParamDesc(String UnitParamDesc) { this._UnitParamDesc = UnitParamDesc; }
 
     /**
      * Get default type for memory unit

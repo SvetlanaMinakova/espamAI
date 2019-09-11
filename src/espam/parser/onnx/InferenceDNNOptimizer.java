@@ -4,12 +4,16 @@ import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.connections.Connection;
+import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
 import espam.datamodel.graph.cnn.neurons.simple.Dropout;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.csdf.datasctructures.Tensor;
 
+import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -43,6 +47,7 @@ public static InferenceDNNOptimizer getInstance(){
                 _incapsulatePads(dnn);
                 _incapsulateNonlinear(dnn,NonLinearType.ReLU);
                 _incapsulateNonlinear(dnn,NonLinearType.LeakyReLu);
+                dnn.resolveReferences();
                 return;
             }
 
@@ -51,6 +56,7 @@ public static InferenceDNNOptimizer getInstance(){
                 _removeReshapes(dnn);
                 _incapsulateBiases(dnn);
                 _incapsulatePads(dnn);
+                dnn.resolveReferences();
                 return;
             }
 
@@ -58,6 +64,7 @@ public static InferenceDNNOptimizer getInstance(){
                 _removeDropouts(dnn);
                 _removeReshapes(dnn);
                 _incapsulatePads(dnn);
+                dnn.resolveReferences();
                return;
             }
 
@@ -70,6 +77,7 @@ public static InferenceDNNOptimizer getInstance(){
                 _removeReshapes(dnn);
                 _incapsulateBiases(dnn);
                 _incapsulatePads(dnn);
+                dnn.resolveReferences();
                 break;
             }
         }
@@ -82,6 +90,7 @@ public static InferenceDNNOptimizer getInstance(){
  * @param dnn deep neural network
  */
     private void _removeDropouts(Network dnn){
+      //  System.out.println("Remove dropouts!");
     _removeLayers(dnn,NonLinearType.DROPOUT.toString());
 }
 
@@ -121,6 +130,7 @@ public static InferenceDNNOptimizer getInstance(){
 
     for(Layer layer: toIncapsulate)
         _incapsulateBias(dnn, layer);
+
     }
 
         /**
@@ -167,14 +177,34 @@ public static InferenceDNNOptimizer getInstance(){
         if(lInputs.size()!=1)
             return;
         Connection singleInput = lInputs.firstElement();
-        singleInput.getSrc().getNeuron().setBiasName(layer.getName());
+        Layer src = singleInput.getSrc();
+        Neuron srcNeuron = src.getNeuron();
+
+        /**TODO: refactoring!*/
+        //if (singleInput.getSrc().getNeuron() instanceof ConnectionDependent)
+        //    return;
+
+        /** insert bias to the node, that does not have bias*/
+        if(srcNeuron.getBiasName()==null)
+            srcNeuron.setBiasName(layer.getName());
+       else {
+           srcNeuron.getOperator().addTensorParam("add", src.getOutputChannels());
+           srcNeuron.getOperator().addStringParam("add_ref", layer.getName());
+        }
+
+
         Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
+
+
         /**connect single input and outputs directly*/
         Layer newSrc = singleInput.getSrc();
         for(Connection outp: layerOutputs){
             outp.changeSrc(newSrc);
         }
         dnn.removeLayer(layer);
+
+       // TreeMap<String,Tensor> tensorParams = newSrc.getNeuron().getOperator().getTensorParams();
+       // System.out.println("bias_par of shape "+tensorParams.get("bias_par")+" added to layer " + newSrc.getName()+"!");
 }
 
    /**
@@ -266,6 +296,7 @@ public static InferenceDNNOptimizer getInstance(){
             outp.changeSrc(newSrc);
         }
         dnn.removeLayer(layer);
+        //System.out.println(layer.getName() + " removed!");
 }
 
 /** DNN optimizer is a singletone, so constructor is private*/

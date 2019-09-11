@@ -1,5 +1,6 @@
 package espam.datamodel.graph.cnn.neurons.transformation;
 
+import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
@@ -7,6 +8,8 @@ import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
+import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 public class Upsample extends Neuron implements ConnectionDependent{
@@ -263,6 +266,35 @@ public class Upsample extends Neuron implements ConnectionDependent{
 
         System.err.println("Parameters update fail: upsample layer " + neuronOwner.getName()+" should not have multiple inputs");
         throw new Exception("Upsample layer "+neuronOwner.getName()+" parameters update fail:");
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+    TreeMap<String,Integer> intParams = _operator.getIntParams();
+        int scaleId = 0;
+        for (Integer scale: _scales) {
+            intParams.put("scale_"+scaleId, scale);
+            scaleId++;
+        }
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        if(!(getOutputDataFormat()==null)){
+            timeComplexity = getOutputH() * getOutputWidth() * outputChannels;
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
     }
 
     ///////////////////////////////////////////////////////////////////

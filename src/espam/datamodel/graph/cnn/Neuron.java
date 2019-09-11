@@ -3,7 +3,7 @@ package espam.datamodel.graph.cnn;
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
-import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
@@ -14,15 +14,17 @@ import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
 import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
- * Describes one Neuron Actor of the Neural Network
+ * Describes one Neuron of the Neural Network
  */
 public abstract class Neuron implements Cloneable{
 
@@ -32,13 +34,18 @@ public abstract class Neuron implements Cloneable{
     /**
      * Public constructor for an empty neuron is required for .json serializers
      */
-    public Neuron() { }
+    public Neuron() {
+       _operator = new Operator("op");
+    }
 
     /**
      * Private constructor of neuron, used by builder
      * @param name name of the neuron
      */
-    public Neuron(String name) { setName(name); }
+    public Neuron(String name) {
+        setName(name);
+        _operator = new Operator(name);
+    }
 
     /** Accept a Visitor
      *  @param x A Visitor Object.
@@ -62,6 +69,7 @@ public abstract class Neuron implements Cloneable{
         newObj.setSampleDim(_sampleDim);
         newObj.setBiasName(_biasName);
         newObj.setNonlin(_nonlin);
+        newObj.setOperator((Operator)_operator.clone());
         return (newObj);
         }
         catch( CloneNotSupportedException e ) {
@@ -76,8 +84,8 @@ public abstract class Neuron implements Cloneable{
      * @return copy of the neuron
      */
     public static Neuron copyNeuron(Neuron neuron){
-        if (neuron instanceof Add)
-            return new Add ((Add)neuron);
+        if (neuron instanceof Arithmetic)
+            return new Arithmetic ((Arithmetic) neuron);
 
         if (neuron instanceof Data)
             return new Data((Data)neuron);
@@ -311,18 +319,100 @@ public abstract class Neuron implements Cloneable{
     }
 
     ///////////////////////////////////////////////////////////////////
+    ////           Operator                                       ////
+     /**
+     * Add to operator parameters inputs from multiple sources
+     * @param layerInputFormat layer input data format
+     */
+    public void _addInputToOpPar(Tensor layerInputFormat){
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+         if (this instanceof MultipleInputsProcessor) _addMultipleInputsToOpPar();
+         else tensorParams.put("input", layerInputFormat);
+    }
+
+    /**
+     * Add to operator parameters inputs from multiple sources
+     * @param layerOutputFormat layer output data format
+     */
+    public void _addOutputToOpPar(Tensor layerOutputFormat){
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+        tensorParams.put("output", layerOutputFormat);
+    }
+
+     /** Add to operator parameters inputs from multiple sources*/
+    private void _addMultipleInputsToOpPar(){
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+        Vector<Layer> inputs = ((MultipleInputsProcessor)this).getInputOwners();
+        if(inputs==null) return;
+        if(inputs.size()==0) return;
+
+        for(Layer input: inputs)
+           tensorParams.put(input.getName(), input.getOutputFormat());
+    }
+
+    ///////////////////////////////////////////////////////////////////
     ////            CSDFG-model-related parameters                ////
 
      /**
      * Get function call description. If no execution code is
       * performed inside of the node, empty description is returned
      * By default, function call description is a name of a neuron
-     * @return function call description*/
+     * @return function call description
+      */
 
     public abstract String getFunctionCallDescription(int channels);
 
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    public abstract void initOperator(int inputChannels, int outputChannels);
+
      /**
-     * TODO scale!
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected abstract void setOperatorTimeComplexity(int inputChannels, int outputChannels);
+
+
+    /** TODO: refactoring*/
+    /** Store an operator float parameter as two integer parameters*/
+    protected  void _addFloatParamAsScaledIntParam(Float par, String name){
+        TreeMap<String,Integer> intParams = _operator.getIntParams();
+
+        Integer scale;
+        Float floatScale;
+        Float scaled;
+        Integer parInt;
+
+        if(par!=null) {
+            scale = _getScale(par);
+            floatScale = Float.parseFloat(scale.toString());
+            scaled = par * floatScale;
+            parInt = scaled.intValue();
+            intParams.put(name, parInt);
+            intParams.put(name + "_scale", scale);
+
+           // System.out.println(x.getName() + " constval scaled: " + constvalInt + " with scale: " + scale);
+        }
+    }
+
+    /**
+     * Scale float/double parameters to int parameters
+     * @param x float/double parameter
+     * @return number of integers after comma
+     */
+    private int _getScale(Float x){
+        String dstring = x.toString();
+        int decimalLen = dstring.length()-(dstring.indexOf(".")+1);
+        return (int)Math.pow(10,decimalLen);
+    }
+
+
+     /**
+     * TODO minH scale!
      * Calculate number of function calls inside of the neuron
      * with current data formats
      * As every neuron produces 1 value on output, function
@@ -519,6 +609,8 @@ public abstract class Neuron implements Cloneable{
      * the parameter value
      */
     public void setParameter(String name, String valueDescription){
+        if(_parameters==null)
+              _parameters = new HashMap<>();
         _parameters.put(name,valueDescription);
     }
 
@@ -648,6 +740,25 @@ public abstract class Neuron implements Cloneable{
      */
     public void setNonlin(String nonlin) { this._nonlin = nonlin; }
 
+    ///////////////////////////////////////////////////////////////
+    ///         Operator                                      ////
+
+    /**
+     * Set operaror
+     * @param operator operator
+     */
+    public void setOperator(Operator operator) {
+        this._operator = operator;
+    }
+
+    /**
+     * Get operator
+     * @return operator
+     */
+    public Operator getOperator() {
+        return _operator;
+    }
+
     /////////////////////////////////////////////////////////////////////
     ////                         protected methods                    ////
      /**
@@ -669,7 +780,7 @@ public abstract class Neuron implements Cloneable{
     ////                         private variables                    ////
 
     /**Name of the Neuron*/
-    @SerializedName("name")  private String _name;
+    @SerializedName("name") protected String _name;
 
     /**
      * One input sample dimension of a neuron:
@@ -704,4 +815,6 @@ public abstract class Neuron implements Cloneable{
 
     /**Neuron's input data format*/
     @SerializedName("nonlin")private String _nonlin = null;
+
+    protected transient Operator _operator = null;
 }

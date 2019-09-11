@@ -2,19 +2,25 @@ package espam.datamodel.graph.cnn.neurons.simple;
 
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
+import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Neuron;
+import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.DataContainer;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
+import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
+
+import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Class describes input and output nodes of CNN
  * Data neurons do not perform any calculations, they are used only for
  * transfer data in/out of CNN model
  */
-public class Data extends Neuron implements DataContainer{
+public class Data extends Neuron implements DataContainer, ConnectionDependent{
 
       /**
      * Create new Data element with a name and empty data format
@@ -154,6 +160,49 @@ public class Data extends Neuron implements DataContainer{
     }
 
 
+    /** recalculate Layer neurons number, if it is dependent on input connections
+     * @param neuronOwner Layer, contains neuron
+     * @param input input of neuronOwner
+     */
+    public void recalculateNeuronsNumber(Layer neuronOwner, Layer input) throws Exception{
+        if(input != null ){
+            int neuronsNum;
+
+            /** TODO: check!*/
+            if(input.getNeuron() instanceof Concat) {
+                Concat cn = (Concat)input.getNeuron();
+                neuronsNum = _extractNeuronsFromConcat(cn);
+                neuronOwner.setNeuronsNum(neuronsNum);
+               // System.out.println(" From multiple inp proc: " + input.getName() + " inherited neurons: " + neuronOwner.getNeuronsNum());
+            }
+            else
+                neuronOwner.setNeuronsNum(input.getNeuronsNum());
+
+
+            return;
+            }
+            /** neuron owner */
+        System.err.println("Parameters update fail: NonLinear layer " + neuronOwner.getName()+" should not have multiple inputs");
+        throw new Exception("NonLinear layer "+neuronOwner.getName()+" parameters update fail:");
+    }
+
+    private Integer _extractNeuronsFromConcat(Concat cn){
+        int neurs = 0;
+        int inpNeurs = 0;
+
+            for (Layer inputOwner: cn.getInputOwners()) {
+                if(inputOwner.getNeuron() instanceof Concat)
+                    inpNeurs = _extractNeuronsFromConcat((Concat)inputOwner.getNeuron());
+                else
+                    inpNeurs = inputOwner.getNeuronsNum();
+
+                neurs += inpNeurs;
+            }
+            neurs = Math.max(neurs,1);
+
+            return neurs;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////      SDFG transformation-related  public methods         ////
     /**
@@ -191,6 +240,48 @@ public class Data extends Neuron implements DataContainer{
     @Override
     public int getOperationsNumber(int channels){
         return 0;
+    }
+
+        /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) { }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+
+        if(_name.equals(DataType.INPUT)) {
+            if(!(getOutputDataFormat()==null))
+                timeComplexity = getOutputDataFormat().getElementsNumber();
+        }
+        else if(!(getInputDataFormat()==null)) {
+            timeComplexity = getInputDataFormat().getElementsNumber();
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
+    }
+
+    /**
+     * Add to operator parameters inputs from multiple sources
+     * @param layerInputFormat layer input data format
+     */
+    @Override
+    public void _addInputToOpPar(Tensor layerInputFormat){
+        String dataParamName = "input";
+
+        if (getName().equals(DataType.INPUT.toString()))
+           dataParamName = "data";
+
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+        tensorParams.put(dataParamName, layerInputFormat);
     }
 
 }

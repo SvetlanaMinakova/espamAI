@@ -14,7 +14,8 @@ SUBPACKAGES = \
 JSRCS = \
 	Polytope2Expression.java \
 	Polytope2IndexBoundVector.java \
-	CNN2CSDFGraphConverter.java
+	CNN2CSDFGraphConverter.java  \
+    CSDFIOMemoryGenerator.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

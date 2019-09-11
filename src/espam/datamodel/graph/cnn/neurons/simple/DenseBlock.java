@@ -252,6 +252,62 @@ public class DenseBlock extends Neuron {
         return desc.toString();
     }
 
+
+         /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+
+
+        if (getBiasName() != null)
+        {
+            if(getBiasName() != "bias") {
+                _operator.initStringParams();
+                _operator.getStringParams().put("bias_ref",getBiasName());
+            }
+
+            Integer size = _neuronsNum;
+            Tensor bias = new Tensor(size);
+            _operator.getTensorParams().put("bias",bias);
+        }
+
+        Tensor input = getInputDataFormat();
+        if(!Tensor.isNullOrEmpty(input)) {
+
+            Tensor weights = new Tensor();
+            int blockNeuronsNum = _neuronsNum;
+            int lin_input = input.getElementsNumber();
+            /** TODO: refactoring! does not work with Concat inp!*/
+            if(inputChannels>1)
+                lin_input*=inputChannels;
+
+            weights.addDimension(blockNeuronsNum);
+            weights.addDimension(lin_input);
+
+            _operator.getTensorParams().put("weights",weights);
+        }
+        else {System.out.println("Dense weights construction error: null or empty input data format!");}
+
+    }
+
+        /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        if(!(getInputDataFormat()==null)){
+            timeComplexity = getInputDataFormat().getElementsNumber() *
+                    Math.max(inputChannels,1) * _neuronsNum;
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
+    }
+
     ///////////////////////////////////////////////////////////////////////
     ////                         private variables                    ////
     /** Number of neurons inside the Dense block*/

@@ -10,6 +10,8 @@ import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
+import java.util.TreeMap;
+
 public class LRN extends Neuron implements ConnectionDependent, CustomConnectionGenerator {
      /////////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
@@ -294,6 +296,44 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
         desc.append(")");
 
         return desc.toString();
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+        TreeMap<String,Integer> intParams = _operator.getIntParams();
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+
+        intParams.put("size",_size);
+
+        _addFloatParamAsScaledIntParam(_alpha,"alpha");
+        _addFloatParamAsScaledIntParam(_beta,"beta");
+        _addFloatParamAsScaledIntParam(_bias,"kappa");
+
+        /** TODO: check!*/
+        int squaredSize = getInputDataFormat().getElementsNumber() * inputChannels;
+        int normsSize = squaredSize;
+
+        tensorParams.put("squared",new Tensor(squaredSize));
+        tensorParams.put("norms",new Tensor(normsSize));
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        if(!(getInputDataFormat()==null)){
+            timeComplexity = getSize() * getInputHeight() * getInputWidth();
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
     }
 
     /////////////////////////////////////////////////////////////////////

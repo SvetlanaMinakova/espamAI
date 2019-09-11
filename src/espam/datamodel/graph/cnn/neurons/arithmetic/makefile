@@ -12,7 +12,7 @@ SUBPACKAGES = \
 
 # Java files in this directory
 JSRCS = \
-    Add.java
+    Arithmetic.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

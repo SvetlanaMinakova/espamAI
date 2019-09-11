@@ -3,6 +3,7 @@ package espam.datamodel.graph.cnn.neurons.arithmetic;
 import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Neuron;
+import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.neurontypes.ArithmeticOpType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
@@ -12,15 +13,12 @@ import espam.visitor.CNNGraphVisitor;
 import java.util.Vector;
 
 /**
- * Class of add transformation Neuron:
- * Summarize the results of several input layers
- * IMPORTANT: Min number of inputs, coming from previous layers = 2+
- * For adding biases or any other constants to single input use NonLinear AddConstant
- *
- *
- * TODO FINISH IMPLEMENTATION
+ * Class of Arithmetic Neuron:
+ * Arithmetic neuron accepts 1+ inputs, coming from previous layers and performs
+ * such operations as Add or Multiply
+ * For applying bias or any other constant to single input you can also use NonLinear AddConst/MulConst
  */
-public class Add extends Neuron implements MultipleInputsProcessor {
+public class Arithmetic extends Neuron implements MultipleInputsProcessor, ConnectionDependent {
     /////////////////////////////////////////////////////////////////
     ////                         public methods                 ////
 
@@ -36,13 +34,13 @@ public class Add extends Neuron implements MultipleInputsProcessor {
       return Math.max(getInputsNumber() - 1,0);
     }
         /**
-     * Create new Add element with a name
-     * a stride and a kernelSize for the Add element = 1
+     * Create new Arithmetic element with a name
+     * a stride and a kernelSize for the Arithmetic element = 1
      * an input sample dimension is 1 (vector)
      */
-    public Add () {
-        super(ArithmeticOpType.ADD.toString());
-        setNeuronType(NeuronType.ADD);
+    public Arithmetic (ArithmeticOpType name) {
+        super(name.toString());
+        setNeuronType(NeuronType.ARITHMETIC);
     }
 
     /** Accept a Visitor
@@ -52,7 +50,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
     public void accept(CNNGraphVisitor x) { x.visitComponent(this); }
 
       /**
-      * Compares Add neuron with another object
+      * Compares Arithmetic neuron with another object
       * @param obj Object to compare this Neuron with
       * @return true if Neuron is equal to the object and false otherwise
       */
@@ -66,11 +64,11 @@ public class Add extends Neuron implements MultipleInputsProcessor {
                return false;
            }
 
-       Add add = (Add)obj;
-         return this.getName().equals(add.getName())
-              && getInputsNumber()==add.getInputsNumber()
-              && Tensor.isSame(getInputDataFormat(),add.getInputDataFormat())
-              && Tensor.isSame(getOutputDataFormat(),add.getOutputDataFormat());
+       Arithmetic Arithmetic = (Arithmetic)obj;
+         return this.getName().equals(Arithmetic.getName())
+              && getInputsNumber()==Arithmetic.getInputsNumber()
+              && Tensor.isSame(getInputDataFormat(),Arithmetic.getInputDataFormat())
+              && Tensor.isSame(getOutputDataFormat(),Arithmetic.getOutputDataFormat());
        }
 
      /**
@@ -91,11 +89,11 @@ public class Add extends Neuron implements MultipleInputsProcessor {
 
 
      /**
-     * Clone this Add Neuron
-     * @return a new reference on the Add Neuron
+     * Clone this Arithmetic Neuron
+     * @return a new reference on the Arithmetic Neuron
      */
-    public Add clone() {
-        Add newObj = (Add) super.clone();
+    public Arithmetic clone() {
+        Arithmetic newObj = (Arithmetic) super.clone();
         newObj._ownerNeuronsNumber = this._ownerNeuronsNumber;
         newObj._inputOwners = this._inputOwners;
         return newObj;
@@ -105,7 +103,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
      * Create a deep copy of this neuron
      * @param a original neuron to be copied
      */
-    public Add (Add a) {
+    public Arithmetic (Arithmetic a) {
         super(a);
         _ownerNeuronsNumber = a._ownerNeuronsNumber;
 
@@ -127,23 +125,12 @@ public class Add extends Neuron implements MultipleInputsProcessor {
     }
 
     /**
-     * Automatically caclulates the output format of a neuron
-     * number of outputs of one Add neuron = number of its inputs
-     * ic case of vector, the point is returned
+     * Automatically calculates the output format of a neuron
      * @param inputDataFormat input data format description - tensor w x h x ...
      * @return output data format of a neuron
      */
     public Tensor calculateOutputDataFormat(Tensor inputDataFormat) {
-        if(Tensor.isNullOrEmpty(inputDataFormat))
             return inputDataFormat;
-
-        Tensor result = new Tensor(inputDataFormat);
-        /** TODO is axis set to 1 or removed/or unchanged after adding??*/
-      //  result.setDimSize(result.getDimensionality()-1,1);
-        if(_inputOwners.size()==1 && _ownerNeuronsNumber>1)
-            result.removeDimension();
-
-        return result;
     }
 
 
@@ -192,27 +179,21 @@ public class Add extends Neuron implements MultipleInputsProcessor {
      */
     public void setDataFromMultipleInputs(Layer neuronOwner) throws Exception{
         if(_inputOwners==null)
-            throw new Exception("Add data formats calculation: no inputs found");
+            throw new Exception("Arithmetic data formats calculation: no inputs found");
 
 
-        Tensor commonInput = _inputOwners.firstElement().getOutputFormat();
+        Tensor common = _inputOwners.firstElement().getOutputFormat();
+        setInputDataFormat(common);
+        setOutputDataFormat(common);
 
-        setInputDataFormat(commonInput);
-        setOutputDataFormat(calculateOutputDataFormat(getInputDataFormat()));
+        neuronOwner.setInputFormat(common);
+        neuronOwner.setOutputFormat(common);
 
-        neuronOwner.setInputFormat(commonInput);
-        neuronOwner.setOutputFormat(neuronOwner.calculateOutputFormat());
-
-        setInputDataFormat(commonInput);
-        setOutputDataFormat(commonInput);
-
-        neuronOwner.setInputFormat(commonInput);
-        neuronOwner.setOutputFormat(commonInput);
     }
 
     /**
      * Checks, if an input is acceptable for the node
-     * Add Nodes accept inputs, that have the same shape with the output
+     * Arithmetic Nodes accept inputs, that have the same shape with the output
      * or could be extended
      * @param inputDataFormat input data format
      * @return true, if input node is acceptable and false otherwise
@@ -255,7 +236,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
     public Vector<Layer> getInputOwners() { return _inputOwners; }
 
     /**
-     * Add new input from another layer
+     * Arithmetic new input from another layer
      * @param inputOwner layer, owns the input
      */
     public void addInput(Layer inputOwner){
@@ -279,7 +260,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
     ////      SDFG transformation-related  public methods         ////
      /**
      * Calculate number of function calls inside of the neuron
-     * Add neuron always fires once for each input pair
+     * Arithmetic neuron always fires once for each input pair
      * @return number of function calls inside of the node
      */
      @Override
@@ -302,6 +283,98 @@ public class Add extends Neuron implements MultipleInputsProcessor {
         return desc.toString();
     }
 
+    /** recalculate Layer neurons number, if it is dependent on input connections
+     * @param neuronOwner Layer, contains neuron
+     * @param input input of neuronOwner
+     */
+    public void recalculateNeuronsNumber(Layer neuronOwner, Layer input) throws Exception{
+
+        if(input != null ){
+
+            neuronOwner.setNeuronsNum(input.getNeuronsNum());
+                return;
+            }
+
+        System.err.println("Parameters update fail: arithmetic layer " + neuronOwner.getName());
+        throw new Exception("Arithmetic layer "+neuronOwner.getName()+" parameters update fail:");
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+        if (getBiasName() != null)
+        {
+            if(getBiasName() != "bias") {
+                _operator.initStringParams();
+                _operator.getStringParams().put("bias_ref",getBiasName());
+            }
+
+            Integer size = outputChannels;
+            Tensor bias = new Tensor(size);
+            _operator.getTensorParams().put("bias",bias);
+        }
+
+        //tensor refs
+        Vector<Layer> inputs = getInputOwners();
+        Integer inpId = 0;
+        Integer minInputs = 2;
+        for(Layer input: inputs){
+            _operator.addTensorRef("input" + inpId,input.getName());
+            inpId++;
+        }
+        if(inpId<minInputs)
+        for(int i=inpId;i<minInputs;i++){
+            _operator.addTensorRef("input" + inpId,"null");
+        }
+
+        //min inputs number = 2. If second input is lacking, it is replaced by null-ref
+
+
+        /**
+         *  Vector<CSDFPort> inputs = _getConcatSortedInputPorts(node);
+        Integer inpId = 0;
+        String muref;
+        String muname;
+        MemoryUnit mu;
+       for(CSDFPort input: inputs){
+           muname = "input" + inpId;
+           mu = input.getAssignedMemory();
+           if(mu!=null)     muref = "&"+ mu.getName() + "[0]";
+           else muref = "nullptr";
+
+           _printStream.println(_prefix + "tensor_params[\""+ muname +"\"] = " + muref + ";");
+           inpId++;
+
+           }
+
+           if(inpId==1)
+               _printStream.println(_prefix + "tensor_params[\"input1\"] = nullptr;");
+
+         */
+
+    }
+
+        /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+
+       if(!(getInputDataFormat()==null)) {
+            timeComplexity = getInputDataFormat().getElementsNumber();
+        }
+
+
+
+        _operator.setTimeComplexity(timeComplexity);
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
 
@@ -309,7 +382,7 @@ public class Add extends Neuron implements MultipleInputsProcessor {
     private transient Vector<Layer> _inputOwners = new Vector<>();
 
     /**
-     *  number of Add processing elements in layer-owner
+     *  number of Arithmetic processing elements in layer-owner
      *  used for calculation of output format
      */
     private int _ownerNeuronsNumber = 1;

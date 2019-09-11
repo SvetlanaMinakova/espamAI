@@ -4,10 +4,17 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
+import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
+import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
+
+import java.util.HashMap;
+import java.util.TreeMap;
+
 /**
  * Non-linear element such as ReLu, sigm, thn
  * TODO references to NonLinear Elements description
@@ -122,12 +129,44 @@ public class NonLinear extends Neuron implements ConnectionDependent {
      */
     public void recalculateNeuronsNumber(Layer neuronOwner, Layer input) throws Exception{
         if(input != null ){
-            neuronOwner.setNeuronsNum(input.getNeuronsNum());
-                return;
+            int neuronsNum;
+
+            /** TODO: check!*/
+            if(input.getNeuron() instanceof Concat) {
+                Concat cn = (Concat)input.getNeuron();
+                neuronsNum = _extractNeuronsFromConcat(cn);
+                neuronOwner.setNeuronsNum(neuronsNum);
+               //System.out.println(" From " + input.getName() + " "+ neuronOwner.getName() +" inherited neurons: " + neuronOwner.getNeuronsNum());
+            }
+            else
+                neuronOwner.setNeuronsNum(input.getNeuronsNum());
+
+            //System.out.println(" From " + input.getName() + " "+ neuronOwner.getName() + " inherited neurons: " + neuronOwner.getNeuronsNum());
+
+
+            return;
             }
             /** neuron owner */
         System.err.println("Parameters update fail: NonLinear layer " + neuronOwner.getName()+" should not have multiple inputs");
         throw new Exception("NonLinear layer "+neuronOwner.getName()+" parameters update fail:");
+    }
+
+    private Integer _extractNeuronsFromConcat(Concat cn){
+        int neurs = 0;
+        int inpNeurs = 0;
+
+            for (Layer inputOwner: cn.getInputOwners()) {
+                if(inputOwner.getNeuron() instanceof Concat)
+                    inpNeurs = _extractNeuronsFromConcat((Concat)inputOwner.getNeuron());
+                else
+                    inpNeurs = inputOwner.getNeuronsNum();
+
+                neurs += inpNeurs;
+            }
+            neurs = Math.max(neurs,1);
+
+          //  System.out.println("Neurs from concat: " + neurs);
+            return neurs;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -161,4 +200,71 @@ public class NonLinear extends Neuron implements ConnectionDependent {
         return 0;
         return inputDataFormat.getElementsNumber() * channels;
     }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+        if (_name.equals(NonLinearType.BN.toString())) {
+            initBNOperator(inputChannels, outputChannels);
+            return;
+        }
+
+          if (getBiasName() != null)
+        {
+            if(getBiasName() != "bias") {
+                _operator.initStringParams();
+                _operator.getStringParams().put("bias_ref",getBiasName());
+            }
+
+            Integer size = outputChannels;
+            Tensor bias = new Tensor(size);
+            _operator.getTensorParams().put("bias",bias);
+        }
+
+        if (_name.toLowerCase().contains("const")||_name.toLowerCase().contains("scale")) {
+
+
+
+            Float constval = getFloatParameter("constval");
+             if (constval == null) {
+                 constval = 1f;
+                 if (_name.toLowerCase().contains("add"))
+                     constval = 0f;
+             }
+
+             _addFloatParamAsScaledIntParam(constval,"constval");
+
+        }
+
+    }
+
+    public void initBNOperator(int inputChannels, int outputChannels){
+        TreeMap<String,Tensor> tensorParams = _operator.getTensorParams();
+      // System.out.println(getName() + " neurs: "+ outputChannels);
+
+        Tensor paramTensor = new Tensor(outputChannels);
+        tensorParams.put("scale", paramTensor);
+        tensorParams.put("mean", paramTensor);
+        tensorParams.put("variance", paramTensor);
+        tensorParams.put("bias", paramTensor);
+    }
+
+        /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        if(!(getInputDataFormat()==null)){
+            timeComplexity = inputChannels * getInputHeight() * getInputWidth();
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
+    }
+
 }

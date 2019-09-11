@@ -10,10 +10,10 @@ ROOT  = ../../..
 
 # Java files in this directory
 JSRCS = \
+	EnergyEvaluator.java \
 	CSDFGMemoryRefiner.java \
 	CSDFTimingRefiner.java \
-	RefinedCSDFEvaluator.java \
-	CSDFGEnergyRefiner.java
+	OperatorsComplexityEvaluator.java
 
 
 SUBPACKAGES =

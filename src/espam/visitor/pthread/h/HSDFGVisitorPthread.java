@@ -1,13 +1,14 @@
 package espam.visitor.pthread.h;
-import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
-import espam.visitor.pthread.weights.WeightsLoader;
 import espam.visitor.sesame.h.HSDFGVisitor;
 import espam.utils.fileworker.FileWorker;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 public class HSDFGVisitorPthread extends HSDFGVisitor{
@@ -126,6 +127,7 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
              _printStream.println(_prefix + "int largest(int arr[], int n);");
              _printStream.println(_prefix + "int count_max_approx_number(int num_conv, int *size);");
              _printStream.println(_prefix + "void compute_blocks_per_group( int num_conv, int gpu_cores, int *size, int *blocksize, bool print_details=false);");
+             _printStream.println(_prefix + "void compute_blocks_per_group_tail( int num_conv, int gpu_cores, int *size, int *blocksize, bool print_details=false);");
              _printStream.println(_prefix + "void get_blocks(int* blocksize, bool print_details = false);");
              _writeCommonEnd(name);
 
@@ -145,166 +147,16 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
          try {
              _printStream = FileWorker.openFile(dir, y.getName(), "h");
              _writeCommonBeginning(y.getName(),_getBaseClassName(y));
-
-             _printStream.println(_prefix + "const int neurons = " + y.getKernelsNum() + ";");
              _writeFIFOsizes(y);
-
              _writeContainerTemplates(y);
-
              /** write specific data*/
              _printStream.println(_prefix + "//specific node parameters and functions");
              _writeCommonEnd(y.getName());
-
          }
          catch (Exception e){
              System.err.println(".h file creation error for " + y.getName() + ". " + e.getMessage());
          }
      }
-
-         /**
-     * Write container templates for each container, associated with the node
-     * @param node SDF graph node
-     */
-    @Override
-    protected void _writeDNNRefinedContainerTemplates(CSDFNode node){
-        /** TODO: REFACTORING*/
-        boolean concatNode = false;
-        if(node.getOperation().toLowerCase().equals("concat") || node.isConcat())
-            concatNode = true;
-
-        for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
-                MemoryUnit mu = inport.getAssignedMemory();
-                if (mu!=null) {
-                    _printStream.println(_prefix + "const int " + mu.getName() +
-                                "_dims = " + mu.getDimensionality() + ";");
-                    if(concatNode)
-                       _writeArrDims(mu.getShape(),mu.getName());
-                    else
-                       _writeArrWithDimsLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
-                    //_writeTensorToCPPArrayDefinition(mu.getShape(),mu.getName(),mu.getTypeDesc());
-                }
-        }
-
-        /** built-in concatenation*/
-        if(node.isConcat()) {
-            MemoryUnit concatInput = node.getMemoryUnit("input");
-            if(concatInput!=null){
-                _printStream.println(_prefix + "const int " + concatInput.getName() +
-                                "_dims = " + concatInput.getDimensionality() + ";");
-                 _writeArrWithDimsLinear(concatInput.getShape(),concatInput.getName(),concatInput.getTypeDesc());
-            }
-
-        }
-
-        /** define only distinct out ports*/
-        Vector<String> defined = new Vector<>();
-        for(CSDFPort outport: node.getNonOverlapHandlingOutPorts()){
-                MemoryUnit mu = outport.getAssignedMemory();
-                if (mu!=null) {
-                    if(!defined.contains(mu.getName())) {
-                        _printStream.println(_prefix +"const int " + mu.getName() +
-                                "_dims = " + mu.getDimensionality() + ";");
-                         //_writeTensorToCPPArrayDefinition(mu.getShape(), mu.getName(), mu.getTypeDesc());
-                        _writeArrWithDimsLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
-                        defined.add(mu.getName());
-                    }
-                }
-        }
-        defined.clear();
-
-        /** define weights, if any*/
-        MemoryUnit weights = node.getMemoryUnit("weights");
-        if(weights!=null){
-            _writeArrWithDimsLinear(weights.getShape(), weights.getName(), weights.getTypeDesc());
-           //_writeTensorToCPPArrayDefinitionWeights(weights.getShape(), weights.getName(), weights.getTypeDesc());
-        }
-
-        /** define biases, if any*/
-        MemoryUnit bias = node.getMemoryUnit("bias");
-        if(bias!=null){
-             _writeArrLinear(bias.getShape(),"bias",bias.getTypeDesc());
-        }
-
-        /** define constant parameters, if any*/
-        Vector<MemoryUnit> constParams = node.getUnitParams();
-        if(constParams.size()>0) {
-            _printStream.println("//const parameters");
-            for (MemoryUnit mu : constParams) {
-                _printStream.println(_prefix + "const " + mu.getTypeDesc() + " " + mu.getName() + " = " + mu.getUnitParamDesc() + ";");
-            }
-        }
-
-
-
-        /** define networkspace, if any*/
-       //if(_generateDNFunc) {
-            MemoryUnit networkspace = node.getMemoryUnit("networkspace");
-            if (networkspace != null)
-                _writeArrLinear(networkspace.getShape(), "networkspace", networkspace.getTypeDesc());
-       // }
-
-        Vector<String> additionalTensorParams = new Vector<>();
-        additionalTensorParams.add("squared");
-        additionalTensorParams.add("norms");
-        additionalTensorParams.add("scale");
-        additionalTensorParams.add("mean");
-        additionalTensorParams.add("variance");
-
-        for (String atp: additionalTensorParams){
-             MemoryUnit atpMU = node.getMemoryUnit(atp);
-            if (atpMU!= null) {
-                _writeArrLinear(atpMU.getShape(),atp, _IODatatype);
-            }
-        }
-
-    }
-
-
-  /**
-     * Get C++ definition of static linear array,
-     * corresponding to  espam. Tensor
-     * @param tensor shape of weights (espam. Tensor)
-     * @param arrname name of the array
-     * @param typeDesc description of array type;
-     * @return C++ description of static multidimensional array,
-     * corresponding to  espam. Tensor
-     */
-    public void _writeArrWithDimsLinear(Tensor tensor, String arrname, String typeDesc){
-        if(Tensor.isNullOrEmpty(tensor))
-            return;
-        _writeArrDims(tensor,arrname);
-        int size = tensor.getElementsNumber();
-           _writeEmptyLinearArr(arrname,typeDesc,size);
-
-        prefixDec();
-        _printStream.println("");
-    }
-
-
-    /**
-     * Get C++ definition of static linear array dimensions,
-     * corresponding to  espam. Tensor
-     * @param tensor shape of weights (espam. Tensor)
-     * @param arrname name of the array
-     * corresponding to  espam. Tensor
-     */
-    public void _writeArrDims(Tensor tensor, String arrname){
-        if(Tensor.isNullOrEmpty(tensor))
-            return;
-
-        _printStream.println(_prefix + "//"+ arrname +" array definition");
-        _prefixInc();
-        int tensorDimensionality = tensor.getDimensionality();
-       // int revId = tensorDimensionality-1;
-        for (int i =0;i< tensorDimensionality; i++)
-            _printStream.println(_prefix + "const int " + arrname + "_dim_" + i +" = " +tensor.getDimSize(i)+";");
-
-        _printStream.println(_prefix + "const int " + arrname + "_len = " +tensor.getElementsNumber()+";");
-        _printStream.println();
-
-        prefixDec();
-        _printStream.println("");
-    }
 
     /**
      * Define linear array
@@ -313,17 +165,25 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
      * @param typeDesc description of array type;
      */
      public void _writeArrLinear(Tensor tensor, String arrname, String typeDesc){
+        if(Tensor.isNullOrEmpty(tensor))
+             return;
+
         int size = tensor.getElementsNumber();
         _writeEmptyLinearArr(arrname,typeDesc,size);
+        /** TODO: refactoring!*/
+        if(!arrname.equals("input"))
         _printStream.println(_prefix + "const int " + arrname + "_len = " + size + ";");
      }
 
     /**
-     * Write empty weights moc
+     * Write empty linear array
      * @param name name of the array
      * @param typeDesc description of array type;
      */
     private void _writeEmptyLinearArr(String name, String typeDesc, int size){
+        if(size<1)
+            return;
+
         _printStream.println(_prefix + typeDesc + " " + name + "[" + size + "] = {0}; ");
     }
 
@@ -372,9 +232,6 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
         _printStream.println(_prefix + "virtual ~" + name + "();");
         _printStream.println("");
         _printStream.println(_prefix + "void main(void *threadarg) override;");
-        _printStream.println(_prefix + "// specific const parameters definition");
-        _printStream.println(_prefix + "std::map<std::string,int> int_params;");
-        _printStream.println(_prefix + "std::map<std::string," + _IODatatype + " *> tensor_params;");
         _prefixDec();
     }
 

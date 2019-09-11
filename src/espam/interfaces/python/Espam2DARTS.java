@@ -183,9 +183,9 @@ public class Espam2DARTS {
     public CSDFEvalResult evaluateCNN(Network network, DNNInitRepresentation initRepresentation) {
         CSDFGraph dnnCsdf;
 
-        if(initRepresentation.equals(DNNInitRepresentation.NEURONBASED))
-            dnnCsdf = _cnn2SDFConverter.buildGraph(network);
-        else
+        //if(initRepresentation.equals(DNNInitRepresentation.NEURONBASED))
+          //  dnnCsdf = _cnn2SDFConverter.buildGraph(network);
+        //else
             dnnCsdf = _cnn2SDFConverter.buildGraphLayerBased(network);
         return evaluateCSDFGraph(dnnCsdf);
     }

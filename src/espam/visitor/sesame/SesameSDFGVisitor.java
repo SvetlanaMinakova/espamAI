@@ -58,6 +58,7 @@ public class SesameSDFGVisitor {
    private static void _setDataTypes(String iotype, String paramtype ){
        _ymlVisitor._IODatatype = iotype;
        _ymlVisitor._paramDataType = paramtype;
+       _hvisitor.setIOdataType(iotype);
    }
 
     ///////////////////////////////////////////////////////////////////

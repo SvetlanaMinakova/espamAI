@@ -2,6 +2,7 @@ package espam.datamodel.graph.cnn;
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.connections.Connection;
+import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
@@ -10,11 +11,14 @@ import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
 
 import java.io.Console;
+import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -160,15 +164,25 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * @param layerInputDataFormat input data format of the layer
      */
     public void updateDataFormatsFromTop(Tensor neuronInputDataFormat,Tensor layerInputDataFormat) {
-         // System.out.println(getName() + " out: ");
+
+        // System.out.println(getName() + " out: ");
         /** process generic neuron as a subnetwork*/
         if(_neuron instanceof GenericNeuron){
             Network subNetwork = ((GenericNeuron) _neuron).getInternalStructure();
+
             subNetwork.setDataFormats(layerInputDataFormat);
-            _neuron.setInputDataFormat(subNetwork.getInputLayer().getInputFormat());
+            subNetwork.getInputLayer().setInputFormat(layerInputDataFormat);
+            subNetwork.getInputLayer().setOutputFormat(subNetwork.getInputLayer().calculateOutputFormat());
+            subNetwork.getOutputLayer().setOutputFormat(subNetwork.getOutputLayer().calculateOutputFormat());
+
+            _neuron.setInputDataFormat(layerInputDataFormat);
+            _neuron.setOutputDataFormat(subNetwork.getOutputLayer().getOutputFormat());
+
+
+            /**_neuron.setInputDataFormat(layerInputDataFormat);
             _neuron.setOutputDataFormat(subNetwork.getOutputLayer().getOutputFormat());
             setInputFormat(subNetwork.getInputLayer().getInputFormat());
-            setOutputFormat(subNetwork.getOutputLayer().getOutputFormat());
+            setOutputFormat(subNetwork.getOutputLayer().getOutputFormat());*/
             return;
         }
         _neuron.setInputDataFormat(neuronInputDataFormat);
@@ -179,9 +193,12 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
 
         _neuron.setOutputDataFormat(_neuron.calculateOutputDataFormat(neuronInputDataFormatWithPads));
 
-        setInputFormat(layerInputDataFormat);
+        if(!(_neuron instanceof MultipleInputsProcessor))
+            setInputFormat(layerInputDataFormat);
 
         setOutputFormat(calculateOutputFormat());
+
+        //System.out.println(getName() + " output format: "+_outputDataFormat);
 
     }
 
@@ -259,6 +276,8 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      */
     public Tensor calculateOutputFormat() {
         Tensor outputFormat = new Tensor(_neuron.getOutputDataFormat());
+        /** TODO: check!*/
+        // if(_neuronsNum>1 && (!(getInputConnections().firstElement().getSrc()._neuron instanceof Concat)))
         if(_neuronsNum>1)
             outputFormat.addDimension(_neuronsNum);
         return outputFormat;
@@ -292,10 +311,205 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     }
 
     ///////////////////////////////////////////////////////////////////
+    ////                   Operator                               ////
+    /**
+     * Init operator: Description of DNN layer functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    public void initOperator() {
+
+        if (_neuron.getOperator() == null) {
+            Operator op = new Operator(_neuron._name);
+            _neuron.setOperator(op);
+        }
+
+        TreeMap<String, Integer> intparams = _neuron._operator.getIntParams();
+        TreeMap<String, Tensor> tensorParams = _neuron._operator.getTensorParams();
+        int inputChannels = getInputChannels();
+        /** TODO: refactoring*/
+    //    if(_neuron instanceof DenseBlock)
+
+
+        _neuron.initOperator(getInputChannels(), getOutputChannels());
+        sortInputsInConcatOrder();
+
+        //_neuron._addInputToOpPar(_inputDataFormat);
+        //_neuron._addOutputToOpPar(_outputDataFormat);
+
+       if (!(_neuron instanceof GenericNeuron)) {
+            intparams.put("neuron_start_id", getstartNeuronId());
+            intparams.put("neurons", getOutputChannels());
+            _setOperatorPads();
+            if (!tensorParams.containsKey("bias"))
+                tensorParams.put("bias", new Tensor());
+            _neuron._operator.setName(getFunctionCallDescription(getInputChannels()));
+            _initDarknetParams();
+        }
+
+       _setGPUUseTemplate();
+       _addIODimsAndLen();
+
+       _neuron.setOperatorTimeComplexity(getInputChannels(), getOutputChannels());
+      // System.out.println(getName()+" operator init!");
+    }
+
+    private void _addIODimsAndLen(){
+     TreeMap<String,Integer> intParams = _neuron._operator.getIntParams();
+     Neuron neuron = _neuron;
+
+     Integer inputSampleDim = _neuron.getSampleDim();
+     Integer outputSampleDim = _neuron.getSampleDim();
+     Tensor inputDataFormat = _inputDataFormat;
+     Tensor outputDataFormat = _outputDataFormat;
+
+     /** process generic*/
+      if(_neuron instanceof  GenericNeuron){
+         Network internalStructure = ((GenericNeuron) _neuron).getInternalStructure();
+         neuron = internalStructure.getInputLayer().getNeuron();
+         inputDataFormat = internalStructure.getInputLayer()._inputDataFormat;
+         outputDataFormat = internalStructure.getOutputLayer()._outputDataFormat;
+         inputSampleDim = neuron.getSampleDim();
+         outputSampleDim = internalStructure.getOutputLayer()._neuron.getSampleDim();
+     }
+
+     /** setup input*/
+     if(neuron instanceof MultipleInputsProcessor) {
+         MultipleInputsProcessor muln = (MultipleInputsProcessor)neuron;
+         for(Layer input: muln.getInputOwners()){
+             _addIODimAndLenAsIntParams(input._outputDataFormat,input.getName());
+         }
+     }
+
+     else {
+         _addIODimAndLenAsIntParams(inputDataFormat,"input");
+         intParams.put("channels", getInputChannels());
+         if(inputSampleDim>1) {
+             intParams.put("h", getInputHeight());
+             intParams.put("w", getInputWidth());
+         }
+     }
+
+     /** setup output*/
+     _addIODimAndLenAsIntParams(outputDataFormat,"output");
+     if(outputSampleDim>1) {
+             intParams.put("out_h", getOutpH());
+             intParams.put("out_w", getOutpW());
+         }
+    }
+
+    /**
+     * Add I/O dims as tensor par
+     * @param tensor tensor
+     * @param name tensor name
+     */
+    private void _addIODimAndLenAsIntParams(Tensor tensor,String name){
+        if(Tensor.isNullOrEmpty(tensor))
+            return;
+
+        TreeMap<String,Integer> intParams = _neuron._operator.getIntParams();
+
+        for(int i=0; i<tensor.getDimensionality(); i++)
+            intParams.put(name + "_dim"+i, tensor.getDimSize(i));
+
+        intParams.put(name +"_len",tensor.getElementsNumber());
+    }
+
+    //DARKNET special params
+    /** TODO might be changed!*/
+    private void _initDarknetParams(){
+        TreeMap<String,Integer> intParam = _neuron._operator.getIntParams();
+         intParam.put("groups", 1);
+         intParam.put("batch", 1);
+        // intParam.put("batchnormalize", 0);
+        // intParam.put("xnor",0);
+
+    }
+
+    /** Process operator pads*/
+    private void _setOperatorPads(){
+        if(!(_neuron instanceof CNNNeuron))
+            return;
+
+        CNNNeuron cnnNeuron = (CNNNeuron)_neuron;
+        TreeMap<String,Integer> intParam = _neuron._operator.getIntParams();
+        TreeMap<String,Tensor>  tensorParams = _neuron._operator.getTensorParams();
+        int [] pads;
+        if(_pads!=null)
+            pads = _pads;
+        else pads = new int[4];
+
+        if(cnnNeuron instanceof Convolution && cnnNeuron.getBoundaryMode().equals(BoundaryMode.SAME))
+             pads = _generateSameAutoPads(cnnNeuron, _pads);
+
+         if(_NullOrZeroPads(pads))
+             intParam.put("pads",0);
+
+         else{
+                 intParam.put("pads",1);
+                 intParam.put("pad_w0", pads[0]);
+                 intParam.put("pad_h0", pads[1]);
+                 intParam.put("pad_w1", pads[2]);
+                 intParam.put("pad_h1", pads[3]);
+
+                 int envW = getInpW() + pads[0] + pads[2];
+                 int enwH = getInpH() + pads[1] + pads[3];
+                 int envC = getInputChannels();
+                 Tensor envidedInput = new Tensor(envW,enwH,envC);
+                 tensorParams.put("envided",envidedInput);
+             }
+    }
+
+    /**
+     * In real applications the SAME boundary mode is
+     * imitated as VALID boundary mode + special pads
+     * @param x CNN neuron
+     * @param defaultPads pads, that layer already have
+     * @return autopads, imitating the SAME boundary mode
+     */
+    private int [] _generateSameAutoPads(CNNNeuron x, int[] defaultPads){
+        int x_autopad = (((x.getInputWidth() * (x.getStride()-1) + x.getKernelW()))/x.getStride() - 1)/2;
+        int y_autopad = (((x.getInputHeight() * (x.getStride()-1) + x.getKernelH()))/x.getStride() - 1)/2;
+
+        if(defaultPads==null)
+        { int pads[] = {x_autopad,y_autopad,x_autopad,y_autopad};
+            return pads;
+        }
+
+        {
+            defaultPads[0] += x_autopad;
+            defaultPads[1] += y_autopad;
+            defaultPads[2] += x_autopad;
+            defaultPads[3] += y_autopad;
+            return defaultPads;
+        }
+
+    }
+
+       /**
+     * if all values in pad are equal to zero
+     */
+    private boolean _NullOrZeroPads(int pads[]){
+        if(pads == null)
+            return true;
+
+        for(int i=0; i<4;i++){
+            if(pads[i]!=0)
+                return false;
+        }
+        return true;
+    }
+
+    private void _setGPUUseTemplate(){
+       // if(_neuron instanceof Convolution)
+            _neuron._operator.getIntParams().put("gpu",-1);
+    }
+
+    ///////////////////////////////////////////////////////////////////
     ////                   consistency checkout                   ////
 
     /**
-     * Checks if data formats are consistent. Data formats are
+     * Checks if data formats are tent. Data formats are
      * not consistent if there are any null or '-' output values and
      * consistent otherwise.
      * @return true, if layer data format consistent and false otherwise
@@ -326,15 +540,6 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
         }
     ///////////////////////////////////////////////////////////////////
     ////            data formats details extraction               ////
-
-    /**
-     * Get feature maps number, which is equal to neurons number
-     * @return feature maps number, which is equal to neurons number
-     */
-    public int getFeatureMaps(){
-        return getNeuronsNum();
-    }
-
     /**
      * TODO REFACTORING ON DENSEBLOCK INPUT CHANNELS NUMBER
      * TODO denseBlock input dimensionality might be>denseBlock output dimensionality,
@@ -343,28 +548,82 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * @return input channels number*/
 
     public int getInputChannels(){
-        if(Tensor.isNullOrEmpty(_inputDataFormat)||Tensor.isNullOrEmpty(_neuron.getInputDataFormat()))
+        Vector<Connection> inputConnections = getInputConnections();
+
+        if(inputConnections.size()>0){
+            Layer inpSrc = inputConnections.firstElement().getSrc();
+            if(inpSrc._neuron instanceof Concat)
+                return inpSrc.getOutputChannels();
+        }
+
+        if(_neuron instanceof  GenericNeuron)
+            return ((GenericNeuron) _neuron).getInternalStructure().getInputLayer().getInputChannels();
+
+         if(Tensor.isNullOrEmpty(_inputDataFormat)||Tensor.isNullOrEmpty(_neuron.getInputDataFormat()))
+         if(Tensor.isNullOrEmpty(_inputDataFormat))
             return 0;
 
+        /** TODO: check!*/
         if(_neuron instanceof DenseBlock) {
             int ch = _inputDataFormat.getElementsNumber() / _neuron.getInputDataFormat().getElementsNumber();
             return Math.max(ch, 1);
         }
 
-        //if(_neuron instanceof MultipleInputsProcessor)
-          //  return 1;
-
-        if(_inputDataFormat.getDimensionality()<=_neuron.getSampleDim())
+        if(_inputDataFormat.getDimensionality()<3)
             return 1;
 
-        return _inputDataFormat.getDimSize(_neuron.getSampleDim());
+        return _inputDataFormat.getDimSize(2);
     }
 
      /**
      * Get output channels number
      * @return input channels number
      */
-    public int getOutputChannels(){ return getNeuronsNum(); }
+     public int getOutputChannels(){
+         Tensor outputDataFormat = _outputDataFormat;
+
+         if(_neuron instanceof GenericNeuron)
+             outputDataFormat = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer()._outputDataFormat;
+
+         if(outputDataFormat==null){
+             System.err.println(_name + " output channels derivation error: output data format is not set!");
+             return 1;
+         }
+
+        if(outputDataFormat.getDimensionality()<3)
+            return 1;
+
+
+         Integer outputH = getOutpH();
+         Integer outputW = getOutpW();
+
+        /**  if(_neuron instanceof GenericNeuron){
+              outputH = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer().getOutpH();
+              outputW = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer().getOutpW();
+          }*/
+
+
+       //System.out.println(_name + " output channels: "+ (outputDataFormat.getElementsNumber()/(outputH*outputW)) );
+
+        return outputDataFormat.getElementsNumber()/(outputH*outputW);
+
+
+       /** if(_neuron instanceof Concat)
+            return _getConcatOutChannels((Concat)_neuron);
+
+
+        if(_neuron instanceof ConnectionDependent) {
+            Vector<Connection> inputConnections = getInputConnections();
+
+            if (inputConnections.size() > 0) {
+                Layer inpSrc = inputConnections.firstElement().getSrc();
+                if (inpSrc._neuron instanceof Concat)
+                    return inpSrc.getOutputChannels();
+            }
+        }
+
+        return _neuronsNum;*/
+    }
 
     /**
      * Get input data width
@@ -445,6 +704,31 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     }
 
     public void setOutputFormat(Tensor outputFormat) { this._outputDataFormat = outputFormat; }
+
+
+    /**
+     * Get output channels for concat node
+     * @param cn
+     * @return
+     */
+    private Integer _getConcatOutChannels(Concat cn){
+
+        int neurs = 0;
+        int inpNeurs = 0;
+
+            for (Layer inputOwner: cn.getInputOwners()) {
+                if(inputOwner.getNeuron() instanceof Concat)
+                    inpNeurs = _getConcatOutChannels((Concat)inputOwner.getNeuron());
+                else
+                    inpNeurs = inputOwner.getNeuronsNum();
+
+                neurs += inpNeurs;
+            }
+            neurs = Math.max(neurs,1);
+
+        //  System.out.println("Concat out channels: "+neurs);
+          return neurs;
+    }
 
     public int getNeuronsNum() { return _neuronsNum; }
 

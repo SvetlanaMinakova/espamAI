@@ -6,15 +6,14 @@ import espam.datamodel.graph.cnn.connections.*;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.CustomConnectionGenerator;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
-import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
-import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.Data;
-import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
@@ -180,8 +179,10 @@ public class Network implements Cloneable, ReferenceResolvable {
         sortConnectionsInTraverseOrderFromTop();
 
         for(Connection connection: _connections){
+           // System.out.println(connection.getSrcName()+"-->"+connection.getDestName()+" update");
             updateDataFormats(connection);
         }
+        //System.out.println("data formats are set!");
     }
 
     /**
@@ -357,7 +358,7 @@ public class Network implements Cloneable, ReferenceResolvable {
 
         Neuron dstNeuron = con.getDest().getNeuron();
 
-        if(srcNeuron.getSampleDim()<2 && dstNeuron instanceof CNNNeuron) {
+        if(srcNeuron.getSampleDim()<2 &&!(srcNeuron instanceof Concat) && dstNeuron instanceof CNNNeuron) {
           //  System.out.println("Dense to conv connection found: "+srcNeuron.getName() +"-->"+dstNeuron.getName());
             return true;
         }
@@ -372,15 +373,31 @@ public class Network implements Cloneable, ReferenceResolvable {
      * @return true, if network is consistent and false otherwise
      */
     private boolean _isConsistent(Connection con){
+        boolean consistent = true;
+
         Tensor srcOutputFormat = con.getSrc().getOutputFormat();
         Tensor destInputFormat = con.getDest().getInputFormat();
 
-        if(!Tensor.isHaveSameElementsNumber(srcOutputFormat,destInputFormat)) {
-            System.out.println("Consistency fault: "+con.getSrcName()+" --> "+con.getDestName());
-            System.out.println(srcOutputFormat+" --> "+destInputFormat);
-            return false;
-        }
-        return true;
+         if(con.getDest().getNeuron() instanceof MultipleInputsProcessor){
+            MultipleInputsProcessor mulInp = (MultipleInputsProcessor)con.getDest().getNeuron();
+            if(!mulInp.isAcceptableInput(srcOutputFormat)){
+                System.out.println("Consistency fault: " + con.getSrcName() + " --> " + con.getDestName());
+                System.out.println(" input format: " + srcOutputFormat +" is not acceptable for " + con.getDestName());
+                consistent = false;
+            }
+
+         }
+
+         else {
+             if (!Tensor.isHaveSameElementsNumber(srcOutputFormat, destInputFormat)) {
+                 System.out.println("Consistency fault: " + con.getSrcName() + " --> " + con.getDestName());
+                 System.out.println(srcOutputFormat + " --> " + destInputFormat);
+                 consistent = false;
+             }
+         }
+
+
+        return consistent;
     }
 
     /**
@@ -1259,8 +1276,10 @@ public class Network implements Cloneable, ReferenceResolvable {
             connection.setSrc(srcLayer);
             connection.setDest(destLayer);
 
-            srcLayer.getOutputConnections().add(connection);
-            destLayer.getInputConnections().add(connection);
+            if(!srcLayer.getOutputConnections().contains(connection))
+                srcLayer.getOutputConnections().add(connection);
+            if(!destLayer.getInputConnections().contains(connection))
+                destLayer.getInputConnections().add(connection);
 
             Neuron destLayerNeuron = destLayer.getNeuron();
 
@@ -1416,69 +1435,23 @@ public class Network implements Cloneable, ReferenceResolvable {
      * @return number of neurons for target espam.cnn.Layer
      */
     private void updateConnectionDependentParameters(Layer dependent) throws Exception {
-        NeuronType dependentLayerNeuronType = dependent.getNeuron().getNeuronType();
-        if(!NeuronType.isConnectionDependent(dependentLayerNeuronType))
+        if(dependent.getInputConnections().size()==0)
             return;
+
+        if(!(dependent.getNeuron() instanceof ConnectionDependent))
+            return;
+
+       // System.out.println("update connection dependent params of layer "+dependent.getName());
 
         Vector<Layer> inputLayers = new Vector<Layer>();
         for(Connection inpCon:dependent.getInputConnections())
             inputLayers.add(inpCon.getSrc());
 
-        switch (dependentLayerNeuronType) {
-            case POOL: {
-                inheritParamsFromSingleOutput(inputLayers, dependent);
-                return;
-            }
-            case NONLINEAR: {
-                inheritParamsFromSingleOutput(inputLayers, dependent);
-                return;
-            }
-            case LRN: {
-                inheritParamsFromSingleOutput(inputLayers, dependent);
-                return;
-            }
+        Layer firstInput = inputLayers.firstElement();
+        ((ConnectionDependent)(dependent.getNeuron())).recalculateNeuronsNumber(dependent,firstInput);
+        dependent.getNeuron().setSampleDim(firstInput.getNeuron().getSampleDim());
 
-            case CONCAT: {
-                Concat dependentNeuron = (Concat)(dependent.getNeuron());
-                return;
-            }
-            case RESHAPE: {
-                Reshape dependentNeuron = (Reshape)(dependent.getNeuron());
-                for(Layer inputLayer: inputLayers)
-                   // System.out.println(inputLayer.getName());
-                return;
-            }
-
-            case ADD: {
-               // Add dependentNeuron = (Add)(dependent.getNeuron());
-                inheritParamsFromSingleOutput(inputLayers, dependent);
-                return;
-            }
-
-            default:
-                return ;
-        }
-    }
-                /**
-    * TODO resolve for multiple inputs for POOLING/NONLINEAR layers if reasoneable
-    * for now each dependent layer should have 0 or 1 outputs
-    * otherwise the error if thrown
-    */
-    private void inheritParamsFromSingleOutput(Vector<Layer> inputLayers, Layer dependent) throws Exception
-    {
-        switch (inputLayers.size()){
-            case 0:
-                return;
-            case 1:{
-                Layer singleInput = inputLayers.firstElement();
-                dependent.setNeuronsNum(singleInput.getNeuronsNum());
-                dependent.getNeuron().setSampleDim(singleInput.getNeuron().getSampleDim());
-                return;
-            }
-            /** other cases */
-            default:
-                throw new Exception("Parameters update fail: "+ dependent.getNeuron().getNeuronType()+" layer should have a single input");
-        }
+      //  System.out.println(dependent.getName() + " [updated]");
 
     }
 
@@ -1640,6 +1613,18 @@ public class Network implements Cloneable, ReferenceResolvable {
         return neuronNames;
     }
 
+      /** Get distinct DNN neuron names */
+    public Vector<Operator> getOperatorsDistinct(){
+        Vector<Operator> operators = new Vector<>();
+        for(Layer layer: _layers){
+           Operator op = layer.getNeuron().getOperator();
+            if(!operators.contains(op))
+               operators.add(op);
+        }
+
+        return operators;
+    }
+
     /**
      * For all convolutional/pooling neurons set crop parameter.
      * If crop = true and input image dims are not divisible on kernel size,
@@ -1664,6 +1649,38 @@ public class Network implements Cloneable, ReferenceResolvable {
         return _crop;
     }
 
+    /** TODO remove after GPU blocksize search algorithm is implemented*/
+    public void printFMSizes(){
+        Vector<Integer> fmSizes = new Vector<>();
+        for(Layer layer: _layers){
+
+            if(layer.getNeuron() instanceof Convolution)
+                fmSizes.add(layer.getOutputHeight());
+        }
+
+        System.out.println("FM sizes ( " + fmSizes.size() + " in total) :");
+        int lineSize = 10;
+        int elemId = 0;
+        for(Integer size: fmSizes) {
+            if(elemId>=lineSize) {
+                System.out.println();
+                elemId = 0;
+            }
+            System.out.print(size + ", ");
+            elemId++;
+        }
+        System.out.println();
+    }
+
+    /**
+     * Init operators: Descriptions of DNN layers functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    public void initOperators(){
+        for(Layer layer: _layers)
+            layer.initOperator();
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                ////

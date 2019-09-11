@@ -11,7 +11,7 @@ SUBPACKAGES = \
 	platformparameterset \
 	consistencychecks \
 	transformations \
-	refinement
+	evaluation
 
 # Java files in this directory
 JSRCS = \

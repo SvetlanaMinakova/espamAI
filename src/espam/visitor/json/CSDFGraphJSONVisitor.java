@@ -5,9 +5,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.NPort;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
-import espam.operations.refinement.CSDFTimingRefiner;
+import espam.operations.evaluation.CSDFTimingRefiner;
 import espam.parser.json.csdf.*;
 import espam.utils.fileworker.JSONFileWorker;
 import espam.visitor.CSDFGraphVisitor;
@@ -155,11 +156,14 @@ public class CSDFGraphJSONVisitor extends CSDFGraphVisitor{
          prefixInc();
         _printStream.println(_prefix + "\"id\": " + x.getId()+",");
         _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
-        _printStream.println(_prefix + "\"function\": \"" + x.getOperation()+"\",");
+        _printStream.println(_prefix + "\"function\": \"" + x.getFunction()+"\",");
         if(x.getGroup()!=null)
             _printStream.println(_prefix + "\"group\": \"" + x.getGroup()+"\",");
         _printStream.println(_prefix + "\"length\": " +x.getLength()+ ",");
         _printStream.println(_prefix + "\"port_number\": "+x.countPorts()+",");
+        String jsonOperator = _gson.toJson(x.getOperator(), Operator.class);
+      //  System.out.println(jsonOperator);
+        _printStream.println(_prefix + "\"operator\": " + jsonOperator + ",");
 
          Vector<Integer> wcet = _wcet.get(x);
          if(wcet==null)

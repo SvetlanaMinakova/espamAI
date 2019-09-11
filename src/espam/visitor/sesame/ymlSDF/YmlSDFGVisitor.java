@@ -4,7 +4,7 @@ import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.main.UserInterface;
-import espam.operations.refinement.RefinedCSDFEvaluator;
+import espam.operations.evaluation.CSDFGMemoryRefiner;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
 
@@ -29,7 +29,6 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
      */
     public YmlSDFGVisitor() {
         _prefix = "   ";
-        _cntr = 0;
         _uniqueOperationsNames.clear();
     }
 
@@ -151,17 +150,12 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
         _prefixDec();
         _printStream.println(_prefix + "</node>");
         /** get unique operation id*/
-         String operation = x.getOperation();
+        String operation = x.getOperator().getName();
         int operationId;
-        if(_uniqueOperationsNames.contains(operation)){
-            operationId = _uniqueOperationsNames.indexOf(operation);
-        }
-        else {
-            _cntr++;
-            operationId = _cntr;
-            _uniqueOperationsNames.add(operation);
-        }
+        if(!_uniqueOperationsNames.contains(operation))
+             _uniqueOperationsNames.add(operation);
 
+        operationId = _uniqueOperationsNames.indexOf(operation) + 1;
 
         _printStream.println(_prefix + "<property name=\"operation:" + operation + "\" value=\"" + operationId + "\" />" );
 
@@ -209,7 +203,7 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
             if (dstRate.getFirst()>maxRate)
                 maxRate = dstRate.getFirst();
 
-        int token_size = RefinedCSDFEvaluator.getInstance(). typeSize(_IODatatype);
+        int token_size = CSDFGMemoryRefiner.getInstance(). typeSize(_IODatatype);
         int size = maxRate * _fifoScale * token_size;
         return size;
      }
@@ -222,8 +216,8 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
      */
      protected Integer _getMemoryReq(CSDFNode node){
         int totalMem = 0;
-        int IOtokenSize = RefinedCSDFEvaluator.getInstance(). typeSize(_IODatatype);
-        int paramtokenSize = RefinedCSDFEvaluator.getInstance(). typeSize(_paramDataType);
+        int IOtokenSize = CSDFGMemoryRefiner.getInstance(). typeSize(_IODatatype);
+        int paramtokenSize =CSDFGMemoryRefiner.getInstance(). typeSize(_paramDataType);
 
         /** compute input ports*/
         for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
@@ -249,7 +243,7 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
         /** define constant parameters, if any*/
         Vector<MemoryUnit> constParams = node.getUnitParams();
         for (MemoryUnit mu : constParams) {
-            totalMem += 1 * RefinedCSDFEvaluator.getInstance(). typeSize(mu.getTypeDesc());
+            totalMem += 1 * CSDFGMemoryRefiner.getInstance(). typeSize(mu.getTypeDesc());
         }
 
          /** take into account additional tensor parameters (weights, biases)
@@ -461,9 +455,6 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
     ////                         private variables                 ////
 
     private CSDFGraph _sdfg = null;
-
-    /** number of unique operations*/
-    private int _cntr = 0;
 
     /**unique operations names*/
     Vector<String> _uniqueOperationsNames = new Vector<>();

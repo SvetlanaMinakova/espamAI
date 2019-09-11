@@ -1,13 +1,12 @@
 package espam.visitor.json.refinement;
 import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.operations.refinement.CSDFTimingRefiner;
+import espam.operations.evaluation.CSDFTimingRefiner;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
-import java.io.File;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -111,12 +110,12 @@ public class TimingRefinerVisitor {
      */
     private static HashMap<String,Integer> _getTimingSpec(Network dnn){
         try {
-            Vector<String> opnamesDistinct =dnn.getNeuronNamesDistinct();
+            Vector<Operator> opsDistinct = dnn.getOperatorsDistinct();
             HashMap<String,Integer> opList = new HashMap<String,Integer>();
 
-            for(String op: opnamesDistinct){
+            for(Operator op: opsDistinct){
                 Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
-                opList.put(op,opTime);
+                opList.put(op.getName(),opTime);
             }
             return opList;
         }
@@ -134,12 +133,12 @@ public class TimingRefinerVisitor {
      */
     private static HashMap<String,Integer> _getTimingSpecTemplate(CSDFGraph graph){
         try {
-            Vector<String> opnamesDistinct = graph.getOpListDistinct();
+            Vector<Operator> opsDistinct = graph.getOpListDistinct();
             HashMap<String,Integer> opList = new HashMap<String,Integer>();
 
-            for(String op: opnamesDistinct){
+            for(Operator op: opsDistinct){
                 Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
-                opList.put(op,opTime);
+                opList.put(op.getName(),opTime);
             }
             return opList;
         }
@@ -163,7 +162,7 @@ public class TimingRefinerVisitor {
             i = graph.getNodeList().iterator();
             while (i.hasNext()) {
                 CSDFNode node = (CSDFNode) i.next();
-                String op = node.getOperation();
+                String op = node.getFunction();
                 if (!opnamesDistinct.containsKey(op.toLowerCase())) {
                     opnamesDistinct.put(op, defaultTime);
                 }

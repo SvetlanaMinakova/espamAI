@@ -9,7 +9,8 @@ AUXCLASSPATH = $(GSON)
 
 SUBPACKAGES = \
     connections \
-    neurons
+    neurons \
+    operators
 
 # Java files in this directory
 JSRCS = \

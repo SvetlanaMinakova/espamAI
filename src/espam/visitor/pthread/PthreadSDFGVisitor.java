@@ -8,13 +8,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
-import espam.datamodel.mapping.MProcess;
-import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
-import espam.datamodel.platform.processors.Processor;
-import espam.datamodel.pn.cdpn.CDProcess;
-import espam.main.cnnUI.DNNInitRepresentation;
-import espam.parser.xml.mapping.XmlMappingParser;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.pthread.cpp.CPPSDFGVisitorPthread;
 import espam.visitor.pthread.h.HSDFGVisitorPthread;
@@ -36,7 +30,8 @@ public class PthreadSDFGVisitor {
      */
      public static void callVisitor(Network dnn, CSDFGraph y, String dir) {
          _setDummySchedule(dnn,y);
-         setLoadWeightsFolder(dir.replace("/pthread/","/weights/"));
+         //setLoadWeightsFolder(dir.replace("/pthread/","/weights/"));
+         setLoadWeights();
          if(_generateDNNFuncNA) {
              _setDataTypes("DATA", "DATA");
              _setMUDataTypes(y,"DATA");
@@ -55,7 +50,8 @@ public class PthreadSDFGVisitor {
      */
      public static void callVisitor(Vector<String> schedule, CSDFGraph y, String dir, boolean CNNRefined) {
          _cppVisitor.setSchedule(schedule);
-         setLoadWeightsFolder(dir.replace("/pthread/","/weights/"));
+        // setLoadWeightsFolder(dir.replace("/pthread/","/weights/"));
+         setLoadWeights();
          if(_generateDNNFuncNA) {
              _setDataTypes("DATA", "DATA");
              _setMUDataTypes(y,"DATA");
@@ -602,11 +598,9 @@ public class PthreadSDFGVisitor {
     ////                     private variables                     ///
 
     /**
-     * Set folder, from where the weights should be loaded
-     * @param loadWeightsFolder folder, from where the weights should be loaded
+     * Load weights
      */
-    public static void setLoadWeightsFolder(String loadWeightsFolder) {
-        _cppVisitor.setLoadWeightsFolder(loadWeightsFolder);
+    public static void setLoadWeights() {
         _loadWeights = true;
     }
 

@@ -11,8 +11,7 @@ AUXCLASSPATH = $(ONNX)$(CLASSPATHSEPARATOR)$(GSON)$(CLASSPATHSEPARATOR)$(GRAPHVI
 
 SUBPACKAGES = \
     cpp \
-    h \
-    weights
+    h
 
 # Java files in this directory
 JSRCS = \

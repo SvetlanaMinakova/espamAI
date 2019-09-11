@@ -70,6 +70,8 @@ public class Convolution extends CNNNeuron {
         return newObj;
     }
 
+
+
     /**
      * Copy this Convolution Neuron
      * @return a deep copy of this Convolution Neuron

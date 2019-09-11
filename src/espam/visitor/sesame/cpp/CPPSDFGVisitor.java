@@ -117,7 +117,7 @@ public class CPPSDFGVisitor extends CSDFGraphVisitor{
       if(opRepetitionsNum==0)
           return;
 
-      String operation = node.getOperation();
+      String operation = node.getFunction();
       if(operation==null)
           return;
 

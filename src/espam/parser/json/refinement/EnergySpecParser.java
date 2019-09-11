@@ -4,7 +4,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.operations.refinement.CSDFGEnergyRefiner;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 

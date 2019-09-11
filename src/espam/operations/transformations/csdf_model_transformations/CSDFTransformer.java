@@ -1,15 +1,12 @@
 package espam.operations.transformations.csdf_model_transformations;
-
-import espam.datamodel.graph.NPort;
 import espam.datamodel.graph.csdf.CSDFEdge;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
+import espam.datamodel.graph.csdf.datasctructures.Tensor;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 /**TODO finish implementation
  * Class implements transformations over CSDF model
@@ -71,7 +68,9 @@ public class CSDFTransformer {
 
     }
 
-        /**
+
+
+     /**
      * Incapsulate concatenation node into it's output node
      * @param concat concatenation node
      */
@@ -91,10 +90,13 @@ public class CSDFTransformer {
 
            // CSDFEdge concatToOutputLink = _csdfg.getFirstOutputEdge(concat.getId());
 
-            concatOutputNode.setConcat(true);
+            concatOutputNode.getOperator().setConcat(true);
+            _incapsulateInputLenghts(concatOutputNode,concat);
+
 
             _csdfg.getNodeList().remove(concat);
     }
+
 
     /**
      * Incapsulate concatenation node into it's output node
@@ -117,14 +119,15 @@ public class CSDFTransformer {
             CSDFNode concatOutputNode = (CSDFNode) concatOutputEdge.getDst().getNode();
             _csdfg.removeLink((CSDFNode)inputEdge.getSrc().getNode(),concat,inputEdge.getName());
             _csdfg.broadcastToNewDst(inputEdge,concatOutputNode);
-            concatOutputNode.setConcat(true);
+            concatOutputNode.getOperator().setConcat(true);
         }
 
     }
 
     for (CSDFEdge concatOutputEdge: concatOutputEdges) {
          CSDFNode concatOutputNode = (CSDFNode) concatOutputEdge.getDst().getNode();
-         concatOutputNode.setConcat(true);
+         concatOutputNode.getOperator().setConcat(true);
+         _incapsulateInputLenghts(concatOutputNode,concat);
         _csdfg.removeLink(concat, concatOutputNode, concatOutputEdge.getName());
     }
         _csdfg.getNodeList().remove(concat);
@@ -140,6 +143,29 @@ public class CSDFTransformer {
         CSDFEdge concatOutput = _csdfg.getFirstOutputEdge(concatNodeId);
         CSDFNode output = (CSDFNode)concatOutput.getDst().getNode();
         return output;
+    }
+
+
+    private void _incapsulateInputLenghts(CSDFNode outNode, CSDFNode concat){
+        TreeMap<String, Integer> concatIntParams = concat.getOperator().getIntParams();
+        TreeMap<String, Integer> nodeIntParams = outNode.getOperator().getIntParams();
+        String cIntKey;
+        for(Map.Entry<String,Integer> cIntPar: concatIntParams.entrySet()){
+            cIntKey = cIntPar.getKey();
+            if (cIntKey.contains("_len") && !(nodeIntParams.containsKey(cIntKey))){
+                 nodeIntParams.put(cIntPar.getKey(),cIntPar.getValue());
+            }
+        }
+        //define common input
+        Integer commonInpLen = nodeIntParams.get("input_len");
+        if(commonInpLen!=null){
+            outNode.getOperator().getTensorParams().put("input",new Tensor(commonInpLen));
+
+            nodeIntParams.remove("input_len");
+            nodeIntParams.put("input_len",commonInpLen);
+            concatIntParams.remove("input_len");
+        }
+
     }
 
     private Vector<CSDFEdge> _getConcatSortedInputs(CSDFNode concat){
@@ -196,8 +222,8 @@ public class CSDFTransformer {
         i = _csdfg.getNodeList().iterator();
         while( i.hasNext() ) {
             CSDFNode node = (CSDFNode) i.next();
-            if(node.getOperation()!=null) {
-                if (node.getOperation().toLowerCase().equals("concat")) {
+            if(node.getFunction()!=null) {
+                if (node.getFunction().toLowerCase().equals("concat")) {
                     concatNodesList.add(node);
                 }
             }

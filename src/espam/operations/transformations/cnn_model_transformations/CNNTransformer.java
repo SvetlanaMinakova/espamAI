@@ -8,16 +8,17 @@ import espam.datamodel.graph.cnn.connections.Custom;
 import espam.datamodel.graph.cnn.connections.OneToOne;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
+import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
-import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
+import espam.datamodel.graph.cnn.neurons.simple.Data;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
-import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
-import espam.datamodel.graph.csdf.datasctructures.IndexPair;
+import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.interfaces.python.Espam2DARTS;
-import espam.operations.refinement.CSDFTimingRefiner;
+import espam.operations.evaluation.OperatorsComplexityEvaluator;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
 
 import java.util.HashMap;
@@ -191,6 +192,17 @@ public class CNNTransformer {
             neuronsStart += added.getNeuronsNum();
         }
 
+        /**TODO refactoring*/
+        /** process dense block internal neurons number*/
+        if(layer.getNeuron() instanceof DenseBlock) {
+            int startNeuronId = layer.getstartNeuronId() + ((DenseBlock) layer.getNeuron()).getNeuronsNum();
+
+            for (int i = 0; i < copiesNum; i++) {
+                layerCopies[i].setstartNeuronId(startNeuronId);
+                startNeuronId = layerCopies[i].getstartNeuronId() + ((DenseBlock) layerCopies[i].getNeuron()).getNeuronsNum();
+            }
+        }
+
         splitInputConnections(layer,layerCopies);
         _splitId++;
         _processDependentChains(chains,layerCopies);
@@ -296,7 +308,8 @@ public class CNNTransformer {
         Vector<Connection> outputConnections = _network.getLayerOutputConnections(layer);
 
         for(Connection outp: outputConnections){
-            if(outp.getDest().getNeuron() instanceof ConnectionDependent)
+            if(outp.getDest().getNeuron() instanceof ConnectionDependent &&
+                    !(outp.getDest().getNeuron() instanceof Data))
                 dependentOutputs.add(outp.getDest());
         }
 
@@ -393,7 +406,10 @@ public class CNNTransformer {
 
              for(int i=0;i<childrenNum;i++)
                  lNeuronsNum.addDimension(1);
+
         }
+
+
         else {
             lNeuronsNum = splitNeuronsNum(layer, childrenNum);
             layer.setNeuronsNum(lNeuronsNum.getDimSize(0));
@@ -406,6 +422,17 @@ public class CNNTransformer {
         for(int i=0 ;i<copiesNum;i++){
             _network.addLayer(layer.getName()+"_split_"+_splitId+"_"+i,neuronCopies[i],lNeuronsNum.getDimSize(i+1),layer.getPads());
             layerCopies[i] = _network.getLastLayer();
+        }
+
+        /**TODO refactoring*/
+        /** process dense block internal neurons number*/
+        if(layer.getNeuron() instanceof DenseBlock) {
+            int startNeuronId = layer.getstartNeuronId() + ((DenseBlock) layer.getNeuron()).getNeuronsNum();
+
+            for (int i = 0; i < copiesNum; i++) {
+                layerCopies[i].setstartNeuronId(startNeuronId);
+                startNeuronId = layerCopies[i].getstartNeuronId() + ((DenseBlock) layerCopies[i].getNeuron()).getNeuronsNum();
+            }
         }
 
         splitInputConnections(layer,layerCopies);
@@ -595,6 +622,9 @@ public class CNNTransformer {
         if(layer.getNeuron() instanceof MultipleInputsProcessor)
         return false;
 
+        if(layer.getNeuron() instanceof Data)
+            return false;
+
         if(layer.getNeuron() instanceof DenseBlock && ((DenseBlock) layer.getNeuron()).getNeuronsNum()>=childrenNum) {
          if(layer.getNeuron().getName().toLowerCase().contains("softmax"))
              return false;
@@ -728,6 +758,7 @@ public class CNNTransformer {
         if(startInputConnections.size()>1)
             return false;
 
+        /** TODO: check*/
         Vector<Connection>endOutputConnections = _network.getLayerOutputConnections(layers.lastElement());
         if(endOutputConnections.size()>1)
             return false;
@@ -855,7 +886,11 @@ public class CNNTransformer {
     public void groupLayers(Vector<Layer> chain) throws Exception {
 
         if (!isGroupable(chain)) {
-            System.err.println("Ungroupable layers chain");
+            System.err.print("Ungroupable layers chain: ");
+            for(Layer l: chain)
+                System.err.print(l.getName() + "->");
+
+            System.err.println();
             return;
         }
 
@@ -1161,6 +1196,536 @@ public class CNNTransformer {
 
         return bottleneck;
     }*/
+
+     //////////////////////////////////////////////////////////////////
+    /////////          AUTO split-merge algorithms              //////
+
+    /**
+     * Auto-split complexity bottlenecks
+     * @param maxNodes max number of nodes in the result DNN
+     * @param verbose print operation details
+     */
+     public boolean dartsBottleneckAutoSplit(Integer maxNodes, boolean verbose, boolean eval){
+         Integer curSplit = 0;
+         boolean continueSplit = true;
+         _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+         _network.initOperators();
+         int childrenNum = 2;
+         if(_network.countLayers()>maxNodes)
+             return false;
+
+         while (_network.countLayers()<maxNodes && continueSplit){
+             try {
+                     Layer bottleneck = _findBottleneck();
+                     if(!isSplittable(bottleneck,childrenNum))
+                         return false;
+                     /** TODO: can be removed or changed!*/
+                     // if(bottleneck.getNeuron() instanceof Convolution)
+                        //   return false;
+
+                      splitChains(bottleneck, childrenNum);
+                      _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+                      _network.initOperators();
+
+                 if (verbose)
+                     System.out.println(bottleneck.getName() + " splitted into " + childrenNum + " sub-layers");
+
+                 if(eval) {
+                     CSDFGraph csdf = _converter.buildGraphLayerBased(_network);
+                     CSDFEvalResult evalResult = _edInterface.evaluateCSDFGraph(csdf);
+
+                 if(verbose)
+                         System.out.println("Expected performance: " + evalResult.getPerformance());
+
+        }
+
+
+             }
+             catch (Exception e){
+                 continueSplit = false;
+                 System.out.println("Bottleneck Auto-Split error: "+e.getMessage());
+                 return false;
+             }
+
+             curSplit++;
+         }
+         return true;
+     }
+
+
+    /**
+     * Auto-split complexity bottlenecks
+     * @param maxSplits max number of split operations
+     * @param verbose print operation details
+     */
+     public boolean complexityBottleneckAutoSplit(Integer maxSplits, boolean verbose, boolean eval){
+         Integer curSplit = 0;
+         boolean continueSplit = true;
+         _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+         _network.initOperators();
+
+         while (curSplit<maxSplits && continueSplit){
+             try {
+                 continueSplit = _splitComplexityBottleneck(verbose, eval);
+             }
+             catch (Exception e){
+                 continueSplit = false;
+                 System.out.println("Bottleneck Auto-Split error: "+e.getMessage());
+                 return false;
+             }
+
+             curSplit++;
+         }
+         return true;
+     }
+
+    /**
+     * Split complexity bottleneck layer
+     * @return the complexity bottleneck layer
+     * @throws Exception if an error occurs
+     */
+   private boolean _splitComplexityBottleneck(boolean verbose, boolean eval) throws Exception{
+        Layer bottleneck = OperatorsComplexityEvaluator.getHeaviestLayer(_network);
+        if(bottleneck==null)
+            throw new Exception("bottleneck layer search error!");
+
+        if(bottleneck.getNeuron() instanceof ConnectionDependent)
+            bottleneck = _findConIndependentBottleneck(bottleneck);
+
+        if(bottleneck==null)
+            throw new Exception("bottleneck connection dependent layer search error!");
+
+        Integer bottleneckComplexity = bottleneck.getNeuron().getOperator().getTimeComplexity();
+        Long averageComplexity = OperatorsComplexityEvaluator.getAverageComplexity(_network);
+
+        Integer childrenNum = bottleneckComplexity/averageComplexity.intValue();
+
+        int neurons = bottleneck.getOutputChannels();
+        if(bottleneck.getNeuron() instanceof DenseBlock)
+            neurons = ((DenseBlock) bottleneck.getNeuron()).getNeuronsNum();
+        childrenNum = Math.min(childrenNum,neurons);
+
+        if(childrenNum<2)
+            return false;
+
+        /** TODO: can be removed or changed!*/
+       // if(bottleneck.getNeuron() instanceof Convolution)
+         //   return false;
+
+        splitChains(bottleneck, childrenNum);
+         _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+         _network.initOperators();
+
+
+        if (verbose)
+            System.out.println(bottleneck.getName() + " splitted into " + childrenNum + " sub-layers");
+
+        if(eval) {
+            CSDFGraph csdf = _converter.buildGraphLayerBased(_network);
+            CSDFEvalResult evalResult = _edInterface.evaluateCSDFGraph(csdf);
+
+            if(verbose)
+                System.out.println("Expected performance: " + evalResult.getPerformance());
+
+        }
+
+        return true;
+
+    }
+
+
+
+
+    /**public static void splitBottleneck(){
+        Collection<Map.Entry<String,Long>> complexities = getOperatorsComplexityDistinct(dnn);
+        if(complexities.size()<1)
+            return;
+        Long totalComplexity = 0L;
+        Long maxComplexity = 0L;
+        Long avgComplexity = 0L;
+        String mostComplexOp = "None";
+         for(Map.Entry<String,Long> complexity:complexities){
+             if(complexity.getValue()>maxComplexity){
+                 mostComplexOp = complexity.getKey();
+                 maxComplexity = complexity.getValue();
+             }
+             totalComplexity += complexity.getValue();
+        }
+
+        Long complexityRel = (maxComplexity * 100L)/totalComplexity;
+        avgComplexity = totalComplexity/complexities.size();
+
+
+        System.out.println("The most complex node is "+ mostComplexOp + ", with complexity: " + maxComplexity
+                + ", which is " + complexityRel + "% of total graph complexity, while average complexity is "+
+                avgComplexity + "( "+((avgComplexity * 100L)/totalComplexity)+"%)");
+    }*/
+
+    ////////////////////////////////////////////////////////////////
+    /////////////////  AUTO MERGE /////////////////////////////////
+
+
+    public void printGroupPlan(Network dnn, Integer groupsExpected){
+        Vector<Vector<Layer>> groups = buildGroupPlan(dnn,groupsExpected);
+
+       /** Integer groupId = 0;
+        for(Vector<Layer> group: groups){
+            System.out.println("GROUP "+ groupId + ", complexity: " + evalGroupComplexity(group));
+            for(Layer layer: group){
+                System.out.println("  " + layer.getName());
+            }
+            groupId++;
+        }*/
+
+    }
+
+
+    public Vector<Vector<Layer>> buildGroupPlan(Network dnn, Integer groupsExpected) {
+        dnn.setDataFormats(dnn.getInputLayer().getOutputFormat());
+        dnn.initOperators();
+        dnn.sortLayersInTraverseOrder();
+
+        Double totalDeviation = _getComplexityDeviation(dnn);
+        System.out.println("Total complexity deviation (before transformations): " + totalDeviation);
+
+        /**splitToBlocks(60,1000,2,true);
+
+        totalDeviation = _getComplexityDeviation(dnn);
+        System.out.println("Total complexity deviation (after split): " + totalDeviation);
+        dnn.initOperators();
+        dnn.sortLayersInTraverseOrder();*/
+
+        Vector<Vector<Layer>> groups = _initGroupPlan(dnn);
+
+
+
+
+       if(groups.size()>groupsExpected) {
+         //   System.out.println("groups.size() = "+groups.size()+" > groups expected = " + groupsExpected);
+            while (groups.size() > groupsExpected) {
+
+                Integer leastComplexGroupId = getLeastComplexGroupId(groups);
+                Vector<Layer> leastComplexGroup = groups.elementAt(leastComplexGroupId);
+
+             /**  System.out.println("least complex group, complexity: "+evalGroupComplexity(leastComplexGroup));
+                for(Layer l :leastComplexGroup)
+                    System.out.print(l.getName() + ", ");
+                System.out.println();*/
+                _consumeGroup(leastComplexGroup,groups);
+
+            }
+        }
+
+        totalDeviation = _getComplexityDeviation(groups);
+        System.out.println("Total complexity deviation (after merge): " + totalDeviation);
+
+        return groups;
+    }
+
+    private void _consumeGroup(Vector<Layer> group, Vector<Vector<Layer>> groups){
+        Layer firstLayer = group.firstElement();
+        Layer lastLayer = group.lastElement();
+
+        /** consume by prev group*/
+        if(firstLayer.getInputConnections().size()!=0) {
+            try {
+                Vector<Layer> beginGroup = _findGroupContains(groups, firstLayer.getInputConnections().firstElement().getSrc());
+
+                /** if layer to be consumed is multiple inputs processor, all
+                 * its inputs are consumed with this layer
+                 * */
+                for(int i=1; i<firstLayer.getInputConnections().size();i++){
+                Vector<Layer> additionalGroup = _findGroupContains(groups, firstLayer.getInputConnections().elementAt(i).getSrc());
+
+                for(Layer l: additionalGroup)
+                    beginGroup.add(l);
+
+                    groups.removeElement(additionalGroup);
+                }
+
+                for(Layer l: group)
+                    beginGroup.add(l);
+
+                groups.removeElement(group);
+            }
+            catch (Exception e){ System.out.println(e.getMessage());}
+        }
+
+        /** cosume by next group*/
+        else {
+            try {
+                Vector<Layer> endGroup = _findGroupContains(groups, lastLayer.getOutputConnections().firstElement().getDest());
+                for(Layer l: endGroup)
+                    group.add(l);
+                groups.removeElement(endGroup);
+            }
+            catch (Exception e){ System.out.println(e.getMessage());}
+        }
+    }
+
+    private Vector<Layer> _findGroupContains(Vector<Vector<Layer>> groups, Layer layer) throws Exception {
+        for(Vector<Layer> group: groups){
+            if(group.contains(layer))
+                return group;
+        }
+        throw new Exception("layer "+ layer.getName()+ "not found in groups plan!" );
+    }
+    
+    
+    
+
+    /**
+     * Get Id of the most time-complex group
+     * @param groups layer groups
+     * @return Id of the most time-complex group
+     */
+    private Integer getMostComplexGroupId (Vector<Vector<Layer>> groups){
+        Long maxComplexity = 0L;
+        Integer mostComplexGroupId = 0;
+        Long curComplexity;
+        Integer curGroupId = 0;
+        for(Vector<Layer> group: groups){
+            curComplexity = evalGroupComplexity(group);
+            if(curComplexity>maxComplexity){
+                maxComplexity = curComplexity;
+                mostComplexGroupId = curGroupId;
+            }
+            curGroupId++;
+        }
+        return mostComplexGroupId;
+    }
+
+
+    /**
+     * Get Id of the least time-complex group
+     * @param groups layer groups
+     * @return Id of the least time-complex group
+     */
+    private Integer getLeastComplexGroupId (Vector<Vector<Layer>> groups){
+        if(groups.size()==0)
+            return 0;
+
+        Long leastComplexity = evalGroupComplexity(groups.firstElement());
+        Integer leastComplexGroupId = 0;
+        Long curComplexity;
+        Integer curGroupId = 0;
+        for(Vector<Layer> group: groups){
+            curComplexity = evalGroupComplexity(group);
+            if(curComplexity<leastComplexity){
+                leastComplexity = curComplexity;
+                leastComplexGroupId = curGroupId;
+            }
+            curGroupId++;
+        }
+        return leastComplexGroupId;
+    }
+
+    /**
+     * Evaluate total group execution time complexity
+     * @param group group of layers
+     * @return group execution time complexity
+     */
+    public Long evalGroupComplexity(Vector<Layer> group){
+        Long groupComplexity = 0L;
+        for(Layer l: group){
+            groupComplexity+=evalOpComplexity(l.getNeuron());
+        }
+
+        return groupComplexity;
+    }
+
+    /**
+     * Evaluate DNN neuron operator time complexity as a long number
+     * @param neuron DNN neuron
+     * @return DNN neuron operator time complexity as a long number
+     */
+    public Long evalOpComplexity(Neuron neuron){
+        Operator op = neuron.getOperator();
+        Long opComplexity = 0L;
+
+        if(op!=null) {
+            opComplexity = Long.parseLong (op.getTimeComplexity().toString());
+            if (opComplexity == null) opComplexity = 0L;
+            }
+
+        return opComplexity;
+    }
+
+    /**
+     * Initialize group plan. Initially in group plan every layer belongs to
+     * its own group
+     * @param dnn DNN
+     * @return list of groups, where each group contains one layer of DNN
+     */
+    private Vector<Vector<Layer>> _initGroupPlan(Network dnn){
+
+
+        Vector<Vector<Layer>> chainsToMerge = new Vector<>();
+        /** prepare chains*/
+        for(Layer layer: dnn.getLayers()){
+
+          Vector<Layer> chainToMerge = new Vector<>();
+          chainToMerge.add(layer);
+          chainsToMerge.add(chainToMerge);
+        }
+        return chainsToMerge;
+    }
+
+    private Double _getComplexityDeviation(Network dnn){
+        Vector<Double> complexities = new Vector<>();
+        Double avgComplexity = 0.0;
+        Double totalDeviation = 0.0;
+        Double totalNodes = 0.0;
+        for(Layer l: dnn.getLayers()){
+            if(!(l.getNeuron() instanceof Data) && !(l.getNeuron() instanceof Concat)) {
+                Double complexity = Double.parseDouble(l.getNeuron().getOperator().getTimeComplexity().toString());
+                complexities.add(complexity);
+                avgComplexity += complexity;
+                totalNodes++;
+            }
+        }
+        avgComplexity = avgComplexity/totalNodes;
+
+        for(Double complexity: complexities){
+            totalDeviation += Math.abs((complexity-avgComplexity));
+        }
+        totalDeviation = totalDeviation/totalNodes;
+        //to percent?
+        totalDeviation = totalDeviation/avgComplexity;
+
+
+        return totalDeviation;
+    }
+
+     private Double _getComplexityDeviation(Vector<Vector<Layer>> groups){
+        Vector<Double> complexities = new Vector<>();
+        Double avgComplexity = 0.0;
+        Double totalDeviation = 0.0;
+        Double totalNodes = 0.0;
+        for(Vector<Layer> group: groups){
+                Double complexity = Double.parseDouble(evalGroupComplexity(group).toString());
+                complexities.add(complexity);
+                avgComplexity += complexity;
+                totalNodes++;
+        }
+        avgComplexity = avgComplexity/totalNodes;
+
+        for(Double complexity: complexities){
+            totalDeviation += Math.abs((complexity-avgComplexity));
+        }
+        totalDeviation = totalDeviation/totalNodes;
+        //to percent?
+         totalDeviation = totalDeviation/avgComplexity;
+
+
+        return totalDeviation;
+    }
+
+    /**
+     * If the neuron can start mergeable chain
+     * @param neuron neuron
+     * @return true, if neuron can start mergeable chain and false otherwise
+
+    protected boolean mergeable(Neuron neuron){
+        /** TODo: remove this condition if possible
+        if (neuron instanceof MultipleInputsProcessor)
+            return false;
+
+        if(neuron instanceof Data)
+            return false;
+
+        if (neuron instanceof ConnectionDependent)
+            return true;
+
+        if(neuron instanceof GenericNeuron)
+            return true;
+
+        return false;
+    }*/
+
+     /**
+     * Independent layer, followed by chain of dependent layers to be merged
+     * @param layer DNN layer
+     * @return Independent layer, followed by chain of dependent layers to be merged
+     */
+    protected Vector<Layer> getMergeChain(Layer layer){
+        Vector<Layer> mergeChain = new Vector<>();
+        Vector<Connection> ocs = layer.getOutputConnections();
+
+        mergeChain.add(layer);
+
+        switch (ocs.size()){
+            case 0: {  break;}
+            case 1: {
+                 //Connection singleOC = ocs.firstElement();
+
+                  Vector<Vector<Layer>> chains = new Vector<>();
+                  _buildDependentTrack(layer,chains);
+               //   printChains(chains);
+
+                for(Vector<Layer> chain: chains){
+                    for(Layer l: chain){
+                        if(!mergeChain.contains(l))
+                            mergeChain.add(l);
+                    }
+                }
+
+             //    if(singleOC.getDest().getNeuron() instanceof ConnectionDependent ||
+               //          singleOC.getDest().getNeuron() instanceof MultipleInputsProcessor)
+                 //    mergeChain.add(singleOC.getDest());
+                 break;
+
+            }
+
+            //2+
+            default: {
+                //for(Connection oc: ocs)
+                  //  mergeChain.add(oc.getDest());
+
+                Vector<Vector<Layer>> chains = new Vector<>();
+                  _buildDependentTrack(layer,chains);
+               //   printChains(chains);
+
+                for(Vector<Layer> chain: chains){
+                    for(Layer l: chain){
+                        if(!mergeChain.contains(l))
+                            mergeChain.add(l);
+                    }
+                }
+
+
+                break;
+
+            }
+
+
+        }
+        return mergeChain;
+
+    }
+
+       /**
+     * Stack chain to exstising merging chanes of add new chain to chains list
+     * @param chainsToMerge list of existing chains to merge
+     * @param newChain new chain to merge
+     */
+    protected void stackOrAddChain(Vector<Vector<Layer>> chainsToMerge, Vector<Layer> newChain){
+        boolean stacked = false;
+        for(Vector<Layer> existingChain: chainsToMerge){
+            if(existingChain.lastElement().equals(newChain.firstElement())){
+                stacked = true;
+                for(int i=1; i<newChain.size(); i++ )
+                    existingChain.add(newChain.elementAt(i));
+            }
+        }
+
+        if(!stacked)
+            chainsToMerge.add(newChain);
+
+    }
+
+
+
 
     ///////////////////////////////////////////////////////////////////
     ////                       private variables                  ////

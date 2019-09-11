@@ -1,41 +1,27 @@
-package espam.operations.refinement;
-
+package espam.operations.evaluation;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
+import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
+import espam.datamodel.graph.csdf.datasctructures.Tensor;
 
 /**
- * Class evaluates CSDF model, refined with memory
+ * Compute memory, required for CSDF graph execution
+ * The memory of the CSDF graph is computed as buffer sizes + internal memory,
+ * where buffer sizes are computed by DARTS and internal memory is computed
+ * from static CSDF node Operator parameters
  */
-public class RefinedCSDFEvaluator {
-    ////////////////////////////////////////////////////////////////
-    ////    private constructor for singleton method           ////
-    private RefinedCSDFEvaluator(){}
-
-
-    ///////////////////////////////////////////////////////////////
+public class CSDFGMemoryRefiner {
+///////////////////////////////////////////////////////////////
     ////                      public methods                  ////
 
     /**
      * Get refined memory evaluator instance
      * @return refined memory evaluator instance
      */
-    public static RefinedCSDFEvaluator getInstance() {
+    public static CSDFGMemoryRefiner getInstance() {
         return _refinedMemEvaluator;
-    }
-
-     /**
-     * Refine memory evaluation, provided by DARTS
-     * @param dartsEval DARTS evaluation of CSDF graph
-     */
-    public void refineTimingEval(CSDFEvalResult dartsEval, double execTimeScale){
-        try{
-            dartsEval.setPerformance(dartsEval.getPerformance() * execTimeScale);
-        }
-        catch (Exception e){
-            System.err.println("DNN-CSDF memory evaluation refinement error");
-        }
     }
 
 
@@ -89,6 +75,24 @@ public class RefinedCSDFEvaluator {
         for(MemoryUnit mu: node.getMemoryUnits()){
             result+=evalMemoryUnit(mu);
         }
+
+        Operator op = node.getOperator();
+        if(op!=null){
+            if(op.hasIntegerParams())
+                result+=op.getIntParams().size() * typeSize("int");
+            if(op.hasTensorParams()){
+                for (Tensor t: op.getTensorParams().values()) {
+                    if (!Tensor.isNullOrEmpty(t))
+                        result += t.getElementsNumber() * typeSize(_tensorType);
+                }
+            }
+            if(op.hasFloatParams())
+                result+=op.getStringParams().size() * typeSize("float");
+
+            if(op.hasStringParams())
+                result+=op.getStringParams().size() * typeSize("string");
+        }
+
         return result;
     }
 
@@ -182,7 +186,7 @@ public class RefinedCSDFEvaluator {
     /////////////////////////////////////////////////////////////////////
     ////                         private variables                   ////
     /**Singleton realization of memory evaluator*/
-    private static RefinedCSDFEvaluator _refinedMemEvaluator = new RefinedCSDFEvaluator();
+    private static CSDFGMemoryRefiner _refinedMemEvaluator = new CSDFGMemoryRefiner();
+    /** TODO: make a parameter!*/
+    private String _tensorType = "float";
 }
-
-

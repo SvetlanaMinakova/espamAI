@@ -12,7 +12,8 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
     Concat.java \
-    Reshape.java
+    Reshape.java \
+    Upsample.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -1,0 +1,454 @@
+{
+  "name": "mnist_json",
+  "inputLayerId": 0,
+  "outputLayerId": 1,
+  "crop": true,
+    "layers": [
+      {
+        "id": 0,
+        "name": "input_data",
+        "neuronsNum": 1,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "name": "INPUT",
+  "type": "DATA",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1
+  ]
+}        }
+,
+      {
+        "id": 3,
+        "name": "node_Conv1",
+        "neuronsNum": 8,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "dim": 3,
+  "k_h": 5,
+  "k_w": 5,
+  "stride": 1,
+  "boundaryMode": "SAME",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "CONV",
+  "type": "CONV",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28,
+      1
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "bias": "node_Add2"
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    1
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+}        }
+,
+      {
+        "id": 5,
+        "name": "node_Relu3",
+        "neuronsNum": 8,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "name": "ReLU",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+}        }
+,
+      {
+        "id": 6,
+        "name": "node_MaxPool4",
+        "neuronsNum": 8,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "dim": 2,
+  "k_h": 2,
+  "k_w": 2,
+  "stride": 2,
+  "boundaryMode": "VALID",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "MAXPOOL",
+  "type": "POOL",
+  "inputDataFormat": {
+    "shape": [
+      28,
+      28
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    28,
+    28,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    8
+  ]
+},        "pads": 
+[
+  0,
+  0,
+  0,
+  0
+]        }
+,
+      {
+        "id": 7,
+        "name": "node_Conv5",
+        "neuronsNum": 16,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "dim": 3,
+  "k_h": 5,
+  "k_w": 5,
+  "stride": 1,
+  "boundaryMode": "SAME",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "CONV",
+  "type": "CONV",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "bias": "node_Add6"
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    8
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+}        }
+,
+      {
+        "id": 9,
+        "name": "node_Relu7",
+        "neuronsNum": 16,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "name": "ReLU",
+  "type": "NONLINEAR",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+}        }
+,
+      {
+        "id": 10,
+        "name": "node_MaxPool8",
+        "neuronsNum": 16,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "dim": 2,
+  "k_h": 3,
+  "k_w": 3,
+  "stride": 3,
+  "boundaryMode": "VALID",
+  "expandH": 0,
+  "expandW": 0,
+  "crop": true,
+  "transpose": false,
+  "name": "MAXPOOL",
+  "type": "POOL",
+  "inputDataFormat": {
+    "shape": [
+      14,
+      14
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      4,
+      4
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    14,
+    14,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+},        "pads": 
+[
+  0,
+  0,
+  0,
+  0
+]        }
+,
+      {
+        "id": 12,
+        "name": "node_MatMul10",
+        "neuronsNum": 1,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "neuronsNum": 10,
+  "refinedType": "MATMUL",
+  "name": "NONE",
+  "type": "DENSEBLOCK",
+  "inputDataFormat": {
+    "shape": [
+      4,
+      4
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      10
+    ]
+  },
+  "bias": "node_Add11"
+},        "inputDataFormat": 
+{
+  "shape": [
+    4,
+    4,
+    16
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+}        }
+,
+      {
+        "id": 1,
+        "name": "output_data",
+        "neuronsNum": 1,
+        "startNeuronId": 0,
+        "neuron": 
+{
+  "name": "OUTPUT",
+  "type": "DATA",
+  "inputDataFormat": {
+    "shape": [
+      10
+    ]
+  },
+  "outputDataFormat": {
+    "shape": [
+      10
+    ]
+  }
+},        "inputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+},        "outputDataFormat": 
+{
+  "shape": [
+    10
+  ]
+}        }
+
+  ],
+  "connections": [
+{
+  "type": "ONETOALL",
+  "src": "input_data",
+  "dest": "node_Conv1",
+  "srcId": 0,
+  "destId": 3,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "node_Conv1",
+  "dest": "node_Relu3",
+  "srcId": 3,
+  "destId": 5,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "node_Relu3",
+  "dest": "node_MaxPool4",
+  "srcId": 5,
+  "destId": 6,
+  "channels": 1
+},
+{
+  "type": "ALLTOALL",
+  "src": "node_MaxPool4",
+  "dest": "node_Conv5",
+  "srcId": 6,
+  "destId": 7,
+  "channels": 8
+},
+{
+  "type": "ONETOONE",
+  "src": "node_Conv5",
+  "dest": "node_Relu7",
+  "srcId": 7,
+  "destId": 9,
+  "channels": 1
+},
+{
+  "type": "ONETOONE",
+  "src": "node_Relu7",
+  "dest": "node_MaxPool8",
+  "srcId": 9,
+  "destId": 10,
+  "channels": 1
+},
+{
+  "type": "ALLTOALL",
+  "src": "node_MaxPool8",
+  "dest": "node_MatMul10",
+  "srcId": 10,
+  "destId": 12,
+  "channels": 16
+},
+{
+  "type": "ALLTOONE",
+  "src": "node_MatMul10",
+  "dest": "output_data",
+  "srcId": 12,
+  "destId": 1,
+  "channels": 1
+}
+  ]
+}

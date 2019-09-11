@@ -44,4 +44,22 @@ public class NoneTypeNeuron extends Neuron {
         StringBuilder desc = new StringBuilder(getName());
         return desc.toString();
     }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {  }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        _operator.setTimeComplexity(timeComplexity);
+    }
 }

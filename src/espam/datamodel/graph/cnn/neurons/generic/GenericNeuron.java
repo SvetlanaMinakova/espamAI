@@ -2,12 +2,19 @@ package espam.datamodel.graph.cnn.neurons.generic;
 
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
+import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
+import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
+import espam.datamodel.graph.cnn.operators.ComplexOperator;
+import espam.datamodel.graph.cnn.operators.InternalBuffer;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
+
+import java.util.Vector;
 
 /**
  * This class is Generic (Complex) Neuron. Generic neuron contains
@@ -24,6 +31,8 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
     public GenericNeuron (String name) {
         setNeuronType(NeuronType.GENERIC);
         setName(name);
+        ComplexOperator op = new ComplexOperator(name);
+        setOperator(op);
     }
 
     /**
@@ -36,6 +45,8 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
         setInternalStructure(internalStructure);
         setSampleDim(internalStructure.getInputLayer().getNeuron().getSampleDim());
         setNeuronType(NeuronType.GENERIC);
+        ComplexOperator op = new ComplexOperator(name);
+        setOperator(op);
     }
 
     /** Accept a Visitor
@@ -235,11 +246,15 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
      * By default, function call description is a name of a neuron
      * @return function call description*/
     public String getFunctionCallDescription(int channels){
-        StringBuilder desc = new StringBuilder(getName());
+       String iname = _internalStructure.getInputLayer().getName();
+       String oname = _internalStructure.getOutputLayer().getName();
+       String name = iname + "_to_" + oname;
+
+      //  StringBuilder desc = new StringBuilder(getName());
      //   Integer operationTokensNum = getOperationTokensNumber(channels);
      //   desc.append("(" + operationTokensNum + ")");
 
-        return desc.toString();
+        return name;
     }
 
     /**
@@ -253,6 +268,59 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
      */
     public int getOperationsNumber(int channels){
     return 1;
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+       _internalStructure.initOperators();
+       _internalStructure.sortLayersInTraverseOrder();
+       Vector<Operator> subOperators = ((ComplexOperator)(_operator)).getSubOperators();
+       Vector<InternalBuffer> internalBuffers = ((ComplexOperator)(_operator)).getInternalBuffers();
+       for(Layer layer: _internalStructure.getLayers()) {
+           subOperators.add(layer.getNeuron().getOperator());
+
+           /** Add internal I/O params*/
+          // if(!(layer.equals(_internalStructure.getInputLayer())))
+            //   subOperators.lastElement().addTensorParam("input", layer.getInputFormat());
+          Operator srcOperator;
+          Operator dstOperator;
+          Integer bufferSize;
+          if(!(layer.equals(_internalStructure.getOutputLayer()))) {
+              srcOperator =  layer.getNeuron().getOperator();
+              bufferSize = layer.getOutputFormat().getElementsNumber();
+
+               //subOperators.lastElement().addTensorParam("output", layer.getOutputFormat());
+               for(Connection outc: layer.getOutputConnections()){
+                   dstOperator = outc.getDest().getNeuron().getOperator();
+                   bufferSize = Math.max(bufferSize,outc.getDest().getInputFormat().getElementsNumber());
+                   InternalBuffer internalBuffer = new InternalBuffer(srcOperator,dstOperator,bufferSize);
+                   internalBuffers.add(internalBuffer);
+               }
+           }
+       }
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 0;
+        Vector<Operator> subOperators = ((ComplexOperator)(_operator)).getSubOperators();
+
+        for(Operator op: subOperators)
+            timeComplexity+= op.getTimeComplexity();
+
+        _operator.setTimeComplexity(timeComplexity);
+
+
+        //System.out.println( " generic time complexity: " + timeComplexity);
     }
 
     //////////////////////////////////////////////////////////////////////

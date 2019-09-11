@@ -22,12 +22,13 @@ public class OneToOne extends Connection {
      super(src,dest);
      setType(ConnectionType.ONETOONE);
      if(src.getNeuronsNum()!=dest.getNeuronsNum()){
+         /** TODO: check!*/
          int minNeuronsNum = Math.min(src.getNeuronsNum(),dest.getNeuronsNum());
          src.setNeuronsNum(minNeuronsNum);
          dest.setNeuronsNum(minNeuronsNum);
-       //  System.out.println("one-to-one connection changed neurons num for layers" +
-         //            src.getName() + "( " +src.getNeuronsNum() +" neurons) , "
-           //          + dest.getName() + "( " + dest.getNeuronsNum() +" neurons) ");
+       /**  System.out.println("one-to-one connection different neurons num for layers" +
+                     src.getName() + "( " +src.getNeuronsNum() +" neurons) , "
+                     + dest.getName() + "( " + dest.getNeuronsNum() +" neurons) ");*/
      }
 
     }

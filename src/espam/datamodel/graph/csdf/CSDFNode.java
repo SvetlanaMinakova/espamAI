@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
 import espam.datamodel.graph.NPort;
 import espam.datamodel.graph.Node;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.visitor.CSDFGraphVisitor;
@@ -31,7 +32,6 @@ import java.util.Iterator;
     public CSDFNode copy() {
         CSDFNode nodeCopy = new CSDFNode(getName(),_id);
         nodeCopy.setPortList(getPortList());
-        nodeCopy.setOperation(_operation);
         nodeCopy.setGroup(_group);
         nodeCopy.setLength(_length);
         Vector<MemoryUnit> memoryUnits = new Vector<>();
@@ -39,9 +39,9 @@ import java.util.Iterator;
             memoryUnits.add(new MemoryUnit(mu));
         nodeCopy.setMemoryUnits(memoryUnits);
         nodeCopy.setKernelsNum(_kernelsNum);
-        nodeCopy.setConcat(_concat);
         nodeCopy.setSrc(_src);
         nodeCopy.setSnk(_snk);
+        nodeCopy.setOperator(_operator);
         return nodeCopy;
     }
 
@@ -60,17 +60,14 @@ import java.util.Iterator;
     public Object clone() {
         CSDFNode newObj = (CSDFNode) super.clone();
         newObj.setId(_id);
-        newObj.setOperation(_operation);
         newObj.setGroup(_group);
         /** port ids remain the same in the model copy,
          *  so list of overlap couples processors is just cloned*/
         newObj.setMemoryUnits(_memoryUnits);
         newObj.setLength(_length);
-        newObj.setKernelsNum(_kernelsNum);
-       // newObj.setInternalMemorySize((Tensor)_internalMemorySize.clone());
-        newObj.setConcat(_concat);
         newObj.setSnk(_snk);
         newObj.setSrc(_src);
+        newObj.setOperator(_operator);
         return (newObj);
         
     }
@@ -93,7 +90,7 @@ import java.util.Iterator;
                sdfNode.addPort(((CSDFPort) port).getSDFPort());
        }
 
-        sdfNode.setOperation(_operation);
+        sdfNode.setOperator(_operator);
        if(_group!=null)
         sdfNode.setGroup(_group);
         sdfNode.setLength(1);
@@ -387,17 +384,6 @@ import java.util.Iterator;
      */
     public void setGroup(String group) { this._group = group; }
 
-    /**
-     * Get node operation name
-     * @return node operation name
-     */
-    public String getOperation() { return _operation; }
-
-     /**
-     * Set node operation name
-     * @param operationName node operation name
-     */
-    public void setOperation(String operationName) { this._operation = operationName; }
 
     /** Get number of operation repetitions per firing
         * @return number of operation repetitions per firing
@@ -577,18 +563,6 @@ import java.util.Iterator;
     ////                    memory units processing                  ////
 
        /**
-        * Checks, if node performs inputs concatenation
-        * @return true, if node performs inputs concatenation, and false otherwise
-        */
-       public boolean isConcat() { return _concat; }
-
-       /**
-        * Set flag, if node performs inputs concatenation
-        * @param concat Flag, if node performs inputs concatenation
-        */
-       public void setConcat(boolean concat) { this._concat = concat; }
-
-       /**
         * Checks, if node is a sink node
         * @return true, if node is a sink node and false otherwise
         */
@@ -700,8 +674,34 @@ import java.util.Iterator;
         return true;
        }
 
+       /** Set CSDF node operator*/
+       public void setOperator(Operator operator) {
+           this._operator = operator;
+           _setAutoFunction();
+       }
 
-    /////////////////////////////////////////////////////////////////////
+       /** Get CSDF node operator*/
+       public Operator getOperator() {
+           return _operator;
+       }
+
+       public void setFunction(String function) {
+           this._function = function;
+       }
+
+       public String getFunction() {
+           if(_function==null)
+               _setAutoFunction();
+           return _function;
+       }
+
+       private void _setAutoFunction(){
+           if(_operator == null) _function = getUniqueName();
+           else _function = _operator.getName();
+
+       }
+
+       /////////////////////////////////////////////////////////////////////
     ////                         private variables                   ////
     /** Unique node id */
     @SerializedName("id")private int _id;
@@ -711,9 +711,6 @@ import java.util.Iterator;
 
     /** firing sequence length */
     @SerializedName("length")private int _length;
-
-    /** executable operation*/
-    @SerializedName("operation")private String _operation;
 
     /**operation repetitions number within one node firing */
     @SerializedName("op_repetitions_num")private int _operationRepetitionsNumber = 1;
@@ -730,12 +727,13 @@ import java.util.Iterator;
     /**SDF Node group (if any)*/
     @SerializedName("group")private String _group = null;
 
-    /**If SDF Node performs inputs concatenation*/
-    @SerializedName("concat")private boolean _concat = false;
-
     /**If SDF Node is a source node*/
     @SerializedName("src")private boolean _src = false;
 
     /**If SDF Node is a sink node*/
     @SerializedName("snk")private boolean _snk = false;
+
+    @SerializedName("operator") Operator _operator;
+
+    @SerializedName("function") String _function;
 }

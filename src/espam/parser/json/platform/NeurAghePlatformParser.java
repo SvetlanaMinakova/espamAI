@@ -12,7 +12,6 @@ import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 /** ALOHA project NeurAghe Platform parser*/
@@ -151,12 +150,13 @@ public static Platform parsePlatform(String path){
      * TODO: version supports evaluation with mapping
      * @param path path to the timing specification
      */
-    public static double getWCEnergy(String path){
+    public static HashMap<String,Double> getWCEnergy(String path){
+
+            Double energy;
+            String name;
+            HashMap<String,Double> WCEnergy  = new HashMap<>();
+
         try {
-
-            Double curEnergy;
-            Double WCEnergy  = 0.0;
-
             String strJSON =  FileWorker.read(path);
 
             JsonObject pla = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
@@ -164,16 +164,16 @@ public static Platform parsePlatform(String path){
             JsonArray cores = pla.get("cores").getAsJsonArray();
             for(JsonElement core: cores) {
                 /**for each core get max power*/
-                curEnergy = ((JsonObject)core).get("max_power").getAsDouble();
-                if(curEnergy>WCEnergy)
-                    WCEnergy = curEnergy;
+                energy = ((JsonObject)core).get("max_power").getAsDouble();
+                name = ((JsonObject)core).get("name").getAsString();
+                WCEnergy.put(name,energy);
 
                 }
             return WCEnergy;
         }
         catch(Exception e){
             System.err.println("NeurAghe Platform parsing error: " + e.getMessage());
-            return 0.0;
+            return WCEnergy;
         }
 
     }

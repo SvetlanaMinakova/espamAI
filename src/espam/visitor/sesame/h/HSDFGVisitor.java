@@ -1,5 +1,8 @@
 package espam.visitor.sesame.h;
 
+import espam.datamodel.graph.cnn.operators.ComplexOperator;
+import espam.datamodel.graph.cnn.operators.InternalBuffer;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
@@ -7,9 +10,9 @@ import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
+
 import java.io.PrintStream;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Class implements generation of C++ header files (.h) for an arbitrary CSDF graph
@@ -44,22 +47,16 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
          }
      }
 
-      /**
+     /** TODO: make common for DNN-CSDF and normal CSDF
      * Write container templates for each container, associated with the node
      * @param node SDF graph node
      */
     protected void _writeDNNRefinedContainerTemplates(CSDFNode node){
-        _prefixInc();
-
-        _printStream.println();
-        _printStream.println(_prefix + "//I/O memory arrays");
-        _prefixInc();
-
         for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
-                MemoryUnit mu = inport.getAssignedMemory();
-                if (mu!=null) {
-                    _writeArrLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
-                }
+            MemoryUnit mu = inport.getAssignedMemory();
+            if (mu!=null)
+                _writeEmptyLinearArr(mu.getName(), mu.getTypeDesc(), mu.getShape().getElementsNumber());
+
         }
 
         /** define only distinct out ports*/
@@ -68,45 +65,99 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
                 MemoryUnit mu = outport.getAssignedMemory();
                 if (mu!=null) {
                     if(!defined.contains(mu.getName())) {
-                        _writeArrLinear(mu.getShape(),mu.getName(),mu.getTypeDesc());
+                         _writeEmptyLinearArr(mu.getName(), mu.getTypeDesc(), mu.getShape().getElementsNumber());
                         defined.add(mu.getName());
                     }
                 }
         }
         defined.clear();
-        _prefixDec();
+    _printStream.println(_prefix + "// specific node parameters definition");
+    _defineOperatorParameters(node.getOperator());
 
+    }
 
-        /** define constant parameters, if any*/
-        Vector<MemoryUnit> constParams = node.getUnitParams();
-            _printStream.println();
-            _printStream.println(_prefix + "//const parameters");
-            _prefixInc();
-            for (MemoryUnit mu : constParams) {
-                _printStream.println(_prefix + "const " + mu.getTypeDesc() + " " + mu.getName() + " = " + mu.getUnitParamDesc() + ";");
-            }
-            _printStream.println();
-            _prefixDec();
+     /**
+     * Define operator parameters
+     * @param operator CSDF node operator
+     */
+    protected void _defineOperatorParameters(Operator operator){
+        _defineOperatorParameters(operator,null);
+    }
 
-         /** define lens of additional tensor parameters (weights, biases)
-          *  if they are present*/
+    /**
+     * Define operator parameters
+     * @param operator CSDF node operator
+     */
+    protected void _defineOperatorParameters(Operator operator, Integer suboperatorId){
 
-        _printStream.println("//node-specific tensor parameters lengths");
-        _prefixInc();
-        Vector<String> additionalTensorParams = new Vector<>();
-        additionalTensorParams.add("weights");
-        additionalTensorParams.add("bias");
-        additionalTensorParams.add("squared");
-        additionalTensorParams.add("norms");
-        additionalTensorParams.add("scale");
-        additionalTensorParams.add("mean");
-        additionalTensorParams.add("variance");
-        _writeAdditionalArrLens(additionalTensorParams,node);
-        _prefixDec();
+    if(operator == null)
+    return;
+
+    if(operator instanceof ComplexOperator){
+        _defineComplexOperatorParameters((ComplexOperator) operator);
+        return;
+    }
+
+    String parPrefix = "";
+    if(suboperatorId!=null)
+        parPrefix = "_" + suboperatorId.toString();
+
+    _printStream.println();
+    _printStream.println(_prefix + "std::map<std::string,int> int_params" + parPrefix + ";");
+    _printStream.println(_prefix + "std::map<std::string," + _paramdataType + " *> tensor_params" + parPrefix + ";");
+
+    _printStream.println("//tensor parameters " + parPrefix);
+        TreeMap<String,Tensor> tensorParams = operator.getTensorParams();
+        for(Map.Entry<String,Tensor> tensorParam : tensorParams.entrySet())
+            _writeArrLinear(tensorParam.getValue(),tensorParam.getKey() + parPrefix,_paramdataType);
+
+        _printStream.println("//const int parameters " + parPrefix);
+        TreeMap<String,Integer> intParams = operator.getIntParams();
+            for (Map.Entry<String,Integer> intPar: intParams.entrySet()) {
+                _printStream.println(_prefix + "const int " + intPar.getKey() + parPrefix + " = " + intPar.getValue() + ";");
+        }
+    }
+
+    /**
+     * Define operator parameters for a complex operator
+     * @param operator complex CSDF node operator
+     */
+    protected void _defineComplexOperatorParameters(ComplexOperator operator){
+        Integer opId = 0;
+        for(Operator subOp: operator.getSubOperators()){
+            _defineOperatorParameters(subOp,opId);
+            opId++;
+        }
+
         _printStream.println();
+        _printStream.println(_prefix + "// internal buffers");
+        Integer bufId = 0;
+        for(InternalBuffer internalBuffer: operator.getInternalBuffers()){
+            _defineInternalBuffer(internalBuffer,bufId);
+            bufId++;
+        }
+    }
 
-        _prefixDec();
+    /**
+     * Define internal buffer between two connections
+     * @param internalBuffer internal buffer of the CSDF node
+     */
+    protected void _defineInternalBuffer (InternalBuffer internalBuffer, Integer Id){
+       Tensor buffer = new Tensor( internalBuffer.getBufferSize());
+       String name = "internal_buf" + Id.toString();
+       _writeArrLinear(buffer,name,_IOdataType);
+    }
 
+    /**
+     * Write empty linear array
+     * @param name name of the array
+     * @param typeDesc description of array type;
+     */
+    private void _writeEmptyLinearArr(String name, String typeDesc, int size){
+        if(size<1)
+            return;
+
+        _printStream.println(_prefix + typeDesc + " " + name + "[" + size + "] = {0}; ");
     }
 
     /**
@@ -115,9 +166,14 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
      * @param arrname name of the array
      * @param typeDesc description of array type;
      */
-     private void _writeArrLinear(Tensor tensor, String arrname, String typeDesc){
+     public void _writeArrLinear(Tensor tensor, String arrname, String typeDesc){
+        if(Tensor.isNullOrEmpty(tensor))
+             return;
+
         int size = tensor.getElementsNumber();
-        _printStream.println(_prefix + typeDesc + " " + arrname + "[" + size + "] = {0}; ");
+        _writeEmptyLinearArr(arrname,typeDesc,size);
+        /** TODO: refactoring!*/
+        if(!arrname.equals("input"))
         _printStream.println(_prefix + "const int " + arrname + "_len = " + size + ";");
      }
 
@@ -408,6 +464,7 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         _printStream.println("#define " + name + "_H");
         _printStream.println("");
         _printStream.println("#include \""+ baseClassName + ".h\"");
+        _printStream.println("#include <map>");
         _printStream.println("");
         _printStream.println("class " + name + " : public " + baseClassName + " {");
         _printStream.println("public:");
@@ -442,6 +499,22 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
         this._CNNRefined = CNNRefined;
     }
 
+    public String getIOdataType() {
+        return _IOdataType;
+    }
+
+    public void setIOdataType(String _IOdataType) {
+        HSDFGVisitor._IOdataType = _IOdataType;
+    }
+
+    public static void setParamdataType(String _paramdataType) {
+        HSDFGVisitor._paramdataType = _paramdataType;
+    }
+
+    public static String getParamdataType() {
+        return _paramdataType;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                     protected variables                   ///
     /**flag shows, if the HDNN visitor is refined for CNNs*/
@@ -452,4 +525,10 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
 
     /** folder, from where weights should be loaded*/
     private static String _weightsFolder = "./";
+
+    /** I/O data type*/
+    private static String _IOdataType = "float";
+
+    /** parameters data type*/
+    private static String _paramdataType = "float";
 }

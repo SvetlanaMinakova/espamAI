@@ -160,7 +160,7 @@ public class CNNDotVisitor extends CNNGraphVisitor {
         switch (neuronType) {
             case DATA: return "lightskyblue";
             case CONCAT: return "gainsboro";
-            case ADD: return "gainsboro";
+            case ARITHMETIC: return "gainsboro";
             case NONLINEAR: return "powderblue";
             case CONV: return "lightcoral";
             case POOL: return "orange";

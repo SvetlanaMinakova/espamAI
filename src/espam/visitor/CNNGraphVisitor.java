@@ -1,7 +1,7 @@
 package espam.visitor;
 import espam.datamodel.graph.cnn.*;
 import espam.datamodel.graph.cnn.connections.*;
-import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
@@ -59,8 +59,8 @@ public class CNNGraphVisitor extends GraphVisitor {
      * @param  x A Visitor Object.
      */
     public void visitComponent(Neuron x) {
-        if (x instanceof Add) {
-            visitComponent((Add) x);
+        if (x instanceof Arithmetic) {
+            visitComponent((Arithmetic) x);
             return;
         }
 
@@ -176,7 +176,7 @@ public class CNNGraphVisitor extends GraphVisitor {
      *  Visit an Add component.
      * @param  x A Visitor Object.
     */
-    public void visitComponent( Add x ){ }
+    public void visitComponent( Arithmetic x ){ }
 
     /**
      *  Visit a Concat component.

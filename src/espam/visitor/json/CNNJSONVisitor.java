@@ -7,15 +7,18 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.connections.Custom;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
+import espam.datamodel.graph.cnn.neurons.normalization.ImageScaler;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.simple.*;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.cnn.ConnectionConverter;
 import espam.parser.json.cnn.GenericNeuronConverter;
@@ -254,6 +257,11 @@ public class CNNJSONVisitor extends CNNGraphVisitor {
 
     }
 
+    public void visitComponent(Arithmetic x){
+        String strComponent = _gson.toJson(x, Arithmetic.class);
+        _printStream.print(strComponent);
+    }
+
     /**
      * Visit CNN Neuron
      * Print a line for the Neuron in the correct json format.
@@ -270,6 +278,8 @@ public class CNNJSONVisitor extends CNNGraphVisitor {
             return;
         }
     }
+
+
 
     /**
      * Visit Pooling Neuron
@@ -358,6 +368,26 @@ public class CNNJSONVisitor extends CNNGraphVisitor {
      */
     public void visitComponent(NonLinear x){
         String strComponent = _gson.toJson(x, NonLinear.class);
+        _printStream.print(strComponent);
+    }
+
+     /**
+     * Visit Neuron
+     * Print a line for the Neuron in the correct json format.
+     * @param  x Neuron to visit
+     */
+    public void visitComponent(ImageScaler x){
+        String strComponent = _gson.toJson(x, ImageScaler.class);
+        _printStream.print(strComponent);
+    }
+
+     /**
+     * Visit NonLinear Neuron
+     * Print a line for the Neuron in the correct json format.
+     * @param  x Neuron to visit
+     */
+    public void visitComponent(Upsample x){
+        String strComponent = _gson.toJson(x, Upsample.class);
         _printStream.print(strComponent);
     }
 

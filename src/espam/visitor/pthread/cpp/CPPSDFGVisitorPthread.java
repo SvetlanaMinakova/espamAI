@@ -1,5 +1,8 @@
 package espam.visitor.pthread.cpp;
-
+import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+import espam.datamodel.graph.cnn.operators.ComplexOperator;
+import espam.datamodel.graph.cnn.operators.InternalBuffer;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
@@ -7,16 +10,10 @@ import espam.datamodel.mapping.MProcess;
 import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.processors.GPU;
-import espam.main.Config;
-import espam.parser.xml.mapping.XmlMappingParser;
 import espam.utils.fileworker.FileWorker;
-import espam.visitor.pthread.weights.WeightsLoader;
 import espam.visitor.sesame.cpp.CPPSDFGVisitor;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     ///////////////////////////////////////////////////////////////////
@@ -130,11 +127,8 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     }
 
 
-
     /****************************************************************/
     /**               standard class templates                    **/
-
-
     ////////////// BLOCK-SIZE ALGORITHM  /////////////////////////////////////
     /**
      * Class to find optimal block size for GPU Convolutions
@@ -929,12 +923,14 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     protected void  _writeCppConstructorAndDestructor(CSDFNode node){
         String className = node.getName();
         _printStream.println(_prefix + className + "::" + className + "() : " + _baseClassName + "() {");
+      //  _printStream.println(_prefix + "std::cout<<\" "+node.getName()+" ... \"<<endl;");
         prefixInc();
         _writeFIFOsizes(node);
         _fillInIntParams(node);
         _fillInTensorParams(node);
         _loadParameters(node);
         prefixDec();
+      //  _printStream.println(_prefix + "std::cout<<\" constructed! \"<<endl;");
         _printStream.println(_prefix + "}");
         _printStream.println(className + "::~" + className + "() {");
         _prefixInc();
@@ -948,8 +944,15 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param node CSDF node
      */
     protected void _loadParameters(CSDFNode node){
-        MemoryUnit weights = node.getMemoryUnit("weights");
-        MemoryUnit bias = node.getMemoryUnit("bias");
+       if(node.getOperator()==null)
+           return;
+       if(!node.getOperator().hasTensorParams())
+           return;
+
+       TreeMap<String,Tensor> tensorParams = node.getOperator().getTensorParams();
+
+        Tensor weights = tensorParams.get("weights");
+        Tensor bias = tensorParams.get("bias");
 
         if(weights==null && bias==null)
             return;
@@ -957,12 +960,21 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + "/** parameters load */");
         _printStream.println(_prefix + "dataLoader dl = dataLoader();");
 
-
         if (weights != null) {
             if (_initWeightsDummy)
                     _initArrDummyLinear(weights.getDimensionality(), "w", "weights", 1);
-                 else
-                    _loadWeightsFromFiles(weights.getShape(),node.getName(),node.getKernelsNum(),node.getOperation());
+
+                 /** TODO: refactoring*/
+                 else {
+                     Integer neuronStartId = 0;
+                     if(node.getOperator().hasIntegerParams()) {
+                        neuronStartId = node.getOperator().getIntParams().get("neuron_start_id");
+                        if(neuronStartId == null)
+                            neuronStartId = 0;
+                     }
+
+                _loadWeightsFromFiles(weights, node.getName(), node.getKernelsNum(), node.getFunction(), neuronStartId);
+            }
         }
 
         if (bias!=null){
@@ -971,7 +983,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
                  else
                     _loadBiasFromFiles(node);
         }
-        if(node.getOperation().equals("BN")){
+        if(node.getFunction().contains("BN")){
             _loadLinearParamFromFiles(node, "scale");
             _loadLinearParamFromFiles(node, "variance");
             _loadLinearParamFromFiles(node, "mean");
@@ -983,14 +995,32 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param node  node, containing bias
      */
     private void _loadBiasFromFiles(CSDFNode node){
+        Tensor bias = node.getOperator().getTensorParams().get("bias");
+        if(Tensor.isNullOrEmpty(bias))
+            return;
+
         _printStream.println(_prefix + "/** bias load */");
         String biasSrcName = _getWeightsPrefixName( node.getName());
-        MemoryUnit biasRef = node.getMemoryUnit("bias_ref");
-        if(biasRef!=null) {
-            biasSrcName = biasRef.getUnitParamDesc().replace("\"", "");
+
+        if(node.getOperator().hasStringParams()) {
+            String biasRef = node.getOperator().getStringParams().get("bias_ref");
+            if(biasRef!=null)  biasSrcName = biasRef;
         }
+
         _printStream.println(_prefix + "std::string bias_path = \"./../../weights_npz/" + biasSrcName + "_b\";");
         _printStream.println(_prefix + "dl.data_load_from_numpy(bias_path, (-1), bias_len, neuron_start_id, 0, &bias[0]);");
+
+        /** TODO: refactoring!*/
+        _printStream.println();
+        if(node.getOperator().hasStringParams()){
+            String add_ref = node.getOperator().getStringParams().get("add_ref");
+            if(add_ref!=null){
+                _printStream.println(_prefix + "std::string add_path = \"./../../weights_npz/" +
+                        node.getOperator().getStringParams().get("add_ref") + "_b\";");
+                _printStream.println(_prefix + "dl.data_load_from_numpy(add_path, (-1), add_len, neuron_start_id, 0, &add[0]);");
+
+            }
+        }
     }
 
     /**
@@ -1011,13 +1041,116 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param kernels number of kernels in the node
      * @param operation operation, performed by the node
      */
-    private void _loadWeightsFromFiles(Tensor tensor, String nodeName, int kernels, String operation){
+    private void _loadWeightsFromFiles(Tensor tensor, String nodeName, int kernels, String operation, int neuronStartId){
         String weightsPrefixName = _getWeightsPrefixName(nodeName);
         if(operation.toLowerCase().contains("conv"))
             _loadWeightsFromFilesConv(tensor,weightsPrefixName,kernels);
         else
             _loadWeightsFromFilesDense(tensor,weightsPrefixName);
     }
+
+    /**
+     * Load weights from external files
+     * @param tensor espam. Tensor
+
+    private void _loadWeightsFromFilesDense(Tensor tensor, String weightsPrefixName, int neuronStartId){
+        try {
+               //int partition_size = (tensor.getDimSize(1)*_partition_size);
+               //math.floor(neurs/partition_size)
+               int neurs = tensor.getDimSize(0);
+               int partitions = (neurs/_partition_size);
+               int inp_size = 0;
+               for(int i=1;i<tensor.getDimensionality();i++)
+                     inp_size+=  tensor.getDimSize(i);
+
+               int partition_size = (_partition_size * inp_size);
+               int tail;
+               int last_partition_size = 0;
+               Integer startBlockId = 0;
+               Integer neuronShiftInBlock = neuronStartId % _partition_size;
+               int first_partition_size = 0;
+               int shiftInBlock = neuronShiftInBlock * inp_size;
+
+               if(neuronStartId>0) {
+                   Double startBlockIdDouble = (((Math.ceil((double) neuronStartId / (double) _partition_size))) - 1);
+                   startBlockId = startBlockIdDouble.intValue();
+                   first_partition_size = partition_size - shiftInBlock;
+
+                   if(first_partition_size>neurs*inp_size) {
+                       first_partition_size = neurs * inp_size;
+                       partitions = 1;
+                   }
+               }
+
+               tail = tensor.getElementsNumber() - partitions * partition_size - first_partition_size;
+
+               if(tail<0){
+                   tail+=partition_size;
+                   partitions--;
+               }
+
+               if(tail>0) {
+                   partitions = partitions + 1;
+                   last_partition_size = tail;
+               }
+
+
+               _printStream.println(_prefix + "/** weights load ");
+               _printStream.println(_prefix + "std::string weights_path_prefix = \"./../../weights_npz/" + weightsPrefixName + "_w\";");
+               _printStream.println(_prefix + "int partition_size = " + partition_size + ";");
+               _printStream.println(_prefix + "int partitions_num = " + partitions + ";");
+               _printStream.println(_prefix + "int first_partition_size = " + first_partition_size + ";");
+               _printStream.println(_prefix + "int last_partition_size = " + last_partition_size + ";");
+
+
+               _printStream.println(_prefix + "int start_block_id = " + startBlockId.toString() + ";");
+
+               _printStream.println(_prefix + "/** shift of the partition beginning from the beginning of the weights array ");
+               _printStream.println(_prefix + "int shift = 0; ");
+
+               _printStream.println(_prefix + "int shift_in_block = " + neuronShiftInBlock +" * input_len;");
+               _printStream.println(_prefix + "int start = 0;");
+
+               /** FIRST PARTITION PROCESSING
+               Integer midPartitionsStartId = 0;
+
+               if(first_partition_size>0){
+                  _printStream.println();
+                  _printStream.println(_prefix + "/** first partition processing ");
+                   midPartitionsStartId++;
+                  _printStream.println(_prefix + "dl.data_load_from_numpy(weights_path_prefix, start_block_id, first_partition_size, shift_in_block, shift, &weights[0]);");
+                  _printStream.println(_prefix + "shift += partition_size - shift_in_block;");
+               }
+
+
+            /** MID PARTITIONS PROCESSING
+
+           if( (partitions - 1)>0) {
+               _printStream.println();
+               _printStream.println(_prefix + "/** partitions processing ");
+               _printStream.println(_prefix + "for(int i=" + midPartitionsStartId + "; i<partitions_num - 1 ;i++) {");
+               prefixInc();
+               _printStream.println(_prefix + "dl.data_load_from_numpy(weights_path_prefix, i + start_block_id, partition_size, start, shift, &weights[0]);");
+               _printStream.println(_prefix + "shift += partition_size;");
+               // _printStream.println(_prefix + "start+= block_id * partition_size;");
+               prefixDec();
+               _printStream.println(_prefix + "}");
+           }
+
+               /** LAST PARTITION
+               if((partitions-1)>=0) {
+                   _printStream.println();
+                   _printStream.println(_prefix + "/** last partition processing ");
+                   _printStream.println(_prefix + "dl.data_load_from_numpy(weights_path_prefix, " + ((partitions - 1) + startBlockId ) + ", last_partition_size, start, shift, &weights[0]);");
+               }
+
+            }
+            catch (Exception e){
+               //_printStream.println("0 };");
+               _printStream.println("//ERROR: weights load error " + e.getMessage());
+            }
+    }
+    */
 
     /**
      * Load weights from external files
@@ -1067,6 +1200,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
 
     }
+
 
     /**
      * Load weights from external files
@@ -1186,25 +1320,33 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _prepareThreads();
         _fillInThreadInfo(csdfg);
         _printStream.println("");
-        if(_silent)
-             _printStream.print("// ");
-        _printStream.print(_prefix + "std::cout<<\" Application topology is constructed! \"<<std::endl;");
+        if(!_silent)
+            _printStream.print(_prefix + "std::cout<<\" Application topology is constructed! \"<<std::endl;");
+        _appConstructionTimer();
+
+
         _printStream.println("");
 
         _createAndRunThreads(csdfg);
          _printStream.println("");
          _joinThreads();
-
-         /** TODO delete after debug is finished*/
-         if(!_silent)
-            _writeNodeOutputs(csdfg);
-
          prefixDec();
          _endAppMainTimer();
          _printStream.println(_prefix + "}//main");
          prefixDec();
         _prefixDec();
         _printStream.println("");
+    }
+
+    /** find out the application construction end time*/
+    private void _appConstructionTimer(){
+        _printStream.println();
+        _printStream.println(_prefix + "endTime = getMicroSecond();");
+        _printStream.println(_prefix + "double appConstrTime = endTime - startTime;");
+        if(!_silent)
+        _printStream.println(_prefix + "std::cout<<\"App construction time: \"<<appConstrTime<<std::endl;");
+        _printStream.println();
+
     }
 
 ///// Timers ////
@@ -1259,102 +1401,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
             _printStream.println(_prefix + node.getName()+"_inst.int_params[\"block_size\"] = blocksizes[" + blockSizeId + "];");
             blockSizeId++;
         }
-    }
-
-
-    //////////////////             I/O data             /////////////////////
-
-    protected void _writeNodeOutputs(CSDFGraph csdfg){
-        _printStream.println(_prefix + "/**");
-        _printStream.println(_prefix + "* In this part the beginning of nodes outputs is printed, ");
-        _printStream.println(_prefix + "* which might be useful for debug purposes");
-        _printStream.println(_prefix + "* TODO: delete printout of nodes outputs, if not in debug mode");
-        _printStream.println(_prefix + "*/");
-
-        _printStream.println(_prefix + "// how many values should be printed");
-        _printStream.println(_prefix + "int show_values = 10;");
-        prefixInc();
-
-         Iterator i = csdfg.getNodeList().iterator();
-        while (i.hasNext()) {
-            CSDFNode node = (CSDFNode) i.next();
-                _writeNodeOutput(node);
-        }
-
-        prefixDec();
-    }
-
-    protected void _writeNodeOutput(CSDFNode node){
-        /** do not process output node*/
-        if(node.getOperation().toLowerCase().equals("write"))
-            return;
-        /** do not process nodes with empty output*/
-        MemoryUnit mu = node.getMemoryUnit("output");
-        if(mu==null)
-            return;
-
-        _printStream.println(_prefix + "std::cout<<\"" + node.getName() +" output \"<<std::endl;");
-
-        _printStream.print(_prefix + "appFunc::show_val(");
-        _printStream.print("&" + node.getName() +"_inst.output[0]");
-
-        _printStream.print(", (" + node.getName() +"_inst.output_dim_0 ");
-
-        for (int i=1;i<mu.getDimensionality();i++)
-            _printStream.print(" * "+ node.getName() +"_inst.output_dim_" + i);
-
-        _printStream.print("), show_values);");
-        _printStream.println("");
-
-    }
-
-
-    //////////////////         schedule              /////////////////////
-
-    /** TODO: schedule is outdated (replaced by threads self-scheduling by data)
-     * TODO: Remove after generator implementation is finished.
-     //define schedule - LB: layers in traverse order
-	   //NB : neurons of one layer can run in parallel?
-     */
-    protected void _writeSchedule(){
-        _printStream.println(_prefix + "/**");
-        prefixInc();
-        _printStream.println(_prefix + "Define schedule ");
-        _printStream.println(_prefix + "Dummy schedule for LB-mode: layers in traverse order");
-        _printStream.println(_prefix + "Dummy schedule for NB-mode: neurons of one layer can run in parallel");
-        prefixDec();
-        _printStream.println(_prefix + "*/");
-        _printStream.println(_prefix + "vector<std::string> schedule = vector<std::string>();");
-        _printStream.println("");
-        //
-        if(_isScheduleNullOrEmpty())
-            _processNullSchedule();
-
-        else {
-            for (String nodeCall : _schedule)
-                _printStream.println(_prefix + "schedule.push_back(\"" + nodeCall + "\");");
-        }
-
-    }
-
-    /**
-     * Checks if schedule is null or empty
-     * @return true, if schedule is null or empty and false otherwise
-     */
-    private boolean _isScheduleNullOrEmpty(){
-        if(_schedule==null)
-            return true;
-        if(_schedule.size()==0)
-            return true;
-        return false;
-    }
-
-    /**
-     * Process null schedule in generated .cpp - code
-     */
-    private void _processNullSchedule(){
-        _printStream.println(_prefix + "//WARNING: Please, write CSDF graph schedule here using schedule.push_back(\"node_name\");");
-        _printStream.println(_prefix + "cout<<\"WARNING: CSDF graph schedule is undefined.\"<<endl<<\"Please, write schedule manually in appMain.main()\";");
     }
 
     //////////////////         communication channels             /////////////////////
@@ -1480,7 +1526,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param isOutPort is port an output port
      */
     protected void _fillInThreadInfo(CSDFPort port, boolean isOutPort){
-        int threadId = _schedule.indexOf(port.getNode().getName());
+        int threadId = _nodes.indexOf(port.getNode().getName());
 
         String fifoBufSearchF = _funcClassName + "::get_buf_by_";
         if(isOutPort)
@@ -1526,15 +1572,12 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
          _printStream.println("");
     }
 
-    /**
-     * Join all threads so application waits for all the
-     * threads to be finished
-     */
+    /** Join all the threads*/
     protected void _joinThreads(){
-        if(_schedule == null)
+        if(_nodes == null)
             return;
         _printStream.println(_prefix + "// Join threads that should be awaited");
-        for(String node: _schedule){
+        for(String node: _nodes){
             _printStream.println(_prefix + "thread_" + node + ".join();");
         }
 
@@ -1617,13 +1660,13 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         /** input and output nodes are processed in appMain*/
         if(_isIONode(node))
             return;
-        /** concat is processed separately too*/
+        /** concat node is processed separately too*/
         if(node.getName().toLowerCase().contains("concat")){
             //_processExecutionConcat(node);
             return;
         }
         /** now we perform all neurons execution at once*/
-        _processExecutionOneKernel(node,_funcClassName + "::execute");
+        _processExecution(node,_funcClassName + "::execute");
     }
         /**
      * Checks if the CSDF graph node is input or output node
@@ -1665,22 +1708,55 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     }
 
       /**
-     * Process execution, when kernels number == 1
+     * Process execution primitive
      * @param node CSDF node
      * @param execPrimitiveName name of the execution primitive
      */
-    protected void _processExecutionOneKernel(CSDFNode node,String execPrimitiveName){
-      String operation = node.getOperation();
-      if(operation==null)
+    protected void _processExecution(CSDFNode node,String execPrimitiveName){
+      _printStream.println("");
+      _printStream.println(_prefix + "//execution ");
+      _processExecution(node.getOperator(),null);
+    }
+
+    /**
+     * Process execution primitive
+     * @param operator CSDF node operator
+     * @param suboperatorID operator sequential Id (for compelx operators)
+     */
+    protected void _processExecution(Operator operator, Integer suboperatorID){
+      if(operator==null)
           return;
 
-      _printStream.println("");
-      _printStream.println(_prefix + "//execution");
-      _printStream.println(_prefix + execPrimitiveName +"(std::string(\"" + operation + "\"),"+
-       "&tensor_params, &int_params);");
-      /**TODO: replace with merging!*/
-      MemoryUnit nonlin = node.getMemoryUnit("activation");
+      if(operator instanceof ComplexOperator){
+          _processExecutionComplex((ComplexOperator) operator);
+          return;
+      }
+
+    String parPrefix = "";
+    if(suboperatorID!=null)
+        parPrefix = "_" + suboperatorID.toString();
+
+      String opName = operator.getName();
+      _printStream.println(_prefix + "appFunc::execute(std::string(\"" + opName + "\"),"+
+       "&tensor_params" + parPrefix + ", &int_params" + parPrefix + ");");
+
     }
+
+
+     /**
+     * Process execution primitive
+     * @param operator Complex CSDF node operator
+     */
+    protected void _processExecutionComplex(ComplexOperator operator) {
+        Integer opId = 0;
+        for(Operator subOperator: operator.getSubOperators()){
+            _processExecution(subOperator,opId);
+            opId++;
+        }
+
+    }
+
+
 
     /**
      * Get reference on linear array
@@ -1714,8 +1790,22 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
             _accessCommunicationChannel(node.getName(),outport.getName(),true);
 
         _printStream.println(_prefix + "setaffinity(thread_data->core_id);");
-        _printStream.println(_prefix + "int_params[\"core_id\"] = thread_data->core_id;");
+        _defineThreadCoreIdInParams(node.getOperator());
         _printStream.println(" ");
+    }
+
+    /**
+     * Define thread core id in integer parameters of the node
+     * @param operator CSDF node operator
+     */
+    protected void _defineThreadCoreIdInParams(Operator operator){
+        if (operator instanceof ComplexOperator){
+            for(int i=0; i<((ComplexOperator) operator).getSubOperators().size(); i++){
+                _printStream.println(_prefix + "int_params_"+ i + "[\"core_id\"] = thread_data->core_id;");
+            }
+        }
+
+        else _printStream.println(_prefix + "int_params[\"core_id\"] = thread_data->core_id;");
     }
 
     /**
@@ -1766,214 +1856,207 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
 
     /**
-     * TODO refactoring
      * Fill in CSDFNode integer parameters
      * @param node CSDFNode
      */
     protected void _fillInIntParams(CSDFNode node) {
         /** define constant parameters, if any*/
-        Vector<MemoryUnit> constParams = node.getUnitParams();
-        if (constParams.size() > 0) {
-            _printStream.println("//const int parameters");
-            _printStream.println(_prefix + "int_params[\"neurons\"] = neurons;");
-
-            for (MemoryUnit mu : constParams) {
-                if (mu.getTypeDesc().equals("int"))
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() + "\"] = " + mu.getName() + ";");
-            }
-        }
-
-        for (CSDFPort inport : node.getNonOverlapHandlingInPorts()) {
-            MemoryUnit mu = inport.getAssignedMemory();
-            if (mu != null) {
-                _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                        "_dims\"] = " + mu.getName() + "_dims;");
-                for (int i = 0; i < mu.getDimensionality(); i++) {
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                            "_dim_" + i + "\"] = " + mu.getName() + "_dim_" + i + ";");
-                }
-                _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                        "_len\"] = " + mu.getName() + "_len ;");
-            }
-        }
-
-        /** built-in concatenation*/
-        if(node.isConcat()) {
-            MemoryUnit mu = node.getMemoryUnit("input");
-              if (mu != null) {
-                _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                        "_dims\"] = " + mu.getName() + "_dims;");
-                for (int i = 0; i < mu.getDimensionality(); i++) {
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                            "_dim_" + i + "\"] = " + mu.getName() + "_dim_" + i + ";");
-                }
-                _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                        "_len\"] = " + mu.getName() + "_len ;");
-            }
-        }
-
-        /** define only distinct out ports*/
-        Vector<String> defined = new Vector<>();
-        for (CSDFPort outport : node.getNonOverlapHandlingOutPorts()) {
-            MemoryUnit mu = outport.getAssignedMemory();
-            if (mu != null) {
-                if (!defined.contains(mu.getName())) {
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                            "_dims\"] = " + mu.getName() + "_dims;");
-                    for (int i = 0; i < mu.getDimensionality(); i++) {
-                        _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                                "_dim_" + i + "\"] = " + mu.getName() + "_dim_" + i + ";");
-                        defined.add(mu.getName());
-                    }
-                    _printStream.println(_prefix + "int_params[\"" + mu.getName() +
-                            "_len\"] = " + mu.getName() + "_len ;");
-                }
-            }
-        }
-        defined.clear();
-
-        /** refine int constant parameters for I/O and weights*/
-        MemoryUnit input = node.getMemoryUnit("input");
-        if(input!=null){
-            Tensor muShape = input.getShape();
-            int channels = 1;
-            int h = 1;
-            int w = muShape.getLastDimSize();
-
-            if (muShape.getDimensionality()==3) {
-                channels = muShape.getDimSize(2);
-                h = muShape.getDimSize(1);
-                w = muShape.getDimSize(0);
-            }
-
-            if(muShape.getDimensionality()==2){
-                h = muShape.getDimSize(1);
-            }
-            _printStream.println(_prefix + "int_params[\"channels\"] = " + channels + ";");
-            _printStream.println(_prefix + "int_params[\"h\"] = " + h + ";");
-            _printStream.println(_prefix + "int_params[\"w\"] = " + w + ";");
-        }
-
-        MemoryUnit output = node.getMemoryUnit("output");
-
-        if(output!=null){
-            Tensor muShape = output.getShape();
-            //int channels = 1;
-            int h = 1;
-            int w = muShape.getLastDimSize();
-
-            if (muShape.getDimensionality()==3) {
-                //channels = muShape.getDimSize(0);
-                h = muShape.getDimSize(1);
-                w = muShape.getDimSize(0);
-            }
-
-            if(muShape.getDimensionality()==2){
-                h = muShape.getDimSize(1);
-            }
-            _printStream.println(_prefix + "int_params[\"out_h\"] = " + h + ";");
-            _printStream.println(_prefix + "int_params[\"out_w\"] = " + w + ";");
-        }
-
-        //DARKNET special params
-        /** TODO might be changed!*/
-             _printStream.println(_prefix + "// Darknet integer parameters");
-            _printStream.println(_prefix + "int_params[\"groups\"] = 1;");
-            _printStream.println(_prefix + "int_params[\"batch\"] = 1;");
-            _printStream.println(_prefix + "int_params[\"batchnormalize\"] = 0;");
-            _printStream.println(_prefix + "int_params[\"xnor\"] = 0;");
+        _fillInIntParams(node.getOperator(),null);
     }
 
     /**
-     * TODO refactoring
-     * Fill in CSDFNode integer parameters
+     * Fill integer parameters for CSDF node
+     * @param operator CSDF node operator
+     * @param suboperatorId seubOperator Id (for complex operators)
+     */
+    protected void _fillInIntParams(Operator operator, Integer suboperatorId){
+    if(operator==null)
+        return;
+
+    if(operator instanceof ComplexOperator) {
+        _fillComplexOperatorIntParams((ComplexOperator) operator);
+        return;
+    }
+
+    String parPrefix = "";
+    if(suboperatorId!=null)
+        parPrefix = "_" + suboperatorId.toString();
+
+    _printStream.println();
+    _printStream.println("//const int parameters " + parPrefix);
+
+    TreeMap<String,Integer> intParameters = operator.getIntParams();
+    for(Map.Entry<String,Integer> intPar: intParameters.entrySet()){
+        _printStream.println(_prefix + "int_params"+ parPrefix +"[\""+intPar.getKey()+"\"] = "+intPar.getKey() + parPrefix +";");
+      }
+    }
+
+
+    /**
+     * Define operator parameters for a complex operator
+     * @param operator complex CSDF node operator
+     */
+    protected void _fillComplexOperatorIntParams(ComplexOperator operator){
+        Integer opId = 0;
+        for(Operator subOp: operator.getSubOperators()){
+           _fillInIntParams(subOp,opId);
+            opId++;
+        }
+    }
+
+
+    /**
+     * Fill in CSDFNode tensor parameters
      * @param node CSDFNode
      */
     protected void _fillInTensorParams(CSDFNode node) {
         _printStream.println("");
         _printStream.println(_prefix + "// tensor parameters");
-        _addLinearRefToTensorParams("input", node.getMemoryUnit("input"));
-        if(!node.getOperation().toLowerCase().equals("write"))
-            _addLinearRefToTensorParams("output", node.getMemoryUnit("output"));
-        else
-            _addLinearRefToTensorParams("output", null);
-        _addLinearRefToTensorParams("weights", node.getMemoryUnit("weights"));
-        _addLinearRefToTensorParams("bias", node.getMemoryUnit("bias"));
-
-        //if(_generateDNFunc)
-        _additionalTensorParams(node);
-
+        _setIOTensorParams(node);
+        /** Operator tensor parameters*/
+        _fillInTensorParams(node.getOperator(), null);
         _printStream.println("");
     }
 
+    protected void _setIOTensorParams(CSDFNode node){
+        String inpTensorParPrefix = "";
+        String outpTensorParPrefix = "";
+
+        if(node.getOperator() instanceof ComplexOperator){
+            inpTensorParPrefix = "_0";
+            Integer outpOpId = ((ComplexOperator) node.getOperator()).getSubOperators().size() - 1;
+
+            outpTensorParPrefix = "_" + outpOpId;
+        }
+
+        _addLinearRefToTensorParams("input", node.getMemoryUnit("input"), inpTensorParPrefix);
+        if (!node.isSnk())
+            _addLinearRefToTensorParams("output", node.getMemoryUnit("output"), outpTensorParPrefix);
+        else
+            _addLinearRefToTensorParams("output", null, outpTensorParPrefix);
+
+        _additionalTensorParams(node);
+    }
+
+
     /**
-     * Add special DARKNET parameters
+     * Fill in CSDF operator tensor parameters
+     * @param operator CSDF operator tensor parameters
+     */
+    protected void _fillInTensorParams(Operator operator, Integer suboperatorId) {
+        if(operator == null)
+            return;
+
+        if(operator instanceof ComplexOperator) {
+        _fillComplexOperatorTensorParams((ComplexOperator) operator);
+        return;
+    }
+
+        String parPrefix = "";
+        if(suboperatorId!=null)
+        parPrefix = "_" + suboperatorId.toString();
+
+        TreeMap<String,Tensor> tensorParameters = operator.getTensorParams();
+
+        _printStream.println("");
+        _printStream.println(_prefix + "// tensor parameters "+ suboperatorId);
+
+        for(Map.Entry<String,Tensor> entry: tensorParameters.entrySet())
+             _addLinearRefToTensorParam(entry.getValue(),entry.getKey(),parPrefix);
+    }
+
+        /**
+     * Define operator parameters for a complex operator
+     * @param operator complex CSDF node operator
+     */
+    protected void _fillComplexOperatorTensorParams(ComplexOperator operator){
+        Integer opId = 0;
+        Vector<Operator> subOperators = operator.getSubOperators();
+        for(Operator subOp: subOperators){
+           _fillInTensorParams(subOp,opId);
+            opId++;
+        }
+
+        _printStream.println();
+        _printStream.println(_prefix + "// internal buffers");
+        Integer bufId = 0;
+        Integer srcOpId;
+        Integer dstOpId;
+        for(InternalBuffer internalBuffer: operator.getInternalBuffers()){
+            srcOpId = subOperators.indexOf(internalBuffer.getSrc());
+            dstOpId = subOperators.indexOf(internalBuffer.getDst());
+
+            if(srcOpId!=null && dstOpId!=null) {
+                _setupInternalBuffer( bufId,srcOpId, dstOpId);
+            }
+            else System.err.println(operator.getName() + " internal buffer setup error!");
+
+            bufId++;
+        }
+    }
+
+    /**
+     * Define internal buffer between two connections
+     * @param bufId buffer Id
+     * @param srcOpId source operator Id
+     * @param dstOpId dst operator Id
+     */
+    protected void _setupInternalBuffer (Integer bufId, Integer srcOpId, Integer dstOpId){
+       String name = "internal_buf" + bufId.toString();
+       _printStream.println(_prefix + "tensor_params_"+ srcOpId +"[\"output\"] = &" + name + "[0];");
+       _printStream.println(_prefix + "tensor_params_" + dstOpId +"[\"input\"] = &" + name + "[0];");
+    }
+
+
+    /**
+     * Add linear reference to tensor parameters
+     * @param tensor tensor
+     * @param  name tensor param name
+     */
+    private void _addLinearRefToTensorParam(Tensor tensor, String name, String parPrefix){
+        String ref = "&"+ name + parPrefix + "[0]";
+        if(Tensor.isNullOrEmpty(tensor))
+            ref = "nullptr";
+
+        _printStream.println(_prefix + "tensor_params" + parPrefix + "[\""+ name +"\"] = " + ref + ";");
+
+    }
+
+    /**
+     * Add special parameters
      * @param node CSDF node
      */
     private void _additionalTensorParams(CSDFNode node){
-        Vector<String> _refParams = new Vector<>();
-        //if(_generateDNFunc)
-            _refParams.add("networkspace");
-
-        _refParams.add("squared");
-        _refParams.add("norms");
-        _refParams.add("scale");
-        _refParams.add("mean");
-        _refParams.add("variance");
-        _addLinearRefToTensorParams(_refParams,node);
-
-        Vector<String> _lens = new Vector<>();
-        //if(_generateDNFunc)
-            _lens.add("networkspace");
-
-        _defineLenInIntParameters(_lens,node);
+        if(node.getOperator().hasTensorRefs()){
+          for (Map.Entry<String,String> tensorRef : node.getOperator().getTensorRefs().entrySet()){
+              _addTensorRef(tensorRef);
+          }
+        }
     }
 
     /**
-     * Define length of linear parameters
-     * @param names list of parameter names
+     * Add non-trivial tensor reference to tensor params
+     * @param tensorRef
      */
-    private void _defineLenInIntParameters(Vector<String> names, CSDFNode node){
-
-            for(String name: names) {
-            MemoryUnit mu = node.getMemoryUnit(name);
-            if (mu != null)
-                _defineLenInIntParameters(name);
-        }
+    private void _addTensorRef(Map.Entry<String,String> tensorRef){
+       String muval = tensorRef.getValue();
+       if(muval.equals("null"))
+           _printStream.println(_prefix + "tensor_params[\""+ tensorRef.getKey() +"\"] = nullptr;");
+       else
+       _printStream.println(_prefix + "tensor_params[\""+ tensorRef.getKey() +"\"] = &"+ muval + "[0]"+ ";");
     }
 
      /**
-     * Add linear reference to tensor parameter
-     * @param names list of parameter names
-     */
-    private void _addLinearRefToTensorParams(Vector<String> names, CSDFNode node){
-        for(String name: names) {
-            MemoryUnit mu = node.getMemoryUnit(name);
-            if (mu != null)
-                _addLinearRefToTensorParams(name, mu);
-        }
-
-    }
-
-    /**
      * Add linear reference to tensor parameters
-     * @param muname memory unit name
+     * @param mu Memory unit
      */
-    private void _defineLenInIntParameters(String muname){
-        _printStream.println(_prefix + "int_params[\""+ muname +"_len\"] = " + muname +"_len;");
-    }
-
-    /**
-     * Add linear reference to tensor parameters
-     * @param mu memory unit
-     */
-    private void _addLinearRefToTensorParams(String muname, MemoryUnit mu){
+    private void _addLinearRefToTensorParams(String muname, MemoryUnit mu, String tensorParamsPrefix){
         String muref = "&"+ muname + "[0]";
 
         if(mu==null)
             muref = "nullptr";
 
-        _printStream.println(_prefix + "tensor_params[\""+ muname +"\"] = " + muref + ";");
+        _printStream.println(_prefix + "tensor_params" + tensorParamsPrefix + "[\""+ muname +"\"] = " + muref + ";");
 
     }
 
@@ -2075,13 +2158,13 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
        _printStream.println(_prefix + "//reading");
 
        /** reading into concat node */
-       if(node.getOperation().toLowerCase().equals("concat")){
+       if(node.getFunction().toLowerCase().equals("concat")){
            _processReadingConcat(node, "output");
            return;
        }
 
        /** reading into built-in concat node */
-       if(node.isConcat()){
+       if(node.getOperator().isConcat()){
            _processReadingConcat(node, "input");
            return;
        }
@@ -2186,11 +2269,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + "  cout<<input[i]<<' ';");
         prefixDec();
         _printStream.println(_prefix + "std::cout<<std::endl;");
-
-        /**TODO:alternative timer, rem after testing*/
-        //_printStream.println(_prefix + "//print time");
-       // _printStream.println(_prefix + "duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;");
-       // _printStream.println(_prefix + "std::cout<<\"time: \"<< duration <<std::endl;");
     }
 
     /**
@@ -2682,42 +2760,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         prefixDec();
         _printStream.println(_prefix + "}");
         prefixDec();
-
-        /**
-        if(incDnnFuncCPU || incDnnFuncGPU && !_generateDNFunc){
-        _printStream.println("");
-        _printStream.println(_prefix + "/**exec with int and tensor params ");
-        _printStream.println(_prefix + " void " + _funcClassName +
-                    "::execute (std::string function" +
-                ",std::map<std::string," + _IODatatype + "*>* tensor_params_ptr"+
-                ", std::map<std::string,int>* int_params_ptr )");
-
-        prefixInc();
-        _printStream.println(_prefix + "{");
-        prefixInc();
-
-        _printStream.println(_prefix + " if (function.find(\"LRN\") != std::string::npos) {");
-        _prefixInc();
-        _printStream.println(_prefix + " dnnFunc::lrn(int_params_ptr, tensor_params_ptr);");
-        _printStream.println(_prefix + " return;");
-        prefixDec();
-        _printStream.println(_prefix + "}");
-
-        _printStream.println(_prefix + "appFunc::execute (function, ");
-           prefixInc();
-           _printStream.println(_prefix + "tensor_params_ptr->at(\"input\"), ");
-           _printStream.println(_prefix + "tensor_params_ptr->at(\"weights\")," );
-           _printStream.println(_prefix + "tensor_params_ptr->at(\"output\"), " );
-           _printStream.println(_prefix + "tensor_params_ptr->at(\"bias\"), ");
-           _printStream.println(_prefix + "int_params_ptr );");
-           prefixDec();
-
-        //_printStream.println(_prefix + "// cout<<function<<endl;");
-        prefixDec();
-        _printStream.println(_prefix + "}");
-        prefixDec();
-       }
-       */
     }
 
 
@@ -3161,7 +3203,7 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param schedule CSDFG nodes schedule : get from the repetition vector of CSDFG??
      */
     public void setSchedule(Vector<String> schedule){
-        _schedule = schedule;
+        _nodes = schedule;
     }
 
     /**
@@ -3188,14 +3230,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      */
     public void setMapping(Mapping mapping) {
         this._mapping = mapping;
-    }
-
-     /**
-     * Set folder, from where the weights should be loaded
-     * @param loadWeightsFolder folder, from where the weights should be loaded
-     */
-    public void setLoadWeightsFolder(String loadWeightsFolder) {
-        _loadWeightsFolder = loadWeightsFolder;
     }
 
     /** use neuraghe functions*/
@@ -3289,12 +3323,13 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     public String _paramDataType = "int";
 
     /** CSDFG nodes schedule : get from the repetition vector of CSDFG??*/
-    Vector<String> _schedule;
+    Vector<String> _nodes;
 
     /** current mapping */
     Mapping _mapping = null;
 
-    ///// Mapping moc, in case mapping is not provided ///
+
+    /** Mapping moc, in case mapping is not provided*/
     /** Number of cores */
     private static int _maxCores = 6;
 
@@ -3312,10 +3347,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
 
     /** if weights should be initialized with dummy values*/
     private static boolean _initWeightsDummy = false;
-
-    /** folder, from where the weights should be loaded*/
-    /** if folder is set to null, no weights are loaded*/
-    private String _loadWeightsFolder = null;
 
     /** If the NA library is used*/
     private static boolean _generateDNNFuncNA = false;

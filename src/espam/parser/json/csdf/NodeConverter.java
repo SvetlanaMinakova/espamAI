@@ -2,6 +2,7 @@ package espam.parser.json.csdf;
 
 import com.google.gson.*;
 import espam.datamodel.graph.NPort;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFEdge;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.CSDFPort;
@@ -29,8 +30,10 @@ public class NodeConverter  implements JsonSerializer<CSDFNode>, JsonDeserialize
         nodeObject.addProperty("id",node.getId());
         nodeObject.addProperty("name", node.getName());
 
-        nodeObject.addProperty("function", node.getOperation());
+        nodeObject.addProperty("function", node.getFunction());
         nodeObject.addProperty("group", node.getGroup());
+        String jsonOperator = gson.toJson(node.getOperator(), Operator.class);
+        nodeObject.addProperty("operator", jsonOperator);
         /**
          * add extra information
          */
@@ -49,7 +52,7 @@ public class NodeConverter  implements JsonSerializer<CSDFNode>, JsonDeserialize
         }
         nodeObject.add("ports",ports);
 
-            return nodeObject;
+        return nodeObject;
     }
 
     public CSDFNode deserialize(JsonElement json, Type type,
@@ -69,10 +72,26 @@ public class NodeConverter  implements JsonSerializer<CSDFNode>, JsonDeserialize
         JsonObject object = json.getAsJsonObject();
         int id = object.get("id").getAsInt();
         String name = object.get("name").getAsString();
-        String op = object.get("function").getAsString();
-
         CSDFNode node = new CSDFNode(name,id);
-        node.setOperation(op);
+
+        String func = object.get("function").getAsString();
+        JsonObject op = object.get("operator").getAsJsonObject();
+        Operator operator;
+
+        if(op==null){
+            if(func==null)
+                operator = new Operator(name);
+            else operator = new Operator(func);
+        }
+
+        else {
+            operator = gson.fromJson(op, Operator.class);
+            if(func==null)
+                func = operator.getName();
+        }
+
+        node.setOperator(operator);
+        node.setFunction(func);
 
 //        String group =  object.get("group").getAsString();
   //      node.setGroup(group);

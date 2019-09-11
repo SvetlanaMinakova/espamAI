@@ -143,6 +143,13 @@ public class Pooling extends CNNNeuron implements ConnectionDependent {
     /** TODO REFACTORING. REMOVE HOTFIX*/
     @Override
     public Tensor calculateOutputDataFormat(Tensor inputDataFormat) {
+
+        /**TODO: REFACTORING!*/
+        if(getName().toLowerCase().contains("global")){
+            setKernelW(inputDataFormat.getDimSize(0));
+            setKernelH(inputDataFormat.getDimSize(1));
+        }
+
         Tensor outputFormat = super.calculateOutputDataFormat(inputDataFormat);
         int inpDims = inputDataFormat.getDimensionality();
         int outpDims = outputFormat.getDimensionality();
@@ -155,7 +162,24 @@ public class Pooling extends CNNNeuron implements ConnectionDependent {
             }
           //  System.out.println("Pooling output envided from "+ outpDims +" to "+ inpDims);
         }
+
         return outputFormat;
+    }
+
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+
+        if(!(getOutputDataFormat()==null)) {
+            timeComplexity = outputChannels * getOutputHeight() * getOutputWidth();
+        }
+
+        _operator.setTimeComplexity(timeComplexity);
     }
 
           /**

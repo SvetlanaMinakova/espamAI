@@ -127,7 +127,7 @@ public class MProcessor implements Cloneable {
     /**
      *  Set the schedule type of MProcessor.
      *
-     * @param  resource The schedule type
+     * @param  scheduleType The schedule type
      */
     public void setScheduleType( int scheduleType) {
         _scheduleType = scheduleType;

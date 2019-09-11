@@ -284,6 +284,9 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      * @throws EspamException if an error occurs
      */
     public static Tensor merge(Vector<Tensor> tensors, int dim) throws EspamException{
+       if(isVectors(tensors))
+           return mergeVectors(tensors);
+
         if(Tensor.isMergeable(tensors,dim)){
                Tensor merged = new Tensor(Tensor.getMaxDimTensor(tensors));
 
@@ -307,6 +310,25 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
             System.err.print(tensor+" ");
         System.err.println(" could not be merged ");
         throw new EspamException("Tensors merge error. ");
+    }
+
+    public static boolean isVectors(Vector<Tensor> tensors){
+         for(Tensor tensor:tensors) {
+             if(tensor.getDimensionality()!=1)
+             return false;
+         }
+
+         return true;
+    }
+
+    /** Merge vectors*/
+    public static Tensor mergeVectors(Vector<Tensor> vectors){
+     Integer mergedVecSize = 0;
+           for (Tensor tensor: vectors)
+               mergedVecSize+=tensor.getDimSize(0);
+
+           Tensor merged = new Tensor(mergedVecSize);
+           return merged;
     }
 
       /**

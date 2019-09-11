@@ -98,7 +98,7 @@ public class SDFGDotVisitor extends CSDFGraphVisitor {
      * @param  x The node that needs to be rendered.
      */
     public void visitComponent(CSDFNode x) {
-        String label = x.getOperation();
+        String label = x.getFunction();
         if(label==null)
             label=x.getName();
         _printStream.println(_prefix + "\"" + x.getName()+ "\" [ label=\"" + label +"\"];");

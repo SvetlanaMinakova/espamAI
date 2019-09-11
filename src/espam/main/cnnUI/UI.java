@@ -1,54 +1,48 @@
 package espam.main.cnnUI;
 
 import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
-import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
-import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.datamodel.mapping.MProcess;
 import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.processors.GPU;
 import espam.datamodel.platform.processors.Processor;
-import espam.datamodel.pn.cdpn.CDProcess;
+import espam.interfaces.python.Espam2DARTS;
 import espam.main.Config;
+import espam.operations.evaluation.CSDFGMemoryRefiner;
+import espam.operations.evaluation.CSDFTimingRefiner;
+import espam.operations.evaluation.EnergyEvaluator;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
+import espam.operations.transformations.cnn_model_transformations.CNNTransformer;
 import espam.operations.transformations.csdf_model_transformations.CSDFTransformer;
+import espam.parser.json.JSONParser;
 import espam.parser.json.platform.NeurAghePlatformParser;
 import espam.parser.json.refinement.EnergySpecParser;
 import espam.parser.json.refinement.TimingSpecParser;
+import espam.parser.onnx.InferenceDNNOptimizer;
+import espam.parser.onnx.ONNX2CNNConverter;
 import espam.parser.xml.mapping.XmlMappingParser;
 import espam.parser.xml.platform.XmlPlatformParser;
+import espam.utils.fileworker.FileWorker;
+import espam.utils.fileworker.ONNXFileWorker;
 import espam.visitor.dot.cnn.CNNDotVisitor;
 import espam.visitor.dot.sdfg.SDFGDotVisitor;
+import espam.visitor.json.CNNJSONVisitor;
+import espam.visitor.json.CSDFGraphJSONVisitor;
 import espam.visitor.json.refinement.EnergyRefinerVisitor;
 import espam.visitor.json.refinement.TimingRefinerVisitor;
 import espam.visitor.pthread.PthreadSDFGVisitor;
 import espam.visitor.sesame.SesameSDFGVisitor;
+import espam.visitor.xml.csdf.CSDFGraphXMLVisitor;
 import espam.visitor.xml.csdf.MappingXMLVisitor;
 import onnx.ONNX;
-import espam.interfaces.python.Espam2DARTS;
-import espam.main.ExtensionFilter;
-import espam.operations.refinement.CSDFGEnergyRefiner;
-import espam.operations.refinement.CSDFTimingRefiner;
-import espam.operations.refinement.RefinedCSDFEvaluator;
-import espam.operations.transformations.CNN2CSDFGraphConverter;
-import espam.operations.transformations.cnn_model_transformations.CNNTransformer;
-import espam.parser.json.JSONParser;
-import espam.parser.onnx.InferenceDNNOptimizer;
-import espam.parser.onnx.ONNX2CNNConverter;
-import espam.utils.fileworker.FileWorker;
-import espam.utils.fileworker.ONNXFileWorker;
-import espam.visitor.json.CNNJSONVisitor;
-import espam.visitor.json.CSDFGraphJSONVisitor;
-import espam.visitor.xml.csdf.CSDFGraphXMLVisitor;
 
 import java.io.File;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -150,42 +144,6 @@ public class UI {
     /******************* DNN model evaluation************************/
 
 
-      /**
-     * Evaluate layer-based deep neural network in terms
-     * of power and performance
-     * @param dir directory with deep neural networks
-     * in .json format to be evaluated
-     * @return evaluation of the deep neural network in
-     * terms of power and performance
-     */
-    public Vector<CSDFEvalResult> evaluateJsonDNNs(String dir, boolean neuronBased){
-        Vector<String> absPaths = FileWorker.getAllFilePaths(dir,".json");
-        Vector<CSDFEvalResult> results = new Vector<>();
-
-        for(String absPath: absPaths) {
-            try{
-
-            if(_verbose)
-                System.out.println(absPath+ " DNN evaluation...");
-
-             Network dnn = _readJSONDNNModel(absPath);
-             dnn.setDataFormats(dnn.getInputLayer().getOutputFormat());
-
-             CSDFEvalResult res = evaluate(dnn);
-             results.add(res);
-
-             if(_verbose) {
-                 System.out.println(absPath + " eval finished. Result:  ");
-                 System.out.println(res);
-             }
-            }
-            catch (Exception e){
-                System.err.println(absPath + " model error!");
-            }
-        }
-        return results;
-    }
-
     /**
      * Evaluate layer-based deep neural network in terms
      * of power and performance
@@ -193,36 +151,16 @@ public class UI {
      * @return evaluation of the deep neural network in
      * terms of power and performance
      */
-    public CSDFEvalResult evaluate(Network dnn){
-        return evaluate(dnn,false);
+    public CSDFEvalResult evaluate(Network dnn) throws Exception{
+       if (dnn == null)
+          throw new Exception(_srcPath + " DNN model reading error");
+
+        CSDFGraph csdfg = _convertDNN2SDFG(dnn);
+        _refineTiming(csdfg);
+        CSDFEvalResult result = _evaluate(csdfg);
+        return result;
     }
 
-    /**
-     * Evaluate deep neural network in terms of power and performance
-     * @param dnn deep neural network to be evaluated
-     * @param neuronBased if the start model is neuron based
-     * @return evaluation of the deep neural network in
-     * terms of power and performance
-     */
-    public CSDFEvalResult evaluate(Network dnn, boolean neuronBased){
-        _eval = true;
-        if(neuronBased)
-            _dnnInitRepresentation = DNNInitRepresentation.NEURONBASED;
-        else
-            _dnnInitRepresentation = DNNInitRepresentation.LAYERBASED;
-        if (dnn == null)
-                return new CSDFEvalError(" null DNN model");
-        try {
-            CSDFGraph csdfg = _convertDNN2SDFG(dnn);
-            _refineTiming(csdfg);
-
-            CSDFEvalResult result = _evaluate(csdfg);
-            return result;
-        }
-        catch (Exception e){
-            return new CSDFEvalError(e.getMessage());
-        }
-    }
 
     /**
      * Evaluate deep neural network in terms of power and performance
@@ -231,8 +169,17 @@ public class UI {
      * @return evaluation of the deep neural network in
      * terms of power and performance
      */
-    public CSDFEvalResult evaluate(Network dnn, Integer maxBlocks){
-        return evaluate(dnn,maxBlocks,2);
+    public CSDFEvalResult evaluate(Network dnn, Integer maxBlocks) throws Exception{
+        if (dnn == null)
+          throw new Exception(_srcPath + " DNN model reading error");
+
+        CNNTransformer transformer = new CNNTransformer(dnn);
+        transformer.splitToBlocks(maxBlocks,500,2,_verbose);
+
+        CSDFGraph csdfg = _convertDNN2SDFG(dnn);
+        _refineTiming(csdfg);
+        CSDFEvalResult result = _evaluate(csdfg);
+        return result;
     }
 
     /**
@@ -313,13 +260,18 @@ public class UI {
             if(_isDNNTransformationRequired(network.countLayers()))
                _transformDNN(network);
 
+            if(_FMSizes)
+                network.printFMSizes();
+
             csdfg = _convertDNN2SDFG(network);
         }
 
         if(_inCSDF) csdfg = _readCSDFG();
 
         if(_sesame || _pthread)
-            _edInterface.setRepetitionVector(csdfg);
+            _setRepetitionVector(csdfg);
+          // _setRepetitionVectorOneRunPerActor(csdfg);
+
 
         if(_consistencyCheckout)
             _checkConsistency(network,csdfg);
@@ -370,8 +322,11 @@ public class UI {
             System.out.println(_curPhase + "...");
 
         Network network = null;
-            if (_srcPath.endsWith("onnx"))
+            if (_srcPath.endsWith("onnx")) {
                 network = _readONNXDNNModel(_srcPath);
+                InferenceDNNOptimizer.getInstance().optimize(network,_optimizeForInference);
+                network.setDataFormats(network.getInputLayer().getOutputFormat());
+            }
 
             if (_srcPath.endsWith("json"))
                 network = _readJSONDNNModel(_srcPath);
@@ -379,9 +334,10 @@ public class UI {
             if (network == null)
                 throw new Exception(_srcPath + " DNN model reading error");
 
-            InferenceDNNOptimizer.getInstance().optimize(network,_optimizeForInference);
 
-            network.setDataFormats(network.getInputLayer().getOutputFormat());
+
+            if(_outputModelName==null)
+                _outputModelName = network.getName();
 
         if (_verbose)
              System.out.println("[done]");
@@ -405,6 +361,10 @@ public class UI {
         csdfg = _readSDFGJSONModel(_srcPath);
         if(csdfg == null) throw new Exception(_srcPath + " CSDF model reading error");
 
+        if(_outputModelName==null)
+            _outputModelName = csdfg.getName();
+        else csdfg.setName(_outputModelName);
+
         if (_verbose)
              System.out.println("[done]");
 
@@ -412,20 +372,66 @@ public class UI {
 
     }
 
-             /**
-          * Check input model consistency
-          * @param network DNN
-          * @param csdfg CSDFG
-          * @throws Exception if an error occurs
-          */
+    /**
+    * Set CSDFG repetition vector
+    * @param csdfg CSDFG
+    */
+    private void _setRepetitionVector(CSDFGraph csdfg) {
+        _curPhase = " Repetition vector setup ";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
+
+        try {
+             boolean consistency = _edInterface.checkConsistency(csdfg);
+             if(!consistency) {
+                 System.err.println("inconsistent csdf model generated: " + csdfg.getName());
+                 return;
+             }
+
+
+            _edInterface.setRepetitionVector(csdfg);
+        }
+        catch (Exception e){
+            System.err.println("Repetition vector setup error: "+e.getMessage());
+            return;
+        }
+        if (_verbose)
+            System.out.println("[done]");
+    }
+
+    /**Set one run per actor
+    * Set CSDFG repetition vector
+    * @param csdfg CSDFG
+    */
+    private void _setRepetitionVectorOneRunPerActor(CSDFGraph csdfg) {
+        _curPhase = " Repetition vector setup ";
+        if (_verbose)
+            System.out.println(_curPhase + "...");
+
+
+             for (Object node: csdfg.getNodeList()){
+                 ((CSDFNode)node).setRepetitions(1);
+             }
+
+        if (_verbose)
+            System.out.println("[done]");
+    }
+
+    /**
+     * Check input model consistency
+     * @param network DNN
+     * @param csdfg CSDFG
+     * @throws Exception if an error occurs
+     */
     private void _checkConsistency(Network network, CSDFGraph csdfg) throws Exception{
         _curPhase = "Model consistency checkout ";
         if (_verbose)
             System.out.println(_curPhase + "...");
 
                 boolean consistency;
-                if(_inDnn)
+                if(_inDnn) {
                     consistency = network.checkConsistency();
+                }
                 else
                     consistency = _edInterface.checkConsistency(csdfg);
                 System.out.println("input model consistency: " + consistency);
@@ -641,68 +647,6 @@ public class UI {
     }
 
     /**
-     * Read all CSDF graph models in 'json'format in the folder
-     * TODO extend by .xml files reading
-     * @param folder source folder
-     * @return array with espam.CSDFG models, extracted from the source models folder
-     * @throws Exception if an error occurs
-     */
-    private CSDFGraph[] _readAllSDFGs(String folder) throws Exception{
-        File dir = new File(folder);
-        /** find paths to all onnx models*/
-        File [] jsonModelsPaths = dir.listFiles(new ExtensionFilter("json"));
-        if(jsonModelsPaths==null)
-             throw new Exception("No .json models found in " + folder);
-        CSDFGraph[] sdfgs = new CSDFGraph[jsonModelsPaths.length];
-        for(int i=0;i<sdfgs.length;i++) {
-             sdfgs[i] = _readSDFGJSONModel(jsonModelsPaths[i].getPath());
-        }
-
-        return sdfgs;
-    }
-
-    /**
-     * Read all DNN models in 'json' or 'onnx' format in the folder
-     * @param folder folder with DNN models
-     * @return array with espam.Network models, extracted from the source models folder
-     * @throws Exception if an error occurs
-     */
-    private Network [] _readAllDNNs(String folder) throws Exception{
-        File dir = new File(folder);
-        int onnxModelsNum = 0;
-        int jsonModelsNum = 0;
-        /** find paths to all onnx models*/
-        File [] onnxModelPaths = dir.listFiles(new ExtensionFilter("onnx"));
-        if(onnxModelPaths!=null)
-            onnxModelsNum = onnxModelPaths.length;
-
-        /** find paths to all json models*/
-        File [] jsonModelPaths = dir.listFiles(new ExtensionFilter("json"));
-        if(jsonModelPaths!=null)
-            jsonModelsNum = jsonModelPaths.length;
-
-        if(onnxModelsNum==0 && jsonModelsNum==0)
-            throw new Exception("No .json or .onnx models found in " + folder);
-
-        Network [] dnns = new Network[onnxModelsNum + jsonModelsNum];
-
-        /** read all onnx models*/
-        if(onnxModelsNum>0) {
-            for(int i=0;i<onnxModelsNum;i++)
-                dnns[i] = _readONNXDNNModel(onnxModelPaths[i].getPath());
-        }
-
-        /** read all json models*/
-        if(jsonModelsNum>0) {
-            for(int i=0;i<jsonModelsNum;i++)
-                dnns[i+onnxModelsNum] = _readJSONDNNModel(jsonModelPaths[i].getPath());
-        }
-
-        return dnns;
-    }
-
-
-    /**
      * Evaluate SDF graph
      * @param sdfg SDF graph
      * @throws Exception if an error occurs
@@ -721,14 +665,14 @@ public class UI {
             if(_verbose)
                 System.out.println(_curPhase + "...");
             /**refine memory evaluation*/
-            RefinedCSDFEvaluator.getInstance().refineMemoryEval(sdfg,result);
+            CSDFGMemoryRefiner.getInstance().refineMemoryEval(sdfg,result);
 
             /**refine time evaluation*/
             if(_execTimeScale!=1.0)
-                RefinedCSDFEvaluator.getInstance().refineTimingEval(result,_execTimeScale);
+                CSDFTimingRefiner.getInstance().refineTimingEval(result,_execTimeScale);
 
-            /** refine energy evaluation*/
-            Double refinedEnergy = _getRefinedEnergy(sdfg);
+            /** evaluate energy*/
+            Double refinedEnergy = _getEnergy(sdfg);
             result.setEnergy(refinedEnergy);
 
 
@@ -743,14 +687,16 @@ public class UI {
      * @param graph CSDF graph
      * @return refined energy evaluation for CSDF graph or null
      */
-    private Double _getRefinedEnergy(CSDFGraph graph){
+    private Double _getEnergy(CSDFGraph graph){
         try{
             HashMap<Integer,Double> nodesUtilization = _edInterface.getUtilizationVector(graph);
-            Double refinedEnergy = CSDFGEnergyRefiner.getInstance().getRefinedEnergy(graph,nodesUtilization);
-            return refinedEnergy;
+
+
+            Double energy = EnergyEvaluator.getInstance().getEnergy(nodesUtilization);
+            return energy;
         }
         catch (Exception e){
-            System.err.print("Energy refinement error: " + e.getMessage());
+            System.err.print("Energy computation error: " + e.getMessage());
             return 0.0;
         }
     }
@@ -765,10 +711,15 @@ public class UI {
             if(_verbose)
                 System.out.println(_curPhase + "...");
             Network espamNetwork;
+
+            if(_outputModelName==null)
+                _outputModelName = onnxModel.getGraph().getName();
+
             if(_extractONNXWeights)
-                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel,_srcPath, _dstPath + onnxModel.getGraph().getName(),_verbose);
+                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel,_srcPath,
+                        _dstPath + _outputModelName, _outputModelName, _verbose);
             else
-                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel);
+                espamNetwork = ONNX2CNNConverter.convertModel(onnxModel, _outputModelName);
             return espamNetwork;
     }
 
@@ -779,6 +730,12 @@ public class UI {
     private Network _readJSONDNNModel(String modelPath) throws Exception{
          String json = FileWorker.read(modelPath);
          Network espamNetwork = (Network) JSONParser.getInstance().fromJson(json,Network.class);
+         if(_outputModelName!=null)
+             espamNetwork.setName(_outputModelName);
+         else _outputModelName = espamNetwork.getName();
+         espamNetwork.resolveReferences();
+         espamNetwork.initOperators();
+         //System.out.println("DNN json model red!");
          return espamNetwork;
     }
 
@@ -891,8 +848,9 @@ public class UI {
      */
     private void parseNeuraghePlatform(){
         setNEURAgheExecTimesSpec(_platformFile);
-        double maxEnergy = NeurAghePlatformParser.getWCEnergy(_platformFile);
-        CSDFGEnergyRefiner.getInstance().setMaxprocEnergy(maxEnergy);
+        HashMap<String, Double> procEnergy = NeurAghePlatformParser.getWCEnergy(_platformFile);
+        EnergyEvaluator.getInstance().setProcEnergy(procEnergy);
+        EnergyEvaluator.getInstance().setAutoMaxProcEnergy();
         _platform = NeurAghePlatformParser.parsePlatform(_platformFile);
     }
 
@@ -946,13 +904,8 @@ public class UI {
             automapping.setProcessorList(processors);
             _assignNodesToTemplateMapping(csdfg,mCPUList,mGPUList);
             _mapping = automapping;
-
-           /** mapping.setName("mapping1");
-            Vector<MProcessor> gpuList = _getGPUList(mapping);
-            _assignNodesToTemplateMappingSpread(csdfg,cpuList,gpuList);
-            _mapping = mapping;*/
         }
-         catch (Exception e){System.out.println("mapping file parsing error "+e.getMessage());
+         catch (Exception e){System.err.println("mapping file generation error "+e.getMessage());
         }
     }
 
@@ -966,6 +919,11 @@ public class UI {
         int cpuNum = cpuList.size();
         int gpuNum = gpuList.size();
 
+
+        int curCPUId = 0;
+        MProcessor curCPU = cpuList.firstElement();
+
+        int curGPUId = 0;
         Vector<CSDFNode> gpuNodes = new Vector<>();
         boolean useGPU = false;
         if(gpuNum>0) {
@@ -973,10 +931,6 @@ public class UI {
             useGPU = true;
         }
 
-        int curCPUId = 0;
-        MProcessor curCPU = cpuList.firstElement();
-
-        int curGPUId = 0;
         Vector processes;
 
         for (Object nodeObj: csdfg.getNodeList()) {
@@ -994,9 +948,15 @@ public class UI {
             curCPU = cpuList.elementAt(curCPUId);
 
             /** add GPU call property*/
+            /** TODO: refactoring*/
             if (useGPU && gpuNodes.contains(node)) {
-                MemoryUnit gpu = node.getMemoryUnit("gpu");
-                gpu.setUnitParamDesc("" + curGPUId);
+                Operator nodeOp = node.getOperator();
+                if(nodeOp!=null) {
+                    if(nodeOp.hasIntegerParams()) {
+                        node.getOperator().getIntParams().remove("gpu");
+                        node.getOperator().addIntParam("gpu",curGPUId);
+                    }
+                }
                 /**select next GPU core for mapping */
                 curGPUId++;
                 if (curGPUId == gpuNum)
@@ -1348,9 +1308,9 @@ public class UI {
     public void setEnergySpec(String energySpec) {
        HashMap<String,Double>operators = EnergySpecParser.parseEnergySpec(energySpec);
 
-       CSDFGEnergyRefiner.getInstance().setAlpha(operators.get("alpha"));
-       CSDFGEnergyRefiner.getInstance().setBeta(operators.get("beta"));
-       CSDFGEnergyRefiner.getInstance().setB(operators.get("b"));
+       EnergyEvaluator.getInstance().setAlpha(operators.get("alpha"));
+       EnergyEvaluator.getInstance().setBeta(operators.get("beta"));
+       EnergyEvaluator.getInstance().setB(operators.get("b"));
     }
 
     /**
@@ -1580,7 +1540,23 @@ public class UI {
         this._platformType = platformType;
     }
 
-         ///////////////////////////////////////////////////////////////////
+     /**
+       * Set flag to print FM sizes
+       * @param fmSizes flag to print FM sizes
+       */
+    public void setFMSizes(boolean fmSizes){
+        _FMSizes = fmSizes;
+    }
+
+   /**
+     * Set output model name (different from the input model name
+     * @param outputModelName output model name
+    */
+    public void setOutputModelName( String outputModelName){
+        _outputModelName = outputModelName;
+    }
+
+    ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
     /**
@@ -1799,6 +1775,12 @@ public class UI {
 
     /** platform*/
     Platform _platform;
+
     /** type of the platform specification*/
     Platformtype _platformType = Platformtype.ESPAM;
+
+    /** output model name*/
+    String _outputModelName = null;
+
+    boolean _FMSizes = false;
 }

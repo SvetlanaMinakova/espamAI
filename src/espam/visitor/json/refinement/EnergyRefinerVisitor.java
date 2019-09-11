@@ -1,6 +1,6 @@
 package espam.visitor.json.refinement;
 
-import espam.operations.refinement.CSDFGEnergyRefiner;
+import espam.operations.evaluation.EnergyEvaluator;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
@@ -17,7 +17,7 @@ public class EnergyRefinerVisitor {
     public static void printDefaultSpec(String dir){
         try {
             PrintStream printStream = FileWorker.openFile(dir,"energy_spec","json");
-            printEnergyRefiner(printStream,CSDFGEnergyRefiner.getInstance());
+            printEnergyRefiner(printStream,EnergyEvaluator.getInstance());
             System.out.println(dir + "/energy_spec.json file generated");
             printStream.close();
         }
@@ -31,7 +31,7 @@ public class EnergyRefinerVisitor {
      * @param printStream printstream
      * @param refiner energy refiner
      */
-   private static void printEnergyRefiner(PrintStream printStream,CSDFGEnergyRefiner refiner ){
+   private static void printEnergyRefiner(PrintStream printStream,EnergyEvaluator refiner ){
        StringBuilder offset = new StringBuilder("  ");
        printStream.println("{");
        printStream.println( "  \"alpha\": " + refiner.getAlpha() + ",");

@@ -8,6 +8,7 @@ import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
+import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
@@ -133,9 +134,13 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
 
             for(Layer inputOwner: _inputOwners) {
                 if(inputOwner!=null) {
-                    if(inputOwner.getOutputFormat().getDimensionality()==inputOwner.getNeuron().getOutputDataFormat().getDimensionality() &&_inputOwners.size()>1) {
+                    if(inputOwner.getOutputFormat().getDimensionality()==inputOwner.getNeuron().getOutputDataFormat().getDimensionality() &&
+                            _inputOwners.size()>1 && !(inputOwner.getNeuron() instanceof MultipleInputsProcessor)) {
                         Tensor inp = new Tensor(inputOwner.getOutputFormat());
-                        inp.addDimension(1);
+                        /** TODO: refactoring*/
+                        //if(!(inputOwner.getNeuron() instanceof DenseBlock))
+                        if(!(inp.getDimensionality()==1))
+                            inp.addDimension(1);
                         _inputs.add(inp);
                     }
                     else _inputs.add(inputOwner.getOutputFormat());
@@ -267,21 +272,33 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
 
            Vector<Tensor> _inputs = new Vector<>();
             for(Layer inputOwner: _inputOwners){
-                if(inputOwner.getOutputFormat().getDimensionality()==inputOwner.getNeuron().getOutputDataFormat().getDimensionality() &&_inputOwners.size()>1) {
-                    Tensor inp = new Tensor(inputOwner.getOutputFormat());
-                    inp.addDimension(1);
-                    _inputs.add(inp);
+                if(inputOwner.getNeuron() instanceof MultipleInputsProcessor)
+                   _inputs.add(inputOwner.getOutputFormat());
+                else {
+
+                    if (inputOwner.getOutputFormat().getDimensionality() == inputOwner.getNeuron().getOutputDataFormat().getDimensionality() && _inputOwners.size() > 1) {
+                        Tensor inp = new Tensor(inputOwner.getOutputFormat());
+                        inp.addDimension(1);
+                        _inputs.add(inp);
+                    } else _inputs.add(inputOwner.getOutputFormat());
                 }
-                else _inputs.add(inputOwner.getOutputFormat());
             }
 
         Tensor mergedInput = Tensor.mergeToSequence(_inputs);
 
         setInputDataFormat(mergedInput);
-        setOutputDataFormat(calculateOutputDataFormat(getInputDataFormat()));
+        setOutputDataFormat(mergedInput);
 
         neuronOwner.setInputFormat(mergedInput);
         neuronOwner.setOutputFormat(neuronOwner.calculateOutputFormat());
+
+        /**System.out.println("Concat layer: "+neuronOwner.getName());
+        System.out.print("   inputs: ");
+        for(Tensor input: _inputs)
+            System.out.print(input + ", ");
+        System.out.println();
+        System.out.println("   output: " + neuronOwner.getOutputFormat());
+        System.out.println("   merged input: " + mergedInput);*/
     }
 
 
@@ -347,6 +364,26 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
     @Override
     public String getFunctionCallDescription(int channels){
       return getFunctionCallName();
+    }
+
+    /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    @Override
+    public void initOperator(int inputChannels, int outputChannels) {
+        _operator.setConcat(true);
+    }
+
+       /**
+     * Init operator: Description of DNN neuron functionality
+     * Should be performed after all DNN model parameters are established
+     * and DNN data formats are calculated
+     */
+    protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+        int timeComplexity = 1;
+        _operator.setTimeComplexity(timeComplexity);
     }
 
     ///////////////////////////////////////////////////////////////////

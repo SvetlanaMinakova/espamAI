@@ -1,31 +1,23 @@
 package espam.operations.transformations;
 
-import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.cnn.*;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.connections.Custom;
-import espam.datamodel.graph.cnn.connections.OneToOne;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
-import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
 import espam.datamodel.graph.cnn.neurons.simple.Data;
-import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
-import espam.datamodel.platform.memories.Memory;
 import espam.main.cnnUI.DNNInitRepresentation;
-import espam.operations.refinement.CSDFGMemoryRefiner;
-import espam.operations.refinement.CSDFTimingRefiner;
-import espam.operations.transformations.cnn_model_transformations.CNNTransformer;
-import espam.operations.transformations.csdf_model_transformations.CSDFTransformer;
 
 import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -46,6 +38,7 @@ public class CNN2CSDFGraphConverter {
     public CSDFGraph buildGraphLayerBased(Network network) {
         /** sort layers in traverse order*/
         network.sortLayersInTraverseOrder();
+        network.initOperators();
 
         /**Copy network and calculate min DF for it (not to spoil the original DNN model) */
         _minimizedDFDNN = network;
@@ -53,11 +46,13 @@ public class CNN2CSDFGraphConverter {
         if(_dataTiling) {
                _minimizedDFDNN = new Network(network);
                _minimizedDFDNN.minimizeDataFlow(false);
+               _minimizedDFDNN.initOperators();
         }
+
+
         _CSDFG = new CSDFGraph(network.getName(), SDFGraphType.csdf);
 
         _CSDFG.setTokenDesc(network.getDataType());
-        _refiner.setIOmemType(network.getDataType());
 
         /** Build layers */
 
@@ -103,21 +98,13 @@ public class CNN2CSDFGraphConverter {
         Neuron minDFNeuron = minDFLayer.getNeuron();
 
         CSDFNode node = new CSDFNode(layer.getName(),nextNodeId);
+        node.setOperator(minDFNeuron.getOperator());
 
-        /** add memory units*/
-        Vector<MemoryUnit> iomemory = _refiner.callVisitor(minDFLayer);
+        /** add memory units */
+        Vector<MemoryUnit> iomemory = _memoryGenerator.generateIOMemory(minDFLayer,_minimizedDFDNN.getDataType());
         node.setMemoryUnits(iomemory);
-        MemoryUnit weights = _refiner.createWeightsDescription(layer,_minimizedDFDNN.getWeightsType());
-        if(weights!=null)
-            node.addMemoryUnit(weights);
-        MemoryUnit bias = _refiner.createBiasDescription(layer,_minimizedDFDNN.getDataType());
-        if(bias!=null){
-            node.addMemoryUnit(bias);
-        }
 
         /** specify operation */
-        String operation = minDFLayer.getFunctionCallDescription(layer.getInputChannels());
-        node.setOperation(operation);
         int dstOperationRepetitions = minDFNeuron.getOperationsNumber(layer.getNeuronsNum());
         node.setOperationRepetitionsNumber(dstOperationRepetitions);
         node.setKernelsNum(layer.getNeuronsNum());
@@ -175,13 +162,13 @@ public class CNN2CSDFGraphConverter {
              * Consistency checkout of summary I/O rate for multiple input processors
              * should be done in Network model
              */
-            if (l2SampleNeuron instanceof MultipleInputsProcessor) {
+            if (l2SampleNeuron instanceof MultipleInputsProcessor || l2SampleNeuron instanceof GenericNeuron) {
                 edge.getDst().setRates(edge.getSrc().getRates());
             }
 
-            if(l2SampleNeuron instanceof GenericNeuron){
-                _refineGenericNode((GenericNeuron)l2SampleNeuron,(GenericNeuron)l2SampleNeuronMinimized,endNode,connection);
-            }
+            //if(l2SampleNeuron instanceof GenericNeuron){
+              //  _refineGenericNode((GenericNeuron)l2SampleNeuron,(GenericNeuron)l2SampleNeuronMinimized,endNode,connection);
+           // }
 
             return edges;
          }
@@ -193,193 +180,7 @@ public class CNN2CSDFGraphConverter {
 
     ///////////////////////////////////////////////////////////////////
     ////               Neuron/block-based approach                ////
-    /**
-     * Builds the whole CSDFGraph from the Network
-     * @param network source Network
-     * @return CSDFGraph from the Network
-     */
-    public CSDFGraph buildGraph(Network network) {
-       _CSDFG = new CSDFGraph(network.getName(),SDFGraphType.csdf);
-       _CSDFG.setTokenDesc(network.getDataType());
-       _refiner.setIOmemType(network.getDataType());
-        /** sort layer in traverse order*/
-        network.sortLayersInTraverseOrder();
-
-        /**Copy network and calculate min DF for it (not to spoil the original DNN model) */
-        _minimizedDFDNN = new Network(network);
-        _minimizedDFDNN.minimizeDataFlow(false);
-
-        /**
-        * build layers
-        */
-        int nextNodeId = 0;
-        HashMap<Layer,Vector<CSDFNode>> layersMapping = new HashMap<Layer,Vector<CSDFNode>>();
-        for(Layer layer:network.getLayers()) {
-            Vector<CSDFNode> newSDFLayer = buildLayer(layer.getId(),nextNodeId);
-            layersMapping.put(layer,newSDFLayer);
-            _CSDFG.addNodes(newSDFLayer);
-            nextNodeId = _CSDFG.getNextNodeId();
-        }
-        /**
-         * build edges
-         */
-        int nextEdgeId = 0;
-        for(Connection con:network.getConnections()) {
-            Vector<CSDFNode>l1 = layersMapping.get(con.getSrc());
-            Vector<CSDFNode>l2 = layersMapping.get(con.getDest());
-            Vector<CSDFEdge> newCSDFEdges = buildEdges(l1,l2,con,nextEdgeId);
-            _CSDFG.addEdges(newCSDFEdges);
-            nextEdgeId = _CSDFG.getNextEdgeId();
-        }
-
-        _CSDFG.alignRatesLength();
-        return _CSDFG;
-    }
-
-     /**
-     * Build representation of the CNN layer in SDF-like format
-     * @param layerId unique layer identifier
-     * @return vector of the nodes, corresponding neurons in a layer
-     */
-    public  Vector<CSDFNode> buildLayer(int layerId, int nextNodeId)
-    {
-        Vector<CSDFNode> layerSDF = new Vector<CSDFNode>();
-        Layer minDFLayer = _minimizedDFDNN.getLayer(layerId);
-        Neuron minDFLayerNeuron = minDFLayer.getNeuron();
-
-        /**
-         * Memory refinement:
-         * Memory units (i/o data formats and weights) are typical for each node of this layer,
-         * so they are stored as references on one typical memory unit
-         * */
-        Vector<MemoryUnit> iomemory = _refiner.callVisitor(minDFLayerNeuron);
-        MemoryUnit weights = _refiner.createWeightsDescription(minDFLayerNeuron, minDFLayer.getInputChannels(),_minimizedDFDNN.getWeightsType());
-        MemoryUnit bias = _refiner.createBiasDescription(minDFLayerNeuron,_minimizedDFDNN.getDataType());
-
-        /** Add neurons */
-        int nodeId = nextNodeId;
-        for(int i=0;i<minDFLayer.getNeuronsNum();i++) {
-           CSDFNode newCSDFNode = new CSDFNode(minDFLayer.getName() + "_" + minDFLayerNeuron.getName() + "_" + i, nodeId);
-           newCSDFNode.setGroup(minDFLayer.getName());
-           newCSDFNode.setMemoryUnits(iomemory);
-           if(weights!=null)
-               newCSDFNode.addMemoryUnit(weights);
-           if(bias!=null){
-            newCSDFNode.addMemoryUnit(bias);
-            }
-
-           layerSDF.add(newCSDFNode);
-           nodeId++;
-        }
-
-        return layerSDF;
-    }
-
-    /**
-     * Build representation of connection between CNN layers as list of SDF Edges
-     * @param SDFlayer1 connection's input layer in SDF-like format
-     * @param SDFlayer2 connection's output layer in SDF-like format
-     * @param connection connection
-     * @return representation of connection between CNN layers as a list of edges
-     */
-
-     public Vector<CSDFEdge> buildEdges(Vector<CSDFNode> SDFlayer1, Vector<CSDFNode>SDFlayer2, Connection connection, int lastEdgeId) {
-           Vector<CSDFEdge> edges = new Vector<CSDFEdge>();
-           Vector<CSDFEdge> selfEdges = new Vector<>();
-           String edgePrefix = connection.getSrcName() + "to" + connection.getDestName();
-           String dstSelfLoopPrefix = connection.getDestName() + "to" + connection.getDestName();
-           boolean[][] connectionMatrix = connection.getConnectionMatrix();
-
-           Neuron l1SampleNeuron = connection.getSrc().getNeuron();
-           Neuron l1SampleNeuronMinimized = _minimizedDFDNN.getLayer(connection.getSrc().getName()).getNeuron();
-           Neuron l2SampleNeuron = connection.getDest().getNeuron();
-           Neuron l2SampleNeuronMinimized = _minimizedDFDNN.getLayer(connection.getDest().getName()).getNeuron();
-
-          MemoryUnit srcMinOutMemory = null;
-          MemoryUnit dstMinInMemory =null;
-           /** port assigned I/O memory description*/
-
-           srcMinOutMemory = SDFlayer1.elementAt(0).getMemoryUnit("output");
-           if (l2SampleNeuron instanceof MultipleInputsProcessor){
-               if(((MultipleInputsProcessor) l2SampleNeuron).getInputOwners().size()>1)
-               dstMinInMemory = SDFlayer2.elementAt(0).getMemoryUnit(connection.getSrc().getName());
-           }
-           else
-               dstMinInMemory = SDFlayer2.elementAt(0).getMemoryUnit("input");
-
-           Vector<IndexPair> srcNeuronOutputRate = calcOutputRates(l1SampleNeuron,l1SampleNeuronMinimized.getOutputDataFormat());
-           Vector<IndexPair> dstNeuronInputRate = calcInputRates(l2SampleNeuron,l2SampleNeuronMinimized.getInputDataFormat());
-
-           /** flag, if a neuron have self-loops*/
-           boolean dstSelfLoop = false;
-           Vector<IndexPair> selfLoopRate = _getSelfLoopRate(l2SampleNeuron,dstNeuronInputRate);
-
-           if(selfLoopRate != null)
-                   dstSelfLoop = true;
-
-           try {
-               for (int j = 0; j < connectionMatrix.length; j++) {
-                   CSDFNode startNode = SDFlayer1.elementAt(j);
-                   for (int i = 0; i < connectionMatrix[j].length; i++) {
-                       if (connectionMatrix[j][i]) {
-                           CSDFNode endNode = SDFlayer2.elementAt(i);
-                           String edgeName = edgePrefix + "_" + i + "_" + j + "_";
-                           CSDFEdge edge = _createEdge(edgeName, lastEdgeId, startNode, endNode,
-                                   srcNeuronOutputRate, dstNeuronInputRate,srcMinOutMemory,dstMinInMemory);
-
-                           edges.add(edge);
-                           lastEdgeId++;
-
-                           /** process self-loops, if any information is kept in j node*/
-                           if (dstSelfLoop) {
-                               edgeName = dstSelfLoopPrefix + "_" + lastEdgeId;
-                               CSDFEdge selfEdge =  _createOverlapProcessingSelfEdge(edgeName,lastEdgeId,endNode,selfLoopRate, edge);
-
-                               selfEdges.add(selfEdge);
-                               lastEdgeId++;
-                           }
-                       }
-                   }
-               }
-
-               /**
-                * TODO move to nodes building if possible
-                */
-               for(int i=0; i<SDFlayer2.size();i++){
-                    CSDFNode endNode = SDFlayer2.elementAt(i);
-                    int dstInputs = endNode.getNonOverlapHandlingInPorts().size();
-                    String operation = l2SampleNeuronMinimized.getFunctionCallDescription(dstInputs);
-                    endNode.setOperation(operation);
-                    int dstOperationRepetitions = l2SampleNeuronMinimized.getOperationsNumber(dstInputs);
-                    endNode.setOperationRepetitionsNumber(dstOperationRepetitions);
-               }
-
-               /**
-                * Inherit rate for multiple input processors.
-                * Consistency checkout of summary I/O rate for multiple input processors
-                * should be done in Network model
-                * */
-               if (l2SampleNeuron instanceof MultipleInputsProcessor) {
-                   for (CSDFEdge edge : edges) {
-                       edge.getDst().setRates(edge.getSrc().getRates());
-                   }
-               }
-
-           }
-
-        catch (ArrayIndexOutOfBoundsException e) {
-            System.err.println(" err bounds exception: src" + connection.getSrc().getName() + " (" + l1SampleNeuron.getName() +
-            ") , nn: " + connection.getSrc().getNeuronsNum() +
-            "\n , dst: " + connection.getDest().getName() + ("(") + l2SampleNeuron.getName() +
-            "\n , nn: " + connection.getDest().getNeuronsNum() +
-            "\n connection type: " + connection.getType().toString()+
-            "\n connection matrix len: " + connectionMatrix.length + "\n");
-        }
-
-        edges.addAll(selfEdges);
-        return edges;
-    }
-
+    /** DEPRECATED DUE TO THE HUGE GRAPH SIZES!*/
 
     /**
      * TODO REFACTORING ON MUs!
@@ -1162,16 +963,11 @@ public class CNN2CSDFGraphConverter {
     /**  current CSDF graph*/
     private CSDFGraph _CSDFG;
 
-    /** conversion mode: layer-based or neuron-based. By default: layer-based*/
-    private DNNInitRepresentation _conversionMode = DNNInitRepresentation.LAYERBASED;
-
     /** Dnn to CSDF refiner refines CSDF nodes with specific features of DNN model*/
-    CSDFGMemoryRefiner _refiner = new CSDFGMemoryRefiner();
+    CSDFIOMemoryGenerator _memoryGenerator = new CSDFIOMemoryGenerator();
 
     /** If data tiling is required*/
     private boolean _dataTiling = false;
-
-
 
     /** generic nodes processor*/
  //   CNN2CCSDFGraphConverter _subgraphProcessor = new CNN2CCSDFGraphConverter();

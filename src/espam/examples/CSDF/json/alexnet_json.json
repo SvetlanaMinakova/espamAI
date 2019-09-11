@@ -1,0 +1,1559 @@
+{
+  "type": "csdf",
+  "name": "alexnet_json",
+  "node_number": 23,
+  "edge_number": 22,
+    "nodes": [
+      {
+        "id": 0,
+        "name": "input_data",
+        "function": "READ",
+        "length": 1,
+        "port_number": 1,
+        "operator": {
+  "name": "READ",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "h": 224,
+    "input_dim0": 224,
+    "input_dim1": 224,
+    "input_dim2": 3,
+    "input_len": 150528,
+    "neuron_start_id": 0,
+    "neurons": 3,
+    "out_h": 224,
+    "out_w": 224,
+    "output_dim0": 224,
+    "output_dim1": 224,
+    "output_dim2": 3,
+    "output_len": 150528,
+    "w": 224
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 150528,
+  "concat": false
+},
+        "wcet":[1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "OP0",
+            "rate": [150528],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 1,
+        "name": "node_Conv0",
+        "function": "CONV(11_11_3_96)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "CONV(11_11_3_96)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        96
+      ]
+    },
+    "weights": {
+      "shape": [
+        96,
+        3,
+        11,
+        11
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 3,
+    "gpu": -1,
+    "groups": 1,
+    "h": 224,
+    "input_dim0": 224,
+    "input_dim1": 224,
+    "input_dim2": 3,
+    "input_len": 150528,
+    "k_h": 11,
+    "k_w": 11,
+    "neuron_start_id": 0,
+    "neurons": 96,
+    "out_h": 54,
+    "out_w": 54,
+    "output_dim0": 54,
+    "output_dim1": 54,
+    "output_dim2": 96,
+    "output_len": 279936,
+    "pads": 0,
+    "stride": 4,
+    "w": 224
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 839808,
+  "concat": false
+},
+        "wcet":[-1846087168], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [150528],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [279936],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 2,
+        "name": "node_Relu1",
+        "function": "ReLU(279936)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(279936)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 96,
+    "gpu": -1,
+    "groups": 1,
+    "h": 54,
+    "input_dim0": 54,
+    "input_dim1": 54,
+    "input_dim2": 96,
+    "input_len": 279936,
+    "neuron_start_id": 0,
+    "neurons": 96,
+    "out_h": 54,
+    "out_w": 54,
+    "output_dim0": 54,
+    "output_dim1": 54,
+    "output_dim2": 96,
+    "output_len": 279936,
+    "w": 54
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 279936,
+  "concat": false
+},
+        "wcet":[1054752768], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [279936],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [279936],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 3,
+        "name": "node_LRN2",
+        "function": "LRN(5_279936)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "LRN(5_279936)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    },
+    "norms": {
+      "shape": [
+        279936
+      ]
+    },
+    "squared": {
+      "shape": [
+        279936
+      ]
+    }
+  },
+  "intParams": {
+    "alpha": 1,
+    "alpha_scale": 10000,
+    "batch": 1,
+    "beta": 75,
+    "beta_scale": 100,
+    "channels": 96,
+    "gpu": -1,
+    "groups": 1,
+    "h": 54,
+    "input_dim0": 54,
+    "input_dim1": 54,
+    "input_dim2": 96,
+    "input_len": 279936,
+    "kappa": 10,
+    "kappa_scale": 10,
+    "neuron_start_id": 0,
+    "neurons": 96,
+    "out_h": 54,
+    "out_w": 54,
+    "output_dim0": 54,
+    "output_dim1": 54,
+    "output_dim2": 96,
+    "output_len": 279936,
+    "size": 5,
+    "w": 54
+  },
+  "stringParams": {},
+  "basic": "LRN",
+  "timeComplexity": 14580,
+  "concat": false
+},
+        "wcet":[6998400], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [279936],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [279936],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 4,
+        "name": "node_MaxPool3",
+        "function": "MAXPOOL(3_3_96)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "MAXPOOL(3_3_96)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 96,
+    "gpu": -1,
+    "groups": 1,
+    "h": 54,
+    "input_dim0": 54,
+    "input_dim1": 54,
+    "input_dim2": 96,
+    "input_len": 279936,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 96,
+    "out_h": 26,
+    "out_w": 26,
+    "output_dim0": 26,
+    "output_dim1": 26,
+    "output_dim2": 96,
+    "output_len": 64896,
+    "pads": 0,
+    "stride": 2,
+    "w": 54
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 64896,
+  "concat": false
+},
+        "wcet":[43869696], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [279936],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [64896],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 5,
+        "name": "node_Conv4",
+        "function": "CONV(5_5_96_256)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "CONV(5_5_96_256)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        256
+      ]
+    },
+    "envided": {
+      "shape": [
+        30,
+        30,
+        96
+      ]
+    },
+    "weights": {
+      "shape": [
+        256,
+        96,
+        5,
+        5
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 96,
+    "gpu": -1,
+    "groups": 1,
+    "h": 26,
+    "input_dim0": 26,
+    "input_dim1": 26,
+    "input_dim2": 96,
+    "input_len": 64896,
+    "k_h": 5,
+    "k_w": 5,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 26,
+    "out_w": 26,
+    "output_dim0": 26,
+    "output_dim1": 26,
+    "output_dim2": 256,
+    "output_len": 173056,
+    "pad_h0": 2,
+    "pad_h1": 2,
+    "pad_w0": 2,
+    "pad_w1": 2,
+    "pads": 1,
+    "stride": 1,
+    "w": 26
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 16613376,
+  "concat": false
+},
+        "wcet":[-1654259712], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [64896],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [173056],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 6,
+        "name": "node_Relu5",
+        "function": "ReLU(173056)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(173056)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 26,
+    "input_dim0": 26,
+    "input_dim1": 26,
+    "input_dim2": 256,
+    "input_len": 173056,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 26,
+    "out_w": 26,
+    "output_dim0": 26,
+    "output_dim1": 26,
+    "output_dim2": 256,
+    "output_len": 173056,
+    "w": 26
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 173056,
+  "concat": false
+},
+        "wcet":[-116391936], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [173056],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [173056],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 7,
+        "name": "node_LRN6",
+        "function": "LRN(5_173056)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "LRN(5_173056)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    },
+    "norms": {
+      "shape": [
+        173056
+      ]
+    },
+    "squared": {
+      "shape": [
+        173056
+      ]
+    }
+  },
+  "intParams": {
+    "alpha": 1,
+    "alpha_scale": 10000,
+    "batch": 1,
+    "beta": 75,
+    "beta_scale": 100,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 26,
+    "input_dim0": 26,
+    "input_dim1": 26,
+    "input_dim2": 256,
+    "input_len": 173056,
+    "kappa": 10,
+    "kappa_scale": 10,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 26,
+    "out_w": 26,
+    "output_dim0": 26,
+    "output_dim1": 26,
+    "output_dim2": 256,
+    "output_len": 173056,
+    "size": 5,
+    "w": 26
+  },
+  "stringParams": {},
+  "basic": "LRN",
+  "timeComplexity": 3380,
+  "concat": false
+},
+        "wcet":[4326400], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [173056],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [173056],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 8,
+        "name": "node_MaxPool7",
+        "function": "MAXPOOL(3_3_256)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "MAXPOOL(3_3_256)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 26,
+    "input_dim0": 26,
+    "input_dim1": 26,
+    "input_dim2": 256,
+    "input_len": 173056,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 256,
+    "output_len": 36864,
+    "pads": 0,
+    "stride": 2,
+    "w": 26
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 36864,
+  "concat": false
+},
+        "wcet":[5308416], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [173056],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [36864],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 9,
+        "name": "node_Conv8",
+        "function": "CONV(3_3_256_384)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "CONV(3_3_256_384)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        384
+      ]
+    },
+    "envided": {
+      "shape": [
+        14,
+        14,
+        256
+      ]
+    },
+    "weights": {
+      "shape": [
+        384,
+        256,
+        3,
+        3
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 256,
+    "input_len": 36864,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 384,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 384,
+    "output_len": 55296,
+    "pad_h0": 1,
+    "pad_h1": 1,
+    "pad_w0": 1,
+    "pad_w1": 1,
+    "pads": 1,
+    "stride": 1,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 14155776,
+  "concat": false
+},
+        "wcet":[2038431744], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [36864],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [55296],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 10,
+        "name": "node_Relu9",
+        "function": "ReLU(55296)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(55296)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 384,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 384,
+    "input_len": 55296,
+    "neuron_start_id": 0,
+    "neurons": 384,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 384,
+    "output_len": 55296,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 55296,
+  "concat": false
+},
+        "wcet":[-1237319680], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [55296],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [55296],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 11,
+        "name": "node_Conv10",
+        "function": "CONV(3_3_384_384)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "CONV(3_3_384_384)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        384
+      ]
+    },
+    "envided": {
+      "shape": [
+        14,
+        14,
+        384
+      ]
+    },
+    "weights": {
+      "shape": [
+        384,
+        384,
+        3,
+        3
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 384,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 384,
+    "input_len": 55296,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 384,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 384,
+    "output_len": 55296,
+    "pad_h0": 1,
+    "pad_h1": 1,
+    "pad_w0": 1,
+    "pad_w1": 1,
+    "pads": 1,
+    "stride": 1,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 21233664,
+  "concat": false
+},
+        "wcet":[-1237319680], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [55296],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [55296],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 12,
+        "name": "node_Relu11",
+        "function": "ReLU(55296)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(55296)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 384,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 384,
+    "input_len": 55296,
+    "neuron_start_id": 0,
+    "neurons": 384,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 384,
+    "output_len": 55296,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 55296,
+  "concat": false
+},
+        "wcet":[-1237319680], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [55296],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [55296],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 13,
+        "name": "node_Conv12",
+        "function": "CONV(3_3_384_256)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "CONV(3_3_384_256)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        256
+      ]
+    },
+    "envided": {
+      "shape": [
+        14,
+        14,
+        384
+      ]
+    },
+    "weights": {
+      "shape": [
+        256,
+        384,
+        3,
+        3
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 384,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 384,
+    "input_len": 55296,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 256,
+    "output_len": 36864,
+    "pad_h0": 1,
+    "pad_h1": 1,
+    "pad_w0": 1,
+    "pad_w1": 1,
+    "pads": 1,
+    "stride": 1,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 14155776,
+  "concat": false
+},
+        "wcet":[2038431744], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [55296],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [36864],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 14,
+        "name": "node_Relu13",
+        "function": "ReLU(36864)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(36864)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 256,
+    "input_len": 36864,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 12,
+    "out_w": 12,
+    "output_dim0": 12,
+    "output_dim1": 12,
+    "output_dim2": 256,
+    "output_len": 36864,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 36864,
+  "concat": false
+},
+        "wcet":[1358954496], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [36864],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [36864],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 15,
+        "name": "node_MaxPool14",
+        "function": "MAXPOOL(3_3_256)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "MAXPOOL(3_3_256)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    },
+    "envided": {
+      "shape": [
+        13,
+        13,
+        256
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "h": 12,
+    "input_dim0": 12,
+    "input_dim1": 12,
+    "input_dim2": 256,
+    "input_len": 36864,
+    "k_h": 3,
+    "k_w": 3,
+    "neuron_start_id": 0,
+    "neurons": 256,
+    "out_h": 6,
+    "out_w": 6,
+    "output_dim0": 6,
+    "output_dim1": 6,
+    "output_dim2": 256,
+    "output_len": 9216,
+    "pad_h0": 0,
+    "pad_h1": 1,
+    "pad_w0": 0,
+    "pad_w1": 1,
+    "pads": 1,
+    "stride": 2,
+    "w": 12
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 9216,
+  "concat": false
+},
+        "wcet":[331776], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [36864],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [9216],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 16,
+        "name": "node_Gemm15",
+        "function": "GEMM_NONE(1_9216,9216_4096)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "GEMM_NONE(1_9216,9216_4096)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        4096
+      ]
+    },
+    "weights": {
+      "shape": [
+        4096,
+        36
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 256,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 6,
+    "input_dim1": 6,
+    "input_dim2": 256,
+    "input_len": 9216,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 4096,
+    "output_len": 4096
+  },
+  "stringParams": {},
+  "basic": "NONE",
+  "timeComplexity": 37748736,
+  "concat": false
+},
+        "wcet":[0], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [9216],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [4096],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 17,
+        "name": "node_Relu16",
+        "function": "ReLU(4096)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(4096)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 4096,
+    "input_len": 4096,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 4096,
+    "output_len": 4096
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 4096,
+  "concat": false
+},
+        "wcet":[16777216], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4096],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [4096],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 18,
+        "name": "node_Gemm18",
+        "function": "GEMM_NONE(1_4096,4096_4096)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "GEMM_NONE(1_4096,4096_4096)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        4096
+      ]
+    },
+    "weights": {
+      "shape": [
+        4096,
+        4096
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 4096,
+    "input_len": 4096,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 4096,
+    "output_len": 4096
+  },
+  "stringParams": {},
+  "basic": "NONE",
+  "timeComplexity": 16777216,
+  "concat": false
+},
+        "wcet":[0], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4096],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [4096],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 19,
+        "name": "node_Relu19",
+        "function": "ReLU(4096)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "ReLU(4096)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 4096,
+    "input_len": 4096,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 4096,
+    "output_len": 4096
+  },
+  "stringParams": {},
+  "basic": "ReLU",
+  "timeComplexity": 4096,
+  "concat": false
+},
+        "wcet":[16777216], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4096],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [4096],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 20,
+        "name": "node_Gemm21",
+        "function": "GEMM_NONE(1_4096,4096_1000)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "GEMM_NONE(1_4096,4096_1000)",
+  "tensorParams": {
+    "bias": {
+      "shape": [
+        1000
+      ]
+    },
+    "weights": {
+      "shape": [
+        1000,
+        4096
+      ]
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 4096,
+    "input_len": 4096,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 1000,
+    "output_len": 1000
+  },
+  "stringParams": {},
+  "basic": "NONE",
+  "timeComplexity": 4096000,
+  "concat": false
+},
+        "wcet":[0], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [4096],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [1000],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 21,
+        "name": "node_Softmax22",
+        "function": "SOFTMAX(1000)",
+        "length": 1,
+        "port_number": 2,
+        "operator": {
+  "name": "SOFTMAX(1000)",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 1000,
+    "input_len": 1000,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 1000,
+    "output_len": 1000
+  },
+  "stringParams": {},
+  "basic": "SOFTMAX",
+  "timeComplexity": 1000,
+  "concat": false
+},
+        "wcet":[1000000], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [1000],
+            "type": "in"
+          },
+          {
+            "id": 1,
+            "name": "OP0",
+            "rate": [1000],
+            "type": "out"
+          }
+        ]
+      }
+      ,
+      {
+        "id": 22,
+        "name": "output_data",
+        "function": "WRITE",
+        "length": 1,
+        "port_number": 1,
+        "operator": {
+  "name": "WRITE",
+  "tensorParams": {
+    "bias": {
+      "shape": []
+    }
+  },
+  "intParams": {
+    "batch": 1,
+    "channels": 1,
+    "gpu": -1,
+    "groups": 1,
+    "input_dim0": 1000,
+    "input_len": 1000,
+    "neuron_start_id": 0,
+    "neurons": 1,
+    "output_dim0": 1000,
+    "output_len": 1000
+  },
+  "stringParams": {},
+  "basic": "op",
+  "timeComplexity": 1000,
+  "concat": false
+},
+        "wcet":[1], 
+        "ports": [
+
+          {
+            "id": 0,
+            "name": "IP0",
+            "rate": [1000],
+            "type": "in"
+          }
+        ]
+      }
+
+    ],
+    "edges": [
+      {
+        "id": 0,
+        "name": "0to1",
+        "src": [0,0],
+        "dst": [1,0]      }
+      ,
+      {
+        "id": 1,
+        "name": "1to2",
+        "src": [1,1],
+        "dst": [2,0]      }
+      ,
+      {
+        "id": 2,
+        "name": "2to3",
+        "src": [2,1],
+        "dst": [3,0]      }
+      ,
+      {
+        "id": 3,
+        "name": "3to4",
+        "src": [3,1],
+        "dst": [4,0]      }
+      ,
+      {
+        "id": 4,
+        "name": "4to5",
+        "src": [4,1],
+        "dst": [5,0]      }
+      ,
+      {
+        "id": 5,
+        "name": "5to6",
+        "src": [5,1],
+        "dst": [6,0]      }
+      ,
+      {
+        "id": 6,
+        "name": "6to7",
+        "src": [6,1],
+        "dst": [7,0]      }
+      ,
+      {
+        "id": 7,
+        "name": "7to8",
+        "src": [7,1],
+        "dst": [8,0]      }
+      ,
+      {
+        "id": 8,
+        "name": "8to9",
+        "src": [8,1],
+        "dst": [9,0]      }
+      ,
+      {
+        "id": 9,
+        "name": "9to10",
+        "src": [9,1],
+        "dst": [10,0]      }
+      ,
+      {
+        "id": 10,
+        "name": "10to11",
+        "src": [10,1],
+        "dst": [11,0]      }
+      ,
+      {
+        "id": 11,
+        "name": "11to12",
+        "src": [11,1],
+        "dst": [12,0]      }
+      ,
+      {
+        "id": 12,
+        "name": "12to13",
+        "src": [12,1],
+        "dst": [13,0]      }
+      ,
+      {
+        "id": 13,
+        "name": "13to14",
+        "src": [13,1],
+        "dst": [14,0]      }
+      ,
+      {
+        "id": 14,
+        "name": "14to15",
+        "src": [14,1],
+        "dst": [15,0]      }
+      ,
+      {
+        "id": 15,
+        "name": "15to16",
+        "src": [15,1],
+        "dst": [16,0]      }
+      ,
+      {
+        "id": 16,
+        "name": "16to17",
+        "src": [16,1],
+        "dst": [17,0]      }
+      ,
+      {
+        "id": 17,
+        "name": "17to18",
+        "src": [17,1],
+        "dst": [18,0]      }
+      ,
+      {
+        "id": 18,
+        "name": "18to19",
+        "src": [18,1],
+        "dst": [19,0]      }
+      ,
+      {
+        "id": 19,
+        "name": "19to20",
+        "src": [19,1],
+        "dst": [20,0]      }
+      ,
+      {
+        "id": 20,
+        "name": "20to21",
+        "src": [20,1],
+        "dst": [21,0]      }
+      ,
+      {
+        "id": 21,
+        "name": "21to22",
+        "src": [21,1],
+        "dst": [22,0]      }
+
+    ]
+}

@@ -2,13 +2,13 @@ package espam.parser.json.cnn;
 
 import com.google.gson.*;
 import espam.datamodel.graph.cnn.*;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.*;
-import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
@@ -28,7 +28,7 @@ public Neuron deserialize(JsonElement json, Type type,
 
             NeuronType nType = gson.fromJson( object.get("type"), NeuronType.class);
            /**Available types:
-            * NONE,CONV, POOL, NONLINEAR, DATA, GENERIC,ADD,MATMUL,CONCAT,DENSEBLOCK,ARITHMETIC_OP
+            * NONE,CONV, POOL, NONLINEAR, DATA, GENERIC,ARITHMETIC,MATMUL,CONCAT,DENSEBLOCK,ARITHMETIC_OP
             * */
             switch (nType){
                 case CONV: return gson.fromJson(json,Convolution.class);
@@ -38,7 +38,7 @@ public Neuron deserialize(JsonElement json, Type type,
                 case GENERIC: return gson.fromJson(json,GenericNeuron.class);
                 case CONCAT: return gson.fromJson(json,Concat.class);
                 case DENSEBLOCK: return gson.fromJson(json,DenseBlock.class);
-                case ADD: return gson.fromJson(json,Add.class);
+                case ARITHMETIC: return gson.fromJson(json,Arithmetic.class);
                 case LRN: return gson.fromJson(json,LRN.class);
                 case RESHAPE: return gson.fromJson(json, Reshape.class);
                 case UPSAMPLE: return gson.fromJson(json, Upsample.class);

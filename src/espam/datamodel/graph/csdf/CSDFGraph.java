@@ -5,11 +5,13 @@ import espam.datamodel.EspamException;
 import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.Graph;
 import espam.datamodel.graph.NPort;
+import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CSDFGraphVisitor;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Vector;
 
 //////////////////////////////////////////////////////////////////////////
@@ -499,12 +501,12 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
      * Get list of supported operators
      * @return list of supported operators
      */
-    public Vector<String> getOpListDistinct() {
-        Vector<String> opListDistinct = new Vector<>();
+    public Vector<Operator> getOpListDistinct() {
+        Vector<Operator> opListDistinct = new Vector<>();
         Iterator i = getNodeList().iterator();
         while (i.hasNext()) {
             CSDFNode node = (CSDFNode) i.next();
-            String op = node.getOperation();
+            Operator op = node.getOperator();
             if (!opListDistinct.contains(op)) {
                 opListDistinct.add(op);
             }
@@ -657,7 +659,7 @@ public class CSDFGraph extends Graph implements ReferenceResolvable {
         i = getNodeList().iterator();
         while( i.hasNext() ) {
             CSDFNode node = (CSDFNode) i.next();
-            if(node.getOperation().toLowerCase().startsWith(operator)) {
+            if(node.getFunction().toLowerCase().startsWith(operator)) {
                 opnodes.add(node);
             }
         }

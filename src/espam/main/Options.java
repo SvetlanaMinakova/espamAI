@@ -168,6 +168,10 @@ public class Options {
                            _cnnui.setFIFOScale(Integer.parseInt(args[++i]));
                         }
 
+                        else if(arg.equals("--o-name")){
+                           _cnnui.setOutputModelName(args[++i]);
+                        }
+
                         else {
                             // Unrecognized option.
                             throw new IllegalArgumentException("Unrecognized option: " + arg);
@@ -325,6 +329,10 @@ public class Options {
             _cnnui.setGenerateMapping(true);
         }
 
+        else if(arg.equals("--fm-sizes")){
+            _cnnui.setFMSizes(true);
+        }
+
         else if( arg.equals("") ) {
             // Ignore blank argument.
         } else {
@@ -407,7 +415,7 @@ public class Options {
 
             /** initial model representation flags*/
             {"--layer-based     ", "-lb "},
-            {"--neuron-based    ", "-nb "},
+            //{"--neuron-based    ", "-nb "},
 
             /** generation flags*/
             {"--sesame          ", "none"},
@@ -424,7 +432,8 @@ public class Options {
             {"--libNA           ", "none"},
             {"--libDNCPU        ", "none"},
             {"--onnx-weights    ", "none"},
-            {"--map-xml         ", "none"}
+            {"--map-xml         ", "none"},
+            {"--fm-sizes        ", "none"},
 
     };
     
