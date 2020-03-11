@@ -1,6 +1,8 @@
 package espam.operations.evaluation;
 
 import com.google.gson.annotations.SerializedName;
+import espam.datamodel.graph.cnn.Layer;
+import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
@@ -20,7 +22,13 @@ import java.util.Vector;
  */
     /////////////////////////////////////////////////////////////////////
     ////                   public methods                           ////
-    public class CSDFTimingRefiner{
+
+
+
+
+public class CSDFTimingRefiner{
+
+
 
      /**
      * Refine memory evaluation, provided by DARTS
@@ -53,8 +61,8 @@ import java.util.Vector;
      * @param  x A Visitor Object.
      */
 
-    public HashMap<CSDFNode,Vector<Integer>> getExecTimes(CSDFGraph x) {
-        HashMap<CSDFNode,Vector<Integer>>execTimes = new HashMap<>();
+    public HashMap<CSDFNode,Vector<Long>> getExecTimes(CSDFGraph x) {
+        HashMap<CSDFNode,Vector<Long>>execTimes = new HashMap<>();
 
         Iterator i;
         /**Visit all nodes*/
@@ -64,8 +72,9 @@ import java.util.Vector;
         while (i.hasNext()) {
             node = (CSDFNode) i.next();
             try {
-               Vector<Integer> execTime = _getExecTime(node);
+               Vector<Long> execTime = _getExecTime(node);
                execTimes.put(node,execTime);
+             //   execTimes.put(node,getDefaultExecTime(node.getLength()));
             }
             catch (Exception e){
             System.err.println("Exec time refinement error for node " +
@@ -80,16 +89,16 @@ import java.util.Vector;
      * Get default execution time
      * @return default execution time
      */
-    public Integer getDefaultExecTime(){
-        return 1;
+    public Long getDefaultExecTime(){
+        return 1L;
     }
 
      /**
      * Get default execution time
      * @return default execution time
      */
-    public Vector<Integer> getDefaultExecTime(int len){
-        Vector<Integer> wcet = new Vector<>();
+    public Vector<Long> getDefaultExecTime(int len){
+        Vector<Long> wcet = new Vector<>();
           for(int i=0; i<len;i++)
                 wcet.add(getDefaultExecTime());
 
@@ -104,8 +113,8 @@ import java.util.Vector;
      * node writes only after it executed an operation)
      * @return worst-case execution time for operation
      */
-    private Vector<Integer> _getExecTime(CSDFNode x) throws Exception{
-        Vector<Integer> wcet = new Vector<>();
+    private Vector<Long> _getExecTime(CSDFNode x) throws Exception{
+        Vector<Long> wcet = new Vector<>();
         Vector<CSDFPort> outPorts = x.getNonOverlapHandlingOutPorts();
         if(x.getFunction() == null)
             return _readOpRate(x);
@@ -122,8 +131,8 @@ import java.util.Vector;
         Vector<IndexPair> outRates = outPorts.firstElement().getRates();
         Vector<Integer> unrolledOutRates = CSDFSupportResolver.indexPairsToVec(outRates);
 
-        Integer opTime = getOpTime(x.getOperator());
-        opTime *= (Integer)x.getOperationRepetitionsNumber();
+        Long opTime = Long.parseLong(getOpTime(x.getOperator()).toString());
+        opTime *= x.getOperationRepetitionsNumber();
 
 
         //opTime*= (Integer)x.getKernelsNum();
@@ -135,7 +144,7 @@ import java.util.Vector;
             if (rate>0)
                 wcet.add(opTime);
             else
-                wcet.add(0);
+                wcet.add(0L);
         }
         return wcet;
     }
@@ -146,9 +155,9 @@ import java.util.Vector;
      * @param x a node which performs only reading operation
      * @return rates for a node which performs only reading operation
      */
-    private Vector<Integer> _readOpRate(CSDFNode x){
-        Vector<Integer> wcet = new Vector<>();
-        Integer readTime = _basicOperationsTiming.get("read");
+    private Vector<Long> _readOpRate(CSDFNode x){
+        Vector<Long> wcet = new Vector<>();
+       Long readTime = _basicOperationsTiming.get("read");
         if(readTime==null)
             return null;
 
@@ -168,18 +177,18 @@ import java.util.Vector;
      * @return
      * */
 
-    public Integer getOpTime(Operator op){
+    public Long getOpTime(Operator op){
 
         String operation = op.getName().toLowerCase();
         String basicOperation = op.getBasic().toLowerCase();
-        Integer defaultBasicTime = 1;
+        Long defaultBasicTime = 1L;
         Integer minTimeComplexity = 1;
 
         if(operation==null)
-            return 1;
+            return 1L;
         if(operation=="null")
-            return 1;
-        Integer time = _basicOperationsTiming.get(operation);
+            return 1L;
+        Long time = _basicOperationsTiming.get(operation);
         if(time!=null)
             return time;
 
@@ -203,7 +212,7 @@ import java.util.Vector;
      */
     public Vector<String> getSupportedOperatorsList(){
         Vector<String> supportedOperatorsList = new Vector<>();
-        for(Map.Entry<String,Integer> op: _basicOperationsTiming.entrySet()){
+        for(Map.Entry<String,Long> op: _basicOperationsTiming.entrySet()){
             supportedOperatorsList.add(op.getKey());
         }
 
@@ -216,10 +225,10 @@ import java.util.Vector;
     public void initRWOperationsDefault() {
         _basicOperationsTiming = new HashMap<>();
         /** read /write ops*/
-        _basicOperationsTiming.put("read", 1);
-        _basicOperationsTiming.put("write", 1);
-        _basicOperationsTiming.put("input", 1);
-        _basicOperationsTiming.put("output", 1);
+        _basicOperationsTiming.put("read", 1L);
+        _basicOperationsTiming.put("write", 1L);
+        _basicOperationsTiming.put("input", 1L);
+        _basicOperationsTiming.put("output", 1L);
     }
 
     /**
@@ -228,43 +237,43 @@ import java.util.Vector;
     public void initBasicOperationsDefault(){
         _basicOperationsTiming = new HashMap<>();
         /** read /write ops*/
-        _basicOperationsTiming.put("read",1);
-        _basicOperationsTiming.put("write",1);
-        _basicOperationsTiming.put("input",1);
-        _basicOperationsTiming.put("output",1);
+        _basicOperationsTiming.put("read",1L);
+        _basicOperationsTiming.put("write",1L);
+        _basicOperationsTiming.put("input",1L);
+        _basicOperationsTiming.put("output",1L);
 
         /** some specific ops*/
-        _basicOperationsTiming.put("addconst",1);
-        _basicOperationsTiming.put("avgpool",1);
-        _basicOperationsTiming.put("conv",1);
-        _basicOperationsTiming.put("concat",1);
-        _basicOperationsTiming.put("gemm",1);
-        _basicOperationsTiming.put("lrn",1);
-        _basicOperationsTiming.put("maxpool",1);
-        _basicOperationsTiming.put("matmul",1);
-        _basicOperationsTiming.put("relu",1);
-        _basicOperationsTiming.put("reshape",1);
-        _basicOperationsTiming.put("sigm",1);
-        _basicOperationsTiming.put("softmax",1);
-        _basicOperationsTiming.put("thn",1);
-        _basicOperationsTiming.put("none",0);
-        _basicOperationsTiming.put("dropout",1);
+        _basicOperationsTiming.put("addconst",1L);
+        _basicOperationsTiming.put("avgpool",1L);
+        _basicOperationsTiming.put("conv",1L);
+        _basicOperationsTiming.put("concat",1L);
+        _basicOperationsTiming.put("gemm",1L);
+        _basicOperationsTiming.put("lrn",1L);
+        _basicOperationsTiming.put("maxpool",1L);
+        _basicOperationsTiming.put("matmul",1L);
+        _basicOperationsTiming.put("relu",1L);
+        _basicOperationsTiming.put("reshape",1L);
+        _basicOperationsTiming.put("sigm",1L);
+        _basicOperationsTiming.put("softmax",1L);
+        _basicOperationsTiming.put("thn",1L);
+        _basicOperationsTiming.put("none",0L);
+        _basicOperationsTiming.put("dropout",1L);
         /**TODO refactoring*/
-        _basicOperationsTiming.put(null,1);
+        _basicOperationsTiming.put(null,1L);
     }
 
     /**
      * Set timing of basic supported operations
      * @return timing of basic supported operations
      */
-    public HashMap<String, Integer> getBasicOperationsTiming() {
+    public HashMap<String, Long> getBasicOperationsTiming() {
         return _basicOperationsTiming;
     }
       /**
      * Set timing of basic supported operations
      * @param basicOperationsTiming timing of basic supported operations
      */
-    public void setBasicOperationsTiming(HashMap<String, Integer> basicOperationsTiming) {
+    public void setBasicOperationsTiming(HashMap<String,Long> basicOperationsTiming) {
         this._basicOperationsTiming = basicOperationsTiming;
     }
 
@@ -275,8 +284,8 @@ import java.util.Vector;
      *     - Add operators, mentioned only in new specification
      * @param newOperationsTiming new list with timing of basic supported operations
      */
-    public void updateBasicOperationsTiming(HashMap<String, Integer> newOperationsTiming) {
-        for(Map.Entry<String,Integer> newOp: newOperationsTiming.entrySet())
+    public void updateBasicOperationsTiming(HashMap<String, Long> newOperationsTiming) {
+        for(Map.Entry<String,Long> newOp: newOperationsTiming.entrySet())
             _basicOperationsTiming.put(newOp.getKey().toLowerCase(),newOp.getValue());
     }
 
@@ -284,7 +293,7 @@ import java.util.Vector;
      * Print current basic operations timing
      */
     public void printBasicOperationsTiming(){
-        for(HashMap.Entry<String,Integer> op: _basicOperationsTiming.entrySet()){
+        for(HashMap.Entry<String,Long> op: _basicOperationsTiming.entrySet()){
             System.out.println(op.getKey() + " : " + op.getValue());
         }
     }
@@ -293,7 +302,7 @@ import java.util.Vector;
     ////                         private variables                   ////
 
     /** timing of basic supported operations*/
-    @SerializedName("operators")private HashMap<String,Integer> _basicOperationsTiming = new HashMap<>();
+    @SerializedName("operators")private HashMap<String,Long> _basicOperationsTiming = new HashMap<>();
 
     /** refiner singletone*/
     private transient static CSDFTimingRefiner _refiner = new CSDFTimingRefiner();

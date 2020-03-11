@@ -23,7 +23,7 @@ public class PthreadSDFGVisitor {
      ////                         public methods                     ///
 
      /**
-     * Call CPP SDFG Visitor
+     * Call SDFG Visitor
      * @param y  CSDFGraph
      * @param dir directory for sesame templates
      * @param dnn corresponding deep neural network
@@ -131,8 +131,10 @@ public class PthreadSDFGVisitor {
         _cppVisitor.generateDataLoadClassTemplate(dir);
 
         //algorithm
+        if(!_generateDNNFuncNA){
         _hvisitor.generateBlockAlgorithmClassTemplate(dir);
         _cppVisitor.generateAlgorithmClass(dir, csdfGraph);
+        }
 
          Vector<String> classesList = _getClassesList(csdfGraph);
 
@@ -176,7 +178,6 @@ public class PthreadSDFGVisitor {
      }
 
     /**
-     * TODO REFACTOR FOR NB MODE BASE CLASSES
      * get list of classes names
      * @return list of classes names
      */
@@ -201,7 +202,8 @@ public class PthreadSDFGVisitor {
 
         classesList.add("run");
         classesList.add("fifo");
-        classesList.add("blocks_algorithm");
+        if(_generateDNNFuncCPU||_generateDNNFuncGPU)
+            classesList.add("blocks_algorithm");
 
         return classesList;
      }
@@ -374,26 +376,29 @@ public class PthreadSDFGVisitor {
             mf.println("CXXFLAGS= -std=c++11 -pthread ");
             mf.println("");
             /** TODO: a confid param?*/
-            mf.println("CUDA_INCFLAG = -I/usr/local/cuda-9.0/samples/common/inc");
+            mf.println("CUDA_INCFLAG = -I/usr/local/cuda-9.0/samples/common/inc -I/usr/local/cuda-9.0/include -I/home/nvidia/CNN_project/library/cuda/include");
             mf.println("");
-            if(_loadWeights)
-                mf.println("CXXLIB = -L./ -lcnpy -lz");
 
+            if(_loadWeights)
+                mf.println("CXXLIB = -L./ -lcnpy -lz -lcudnn -L/usr/local/cuda-9.0/lib64 -L/home/nvidia/CNN_project/library/cuda/lib64");
+            else
+                mf.println("CXXLIB = -lcudnn -L/usr/local/cuda-9.0/lib64 -L/home/nvidia/CNN_project/library/cuda/lib64");
+
+            mf.println();
             mf.print("OBJS = kernel.o ");
             for(String classname: classesList)
                 mf.print(classname+".o ");
 
-            mf.println("");
             mf.println("");
             mf.println("PRG = run");
             mf.println("");
             mf.println("all: ${PRG}");
             mf.println("");
             mf.println("run:  ${OBJS}");
-            mf.println("\tnvcc -o $@ ${OBJS} ${CXXLIB}");
+            mf.println("\tnvcc -o $@ ${OBJS} $(CUDA_INCFLAG) ${CXXLIB}");
             mf.println("");
             mf.println("kernel.o:");
-            mf.println("\tnvcc $(CUDA_INCFLAG) -c kernel.cu");
+            mf.println("\tnvcc $(CUDA_INCFLAG) $(CXXLIB) -c kernel.cu");
             mf.println("");
 
             for(String classname: classesList){
@@ -593,6 +598,10 @@ public class PthreadSDFGVisitor {
        _hvisitor._paramDataType = paramtype;
    }
 
+   public static void setMocMode(boolean mocMode){
+        _cppVisitor.setMocMode(mocMode);
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ////                     private variables                     ///
@@ -636,5 +645,7 @@ public class PthreadSDFGVisitor {
 
     /** if weights should be loaded from external files*/
     private static boolean _loadWeights = false;
+
+
 
 }

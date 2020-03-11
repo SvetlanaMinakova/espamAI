@@ -13,9 +13,9 @@ import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Transpose;
 import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
-
 /**
  *  This class is an abstract class for a visitor that is used to generate
  *  Neural Network Graph description.
@@ -26,12 +26,13 @@ public class CNNGraphVisitor extends GraphVisitor {
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                     ///
 
-        /**
-     * Call CNN json visitor
+    /**
+     * Call CNN visitor
      * @param dnn dnn to be visited
-     * @param dir directory for .json file corresponding to visited dnn
+     * @param dir directory for  file corresponding to visited dnn
      */
      public static void callVisitor(Network dnn, String dir){}
+
 
 
     ///////////////////////////////////////////////////////////////////
@@ -50,6 +51,13 @@ public class CNNGraphVisitor extends GraphVisitor {
      * @param  x A Visitor Object.
     */
     public void visitComponent(Layer x) { }
+
+         /**
+     *  Visit a Layer component.
+     *
+     * @param  x A Visitor Object.
+    */
+    public void visitComponent(Layer x, String dir) { }
 
      /**
      *  Visit a Neuron component.
@@ -80,7 +88,7 @@ public class CNNGraphVisitor extends GraphVisitor {
         }
 
         if (x instanceof CNNNeuron) {
-            visitComponent((CNNNeuron) x);
+            visitComponent((CNNNeuron)x);
             return;
         }
 
@@ -112,6 +120,11 @@ public class CNNGraphVisitor extends GraphVisitor {
 
         if(x instanceof Upsample) {
             visitComponent((Upsample) x);
+            return;
+        }
+
+        if( x instanceof Transpose) {
+            visitComponent((Transpose)x);
             return;
         }
     }
@@ -243,6 +256,12 @@ public class CNNGraphVisitor extends GraphVisitor {
      * @param  x A Visitor Object.
      */
     public void visitComponent(Upsample x) { }
+
+    /**
+     *  Visit a Transpose component.
+     * @param  x A Visitor Object.
+     */
+    public void visitComponent(Transpose x) {}
 
 
     /**

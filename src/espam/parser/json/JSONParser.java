@@ -32,7 +32,7 @@ public class JSONParser {
         return _gson;
     }
 
-    private JSONParser()  {
+    protected JSONParser()  {
         /** create custom adaptor for any type of port*/
         PortConverter SDFPortConverter = new PortConverter();
 

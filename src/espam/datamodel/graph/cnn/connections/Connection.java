@@ -3,6 +3,7 @@ package espam.datamodel.graph.cnn.connections;
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
 import espam.datamodel.graph.cnn.Layer;
+import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
@@ -160,6 +161,15 @@ public abstract class Connection implements Cloneable{
      * @param newSrc new source
      */
     public void changeSrc(Layer newSrc){
+        if(_dest.getNeuron() instanceof MultipleInputsProcessor){
+            Vector<Layer> destInputOwners = ((MultipleInputsProcessor) _dest.getNeuron()).getInputOwners();
+            Integer oldsrcId =  destInputOwners.indexOf(_src);
+            if(oldsrcId!=-1){
+                destInputOwners.removeElement(_src);
+                destInputOwners.insertElementAt(newSrc,oldsrcId);
+            }
+        }
+
         this._src = newSrc;
         this._srcName = newSrc.getName();
         this._srcId = newSrc.getId();
@@ -341,6 +351,24 @@ public abstract class Connection implements Cloneable{
                    && this._destName.equals(connection._destName);
     }
 
+    /**************************************************
+     **** POWER/PERFORMANCE/MEMORY evaluation
+     *************************************************/
+
+    public void set_memEval(double _memEval) { this._memEval = _memEval; }
+
+    public void set_timeEval(double _timeEval) { this._timeEval = _timeEval; }
+
+    public void set_energyEval(double _energyEval) { this._energyEval = _energyEval; }
+
+    public double get_timeEval() {
+        return _timeEval;
+    }
+
+    public double get_memEval() { return _memEval; }
+
+    public double get_energyEval() { return _energyEval; }
+
     ///////////////////////////////////////////////////////////////////////
     ////                         private variables                    ////
 
@@ -374,4 +402,13 @@ public abstract class Connection implements Cloneable{
     /** number of channels = number of inputs,
      * coming from src layer to destination layer*/
     @SerializedName("channels")private int _channels = 1;
+
+    /** memory evaluation*/
+    @SerializedName("mem_eval")private double _memEval = 0.0;
+
+    /** time evaluation*/
+    @SerializedName("time_eval")private double _timeEval = 0.0;
+
+    /** energy evaluation*/
+    @SerializedName("energy_eval")private double _energyEval = 0.0;
 }

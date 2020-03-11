@@ -101,7 +101,8 @@ public class SDFGDotVisitor extends CSDFGraphVisitor {
         String label = x.getFunction();
         if(label==null)
             label=x.getName();
-        _printStream.println(_prefix + "\"" + x.getName()+ "\" [ label=\"" + label +"\"];");
+
+        _printStream.println(_prefix + "\"" + x.getName() + "\" [ label=\"" + label +"\"];");
     }
 
     /** SDFG Edges

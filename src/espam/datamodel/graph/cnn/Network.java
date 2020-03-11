@@ -6,6 +6,7 @@ import espam.datamodel.graph.cnn.connections.*;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.CustomConnectionGenerator;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
@@ -159,8 +160,15 @@ public class Network implements Cloneable, ReferenceResolvable {
         if(_inputLayer==null)
             return false;
         Tensor inputDataFormat = _inputLayer.getOutputFormat();
-        if(Tensor.isNullOrEmpty(inputDataFormat))
-            return false;
+        if(Tensor.isNullOrEmpty(inputDataFormat)) {
+            inputDataFormat = _inputLayer.getNeuron().getInputDataFormat();
+            if(Tensor.isNullOrEmpty(inputDataFormat))
+                return false;
+            else {
+                _inputLayer.setInputFormat(inputDataFormat);
+                _inputLayer.setOutputFormat(inputDataFormat);
+            }
+        }
         setDataFormats(inputDataFormat);
         return true;
 
@@ -275,6 +283,11 @@ public class Network implements Cloneable, ReferenceResolvable {
      */
     public void setMinDataHeights(int minOutputDataHeight, boolean keepHeightDependency){
         _outputLayer.updateMinDataHeight(minOutputDataHeight);
+        if(keepHeightDependency) {
+            for(Connection con: _outputLayer.getInputConnections())
+                con.getSrc().updateMinDataHeight(minOutputDataHeight);
+        }
+
         Vector<Layer> layersToTraverse = getLayersInTraverseOrderFromBottom();
         if(_inputLayer.getNeuron() instanceof Data)
             layersToTraverse.remove(_inputLayerId);
@@ -353,7 +366,7 @@ public class Network implements Cloneable, ReferenceResolvable {
      */
     private  boolean _isDenseToConv(Connection con){
         Neuron srcNeuron = con.getSrc().getNeuron();
-        if(srcNeuron instanceof Data)
+        if(srcNeuron instanceof Data || srcNeuron instanceof Arithmetic)
             return false;
 
         Neuron dstNeuron = con.getDest().getNeuron();
@@ -1381,10 +1394,10 @@ public class Network implements Cloneable, ReferenceResolvable {
 
          for(Connection inputConnection: curLayerInputs){
              Layer upcomingSrc = inputConnection.getSrc();
-           //if (keepHeightDependency) {
-             //    upcomingLayersMinHeight = findMinInputHeight(upcomingSrc);
+           if (keepHeightDependency) {
+                 upcomingLayersMinHeight = findMinInputHeight(upcomingSrc);
                 // System.out.println(upcomingSrc.getName()+" min h = " + upcomingLayersMinHeight);
-            // }
+             }
              upcomingSrc.updateMinDataHeight(upcomingLayersMinHeight);
          }
     }
@@ -1682,6 +1695,24 @@ public class Network implements Cloneable, ReferenceResolvable {
             layer.initOperator();
     }
 
+    /**************************************************
+    **** POWER/PERFORMANCE/MEMORY evaluation
+    *************************************************/
+
+    public void set_memEval(double _memEval) { this._memEval = _memEval; }
+
+    public void set_timeEval(double _timeEval) { this._timeEval = _timeEval; }
+
+    public void set_energyEval(double _energyEval) { this._energyEval = _energyEval; }
+
+    public double get_timeEval() {
+        return _timeEval;
+    }
+
+    public double get_memEval() { return _memEval; }
+
+    public double get_energyEval() { return _energyEval; }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                ////
 
@@ -1724,4 +1755,12 @@ public class Network implements Cloneable, ReferenceResolvable {
      * */
     @SerializedName("crop")private boolean _crop = true;
 
+    /** memory evaluation*/
+    @SerializedName("mem_eval")private double _memEval = 0.0;
+
+    /** time evaluation*/
+    @SerializedName("time_eval")private double _timeEval = 0.0;
+
+    /** energy evaluation*/
+    @SerializedName("energy_eval")private double _energyEval = 0.0;
 }

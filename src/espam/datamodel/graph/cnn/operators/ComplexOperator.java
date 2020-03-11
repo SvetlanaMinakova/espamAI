@@ -1,5 +1,7 @@
 package espam.datamodel.graph.cnn.operators;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -26,6 +28,7 @@ public class ComplexOperator extends Operator {
         ComplexOperator newObj = (ComplexOperator) super.clone();
         newObj._subOperators = (Vector<Operator>)(_subOperators).clone();
         newObj._internalBuffers = (Vector<InternalBuffer>)_internalBuffers.clone();
+        newObj._compound = _compound;
         return newObj;
     }
 
@@ -43,10 +46,17 @@ public class ComplexOperator extends Operator {
         this._internalBuffers = internalBuffers;
     }
 
+    public boolean isCompound(){ return _compound; }
+
+    public void setCompound(boolean compound) {
+        this._compound = compound;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////       private variables                                  ////
 
     /** List of operators in execution order*/
     private Vector<Operator> _subOperators;
     private Vector<InternalBuffer> _internalBuffers;
+    @SerializedName("compound")  private boolean _compound = false;
 }

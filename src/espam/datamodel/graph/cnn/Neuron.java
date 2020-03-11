@@ -13,6 +13,7 @@ import espam.datamodel.graph.cnn.neurons.simple.*;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
+import espam.datamodel.graph.cnn.neurons.transformation.Transpose;
 import espam.datamodel.graph.cnn.neurons.transformation.Upsample;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
@@ -126,6 +127,9 @@ public abstract class Neuron implements Cloneable{
 
         if (neuron instanceof Upsample)
             return new Upsample((Upsample)neuron);
+
+        if(neuron instanceof Transpose)
+            return new Transpose((Transpose)neuron);
 
         return new NoneTypeNeuron(neuron.getName());
     }
@@ -759,6 +763,22 @@ public abstract class Neuron implements Cloneable{
         return _operator;
     }
 
+    /**
+     * Get parent layer
+     * @return parent layer
+     */
+    public Layer getParent() {
+        return _parent;
+    }
+
+    /**
+     * Set parent layer
+     * @return parent layer
+     */
+    public void setParent(Layer parent) {
+        _parent = parent;
+    }
+
     /////////////////////////////////////////////////////////////////////
     ////                         protected methods                    ////
      /**
@@ -774,6 +794,7 @@ public abstract class Neuron implements Cloneable{
         setBiasName(n._biasName);
         setInputDataFormat(n.getInputDataFormat());
         setOutputDataFormat(n.getOutputDataFormat());
+        setNonlin(n.getNonlin());
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -815,6 +836,8 @@ public abstract class Neuron implements Cloneable{
 
     /**Neuron's input data format*/
     @SerializedName("nonlin")private String _nonlin = null;
+
+    private transient Layer _parent = null;
 
     protected transient Operator _operator = null;
 }

@@ -79,7 +79,12 @@ public class Options {
                             String mappingFileName = args[++i];
                             _ui.setMappingFileName(mappingFileName);
                             _cnnui.setMappingFile(mappingFileName);
-                        } else if( arg.equals("--scheduler") || arg.equals("-s") ) {
+                        }
+                        else if(arg.equals("--partitioning")){
+                            _cnnui.setPartitioningFile(args[++i]);
+                        }
+
+                        else if( arg.equals("--scheduler") || arg.equals("-s") ) {
                             _ui.setSchedulerFileName(args[++i]);
                         } else if( arg.equals("--impldata") ) {
                             _ui.setImplDataFileName(args[++i]);
@@ -171,6 +176,7 @@ public class Options {
                         else if(arg.equals("--o-name")){
                            _cnnui.setOutputModelName(args[++i]);
                         }
+
 
                         else {
                             // Unrecognized option.
@@ -270,6 +276,19 @@ public class Options {
         else if (arg.equals("--json")) {
             _cnnui.setJson(true);
         }
+
+        else if (arg.equals("--json-topology")) {
+            _cnnui.setJSONDNNTopology(true);
+        }
+
+        else if (arg.equals("--json-eval")) {
+            _cnnui.setJSONDNNEval(true);
+        }
+
+        else if (arg.equals("--txt-eval")) {
+            _cnnui.setTxtDNNEval(true);
+        }
+
         else if (arg.equals("--dot")) {
             _cnnui.setdot(true);
         }
@@ -277,6 +296,11 @@ public class Options {
             _cnnui.setCsdfgJson(true);
             _cnnui.setGenerateCsdfg(true);
         }
+        else if(arg.equals("--json-csdf-short"))   {
+            _cnnui.setCsdfgJsonShort(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
         else if (arg.equals("--xml-csdf")) {
             _cnnui.setCsdfgXml(true);
             _cnnui.setGenerateCsdfg(true);
@@ -295,6 +319,12 @@ public class Options {
             _cnnui.setPthread(true);
             _cnnui.setGenerateCsdfg(true);
         }
+
+        else if(arg.equals("--tensorrt")){
+            _cnnui.setTensorrt(true);
+            _cnnui.setGenerateCsdfg(true);
+        }
+
 
         else if(arg.equals("--tiling")){
             _cnnui.setDataTiling(true);
@@ -317,6 +347,14 @@ public class Options {
             _cnnui.setPthreadGenerateDNNFuncGPU(true);
         }
 
+        else if(arg.equals("--evalCPU")){
+            _cnnui.setTRTEvalCPU(true);
+        }
+
+        else if(arg.equals("--evalGPU")){
+            _cnnui.setTRTEvalGPU(true);
+        }
+
         else if(arg.equals("--libNA")){
             _cnnui.setPthreadGenerateDNNFuncNA(true);
         }
@@ -331,6 +369,14 @@ public class Options {
 
         else if(arg.equals("--fm-sizes")){
             _cnnui.setFMSizes(true);
+        }
+
+        else if(arg.equals("--fuse-compounds")){
+            _cnnui.setFuseCompounds(true);
+        }
+
+        else if(arg.equals("--pipeline")){
+            _cnnui.setPipelineMapping();
         }
 
         else if( arg.equals("") ) {
@@ -434,6 +480,8 @@ public class Options {
             {"--onnx-weights    ", "none"},
             {"--map-xml         ", "none"},
             {"--fm-sizes        ", "none"},
+            {"--fuse-compounds  ", "none"},
+            {"--tensorrt        ", "none"},
 
     };
     
@@ -471,7 +519,8 @@ public class Options {
         {"--opt-fi         ", "none", " <Integer>"},
         {"--cores          ", "none", " <Integer>"},
         {"--batch          ", "none", " <Integer>"},
-        {"--fifo-scale     ", "none", " <Integer>"}
+        {"--fifo-scale     ", "none", " <Integer>"},
+        {"--cpu-streams    ", "none", " <Integer>"},
        };
 
     /** The form of the command line.*/

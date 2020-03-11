@@ -12,7 +12,9 @@ SUBPACKAGES = \
 
 # Java files in this directory
 JSRCS = \
-	TimingSpecParser.java
+	TimingSpecParser.java\
+	DNNTimeEvalParser.java\
+	EnergySpecParser.java
 
 
 # Include the shared compilation rules

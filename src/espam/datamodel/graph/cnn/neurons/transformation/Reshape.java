@@ -18,12 +18,8 @@ import java.util.Vector;
  * Reshape transformation class
  */
 public class Reshape extends Neuron implements MultipleInputsProcessor,DataContainer {
-    /**
-     * TODO: finish implementation
-     * Create new Reshape element with a name
-     * a stride and a kernelSize for the Reshape element = 1
-     * an input sample dimension is 1 (vector)
-     */
+
+    /**Create new Reshape element with a name*/
     public Reshape() {
         super();
         setName(NeuronType.RESHAPE.toString());
@@ -112,6 +108,7 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         newObj._inputsNum = this._inputsNum;
         newObj._inputOwners = this._inputOwners;
         newObj._slice = this._slice;
+        newObj._shape = this._shape;
         return newObj;
     }
 
@@ -125,6 +122,13 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         _inputOwners = new Vector<>();
         for(Layer inputOwner: r._inputOwners)
             _inputOwners.add(inputOwner);
+
+        if(r._shape!=null){
+            _shape = new Vector<>();
+            for(Integer el: r._shape)
+                _shape.add(el);
+        }
+
         _slice = r._slice;
     }
 
@@ -273,9 +277,13 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
             case 1: {
                 Tensor singleInput = _inputs.firstElement();
                 Tensor inputDataFormat = new Tensor(singleInput);
+                setDataFormats(inputDataFormat, inputDataFormat);
                 setInputDataFormat(inputDataFormat);
                 neuronOwner.setInputFormat(singleInput);
-                neuronOwner.setOutputFormat(inputDataFormat);
+
+                if(_shape==null)
+                    neuronOwner.setOutputFormat(inputDataFormat);
+                else neuronOwner.setOutputFormat(new Tensor(_shape));
 
                 break;
             }
@@ -288,9 +296,26 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
                 Tensor outputDataFormat = _inputs.elementAt(1);
                 setDataFormats(inputDataFormat, outputDataFormat);
                 neuronOwner.setInputFormat(inputDataFormat);
-                neuronOwner.setOutputFormat(outputDataFormat);
+                if(_shape==null)
+                    neuronOwner.setOutputFormat(outputDataFormat);
+                else
+                    neuronOwner.setOutputFormat(new Tensor(_shape));
                 break;
             }
+        }
+    }
+
+    /** set Tensor output with shape*/
+    private void setOutputWithShape(Layer neuronOwner, Tensor outputDataFormat){
+        if(_shape==null)
+             neuronOwner.setOutputFormat(outputDataFormat);
+        else {
+            /**first, we skip batch (first element), cause batch is
+            // either = 1, or is the last dimension for the tensor*/
+            Vector<Integer> oshape = new Vector();
+            for (int i=1; i<_shape.size(); i++)
+                oshape.add(_shape.elementAt(i));
+
         }
 
 
@@ -351,6 +376,7 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
      * @param inputOwner layer, owns the input
      */
     public void addInput(Layer inputOwner){
+        if(!_inputOwners.contains(inputOwner))
         _inputOwners.add(inputOwner);
     }
 
@@ -404,14 +430,14 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
         this._flatten = flatten;
     }
 
-        /**
-     * Check if the neuron is slice neuron
-     * Flatten layer transforms an input tensor into a sequence of subtensors
+     /**
+     * Check if the neuron is a slice neuron
      * @return true, if the layer is slice and false otherwise
      */
     public boolean isSlice() {
         return _slice;
     }
+
 
     /**
      * Set flag, if the neuron is slice neuron
@@ -459,6 +485,14 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
     @Override
     public void initOperator(int inputChannels, int outputChannels) {  }
 
+    public void setShape(Vector<Integer> shape) {
+        this._shape = shape;
+    }
+
+    public Vector<Integer> getShape() {
+        return _shape;
+    }
+
     /**
      * Init operator: Description of DNN neuron functionality
      * Should be performed after all DNN model parameters are established
@@ -481,9 +515,15 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
     /**Flag, shows is the Reshape layer is Flatten layer
      * Flatten layer transforms any input data shape to a vector
      * */
+    @SerializedName("shape")private Vector<Integer> _shape;
+
+
+    /**Flag, shows is the Reshape layer is Flatten layer
+     * Flatten layer transforms any input data shape to a vector
+     * */
     @SerializedName("flatten")private boolean _flatten = false;
 
-        /**Flag, shows is the Reshape layer is Flatten layer
+    /**Flag, shows is the Reshape layer is Flatten layer
      * Flatten layer transforms any input data shape to a vector
      * */
     @SerializedName("slice")private boolean _slice = false;

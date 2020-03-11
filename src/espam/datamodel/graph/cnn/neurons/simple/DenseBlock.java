@@ -261,6 +261,7 @@ public class DenseBlock extends Neuron {
     @Override
     public void initOperator(int inputChannels, int outputChannels) {
 
+        _operator.addIntParam("partitions",_neuronsNum);
 
         if (getBiasName() != null)
         {
@@ -304,6 +305,9 @@ public class DenseBlock extends Neuron {
             timeComplexity = getInputDataFormat().getElementsNumber() *
                     Math.max(inputChannels,1) * _neuronsNum;
         }
+
+        //if(_refinedType.equals(DenseType.GEMM))
+        //    timeComplexity+= _neuronsNum;
 
         _operator.setTimeComplexity(timeComplexity);
     }

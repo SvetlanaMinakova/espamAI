@@ -1,4 +1,7 @@
 package espam.operations.evaluation;
+import espam.datamodel.graph.cnn.Layer;
+import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
@@ -44,6 +47,82 @@ public class CSDFGMemoryRefiner {
     ///////////////////////////////////////////////////////////////
     ////                      private methods                  ////
 
+
+    /**
+     * Evaluate buffer sizes of the DNN
+     * @param dnn dnn graph to be evaluated
+     * @return internal memory of the DNN graph evaluation
+     * @throws Exception if an error occurs
+     */
+    public Long evalBufferSizesMemory(Network dnn){
+        long result = 0;
+         for(Connection c: dnn.getConnections()){
+             try {
+                 result += evaluateBufferSize(c);
+             }
+             catch (Exception e){
+                 System.err.println(c.getSrcName() +" DNN-CSDF buffer evaluation error");
+                 return 0l;
+             }
+        }
+      return result;
+    }
+
+
+    /**
+     * Evaluate buffer size for DNN connection
+     * @param con connection
+     * @return evaluated buffer size
+     */
+    private Long evaluateBufferSize(Connection con){
+        long osize = con.getSrc().getOutputFormat().getElementsNumber();
+        long isize = con.getDest().getInputFormat().getElementsNumber();
+
+        long total = osize;
+        if(osize!=isize)
+            total+=osize;
+        return total;
+    }
+
+    /**
+     * Evaluate internal memory of the CSDF graph
+     * @param dnn dnn graph to be evaluated
+     * @return internal memory of the CSDF graph evaluation
+     * @throws Exception if an error occurs
+     */
+    public Long evalInternalMemory(Network dnn){
+        long result = 0;
+         for(Layer l: dnn.getLayers()){
+             try {
+                 result += evalInternalMemory(l);
+             }
+             catch (Exception e){
+                 System.err.println(l.getName() +" DNN-CSDF internal memory evaluation error");
+                 return 0l;
+             }
+        }
+      return result;
+    }
+
+     /**
+     * Evaluate internal memory of the CNN layer
+     * @param layer CNN layer to be evaluated
+     * @return internal memory of the CNN layer evaluation
+     * @throws Exception if an error occurs
+     */
+    public long evalInternalMemory(Layer layer) throws Exception{
+        Operator op = layer.getNeuron().getOperator();
+        if(op==null){
+            layer.initOperator();
+        }
+
+        long result = evaluateOperator(op);
+        return result;
+    }
+
+
+
+
     /**
      * Evaluate internal memory of the CSDF graph
      * @param graph graph to be evaluated
@@ -77,6 +156,20 @@ public class CSDFGMemoryRefiner {
         }
 
         Operator op = node.getOperator();
+        result+= evaluateOperator(op);
+
+        return result;
+    }
+
+
+
+    /**
+     * Evaluate DNN/CSDF operator
+     * @param op DNN/CSDF operator
+     * @return DNN/CSDF operator memory evaluation
+     */
+    public long evaluateOperator(Operator op){
+        long result = 0l;
         if(op!=null){
             if(op.hasIntegerParams())
                 result+=op.getIntParams().size() * typeSize("int");
@@ -117,17 +210,18 @@ public class CSDFGMemoryRefiner {
         return memUnitSize * typeSize;
     }
 
-    /**
+   /**
      * Refine memory value, required for CSDF model buffers
      * @param tokens total buffer sizes in tokens
      * @param tokenDesc description of the type, equal to one token
      * @return memory value, required for CSDF model buffers in bytes
-     * @throws Exception if an error occurs
-     */
+     * @throws Exception if an error occurs*/
+
     private double refineTotalBufferSizes(double tokens, String tokenDesc) throws Exception{
          int typeSize = typeSize(tokenDesc);
          return tokens * typeSize;
     }
+
 
     /**
      * Get memory size of data types in bytes
@@ -172,7 +266,7 @@ public class CSDFGMemoryRefiner {
         /** TODO check*/
         if(valueDesc.equals("bool"))
             return "boolean";
-        if(valueDesc.equals("int"))
+        if(valueDesc.contains("int"))
             return "int";
         if(valueDesc.equals("float"))
             return "float";

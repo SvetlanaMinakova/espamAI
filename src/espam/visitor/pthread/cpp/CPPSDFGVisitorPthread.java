@@ -1212,17 +1212,28 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
            try {
                int partitions = kernels;
                _printStream.println(_prefix + "/** weights load */");
-               _printStream.println(_prefix + "std::string weights_path_prefix = \"./../../weights_npz/" + weightsPrefixName + "_w\";");
-               _printStream.println(_prefix + "int partition_size = " + tensor.getElementsNumber()/kernels + ";");
-               _printStream.println(_prefix + "int partitions_num = " + partitions + ";");
-               _printStream.println(_prefix + "/** shift of the partition beginning from the beginning of the weights array */");
-               _printStream.println(_prefix + "int shift = 0; ");
-               _printStream.println(_prefix + "for(int i=neuron_start_id; i<partitions_num + neuron_start_id; i++){ ");
-               prefixInc();
-               _printStream.println(_prefix + "dl.data_load_from_numpy(weights_path_prefix, i, partition_size, 0, shift, &weights[0]);");
-               _printStream.println(_prefix + "shift += partition_size;");
-               prefixDec();
-               _printStream.println(_prefix + "}");
+
+               if(_mocMode){
+                _printStream.println(_prefix + "for(int i=0; i<weights_len; i++)");
+                prefixInc();
+                _printStream.println(_prefix + "weights[i] = 0.1f; ");
+                prefixDec();
+               }
+
+               else {
+
+                   _printStream.println(_prefix + "std::string weights_path_prefix = \"./../../weights_npz/" + weightsPrefixName + "_w\";");
+                   _printStream.println(_prefix + "int partition_size = " + tensor.getElementsNumber() / kernels + ";");
+                   _printStream.println(_prefix + "int partitions_num = " + partitions + ";");
+                   _printStream.println(_prefix + "/** shift of the partition beginning from the beginning of the weights array */");
+                   _printStream.println(_prefix + "int shift = 0; ");
+                   _printStream.println(_prefix + "for(int i=neuron_start_id; i<partitions_num + neuron_start_id; i++){ ");
+                   prefixInc();
+                   _printStream.println(_prefix + "dl.data_load_from_numpy(weights_path_prefix, i, partition_size, 0, shift, &weights[0]);");
+                   _printStream.println(_prefix + "shift += partition_size;");
+                   prefixDec();
+                   _printStream.println(_prefix + "}");
+               }
             }
             catch (Exception e){
                //_printStream.println("0 };");
@@ -1265,6 +1276,8 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         _printStream.println(_prefix + "// Declare the variables for measuring elapsed time");
         _printStream.println(_prefix + "double startTime;");
         _printStream.println(_prefix + "double endTime;");
+        _printStream.println(_prefix + "double buildTime;");
+        _printStream.println(_prefix + "double inferenceTime;");
         _printStream.println();
         _printStream.println(_prefix + "double appMain::getMicroSecond( void ) {");
         _prefixInc();
@@ -1341,8 +1354,8 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     /** find out the application construction end time*/
     private void _appConstructionTimer(){
         _printStream.println();
-        _printStream.println(_prefix + "endTime = getMicroSecond();");
-        _printStream.println(_prefix + "double appConstrTime = endTime - startTime;");
+       // _printStream.println(_prefix + "endTime = getMicroSecond();");
+        _printStream.println(_prefix + "buildTime = getMicroSecond() - startTime;");
         if(!_silent)
         _printStream.println(_prefix + "std::cout<<\"App construction time: \"<<appConstrTime<<std::endl;");
         _printStream.println();
@@ -1360,9 +1373,23 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     /** use program timer in appmain*/
     private void _endAppMainTimer(){
         _printStream.println();
+
+        /**
+         *
+
+
+    std::cout<<"Program execution time: "<<pTime<<std::endl;
+    std::cout<<"Build time: "<<buildTime<<std::endl;
+    std::cout<<"Inference time: "<<inferenceTime<<std::endl;
+         *
+         */
+
+        _printStream.println(_prefix + "inferenceTime = getMicroSecond() - startTime - buildTime;");
         _printStream.println(_prefix + "endTime = getMicroSecond();");
-        _printStream.println(_prefix + "double Time = endTime - startTime;");
-        _printStream.println(_prefix + "std::cout<<\"Program execution time: \"<<Time<<std::endl;");
+        _printStream.println(_prefix + "double pTime = endTime - startTime;");
+        _printStream.println(_prefix + "std::cout<<\"Program execution time: \"<<pTime<<std::endl;");
+        _printStream.println(_prefix + "std::cout<<\"Build time: \"<<buildTime<<std::endl;");
+        _printStream.println(_prefix + "std::cout<<\"Inference time: \"<<inferenceTime<<std::endl;");
     }
 
 
@@ -1383,23 +1410,34 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
     }
 
     private void _computeGPUBlockSizes(CSDFGraph csdfg){
-        _printStream.println(_prefix + "//compute GPU block sizes");
-        _printStream.println(_prefix + "blocks_algorithm ba = blocks_algorithm();");
-        _printStream.println(_prefix + "int conv_blocks_num = ba.get_blocks_num();");
-        _printStream.println(_prefix + "if (conv_blocks_num == 0)");
-        _prefixInc();
-        _printStream.println(_prefix + "conv_blocks_num = 1;");
-        _prefixDec();
-        _printStream.println(_prefix + "int blocksizes[conv_blocks_num] = {0};");
-        _printStream.println();
-        _printStream.println(_prefix + "ba.get_blocks(&blocksizes[0], false);");
-        _printStream.println();
-        _printStream.println(_prefix + "//assign GPU block sizes");
+        if(_mocMode){
+             _printStream.println(_prefix + "//assign GPU block sizes");
         Vector<CSDFNode> convNodes = csdfg.getNodesList("conv");
-        int blockSizeId = 0;
         for(CSDFNode node:convNodes) {
-            _printStream.println(_prefix + node.getName()+"_inst.int_params[\"block_size\"] = blocksizes[" + blockSizeId + "];");
-            blockSizeId++;
+            _printStream.println(_prefix + node.getName()+"_inst.int_params[\"block_size\"] = 1;");
+        }
+
+        }
+
+            else {
+            _printStream.println(_prefix + "//compute GPU block sizes");
+            _printStream.println(_prefix + "blocks_algorithm ba = blocks_algorithm();");
+            _printStream.println(_prefix + "int conv_blocks_num = ba.get_blocks_num();");
+            _printStream.println(_prefix + "if (conv_blocks_num == 0)");
+            _prefixInc();
+            _printStream.println(_prefix + "conv_blocks_num = 1;");
+            _prefixDec();
+            _printStream.println(_prefix + "int blocksizes[conv_blocks_num] = {0};");
+            _printStream.println();
+            _printStream.println(_prefix + "ba.get_blocks(&blocksizes[0], false);");
+            _printStream.println();
+            _printStream.println(_prefix + "//assign GPU block sizes");
+            Vector<CSDFNode> convNodes = csdfg.getNodesList("conv");
+            int blockSizeId = 0;
+            for (CSDFNode node : convNodes) {
+                _printStream.println(_prefix + node.getName() + "_inst.int_params[\"block_size\"] = blocksizes[" + blockSizeId + "];");
+                blockSizeId++;
+            }
         }
     }
 
@@ -1748,15 +1786,26 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * @param operator Complex CSDF node operator
      */
     protected void _processExecutionComplex(ComplexOperator operator) {
-        Integer opId = 0;
-        for(Operator subOperator: operator.getSubOperators()){
-            _processExecution(subOperator,opId);
-            opId++;
-        }
+      if(operator.isCompound())
+      {
+      String opName="";
+      Vector<Operator> subOps = operator.getSubOperators();
+      for (int i=0; i<subOps.size()-1;i++)
+        opName+=subOps.elementAt(i).getName() + "+";
+      opName+=subOps.lastElement().getName();
 
+      _printStream.println(_prefix + "appFunc::execute(std::string(\"" + opName + "\"),"+
+       "&tensor_params, &int_params);");
+      }
+
+      else {
+          Integer opId = 0;
+          for (Operator subOperator : operator.getSubOperators()) {
+              _processExecution(subOperator, opId);
+              opId++;
+          }
+      }
     }
-
-
 
     /**
      * Get reference on linear array
@@ -1800,8 +1849,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      */
     protected void _defineThreadCoreIdInParams(Operator operator){
         if (operator instanceof ComplexOperator){
-            for(int i=0; i<((ComplexOperator) operator).getSubOperators().size(); i++){
-                _printStream.println(_prefix + "int_params_"+ i + "[\"core_id\"] = thread_data->core_id;");
+            if(!((ComplexOperator) operator).isCompound()) {
+                for (int i = 0; i < ((ComplexOperator) operator).getSubOperators().size(); i++) {
+                    _printStream.println(_prefix + "int_params_" + i + "[\"core_id\"] = thread_data->core_id;");
+                }
             }
         }
 
@@ -1874,8 +1925,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         return;
 
     if(operator instanceof ComplexOperator) {
-        _fillComplexOperatorIntParams((ComplexOperator) operator);
-        return;
+        if(!(((ComplexOperator) operator).isCompound())) {
+            _fillComplexOperatorIntParams((ComplexOperator) operator);
+            return;
+        }
     }
 
     String parPrefix = "";
@@ -1923,10 +1976,12 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
         String outpTensorParPrefix = "";
 
         if(node.getOperator() instanceof ComplexOperator){
+            if(!((ComplexOperator) node.getOperator()).isCompound()){
             inpTensorParPrefix = "_0";
             Integer outpOpId = ((ComplexOperator) node.getOperator()).getSubOperators().size() - 1;
 
             outpTensorParPrefix = "_" + outpOpId;
+            }
         }
 
         _addLinearRefToTensorParams("input", node.getMemoryUnit("input"), inpTensorParPrefix);
@@ -1948,8 +2003,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
             return;
 
         if(operator instanceof ComplexOperator) {
-        _fillComplexOperatorTensorParams((ComplexOperator) operator);
-        return;
+            if(!((ComplexOperator) operator).isCompound()) {
+                _fillComplexOperatorTensorParams((ComplexOperator) operator);
+                return;
+            }
     }
 
         String parPrefix = "";
@@ -2210,7 +2267,16 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      */
     protected void _processReadingSrc(){
         _printStream.println("");
+        if(_mocMode){
+            _printStream.println(_prefix + "for(int i=0; i<output_len; i++)");
+            _prefixInc();
+             _printStream.println(_prefix + "output[i] = (float)i;");
+            _prefixDec();
+
+        }
+        else
         _printStream.println(_prefix + "dl.data_load_from_numpy(data_path, data_id, output_len, 0, 0, &output[0]);");
+
         _printStream.println(_prefix + "data_id++;");
         _printStream.println(_prefix + "if (data_id > max_data_id)");
         _prefixInc();
@@ -2263,12 +2329,16 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      */
     protected void _processSnkNodeWriting(){
         _printStream.println(_prefix + "//print application output data");
-        _printStream.println(_prefix + "std::cout<<\"application output: \";");
-        _printStream.println(_prefix + "for(int i=0;i<input_len;i++)");
-        prefixInc();
-        _printStream.println(_prefix + "  cout<<input[i]<<' ';");
-        prefixDec();
-        _printStream.println(_prefix + "std::cout<<std::endl;");
+        if(_mocMode){}
+               //_printStream.println(_prefix + "std::cout<<\"application output: \"<<rep<<std::endl;");
+        else {
+            _printStream.println(_prefix + "std::cout<<\"application output: \";");
+            _printStream.println(_prefix + "for(int i=0;i<input_len;i++)");
+            prefixInc();
+            _printStream.println(_prefix + "  cout<<input[i]<<' ';");
+            prefixDec();
+            _printStream.println(_prefix + "std::cout<<std::endl;");
+        }
     }
 
     /**
@@ -3297,6 +3367,10 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
        _printStream.println(_prefix + "srcfile.append(\".npy\");");
     }
 
+    public void setMocMode(boolean mocMode){
+        _mocMode = mocMode;
+    }
+
 
     ///////////////////////////////////////////////////////////////////
     ///                private variables                           ///
@@ -3360,4 +3434,6 @@ public class CPPSDFGVisitorPthread extends CPPSDFGVisitor {
      * Default value = 10
      */
     private Integer _fifoScale = 10;
+
+    private static boolean _mocMode;
 }

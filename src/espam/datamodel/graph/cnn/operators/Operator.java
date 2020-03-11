@@ -250,4 +250,5 @@ public class Operator{
     @SerializedName("concat")  private boolean _concat = false;
     /** non-trivial tensor references*/
     @SerializedName("tensorRefs")  private TreeMap<String, String> _tensorRefs = null;
+
 }

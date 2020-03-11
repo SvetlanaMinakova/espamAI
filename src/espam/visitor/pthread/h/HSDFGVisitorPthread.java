@@ -646,5 +646,5 @@ public class HSDFGVisitorPthread extends HSDFGVisitor{
     /** How many input samples should be processed, until the application stops.
      * If batch ==-1, application runs infinitely
      */
-    private Integer _batch = 1;
+    private Integer _batch = 100;
 }

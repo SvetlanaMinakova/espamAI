@@ -26,6 +26,14 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
         _shape.add(dimSize);
     }
 
+      /**
+     * Create Tensor with certain dimension sizes
+     * @param shape
+     */
+    public Tensor (Vector<Integer> shape){
+        _shape=shape;
+    }
+
     /**
      * Copy the tensor
      * @param t tensor for copying

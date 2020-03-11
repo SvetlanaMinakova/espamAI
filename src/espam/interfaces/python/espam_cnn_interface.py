@@ -3,7 +3,7 @@ import sys
 from math import ceil
 import json
 import xml.etree.ElementTree as ET
-sys.path.append('/vol/home/minakovas/espam2/espam/lib/darts/darts')
+sys.path.append('/home/svetlana/darts/darts')
 from CSDFParser import CSDFParser
 import Utilities
 import fractions

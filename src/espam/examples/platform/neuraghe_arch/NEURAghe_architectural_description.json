@@ -95,7 +95,7 @@
           "data_width":16,
           "performance":160}]
        },
-       { "name":"conv+pool+RELU",
+       { "name":"conv+RELU+pool",
          "operator_mode": [{
           "activation_width":16,
           "data_width":16,

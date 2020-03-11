@@ -130,7 +130,8 @@ public class Arithmetic extends Neuron implements MultipleInputsProcessor, Conne
      * @return output data format of a neuron
      */
     public Tensor calculateOutputDataFormat(Tensor inputDataFormat) {
-            return inputDataFormat;
+
+        return inputDataFormat;
     }
 
 

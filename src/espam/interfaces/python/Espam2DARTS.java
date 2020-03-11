@@ -211,6 +211,8 @@ public class Espam2DARTS {
         HashMap<Integer,Integer> repVec = getRepetitionVector(graph);
         for(Map.Entry<Integer,Integer> entry: repVec.entrySet()){
             graph.getNode(entry.getKey()).setRepetitions(entry.getValue());
+           // if(entry.getValue()!=1)
+             //   System.out.println(graph.getNode(entry.getKey()).getName() + " has "+entry.getValue()+" repetitions!");
         }
     }
 

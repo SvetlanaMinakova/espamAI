@@ -39,10 +39,10 @@ public class TimingRefinerVisitor {
      */
     public static void printTimeSpec(Network dnn, CSDFGraph graph, String dir, String filename){
         try {
-            HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
-            HashMap<String,Integer> dnnTimeSpec = _getTimingSpec(dnn);
+            HashMap<String,Long> timeSpec = _getTimingSpecTemplate(graph);
+            HashMap<String,Long> dnnTimeSpec = _getTimingSpec(dnn);
 
-            for(HashMap.Entry<String,Integer> dnnOp: dnnTimeSpec.entrySet()){
+            for(HashMap.Entry<String,Long> dnnOp: dnnTimeSpec.entrySet()){
                 if(!timeSpec.containsKey(dnnOp.getKey())){
                     timeSpec.put(dnnOp.getKey(),dnnOp.getValue());
                 }
@@ -67,7 +67,7 @@ public class TimingRefinerVisitor {
      */
     public static void printTimeSpec(Network dnn, String dir, String filename){
         try {
-            HashMap<String,Integer> defaultTimeSpec = _getTimingSpec(dnn);
+            HashMap<String,Long> defaultTimeSpec = _getTimingSpec(dnn);
 
             String json = JSONParser.getInstance().toJson(defaultTimeSpec);
             FileWorker.write(dir,filename,"json",json);
@@ -89,7 +89,7 @@ public class TimingRefinerVisitor {
      */
     public static void printTimeSpec(CSDFGraph graph, String dir, String filename){
         try {
-            HashMap<String,Integer> timeSpec = _getTimingSpecTemplate(graph);
+            HashMap<String,Long> timeSpec = _getTimingSpecTemplate(graph);
             String json = JSONParser.getInstance().toJson(timeSpec);
             FileWorker.write(dir,filename,"json",json);
             System.out.println(dir + "/" + filename + ".json file generated");
@@ -108,13 +108,13 @@ public class TimingRefinerVisitor {
      * @param dnn DNN
      * @return wcet specification for DNN
      */
-    private static HashMap<String,Integer> _getTimingSpec(Network dnn){
+    private static HashMap<String,Long> _getTimingSpec(Network dnn){
         try {
             Vector<Operator> opsDistinct = dnn.getOperatorsDistinct();
-            HashMap<String,Integer> opList = new HashMap<String,Integer>();
+            HashMap<String,Long> opList = new HashMap<>();
 
             for(Operator op: opsDistinct){
-                Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
+                Long opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
                 opList.put(op.getName(),opTime);
             }
             return opList;
@@ -131,13 +131,13 @@ public class TimingRefinerVisitor {
      * @param graph CSDF graph
      * @return wcet specification for CSDF graph
      */
-    private static HashMap<String,Integer> _getTimingSpecTemplate(CSDFGraph graph){
+    private static HashMap<String,Long> _getTimingSpecTemplate(CSDFGraph graph){
         try {
             Vector<Operator> opsDistinct = graph.getOpListDistinct();
-            HashMap<String,Integer> opList = new HashMap<String,Integer>();
+            HashMap<String,Long> opList = new HashMap<>();
 
             for(Operator op: opsDistinct){
-                Integer opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
+                Long opTime = CSDFTimingRefiner.getInstance().getOpTime(op);
                 opList.put(op.getName(),opTime);
             }
             return opList;

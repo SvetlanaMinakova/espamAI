@@ -201,6 +201,16 @@ public static InferenceDNNOptimizer getInstance(){
         for(Connection outp: layerOutputs){
             outp.changeSrc(newSrc);
         }
+
+        Connection conToRemove = null;
+        for(Connection con: newSrc.getOutputConnections()){
+            if(con.getDest().equals(layer))
+                conToRemove = con;
+        }
+
+        if(conToRemove!=null)
+            newSrc.getOutputConnections().removeElement(conToRemove);
+
         dnn.removeLayer(layer);
 
        // TreeMap<String,Tensor> tensorParams = newSrc.getNeuron().getOperator().getTensorParams();
@@ -267,7 +277,7 @@ public static InferenceDNNOptimizer getInstance(){
      * @param dnn DNN with nodes to be removed
      * @param neuronType type of neuron for nodes to be removed
      */
-  private void _removeLayers(Network dnn, String neuronType){
+  public void _removeLayers(Network dnn, String neuronType){
    Vector<Layer> toRemove = new Vector<>();
     for(Layer layer: dnn.getLayers()){
         if(layer.getNeuron().getName().equals(neuronType))
@@ -295,6 +305,16 @@ public static InferenceDNNOptimizer getInstance(){
         for(Connection outp: layerOutputs){
             outp.changeSrc(newSrc);
         }
+
+        Connection conToRemove = null;
+        for(Connection con: newSrc.getOutputConnections()){
+            if(con.getDest().equals(layer))
+                conToRemove = con;
+        }
+
+        if(conToRemove!=null)
+            newSrc.getOutputConnections().removeElement(conToRemove);
+
         dnn.removeLayer(layer);
         //System.out.println(layer.getName() + " removed!");
 }

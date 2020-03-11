@@ -49,6 +49,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public Layer(String name, Neuron sampleNeuron, int neuronsNum) {
         setName(name);
         setNeuron(sampleNeuron);
+        _neuron.setParent(this);
         setNeuronsNum(neuronsNum);
     }
 
@@ -90,6 +91,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public Layer (Layer layer) {
         setName(layer._name);
         setNeuron(Neuron.copyNeuron(layer._neuron));
+        _neuron.setParent(this);
         setNeuronsNum(layer._neuronsNum);
         setOutputFormat(new Tensor(layer._outputDataFormat));
         setInputFormat(new Tensor(layer._inputDataFormat));
@@ -345,7 +347,14 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
                 tensorParams.put("bias", new Tensor());
             _neuron._operator.setName(getFunctionCallDescription(getInputChannels()));
             _initDarknetParams();
-        }
+
+            if(_neuron.getNonlin()!=null)
+                _neuron.getOperator().addStringParam("nonlin", _neuron.getNonlin());
+           }
+
+        /** auto-set partitions number =1*/
+        if(intparams.get("partitions")==null)
+            intparams.put("partitions",1);
 
        _setGPUUseTemplate();
        _addIODimsAndLen();
@@ -452,11 +461,11 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
                  intParam.put("pad_w1", pads[2]);
                  intParam.put("pad_h1", pads[3]);
 
-                 int envW = getInpW() + pads[0] + pads[2];
+                 /**int envW = getInpW() + pads[0] + pads[2];
                  int enwH = getInpH() + pads[1] + pads[3];
                  int envC = getInputChannels();
                  Tensor envidedInput = new Tensor(envW,enwH,envC);
-                 tensorParams.put("envided",envidedInput);
+                 tensorParams.put("envided",envidedInput);*/
              }
     }
 
@@ -656,7 +665,9 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * if it is presented or 0 otherwise
      */
     public int getInpDim(int dimId){
+        if(_neuron.getInputDataFormat().getDimensionality() > dimId)
         return _neuron.getInputDataFormat().getDimSize(dimId);
+        else return 1;
     }
 
     /**
@@ -666,7 +677,9 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * if it is presented or 0 otherwise
      */
     public int getOutpDim(int dimId){
+        if(_neuron.getOutputDataFormat().getDimensionality()> dimId)
         return _neuron.getOutputDataFormat().getDimSize(dimId);
+        else return 1;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -786,6 +799,18 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public int[] getPads() { return _pads; }
 
     /**
+     * Check if pads can be ignored
+     * @return true if pads can be ignored and false otherwise
+     */
+    public boolean isNullorEmptyPads(){
+        if(_pads == null)
+            return true;
+
+        return _pads[0]==0 && _pads[1]==0 && _pads[2]==0 && _pads[3]==0;
+
+    }
+
+    /**
      * Set pads (dummy lines, extending input layer format)
      * @param x0 top left pad
      * @param x1 top right pad
@@ -873,6 +898,24 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
         else return _neuron.getFunctionCallDescription(channels);
     }
 
+    /**************************************************
+     **** POWER/PERFORMANCE/MEMORY evaluation
+     *************************************************/
+
+    public void set_memEval(double _memEval) { this._memEval = _memEval; }
+
+    public void set_timeEval(double _timeEval) { this._timeEval = _timeEval; }
+
+    public void set_energyEval(double _energyEval) { this._energyEval = _energyEval; }
+
+    public double get_timeEval() {
+        return _timeEval;
+    }
+
+    public double get_memEval() { return _memEval; }
+
+    public double get_energyEval() { return _energyEval; }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
 
@@ -915,4 +958,14 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     /** if autopads mode (VALID/FULL/SAME) is used.If autopads flag is false,
      *  the explicit pads definition is expected*/
     @SerializedName("autopads")private boolean _autopads = true;
+
+    /** memory evaluation*/
+    @SerializedName("mem_eval")private double _memEval = 0.0;
+
+    /** time evaluation*/
+    @SerializedName("time_eval")private double _timeEval = 0.0;
+
+    /** energy evaluation*/
+    @SerializedName("energy_eval")private double _energyEval = 0.0;
+
 }

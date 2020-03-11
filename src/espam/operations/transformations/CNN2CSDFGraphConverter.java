@@ -30,19 +30,28 @@ public class CNN2CSDFGraphConverter {
     ///////////////////////////////////////////////////////////////////
     ////               Layer-based approach                       ////
 
-     /**
+    /**
      * Builds the whole CSDFGraph from the Network
      * @param network source Network
      * @return CSDFGraph from the Network
      */
     public CSDFGraph buildGraphLayerBased(Network network) {
+        return buildGraphLayerBased(network, _dataTiling);
+    }
+
+     /**
+     * Builds the whole CSDFGraph from the Network
+     * @param network source Network
+     * @return CSDFGraph from the Network
+     */
+    public CSDFGraph buildGraphLayerBased(Network network, Boolean dataTiling) {
         /** sort layers in traverse order*/
         network.sortLayersInTraverseOrder();
         network.initOperators();
 
         /**Copy network and calculate min DF for it (not to spoil the original DNN model) */
         _minimizedDFDNN = network;
-        //_dataTiling = true;
+        _dataTiling = dataTiling;
         if(_dataTiling) {
                _minimizedDFDNN = new Network(network);
                _minimizedDFDNN.minimizeDataFlow(false);
@@ -969,6 +978,4 @@ public class CNN2CSDFGraphConverter {
     /** If data tiling is required*/
     private boolean _dataTiling = false;
 
-    /** generic nodes processor*/
- //   CNN2CCSDFGraphConverter _subgraphProcessor = new CNN2CCSDFGraphConverter();
 }

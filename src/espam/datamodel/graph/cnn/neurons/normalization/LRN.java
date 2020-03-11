@@ -65,17 +65,6 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
         _bias = lrn._bias;
     }
 
-    /**TODO FINISH IMPLEMENTATION: MOCK*/
-    /**
-     * TODO Data Height is not recalculated for this node for now
-     * Automatically calculates the min input height of the neuron
-     * h dimension is changed according to an inverse formula of output DataFormat height calculation
-     * if this inverse formula exists and return unchanged otherwise
-     * @param minOutputHeight min height on the neuron output
-     * @return new minimal  a neuron
-     */
-
-   // public int calculateMinInputDataHeight( int minOutputHeight) { return getInputHeight(); }
 
 
      /**
@@ -148,7 +137,7 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
      */
     @Override
     public int calculateMinInputDataHeight( int minOutputHeight){
-        return 1;
+        return minOutputHeight;
     }
 
     /**
@@ -178,6 +167,7 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
         super.setOutputDataFormat(outputDataFormat);
         setSampleDim(outputDataFormat.getDimensionality());
     }
+
 
 
 

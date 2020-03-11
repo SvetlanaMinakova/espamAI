@@ -23,7 +23,8 @@ SUBPACKAGES = \
 	json \
 	onnx \
 	sesame \
-	pthread
+	pthread \
+	tensorrt
 
 # Java files in this directory
 JSRCS = \

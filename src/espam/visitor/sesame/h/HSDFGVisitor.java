@@ -94,8 +94,10 @@ public class HSDFGVisitor extends CSDFGraphVisitor {
     return;
 
     if(operator instanceof ComplexOperator){
-        _defineComplexOperatorParameters((ComplexOperator) operator);
-        return;
+        if(!(((ComplexOperator) operator).isCompound())) {
+            _defineComplexOperatorParameters((ComplexOperator) operator);
+            return;
+        }
     }
 
     String parPrefix = "";

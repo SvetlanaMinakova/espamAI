@@ -15,14 +15,14 @@ public class TimingSpecParser {
      * print setup times from configuration in .json format
      * @param path path to the timing specification
      */
-    public static HashMap<String,Integer> parseTimingSpecTemplate(String path){
+    public static HashMap<String,Long> parseTimingSpecTemplate(String path){
         try {
             String strJSON =  FileWorker.read(path);
             JsonObject opList = (JsonObject) JSONParser.getInstance().fromJson(strJSON,JsonObject.class);
-            HashMap<String,Integer> operators = new HashMap<>();
+            HashMap<String,Long> operators = new HashMap<>();
             for (HashMap.Entry<String,JsonElement> kv: opList.entrySet()){
                 String key = kv.getKey();
-                int val = kv.getValue().getAsInt();
+                long val = kv.getValue().getAsLong();
                 operators.put(key,val);
             }
 

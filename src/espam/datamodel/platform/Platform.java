@@ -14,7 +14,7 @@ import espam.datamodel.platform.host_interfaces.ML605;
 import espam.datamodel.platform.host_interfaces.ZedBoard;
 
 
-
+import espam.datamodel.platform.processors.*;
 import espam.visitor.PlatformVisitor;
 
 //////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,54 @@ public class Platform extends Resource {
         }
         return false;
     }
-    
+
+    /**TODO: update if other CPUs appear
+     * Get list of cpu cores in the platform
+     * @return list of cpu cores in the mapping
+     */
+    public Vector<Processor> getCPUList(){
+        Vector<Processor> cpuList = new Vector<>();
+        for (Object resObj: getResourceList()) {
+            if(resObj instanceof Processor) {
+                if(resObj instanceof ARM || resObj instanceof MicroBlaze){
+                    Processor cpu = (Processor)resObj;
+                    cpuList.add(cpu);
+                }
+            }
+        }
+        return cpuList;
+    }
+
+    /**
+     * Get list of gpu cores in the platform
+     * @return list of gpu cores in the mapping
+     */
+    public Vector<Processor> getGPUList(){
+        Vector<Processor> gpuList = new Vector<>();
+        for (Object resObj: getResourceList()) {
+            if(resObj instanceof GPU){
+                Processor gpu = (Processor)resObj;
+                gpuList.add(gpu);
+            }
+        }
+        return gpuList;
+    }
+
+    /**TODO: update if other FPGAs appear
+     * Get list of fpgas in the platform
+     * @return list of fpgas in the mapping
+     */
+    public Vector<Processor> getFPGAList(){
+        Vector<Processor> fpgaList = new Vector<>();
+        for (Object resObj: getResourceList()) {
+            if(resObj instanceof HWCE){
+                Processor fpga = (Processor)resObj;
+                fpgaList.add(fpga);
+            }
+        }
+        return fpgaList;
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
     

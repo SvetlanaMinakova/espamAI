@@ -2,6 +2,8 @@
 package espam.datamodel.mapping;
 
 import espam.datamodel.platform.Resource;
+import espam.datamodel.platform.processors.ARM;
+import espam.datamodel.platform.processors.MicroBlaze;
 
 import java.util.Vector;
 import java.util.Iterator;
@@ -18,7 +20,7 @@ import java.util.Iterator;
  * @version  $Id: MProcessor.java,v 1.4 2012/04/19 17:52:58 mohamed Exp $
  */
 
-public class MProcessor implements Cloneable {
+public class MProcessor implements Cloneable{
     
     ///////////////////////////////////////////////////////////////////
     ////                         public methods                    ////
@@ -161,6 +163,15 @@ public class MProcessor implements Cloneable {
             }
         }
         return null;
+    }
+
+    /** return true, if processor is CPU
+     *  TODO: update for other CPU types
+     * */
+    public boolean isCPU(){
+        if(_resource instanceof ARM || _resource instanceof MicroBlaze)
+            return true;
+        return false;
     }
     
     ///////////////////////////////////////////////////////////////////

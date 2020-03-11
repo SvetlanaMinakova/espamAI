@@ -7,6 +7,11 @@ import java.util.Vector;
 import espam.datamodel.graph.adg.ADGraph;
 import espam.datamodel.graph.adg.ADGNode;
 import espam.datamodel.platform.Platform;
+import espam.datamodel.platform.Resource;
+import espam.datamodel.platform.processors.ARM;
+import espam.datamodel.platform.processors.GPU;
+import espam.datamodel.platform.processors.MicroBlaze;
+import espam.datamodel.platform.processors.Processor;
 import espam.datamodel.pn.Gate;
 import espam.datamodel.pn.cdpn.CDProcessNetwork;
 import espam.datamodel.pn.cdpn.CDChannel;
@@ -299,6 +304,46 @@ public class Mapping implements Cloneable {
             return rt;
         }
         return null;
+    }
+
+    /**
+     * Find core id in the provided mapping
+     * @return core id, found in the provided mapping
+     */
+    public MProcessor findProcessorForTask(String taskName){
+        Vector processorList = getProcessorList();
+        for(Object mp: getProcessorList()) {
+            Vector processes = ((MProcessor)mp).getProcessList();
+            Iterator i;
+
+            i = processes.iterator();
+            while (i.hasNext()) {
+                MProcess process = (MProcess) i.next();
+                if (process.getName().equals(taskName)) {
+                    return (MProcessor) mp;
+                }
+            }
+        }
+
+        System.err.println("Processor not found for the task " + taskName + ". NULL returned");
+        return null;
+    }
+
+    /**TODO: update if other CPUs appear
+     * Get list of cpu cores in the platform
+     * @return list of cpu cores in the mapping
+     */
+    public Vector<MProcessor> getCPUList(){
+        MProcessor mp;
+        Vector<MProcessor> cpuList = new Vector<>();
+        for (Object pObj: getProcessorList()) {
+            mp = (MProcessor)pObj;
+                if(mp.getResource() instanceof ARM || pObj instanceof MicroBlaze){
+                    MProcessor cpu = (MProcessor)pObj;
+                    cpuList.add(cpu);
+                }
+            }
+        return cpuList;
     }
     
     ///////////////////////////////////////////////////////////////////

@@ -8,7 +8,6 @@ import espam.datamodel.graph.cnn.connections.Custom;
 import espam.datamodel.graph.cnn.connections.OneToOne;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
-import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.simple.Data;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
@@ -22,6 +21,7 @@ import espam.operations.evaluation.OperatorsComplexityEvaluator;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**TODO finish implementation
@@ -46,6 +46,102 @@ public class CNNTransformer {
 
      ///////////////////////////////////////////////////////////////////
     ////                    split transformation                   ////
+    public void splitByPlan(HashMap<String, Vector<Integer>> splitPlan){
+        for(Map.Entry<String, Vector<Integer>> split: splitPlan.entrySet()){
+            Layer toSplit = _network.getLayer(split.getKey());
+            if(toSplit==null){
+                System.err.println("Layer split error: layer " + split.getKey() + " not found in DNN");
+            }
+            else {
+                try {
+                    splitLayer(toSplit, split.getValue());
+                }
+                catch (Exception e){
+                    System.err.println("Layer " + split.getKey() + " split error: layer " + e.getMessage());
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * Split up a layer of the neural network into 2 layers
+     * @param layer layer to be split up
+     */
+    public boolean splitLayer(Layer layer, Vector<Integer> childrenNum) throws Exception{
+        Integer totalChildrenNum = 0;
+        for(Integer cn: childrenNum) {
+            totalChildrenNum+=cn;
+
+        }
+
+        if(!isSplittable(layer,totalChildrenNum)) {
+            //  System.out.println("Layer could not be split: "+layer);
+            return false;
+        }
+
+        /** process chains*/
+       // Vector<Vector<Layer>> chains = new Vector<>();
+       // _buildDependentTrack(layer,chains);
+
+        /** process single layer with no real chains*/
+
+        //split(layer,childrenNum);
+
+        /** child layers= original layer with changed neurons number + [n-1] copies*/
+        int copiesNum = childrenNum.size() -1;
+
+        /** create original layer's neuron copy */
+        Neuron [] neuronCopies = new Neuron[copiesNum];
+        for(int i=0 ;i<copiesNum;i++) {
+            Neuron neuronCopy = Neuron.copyNeuron(layer.getNeuron());
+            neuronCopies[i] = neuronCopy;
+        }
+
+        Tensor lNeuronsNum = new Tensor();
+
+        /**TODO refactoring*/
+        /** process dense block internal neurons number*/
+        if(layer.getNeuron() instanceof DenseBlock){
+            _splitDenseBlock(layer, childrenNum, copiesNum, neuronCopies, lNeuronsNum);
+        }
+        else {
+            lNeuronsNum = splitNeuronsNum(childrenNum);
+            layer.setNeuronsNum(lNeuronsNum.getDimSize(0));
+        }
+
+        Layer [] layerCopies = new Layer[copiesNum];
+
+        /** add copied layers*/
+        int neuronsStart = layer.getstartNeuronId() + layer.getNeuronsNum();
+        for(int i=0 ;i<copiesNum;i++){
+            _network.addLayer(layer.getName()+"_split_" + _splitId + "_"+i, neuronCopies[i], lNeuronsNum.getDimSize(i+1),layer.getPads());
+            Layer added = _network.getLastLayer();
+            added.setstartNeuronId(neuronsStart);
+            layerCopies[i] = added;
+            neuronsStart += added.getNeuronsNum();
+        }
+
+        /**TODO refactoring*/
+        /** process dense block internal neurons number*/
+        if(layer.getNeuron() instanceof DenseBlock) {
+            int startNeuronId = layer.getstartNeuronId() + ((DenseBlock) layer.getNeuron()).getNeuronsNum();
+
+            for (int i = 0; i < copiesNum; i++) {
+                layerCopies[i].setstartNeuronId(startNeuronId);
+                startNeuronId = layerCopies[i].getstartNeuronId() + ((DenseBlock) layerCopies[i].getNeuron()).getNeuronsNum();
+            }
+        }
+
+
+        _splitId++;
+        splitInputConnections(layer,layerCopies);
+        splitOutputConnections(layer,layerCopies);
+        _network.updateConnectionDependentParameters();
+        _network.updateDataFormats();
+        return true;
+    }
 
 
      /**
@@ -215,21 +311,39 @@ public class CNNTransformer {
      * Dense block is a complex construction, it is splitted up separately
      */
     private void _splitDenseBlock(Layer layer, int childrenNum, int copiesNum, Neuron[] neuronCopies,Tensor lNeuronsNum){
+        /** spread neurons evenly*/
         int totalNeurons = ((DenseBlock) layer.getNeuron()).getNeuronsNum();
-            int nn = totalNeurons/childrenNum;
-            ((DenseBlock) layer.getNeuron()).setNeuronsNum(nn);
-             for(int i=0 ;i<copiesNum;i++) {
-                 ((DenseBlock)neuronCopies[i]).setNeuronsNum(nn);
-             }
+        int nn = totalNeurons/childrenNum;
+        Vector<Integer> evenNN = new Vector<>();
 
-             /** process rest of the neurons in case of totalNeurons is indivisible on childrenNum*/
-             int restNeurons = totalNeurons - nn*childrenNum;
+        for(int i=0 ;i<copiesNum+1;i++) {
+            evenNN.add(nn);
+        }
+
+        /** process rest of the neurons in case of totalNeurons is indivisible on childrenNum*/
+        int restNeurons = totalNeurons - nn*childrenNum;
              if(restNeurons>0){
-                 ((DenseBlock)neuronCopies[copiesNum-1]).setNeuronsNum(nn + restNeurons);
+                 evenNN.setElementAt((nn + restNeurons), evenNN.size()-1);
              }
 
-             for(int i=0;i<childrenNum;i++)
-                 lNeuronsNum.addDimension(1);
+        _splitDenseBlock(layer,evenNN,copiesNum,neuronCopies,lNeuronsNum);
+    }
+
+    /**
+     * Split dense block
+     * Dense block is a complex construction, it is splitted up separately
+     */
+    private void _splitDenseBlock(Layer layer, Vector<Integer> childrenNum, int copiesNum, Neuron[] neuronCopies,Tensor lNeuronsNum){
+        int totalNeurons = ((DenseBlock) layer.getNeuron()).getNeuronsNum();
+        int nn = childrenNum.elementAt(0);
+        ((DenseBlock) layer.getNeuron()).setNeuronsNum(nn);
+        for(int i=0 ;i<copiesNum;i++) {
+            nn = childrenNum.elementAt(i + 1);
+            ((DenseBlock)neuronCopies[i]).setNeuronsNum(nn);
+        }
+
+        for(int i=0;i<childrenNum.size();i++)
+            lNeuronsNum.addDimension(1);
     }
 
     /**
@@ -503,7 +617,8 @@ public class CNNTransformer {
             concatId++;
         }
             if(concatAdded) {
-                _network.addConnection(original, concatLayer);
+               _network.addConnection(original, concatLayer);
+
                 outpCon.changeSrc(concatLayer);
             }
             /** create output connections for each of child layers and link them to concat layer*/
@@ -589,9 +704,9 @@ public class CNNTransformer {
     }
 
     /**
-     * Divide original layer's neurons number by 2
+     * Divide original layer's neurons number by n
      * @param original original layer
-     * @return index pair with neurons number for 2 child layers,
+     * @return tensor with neurons number for n child layers,
      * obtained from original layer by splitting
      */
     private Tensor splitNeuronsNum(Layer original, int childrenCount){
@@ -608,6 +723,19 @@ public class CNNTransformer {
         /** add the rest of neurons to the first layer*/
         int dif = original_nn - result.getDimSize(0)*childrenCount;
         result.setDimSize(0,result.getDimSize(0)+dif);
+
+        return result;
+    }
+
+    /**
+     * @return neurons number for child layers,
+     * obtained from original layer by splitting
+     */
+    private Tensor splitNeuronsNum(Vector<Integer> childrenNeuronNum){
+
+        Tensor result = new Tensor();
+        for (Integer cnn: childrenNeuronNum)
+            result.addDimension(cnn);
 
         return result;
     }
@@ -879,11 +1007,23 @@ public class CNNTransformer {
     }
 
     /**
-     * Test function for grouping 2 layers
+     * Function for grouping 2 layers
+     * @param chain linear-connected chain
+     * @throws Exception if an error occurs
+     */
+     public void groupLayers(Vector<Layer> chain) throws Exception {
+        groupLayers(chain,false);
+
+     }
+
+    /**
+     *Function for grouping 2 layers
      * @param chain linear-connected chain
      * TODO Refactoring
+     * @param fuse if the grouped layer is fusion
+     * @throws Exception if an error occurs
      */
-    public void groupLayers(Vector<Layer> chain) throws Exception {
+    public void groupLayers(Vector<Layer> chain, boolean fuse) throws Exception {
 
         if (!isGroupable(chain)) {
             System.err.print("Ungroupable layers chain: ");
@@ -924,6 +1064,7 @@ public class CNNTransformer {
         subNetwork.setOutputLayer(subNetwork.getLayer(endName));
 
         GenericNeuron generic = new GenericNeuron(subNetwork.getName(),subNetwork);
+        generic.setFusedCompound(fuse);
         /** add generic layer to dnn*/
         _network.addLayer(subNetwork.getName(),generic,1);
         Layer genericLayer = _network.getLayer(subNetwork.getName());
@@ -931,12 +1072,16 @@ public class CNNTransformer {
         /**transfer connections*/
         Vector<Connection> inputConnections = _network.getLayerInputConnections(start);
         for(Connection inpCon: inputConnections){
-            _network.addConnection(inpCon.getSrc().getName(),genericLayer.getName());
+            inpCon.changeDest(genericLayer);
+            genericLayer.getInputConnections().add(inpCon);
+            //_network.addConnection(inpCon.getSrc().getName(),genericLayer.getName());
         }
 
         Vector<Connection> outputConnections = _network.getLayerOutputConnections(end);
         for(Connection outpCon: outputConnections) {
-            _network.addConnection(genericLayer.getName(),outpCon.getDest().getName());
+            outpCon.changeSrc(genericLayer);
+            genericLayer.getOutputConnections().add(outpCon);
+            //_network.addConnection(genericLayer.getName(),outpCon.getDest().getName());
         }
 
         /** remove original layers from neural network*/
@@ -1363,6 +1508,118 @@ public class CNNTransformer {
 
     ////////////////////////////////////////////////////////////////
     /////////////////  AUTO MERGE /////////////////////////////////
+
+    /*************************************************************/
+    /*******************  COMPOUNDS                  ************/
+
+    public void mergeCompounds(Vector<Vector<String>> compoundTemplates, boolean verbose){
+
+        for(Vector<String> compoundTemplate: compoundTemplates) {
+            if(verbose)
+                System.out.println("compound template: " + compoundTemplate);
+
+            try {  mergeCompound(compoundTemplate,verbose); }
+            catch (Exception e) {System.out.println("Compound merging error: "+e.getMessage()); }
+        }
+
+    }
+
+    /**
+     * Search DNN in order to find compounds, correponding to compound template
+     * @param compoundTemplate compound template to match
+     * @param verbose if the details should be printed
+     * @throws Exception if an error occurs
+     */
+    public void mergeCompound(Vector<String> compoundTemplate, boolean verbose) throws Exception {
+
+        _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+        _network.sortLayersInTraverseOrder();
+
+        /** get all the layers that potentially can start the compound*/
+        String compoundStart = compoundTemplate.firstElement();
+        Vector<Layer> compoundStartLayers = new Vector<>();
+        for(Layer l: _network.getLayers()) {
+            if(l.getNeuron().getName().toLowerCase().contains(compoundStart.toLowerCase()))
+                compoundStartLayers.add(l);
+        }
+
+        Vector<Vector<Layer>> chainsToMerge = new Vector<>();
+        /** prepare chains to merge*/
+        Vector<Layer> chainToMerge;
+        for (Layer layer : compoundStartLayers) {
+                chainToMerge = getGraphCompounds(layer, compoundTemplate);
+
+                if (chainToMerge != null) {
+                    chainsToMerge.add(chainToMerge);
+                }
+
+        }
+
+        /** merge chains*/
+        Integer chainId = 0;
+        for (Vector<Layer> chain : chainsToMerge) {
+            groupLayers(chain,true);
+            if (verbose) {
+                System.out.println("Compound: " + chainId);
+                for (Layer layer : chain)
+                    System.out.print(layer.getName() + " -> ");
+                System.out.println();
+            }
+
+            _network.setDataFormats(_network.getInputLayer().getOutputFormat());
+            _network.initOperators();
+
+            if (verbose) {
+                System.out.println("Compound " + chainId + " merged");
+            }
+            chainId++;
+        }
+    }
+
+
+     /**
+     * If layer is followed by chain of layers to be merged
+     * @param layer possible starts of compound
+     * @return compound, if layer indeed starts a compond and null otherwise
+     */
+    protected Vector<Layer> getGraphCompounds(Layer layer, Vector<String> compoundTemplate){
+        Vector<Layer> compound = new Vector<>();
+        Layer curLayer = layer;
+
+        for(String compoundElement: compoundTemplate)
+        {
+            if(matchesCompoundElement(curLayer,compoundElement)){
+                compound.add(curLayer);
+                curLayer = curLayer.getOutputConnections().firstElement().getDest();
+            }
+            else return null;
+
+        }
+
+        /**System.out.println("Mergeable chain: ");
+        for (Layer chainMember: mergeChain)
+            System.out.print(chainMember.getName() + " ... ");
+        System.out.println();*/
+
+        return compound;
+    }
+
+    /**
+     * Check if layer matches compound element
+     * Layer matches compound element, if it has one output
+     * and name of the Layer neuron is equal to compoundNeuron name
+     * Otherwise, layer does not match compound element
+     * @param layer DNN layer
+     * @param compoundNeuron String name of compound element
+     * @return true, if layer matches compound element and false otherwise
+     */
+    protected boolean matchesCompoundElement(Layer layer, String compoundNeuron){
+        boolean neuronMatches = layer.getNeuron().getName().toLowerCase().contains(compoundNeuron.toLowerCase());
+        boolean outputConncetionsMatch = layer.getOutputConnections().size()==1;
+        return neuronMatches && outputConncetionsMatch;
+    }
+
+
 
 
     public void printGroupPlan(Network dnn, Integer groupsExpected){

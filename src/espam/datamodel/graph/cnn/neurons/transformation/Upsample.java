@@ -85,9 +85,9 @@ public class Upsample extends Neuron implements ConnectionDependent{
 
 
     /**
-     * Clone this Add Neuron
+     * Clone this Neuron
      *
-     * @return a new reference on the Add Neuron
+     * @return a new reference on the Neuron
      */
     public Upsample clone() {
         Upsample newObj = (Upsample) super.clone();

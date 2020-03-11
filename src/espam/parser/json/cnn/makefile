@@ -16,7 +16,8 @@ JSRCS = \
 	NeuronConverter.java \
 	GenericNeuronConverter.java \
 	ConnectionConverter.java \
-    CustomConnectionConverter.java
+    CustomConnectionConverter.java\
+    CNNTopologyParser.java
 
 
 # Include the shared compilation rules

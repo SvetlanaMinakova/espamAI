@@ -14,6 +14,8 @@ import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
 
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -62,6 +64,7 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
     public GenericNeuron clone() {
         GenericNeuron newObj = (GenericNeuron) super.clone();
         setInternalStructure((Network)_internalStructure.clone());
+        setFusedCompound(_fusedCompound);
         return (newObj);
     }
 
@@ -72,8 +75,8 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
     public GenericNeuron (GenericNeuron n) {
         super(n);
         setInternalStructure(new Network(n._internalStructure));
+        setFusedCompound(n._fusedCompound);
     }
-
 
     /**
      * Return String description of the GenericNeuron
@@ -270,6 +273,17 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
     return 1;
     }
 
+    /** check if the node is fused compound*/
+    public boolean isFusedCompound() {
+        return _fusedCompound;
+    }
+
+    /** define Generic node to be fused compound*/
+    public void setFusedCompound(boolean fusedCompound) {
+
+        this._fusedCompound = fusedCompound;
+    }
+
     /**
      * Init operator: Description of DNN neuron functionality
      * Should be performed after all DNN model parameters are established
@@ -277,12 +291,48 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
      */
     @Override
     public void initOperator(int inputChannels, int outputChannels) {
+        ((ComplexOperator)(_operator)).setCompound(_fusedCompound);
        _internalStructure.initOperators();
        _internalStructure.sortLayersInTraverseOrder();
        Vector<Operator> subOperators = ((ComplexOperator)(_operator)).getSubOperators();
+       subOperators.clear();
        Vector<InternalBuffer> internalBuffers = ((ComplexOperator)(_operator)).getInternalBuffers();
+       internalBuffers.clear();
+       Integer layerId = 1;
        for(Layer layer: _internalStructure.getLayers()) {
-           subOperators.add(layer.getNeuron().getOperator());
+           Operator subOp = layer.getNeuron().getOperator();
+           subOperators.add(subOp);
+
+           /** compound operator parameters*/
+           if(subOp.hasIntegerParams()){
+           for (Map.Entry<String,Integer> entry: subOp.getIntParams().entrySet()){
+
+               if(entry.getKey().contains("input")||entry.getKey().contains("output")) {
+                   if (entry.getKey().contains("input") && layerId==1)
+                           _operator.addIntParam(entry.getKey(), entry.getValue());
+                   else {
+                       if(entry.getKey().contains("output") && (layerId == _internalStructure.countLayers()))
+                           _operator.addIntParam(entry.getKey(), entry.getValue());
+                   }
+               }
+
+               else
+                   _operator.addIntParam(entry.getKey()+"_"+layerId,entry.getValue());
+           }}
+
+           if( subOp.hasTensorParams()){
+           for (Map.Entry<String,Tensor> entry: subOp.getTensorParams().entrySet()){
+               _operator.addTensorParam(entry.getKey()+"_"+layerId,entry.getValue());
+           }}
+
+           if(subOp.hasFloatParams()){
+           for (Map.Entry<String,Float> entry: subOp.getFloatParams().entrySet()){
+               _operator.getFloatParams().put(entry.getKey()+"_"+layerId,entry.getValue());
+           }}
+
+           _operator.addStringParam("op_" + layerId, subOp.getName());
+           layerId++;
+
 
            /** Add internal I/O params*/
           // if(!(layer.equals(_internalStructure.getInputLayer())))
@@ -311,21 +361,29 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
+
+        /** fusion*/
+        if(_fusedCompound) {
+            int timeComplexity = ((ComplexOperator)(_operator)).getSubOperators().firstElement().getTimeComplexity();
+            _operator.setTimeComplexity(timeComplexity);
+            return;
+        }
+
         int timeComplexity = 0;
         Vector<Operator> subOperators = ((ComplexOperator)(_operator)).getSubOperators();
 
-        for(Operator op: subOperators)
-            timeComplexity+= op.getTimeComplexity();
+        for (Operator op : subOperators)
+            timeComplexity += op.getTimeComplexity();
 
         _operator.setTimeComplexity(timeComplexity);
-
-
-        //System.out.println( " generic time complexity: " + timeComplexity);
     }
+
+
 
     //////////////////////////////////////////////////////////////////////
     ////                         private variables                    ////
 
     @SerializedName("internalStructure")private Network _internalStructure;
+    @SerializedName("fusedCompound")private boolean _fusedCompound;
 }
 

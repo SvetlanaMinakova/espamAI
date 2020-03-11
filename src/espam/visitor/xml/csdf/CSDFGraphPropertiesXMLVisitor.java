@@ -148,7 +148,7 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
         prefixInc();
         _printStream.println(_prefix + "<processor type='" + proc + "' default = 'true'>");
         prefixInc();
-        Vector<Integer> wcet = _wcet.get(node);
+        Vector<Long> wcet = _wcet.get(node);
         if(wcet==null)
             wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(maxLen);
         String execTime = vecToCommaSeparatedStr(wcet);
@@ -185,7 +185,7 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
            prefixInc();
            _printStream.println(_prefix + "<processor type='" + proc + "' default = 'true'>");
            prefixInc();
-           Vector<Integer> wcet = _wcet.get(node);
+           Vector<Long> wcet = _wcet.get(node);
            if(wcet==null)
                wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(node.getLength());
            String execTime = vecToCommaSeparatedStr(wcet);
@@ -245,7 +245,7 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
      * @return vector of integers, serialized as a string of values,
      * separated by comma
      */
-    private String vecToCommaSeparatedStr(Vector<Integer> vec){
+    private String vecToCommaSeparatedStrInt(Vector<Integer> vec){
         StringBuilder result = new StringBuilder();
 
         if(vec!=null){
@@ -262,11 +262,35 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
         return result.toString();
     }
 
+        /**
+     * Serializes vector of integers as a string of values,
+     * separated by comma
+     * @param vec vector of integers to be serialized
+     * @return vector of integers, serialized as a string of values,
+     * separated by comma
+     */
+    private String vecToCommaSeparatedStr(Vector<Long> vec){
+        StringBuilder result = new StringBuilder();
+
+        if(vec!=null){
+            int curElemId = 0;
+            int commaBorderId = vec.size()-1;
+
+            for(Long val: vec){
+                result.append(val);
+                if(curElemId<commaBorderId)
+                    result.append(",");
+                curElemId++;
+            }
+        }
+        return result.toString();
+    }
+
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ///
     /**Mapping of the SDFG nodes on processors <Node_name,Processor_name>*/
     private HashMap<String,String> _nodeProcessorsMapping = new HashMap<>();
 
     /** worst-case execution times. By default operation wcet = 1*/
-    private HashMap<CSDFNode,Vector<Integer>> _wcet;
+    private HashMap<CSDFNode,Vector<Long>> _wcet;
 }

@@ -165,7 +165,7 @@ public class CSDFGraphJSONVisitor extends CSDFGraphVisitor{
       //  System.out.println(jsonOperator);
         _printStream.println(_prefix + "\"operator\": " + jsonOperator + ",");
 
-         Vector<Integer> wcet = _wcet.get(x);
+         Vector<Long> wcet = _wcet.get(x);
          if(wcet==null)
              wcet = CSDFTimingRefiner.getInstance().getDefaultExecTime(x.getLength());
 
@@ -302,5 +302,5 @@ public class CSDFGraphJSONVisitor extends CSDFGraphVisitor{
    /**Standard JSON-parser, implements parsing of non-nested types*/
     private Gson _gson;
    /** worst-case execution times. By default operation wcet = 1*/
-    private HashMap<CSDFNode,Vector<Integer>> _wcet;
+    private HashMap<CSDFNode,Vector<Long>> _wcet;
 }

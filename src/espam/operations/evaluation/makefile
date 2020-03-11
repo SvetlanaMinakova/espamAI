@@ -13,7 +13,14 @@ JSRCS = \
 	EnergyEvaluator.java \
 	CSDFGMemoryRefiner.java \
 	CSDFTimingRefiner.java \
-	OperatorsComplexityEvaluator.java
+	OperatorsComplexityEvaluator.java \
+	DNNTimeEvaluator.java\
+	DNNMemoryEvaluator.java\
+	DNNEnergyEvaluator.java\
+	OpTimeEval.java \
+	PlatformEval.java \
+	CoreTypeEval.java \
+	procDescription.java
 
 
 SUBPACKAGES =

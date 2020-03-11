@@ -13,7 +13,10 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
     CNNJSONVisitor.java \
-    CSDFGraphJSONVisitor.java
+    CSDFGraphJSONVisitor.java \
+    CNNTopologyJSONVisitor.java \
+    CSDFGraphShortJSONVisitor.java \
+    CNNEvaluationJSONVisitor.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk
