@@ -19,7 +19,6 @@ src_lib/vars.mk
 *.iml
 *.zip
 target
-out
 output
 .idea
 
