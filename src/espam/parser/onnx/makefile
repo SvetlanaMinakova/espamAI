@@ -16,7 +16,8 @@ JSRCS = \
 	ONNX2CNNConverter.java \
 	ONNXtoESPAMNetworkTraverser.java \
 	InferenceDNNOptimizer.java \
-	initializersMetaData.java
+	initializersMetaData.java \
+	SupportedONNXOpsList.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

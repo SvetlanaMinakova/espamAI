@@ -3,8 +3,8 @@ package espam.visitor.xml.csdf;
 import espam.datamodel.graph.csdf.SDFGraphType;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.operations.evaluation.CSDFGMemoryRefiner;
-import espam.operations.evaluation.CSDFTimingRefiner;
+import espam.operations.evaluation.csdf.CSDFGMemoryRefiner;
+import espam.operations.evaluation.csdf.CSDFTimingRefiner;
 import espam.visitor.CSDFGraphVisitor;
 
 import java.io.PrintStream;
@@ -214,7 +214,7 @@ public class CSDFGraphPropertiesXMLVisitor extends CSDFGraphVisitor {
         _printStream.println(_prefix + "<memory>");
         prefixInc();
         int   stateSize = 0;
-        try{ stateSize = CSDFGMemoryRefiner.getInstance().evalInternalMemory(node); }
+        try{ stateSize = CSDFGMemoryRefiner.getInstance().evalInternalMemory(node).intValue(); }
         catch (Exception e){}
         _printStream.println(_prefix + "<stateSize max='" + stateSize + "'/>");
         prefixDec();

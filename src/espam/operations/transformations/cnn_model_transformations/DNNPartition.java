@@ -7,6 +7,14 @@ import java.util.Vector;
 /** DNN partition*/
 public class DNNPartition {
 
+    public int get_procId() {
+        return _procId;
+    }
+
+    public String get_procName() {
+        return _procName;
+    }
+
     public DNNPartition(){
         _layers = new Vector<>();
     }
@@ -27,6 +35,6 @@ public class DNNPartition {
     }
 
     @SerializedName("layers")private Vector<String> _layers;
-    @SerializedName("procId")private int _procId = 0;
-    @SerializedName("procName")private String _procName = "CPU0";
+    @SerializedName("proc_id")private int _procId = 0;
+    @SerializedName("proc_name")private String _procName = "CPU0";
 }

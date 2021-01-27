@@ -3,21 +3,16 @@ package espam.visitor.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 
-import com.google.gson.JsonObject;
 import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.NPort;
-import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
-import espam.operations.evaluation.CSDFTimingRefiner;
 import espam.parser.json.csdf.*;
 import espam.utils.fileworker.JSONFileWorker;
 import espam.visitor.CSDFGraphVisitor;
 
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -160,12 +155,12 @@ public class CSDFGraphShortJSONVisitor extends CSDFGraphVisitor {
          prefixInc();
         _printStream.println(_prefix + "\"id\": " + x.getId()+",");
         _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
-        _printStream.println(_prefix + "\"function\": \"" + x.getFunction()+"\",");
+        //_printStream.println(_prefix + "\"function\": \"" + x.getFunction()+"\",");
         if(x.getGroup()!=null)
             _printStream.println(_prefix + "\"group\": \"" + x.getGroup()+"\",");
         //_printStream.println(_prefix + "\"length\": " +x.getLength()+ ",");
         _printStream.println(_prefix + "\"phases\": " +x.getLength()+ ",");
-        _printStream.println(_prefix + "\"port_number\": "+x.countPorts()+",");
+        _printStream.println(_prefix + "\"port_number\": "+ x.countPorts()+",");
 
         // String jsonOperator = _gson.toJson(x.getOperator(), Operator.class);
         //String jsonOperatorIntParams =_gson.toJson(x.getOperator().getIntParams());
@@ -181,45 +176,20 @@ public class CSDFGraphShortJSONVisitor extends CSDFGraphVisitor {
         keysToPrint.add("k_w");
         keysToPrint.add("stride");
 
-        /**
-         *
-         * "batch": 1,
-  "channels": 3,
-  "gpu": -1,
-  "group": 1,
-  "groups": 1,
-  "h": 11,
-  "input_dim0": 224,
-  "input_dim1": 11,
-  "input_dim2": 3,
-  "input_len": 7392,
-  "k_h": 11,
-  "k_w": 11,
-  "neuron_start_id": 0,
-  "neurons": 96,
-  "out_h": 1,
-  "out_w": 54,
-  "output_dim0": 54,
-  "output_dim1": 1,
-  "output_dim2": 96,
-  "output_len": 5184,
-  "pads": 0,
-  "partitions": 96,
-  "stride": 4,
-  "w": 224
-         *
-         */
 
         //  System.out.println(jsonOperator);
          _printStream.println(_prefix + "\"operator\": {");
          _prefixInc();
+        _printStream.println(_prefix + "  \"name\": "+ "\"" + x.getOperator().getName() + "\",");
+
          for(String keyToPrint: keysToPrint) {
              if(intParams.containsKey(keyToPrint)){
                  _printStream.println(_prefix + "  \"" + keyToPrint + "\": "+ intParams.get(keyToPrint) + ",");
              }
          }
 
-        _printStream.println(_prefix + "  \"name\": "+ "\"" + x.getOperator().getName() + "\"");
+        _printStream.println(_prefix + "  \"time_complexity\": " + x.getOperator().getTimeComplexity() + ",");
+        _printStream.println(_prefix + "  \"memory_complexity\": " + x.getOperator().getMemoryComplexity() );
 
         _prefixDec();
         _printStream.println(_prefix + "},");
@@ -271,16 +241,20 @@ public class CSDFGraphShortJSONVisitor extends CSDFGraphVisitor {
         prefixInc();
         _printStream.println(_prefix + "\"id\": " + x.getId()+",");
         _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
-        _printStream.println(_prefix + "\"src\": " + x.getSrc().getRates() +",");
+        _printStream.println(_prefix + "\"src\": " + "\"" + x.getSrc().getNode().getName() + "\"" +",");
+        _printStream.println(_prefix + "\"src_rates\": " + x.getSrc().getRates() +",");
         int srcPhases = 0;
         for (IndexPair inRate: x.getSrc().getRates())
             srcPhases+= inRate.getSecond();
         _printStream.println(_prefix + "\"src_phases\": " + srcPhases +",");
-
-        _printStream.println(_prefix + "\"dst\": " + x.getDst().getRates()  +",");
+        _printStream.println(_prefix + "\"dst\": " + "\"" + x.getDst().getNode().getName()  + "\"" + ",");
+        _printStream.println(_prefix + "\"dst_rates\": " + x.getDst().getRates()  +",");
         int dstPhases = 0;
         for (IndexPair outRate: x.getDst().getRates())
             dstPhases+= outRate.getSecond();
+        Integer minBufSize = getMinBufSize(x);
+        _printStream.println(_prefix + "\"min_buf_size\": " + minBufSize  +",");
+        _printStream.println(_prefix + "\"buf_size\": " + (minBufSize)  +",");
 
         _printStream.println(_prefix + "\"dst_phases\": " + dstPhases);
         if(x.getDst().isOverlapHandler()){
@@ -293,6 +267,26 @@ public class CSDFGraphShortJSONVisitor extends CSDFGraphVisitor {
          prefixDec();
         _printStream.println(_prefix + "}");
 
+    }
+
+    /** get minimum buffer size*/
+    private Integer getMinBufSize(CSDFEdge edge) {
+        CSDFPort src = edge.getSrc();
+        CSDFPort dst = edge.getDst();
+        Integer minBufSize = 0;
+        for (IndexPair rate : src.getRates()) {
+            if (rate.getFirst() > minBufSize) {
+                minBufSize = rate.getFirst();
+            }
+        }
+
+        for (IndexPair rate : dst.getRates()) {
+            if (rate.getFirst() > minBufSize) {
+                minBufSize = rate.getFirst();
+            }
+        }
+
+        return minBufSize;
     }
 
     /**
@@ -328,10 +322,10 @@ public class CSDFGraphShortJSONVisitor extends CSDFGraphVisitor {
      */
     public void visitComponent(CSDFPort x) {
         /**Open port description */
-        _printStream.println("");
+        //_printStream.println("");
         _printStream.println(_prefix + "{");
         _prefixInc();
-        _printStream.println(_prefix + "\"id\": " + x.getId()+",");
+      //  _printStream.println(_prefix + "\"id\": " + x.getId()+",");
         _printStream.println(_prefix + "\"name\": \"" + x.getName()+"\",");
 
         Vector<IndexPair> rateDesc = x.getRates();

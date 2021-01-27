@@ -2,6 +2,7 @@ package espam.datamodel.graph.cnn;
 
 import com.google.gson.annotations.SerializedName;
 import espam.datamodel.EspamException;
+import espam.datamodel.graph.Edge;
 import espam.datamodel.graph.cnn.connections.*;
 import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.CustomConnectionGenerator;
@@ -9,9 +10,11 @@ import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
+import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.DataType;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.Data;
+import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.neurons.transformation.Reshape;
 import espam.datamodel.graph.cnn.operators.Operator;
@@ -20,11 +23,12 @@ import espam.parser.json.ReferenceResolvable;
 import espam.visitor.CNNGraphVisitor;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 /**
- * Class of Neural Network (NN)
- * TODO make reference to some original paper about NNs
+ * Class of Convolutional Neural Network (CNN)
+ * See Yan Le Cun "Object Recognition with Gradient-based learning"
  */
 
 public class Network implements Cloneable, ReferenceResolvable {
@@ -161,7 +165,7 @@ public class Network implements Cloneable, ReferenceResolvable {
             return false;
         Tensor inputDataFormat = _inputLayer.getOutputFormat();
         if(Tensor.isNullOrEmpty(inputDataFormat)) {
-            inputDataFormat = _inputLayer.getNeuron().getInputDataFormat();
+            inputDataFormat = _inputLayer.getNeuron().getOutputDataFormat();
             if(Tensor.isNullOrEmpty(inputDataFormat))
                 return false;
             else {
@@ -187,9 +191,12 @@ public class Network implements Cloneable, ReferenceResolvable {
         sortConnectionsInTraverseOrderFromTop();
 
         for(Connection connection: _connections){
-           // System.out.println(connection.getSrcName()+"-->"+connection.getDestName()+" update");
-            updateDataFormats(connection);
+            try { updateDataFormats(connection); }
+            catch (Exception e) {
+                System.out.println("Data formats computation error: " + e.getMessage());
+            }
         }
+
         //System.out.println("data formats are set!");
     }
 
@@ -202,8 +209,13 @@ public class Network implements Cloneable, ReferenceResolvable {
 
         Tensor input = inputDataFormat;
         Neuron inputLayerNeuron = _inputLayer.getNeuron();
-        if(inputLayerNeuron instanceof ConnectionDependent) {
-            input = input.getSubTensor(inputLayerNeuron.getSampleDim());
+
+        /** TODO: check if removal of getSubTensor() cut did not broke anything*/
+        if(inputLayerNeuron instanceof ConnectionDependent ) {
+            /**input = input.getSubTensor(inputLayerNeuron.getSampleDim());
+            System.out.println("Layer " + _inputLayer.getName() + " input cut to " + inputLayerNeuron.getSampleDim() +
+                    " dims (from " + inputDataFormat + " to " + input + ")");
+            System.out.println(_inputLayer.getInputChannels());*/
         }
 
         inputLayerNeuron.setInputDataFormat(input);
@@ -215,19 +227,58 @@ public class Network implements Cloneable, ReferenceResolvable {
      * Update data formats (from top to bottom) for one DNN connection
      * @param connection DNN connection
      */
-    public void updateDataFormats(Connection connection){
-    //   System.out.println(connection.getSrcName()+ " (" + connection.getSrcId() + ") --> "
-      //          +connection.getDestName()+ " (" + connection.getDestId() + ")");
+    public void updateDataFormats(Connection connection) throws Exception{
+       //System.out.println(connection.getSrcName()+ " (" + connection.getSrcId() + ") --> "
+       //         +connection.getDestName()+ " (" + connection.getDestId() + ")");
+
+        _exceptIfSrcOrDstIsNull(connection);
 
         Layer src = connection.getSrc();
         Layer dest = connection.getDest();
-        Tensor destNeuronInputFormat = src.getNeuron().getOutputDataFormat();
-        Tensor destLayerInputFormat = src.getOutputFormat();
 
-        dest.updateDataFormatsFromTop(destNeuronInputFormat, destLayerInputFormat);
+        _exceptIfLayerOutputIsNull(src);
 
+        dest.updateDataFormatsFromTop(src.getNeuron().getOutputDataFormat(), src.getOutputFormat());
 
     }
+
+
+    private void _exceptIfSrcOrDstIsNull(Connection connection) throws Exception{
+        Layer src = connection.getSrc();
+        Layer dest = connection.getDest();
+
+        if (src == null)
+            throw new Exception(connection.getSrcName() + "--> "
+                    + connection.getDestName()+ "src layer is null");
+
+        if (dest == null)
+            throw new Exception(connection.getSrcName() + "--> "
+                    + connection.getDestName()+ "dest layer is null");
+    }
+
+
+    private void _exceptIfLayerOutputIsNull(Layer layer) throws Exception{
+
+        //both layer and neuron data formats are null. Data cannot be restored.
+       // if(!(layer.getOutputFormat() == null && layer.getNeuron().getOutputDataFormat() == null))
+       //     _tryRestoreOutDataFormat(layer);
+
+
+        if (layer.getOutputFormat() == null)
+            throw new Exception("layer " + layer.getName() + " output format is null");
+
+        if (layer.getNeuron().getOutputDataFormat() == null)
+            throw new Exception("layer " + layer.getName() + " neuron output format is null");
+    }
+
+    private void _tryRestoreOutDataFormat(Layer layer){
+        if(layer.getOutputFormat() == null){
+            Tensor outputFormat = layer.calculateOutputFormat();
+            layer.setOutputFormat(outputFormat);
+        }
+    }
+
+
 
     /**
      * TODO check
@@ -395,7 +446,10 @@ public class Network implements Cloneable, ReferenceResolvable {
             MultipleInputsProcessor mulInp = (MultipleInputsProcessor)con.getDest().getNeuron();
             if(!mulInp.isAcceptableInput(srcOutputFormat)){
                 System.out.println("Consistency fault: " + con.getSrcName() + " --> " + con.getDestName());
-                System.out.println(" input format: " + srcOutputFormat +" is not acceptable for " + con.getDestName());
+                System.out.print(" input format: " + srcOutputFormat +" is not acceptable for " + con.getDestName());
+                if(!Tensor.isNullOrEmpty(con.getDest().getOutputFormat()))
+                    System.out.print(" with output format: " + con.getDest().getOutputFormat());
+                System.out.println();
                 consistent = false;
             }
 
@@ -1693,6 +1747,77 @@ public class Network implements Cloneable, ReferenceResolvable {
     public void initOperators(){
         for(Layer layer: _layers)
             layer.initOperator();
+    }
+
+
+    /** get divisible complexity bottleneck*/
+    public Layer getDivisibleTimeComplexityBottleneck(){
+        Long maxComplexity = 0l;
+        Long curComplexity;
+        Layer mostComplex = null;
+        for(Layer l: _layers) {
+            if (l.getNeuron() instanceof Convolution || l.getNeuron() instanceof DenseBlock) {
+                curComplexity = l.getNeuron()._operator.getTimeComplexity();
+                if (curComplexity > maxComplexity) {
+                    maxComplexity = curComplexity;
+                    mostComplex = l;
+                }
+            }
+        }
+
+        return mostComplex;
+    }
+
+    /**************************************************
+     **** Print
+     *************************************************/
+
+    public void printDetails(){
+        System.out.println("Layers: ");
+        for (Layer layer : _layers) {
+            System.out.print("  " + layer.getName());
+            System.out.print("( op: " + layer.getNeuron().getName());
+
+            // hyper-parameters
+            System.out.print(", hyp: " + "{");
+            if (layer.getNeuron() instanceof CNNNeuron){
+                System.out.print("k: " + ((CNNNeuron) layer.getNeuron()).getKernelW() +
+                        ", s: " + ((CNNNeuron) layer.getNeuron()).getStride());
+                if(!layer.isNullorEmptyPads()){
+                    int[] pads = layer.getPads();
+                    System.out.print(", pads: [");
+                    for (int i=0; i<3; i++)
+                        System.out.print(pads[i] + ", ");
+                    System.out.print(pads[3] + "]");
+                }
+            }
+            System.out.print(" }");
+
+            //trainable parameters
+            System.out.print(", par: " + "{");
+            if (layer.getNeuron().getOperator().hasTensorParams()){
+                for (Map.Entry<String, Tensor> tensorParam: layer.getNeuron().getOperator().getTensorParams().entrySet()){
+                    if (!Tensor.isNullOrEmpty(tensorParam.getValue()))
+                        System.out.print(tensorParam.getKey() + ": " + tensorParam.getValue() + ", ");
+                }
+            }
+            System.out.print("}");
+
+            //i/o data
+            if (layer.getNeuron() instanceof MultipleInputsProcessor){
+                System.out.print(" [ ");
+                for (Tensor iData: ((MultipleInputsProcessor) layer.getNeuron()).getInputs())
+                    System.out.print(iData + ", ");
+                System.out.print(" ]");
+            }
+            else { System.out.print(", i_data: " + layer.getInputFormat()); }
+            System.out.print(", o_data: " + layer.getOutputFormat());
+            System.out.println(")");
+
+        }
+        System.out.println("Connections: ");
+        for (Connection con: _connections)
+            System.out.println("  " + con.getSrcName() + " --> " + con.getDestName());
     }
 
     /**************************************************

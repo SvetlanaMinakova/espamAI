@@ -6,7 +6,9 @@ import espam.datamodel.graph.cnn.neurons.ConnectionDependent;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
+import espam.datamodel.graph.cnn.neurons.cnn.Pooling;
 import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+import espam.datamodel.graph.cnn.neurons.neurontypes.PoolingType;
 import espam.datamodel.graph.cnn.neurons.normalization.LRN;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.neurons.simple.NonLinear;
@@ -98,17 +100,18 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
         setId(layer._id);
         setstartNeuronId(layer._startNeuronId);
 
-        if(_autopads) {
-            setAutopads(true);
-        }
-        else {
-            if (_pads != null) {
-                _pads = new int[layer._pads.length];
-                for (int i = 0; i < _pads.length; i++) {
-                    _pads[i] = layer._pads[i];
-                }
+        if (layer._pads != null) {
+            _pads = new int[layer._pads.length];
+            for (int i = 0; i < _pads.length; i++) {
+                _pads[i] = layer._pads[i];
             }
         }
+
+        else {
+            if(layer._autopads)
+                setAutopads(true);
+        }
+
     }
 
     /**
@@ -180,25 +183,26 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
             _neuron.setInputDataFormat(layerInputDataFormat);
             _neuron.setOutputDataFormat(subNetwork.getOutputLayer().getOutputFormat());
 
-
-            /**_neuron.setInputDataFormat(layerInputDataFormat);
-            _neuron.setOutputDataFormat(subNetwork.getOutputLayer().getOutputFormat());
-            setInputFormat(subNetwork.getInputLayer().getInputFormat());
-            setOutputFormat(subNetwork.getOutputLayer().getOutputFormat());*/
             return;
         }
         _neuron.setInputDataFormat(neuronInputDataFormat);
 
         Tensor neuronInputDataFormatWithPads = Tensor.addPads(neuronInputDataFormat,_pads);
-        //_neuron.setInputDataFormat(neuronInputDataFormatWithPads);
-       // Tensor layerInputDataFormatWithPads = Tensor.addPads(layerInputDataFormat,_pads);
 
         _neuron.setOutputDataFormat(_neuron.calculateOutputDataFormat(neuronInputDataFormatWithPads));
 
-        if(!(_neuron instanceof MultipleInputsProcessor))
+        if(!(_neuron instanceof MultipleInputsProcessor)){
             setInputFormat(layerInputDataFormat);
+            setOutputFormat(calculateOutputFormat());
+        }
+        else {
+            try { ((MultipleInputsProcessor) _neuron).setDataFromMultipleInputs(_neuron.getParent()); }
+            catch (Exception e){
+                System.err.println("Multiple inputs processor "+ _name + " data formats update error: " + e.getMessage());
+            }
+        }
 
-        setOutputFormat(calculateOutputFormat());
+        _neuron.updateWeights(getInputChannels(), getOutputChannels());
 
         //System.out.println(getName() + " output format: "+_outputDataFormat);
 
@@ -280,7 +284,8 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
         Tensor outputFormat = new Tensor(_neuron.getOutputDataFormat());
         /** TODO: check!*/
         // if(_neuronsNum>1 && (!(getInputConnections().firstElement().getSrc()._neuron instanceof Concat)))
-        if(_neuronsNum>1)
+        if(_neuronsNum > 1 && !(_neuron._name == PoolingType.GLOBALAVGPOOL.toString() ||
+                _neuron._name == PoolingType.GLOBALAVGPOOL.toString()))
             outputFormat.addDimension(_neuronsNum);
         return outputFormat;
     }
@@ -292,7 +297,11 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public void sortInputsInConcatOrder(){
         if(!(_neuron instanceof Concat))
             return;
+
         ((Concat)_neuron).sortInputsInConcatOrder();
+
+        if(_inputConnections.size()==0)
+            return;
 
         Vector<Connection> sortedInputConnections = new Vector<>();
         boolean sortedSuccessfully = true;
@@ -302,8 +311,8 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
             if(inpCon!=null)
                 sortedInputConnections.add(inpCon);
             else {
-                System.err.println("Connections sort error: connection " +
-                        sortedInput.getName() + "-->" + getName() + " not found!");
+                /**System.err.println("Connections sort error: connection " +
+                        sortedInput.getName() + "-->" + getName() + " not found!");*/
                 sortedSuccessfully = false;
             }
         }
@@ -314,6 +323,13 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
 
     ///////////////////////////////////////////////////////////////////
     ////                   Operator                               ////
+
+    /** Init operator, if it is not initialized yet*/
+    public void initOperatorIfNULL(){
+        if (_neuron.getOperator()==null)
+            initOperator();
+    }
+
     /**
      * Init operator: Description of DNN layer functionality
      * Should be performed after all DNN model parameters are established
@@ -448,9 +464,6 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
             pads = _pads;
         else pads = new int[4];
 
-        if(cnnNeuron instanceof Convolution && cnnNeuron.getBoundaryMode().equals(BoundaryMode.SAME))
-             pads = _generateSameAutoPads(cnnNeuron, _pads);
-
          if(_NullOrZeroPads(pads))
              intParam.put("pads",0);
 
@@ -460,39 +473,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
                  intParam.put("pad_h0", pads[1]);
                  intParam.put("pad_w1", pads[2]);
                  intParam.put("pad_h1", pads[3]);
-
-                 /**int envW = getInpW() + pads[0] + pads[2];
-                 int enwH = getInpH() + pads[1] + pads[3];
-                 int envC = getInputChannels();
-                 Tensor envidedInput = new Tensor(envW,enwH,envC);
-                 tensorParams.put("envided",envidedInput);*/
              }
-    }
-
-    /**
-     * In real applications the SAME boundary mode is
-     * imitated as VALID boundary mode + special pads
-     * @param x CNN neuron
-     * @param defaultPads pads, that layer already have
-     * @return autopads, imitating the SAME boundary mode
-     */
-    private int [] _generateSameAutoPads(CNNNeuron x, int[] defaultPads){
-        int x_autopad = (((x.getInputWidth() * (x.getStride()-1) + x.getKernelW()))/x.getStride() - 1)/2;
-        int y_autopad = (((x.getInputHeight() * (x.getStride()-1) + x.getKernelH()))/x.getStride() - 1)/2;
-
-        if(defaultPads==null)
-        { int pads[] = {x_autopad,y_autopad,x_autopad,y_autopad};
-            return pads;
-        }
-
-        {
-            defaultPads[0] += x_autopad;
-            defaultPads[1] += y_autopad;
-            defaultPads[2] += x_autopad;
-            defaultPads[3] += y_autopad;
-            return defaultPads;
-        }
-
     }
 
        /**
@@ -510,8 +491,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     }
 
     private void _setGPUUseTemplate(){
-       // if(_neuron instanceof Convolution)
-            _neuron._operator.getIntParams().put("gpu",-1);
+        _neuron._operator.getIntParams().put("gpu",-1);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -570,13 +550,20 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
 
          if(Tensor.isNullOrEmpty(_inputDataFormat)||Tensor.isNullOrEmpty(_neuron.getInputDataFormat()))
          if(Tensor.isNullOrEmpty(_inputDataFormat))
-            return 0;
+            return 1;
 
         /** TODO: check!*/
         if(_neuron instanceof DenseBlock) {
-            int ch = _inputDataFormat.getElementsNumber() / _neuron.getInputDataFormat().getElementsNumber();
-            return Math.max(ch, 1);
+                if (_neuron.getInputDataFormat().getElementsNumber() == _inputDataFormat.getElementsNumber()) {
+                    if (_inputDataFormat.getDimensionality() < 3) return 1;
+                    else return _inputDataFormat.getDimSize(2);
+                }
+
+                int ch = _inputDataFormat.getElementsNumber() / _neuron.getInputDataFormat().getElementsNumber();
+                return Math.max(ch, 1);
         }
+
+
 
         if(_inputDataFormat.getDimensionality()<3)
             return 1;
@@ -594,6 +581,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
          if(_neuron instanceof GenericNeuron)
              outputDataFormat = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer()._outputDataFormat;
 
+
          if(outputDataFormat==null){
              System.err.println(_name + " output channels derivation error: output data format is not set!");
              return 1;
@@ -606,32 +594,7 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
          Integer outputH = getOutpH();
          Integer outputW = getOutpW();
 
-        /**  if(_neuron instanceof GenericNeuron){
-              outputH = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer().getOutpH();
-              outputW = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer().getOutpW();
-          }*/
-
-
-       //System.out.println(_name + " output channels: "+ (outputDataFormat.getElementsNumber()/(outputH*outputW)) );
-
         return outputDataFormat.getElementsNumber()/(outputH*outputW);
-
-
-       /** if(_neuron instanceof Concat)
-            return _getConcatOutChannels((Concat)_neuron);
-
-
-        if(_neuron instanceof ConnectionDependent) {
-            Vector<Connection> inputConnections = getInputConnections();
-
-            if (inputConnections.size() > 0) {
-                Layer inpSrc = inputConnections.firstElement().getSrc();
-                if (inpSrc._neuron instanceof Concat)
-                    return inpSrc.getOutputChannels();
-            }
-        }
-
-        return _neuronsNum;*/
     }
 
     /**
@@ -665,8 +628,12 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * if it is presented or 0 otherwise
      */
     public int getInpDim(int dimId){
-        if(_neuron.getInputDataFormat().getDimensionality() > dimId)
-        return _neuron.getInputDataFormat().getDimSize(dimId);
+        Tensor inputFormat = _neuron.getInputDataFormat();
+        if (_neuron instanceof GenericNeuron)
+            inputFormat = ((GenericNeuron) _neuron).getInternalStructure().getInputLayer()._inputDataFormat;
+
+        if(inputFormat.getDimensionality() > dimId)
+        return inputFormat.getDimSize(dimId);
         else return 1;
     }
 
@@ -677,8 +644,12 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
      * if it is presented or 0 otherwise
      */
     public int getOutpDim(int dimId){
-        if(_neuron.getOutputDataFormat().getDimensionality()> dimId)
-        return _neuron.getOutputDataFormat().getDimSize(dimId);
+        Tensor outputFormat = _neuron.getOutputDataFormat();
+        if (_neuron instanceof GenericNeuron)
+            outputFormat = ((GenericNeuron) _neuron).getInternalStructure().getOutputLayer()._outputDataFormat;
+
+        if(outputFormat.getDimensionality()> dimId)
+        return outputFormat.getDimSize(dimId);
         else return 1;
     }
 
@@ -717,31 +688,6 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     }
 
     public void setOutputFormat(Tensor outputFormat) { this._outputDataFormat = outputFormat; }
-
-
-    /**
-     * Get output channels for concat node
-     * @param cn
-     * @return
-     */
-    private Integer _getConcatOutChannels(Concat cn){
-
-        int neurs = 0;
-        int inpNeurs = 0;
-
-            for (Layer inputOwner: cn.getInputOwners()) {
-                if(inputOwner.getNeuron() instanceof Concat)
-                    inpNeurs = _getConcatOutChannels((Concat)inputOwner.getNeuron());
-                else
-                    inpNeurs = inputOwner.getNeuronsNum();
-
-                neurs += inpNeurs;
-            }
-            neurs = Math.max(neurs,1);
-
-        //  System.out.println("Concat out channels: "+neurs);
-          return neurs;
-    }
 
     public int getNeuronsNum() { return _neuronsNum; }
 
@@ -858,6 +804,20 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public void setPads(int[] pads) { this._pads = pads; }
 
     /**
+     * Get string representation of layer pads
+     * @return string representation of layer pads
+     */
+    public String getSTRpads(){
+        if (_pads ==null )
+            return "null";
+        String strPads = "[";
+        for (int i=0; i<3; i++)
+            strPads = strPads + _pads[i] + ", ";
+        strPads = strPads + _pads[3] + "]";
+        return strPads;
+    }
+
+    /**
      * Resolve references inside the layer after the deserialization
      */
     public void resolveReferences() {
@@ -908,6 +868,10 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
 
     public void set_energyEval(double _energyEval) { this._energyEval = _energyEval; }
 
+    public void set_energyEvalJoules(double _energyEvalJoules) {
+        this._energyEvalJoules = _energyEvalJoules;
+    }
+
     public double get_timeEval() {
         return _timeEval;
     }
@@ -915,6 +879,10 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     public double get_memEval() { return _memEval; }
 
     public double get_energyEval() { return _energyEval; }
+
+    public double get_energyEvalJoules() {
+        return _energyEvalJoules;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////                         private variables                 ////
@@ -965,7 +933,10 @@ public class Layer implements Cloneable, ReferenceResolvable, Comparable<Layer> 
     /** time evaluation*/
     @SerializedName("time_eval")private double _timeEval = 0.0;
 
-    /** energy evaluation*/
+    /** energy evaluation Watts*/
     @SerializedName("energy_eval")private double _energyEval = 0.0;
+
+    /** energy evaluation joules*/
+    @SerializedName("energy_eval_joules")private double _energyEvalJoules = 0.0;
 
 }

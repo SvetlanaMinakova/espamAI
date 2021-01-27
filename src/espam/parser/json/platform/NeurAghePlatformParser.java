@@ -8,7 +8,7 @@ import espam.datamodel.platform.processors.ARM;
 import espam.datamodel.platform.processors.GPU;
 import espam.datamodel.platform.processors.HWCE;
 import espam.datamodel.platform.processors.Processor;
-import espam.operations.evaluation.PlatformEval;
+import espam.operations.evaluation.platformDescription.PlatformDescription;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 
@@ -205,10 +205,11 @@ public static Platform parsePlatform(String path){
      * @param path path to NEURAGHE platform specification (in .json format)
      * @return time/memory/energy NEURAGHE platform characteristics
      */
-    public static PlatformEval parsePlatformEval(String path){
+    public static PlatformDescription parsePlatformEval(String path){
         try {
             String strJSON =  FileWorker.read(path);
-            PlatformEval platfromEval = (PlatformEval) JSONParser.getInstance().fromJson(strJSON,PlatformEval.class);
+            PlatformDescription platfromEval = (PlatformDescription) JSONParser.getInstance().fromJson(strJSON, PlatformDescription.class);
+            platfromEval.checkEvaluations();
             return platfromEval;
         }
         catch(Exception e){

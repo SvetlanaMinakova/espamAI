@@ -289,7 +289,7 @@ public class Upsample extends Neuron implements ConnectionDependent{
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         if(!(getOutputDataFormat()==null)){
             timeComplexity = getOutputH() * getOutputWidth() * outputChannels;
         }

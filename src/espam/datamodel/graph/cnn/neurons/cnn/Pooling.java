@@ -49,14 +49,29 @@ public class Pooling extends CNNNeuron implements ConnectionDependent {
         setSampleDim(2);
     }
 
-          /**
+    /**
      * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
      */
-    public Pooling(PoolingType name, int kernelSize, int stride, BoundaryMode boundaryMode) {
-        super(name.toString(), kernelSize, stride);
+    public Pooling(PoolingType name, int kernelH, int kernelW, BoundaryMode boundaryMode) {
+        super(name.toString(),kernelH,1);
+        setKernelW(kernelW);
         setNeuronType(NeuronType.POOL);
         setBoundaryMode(boundaryMode);
+        setSampleDim(2);
     }
+
+
+    /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
+    public Pooling(PoolingType name, int kernelH, int kernelW, BoundaryMode boundaryMode, int stride) {
+        super(name.toString(),kernelH,stride);
+        setKernelW(kernelW);
+        setNeuronType(NeuronType.POOL);
+        setBoundaryMode(boundaryMode);
+        setSampleDim(2);
+    }
+
 
        /**
      * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
@@ -173,10 +188,10 @@ public class Pooling extends CNNNeuron implements ConnectionDependent {
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
 
         if(!(getOutputDataFormat()==null)) {
-            timeComplexity = outputChannels * getOutputHeight() * getOutputWidth();
+            timeComplexity = outputChannels * getOutputHeight() * getOutputWidth() * getKernelH() * getKernelW();
         }
 
         _operator.setTimeComplexity(timeComplexity);

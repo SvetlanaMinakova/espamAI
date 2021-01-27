@@ -59,7 +59,7 @@ public class NoneTypeNeuron extends Neuron {
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        Long timeComplexity = 1l;
         _operator.setTimeComplexity(timeComplexity);
     }
 }

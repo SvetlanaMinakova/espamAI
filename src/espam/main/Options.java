@@ -40,6 +40,7 @@ public class Options {
         
         _ui = UserInterface.getInstance();
         _cnnui = UI.getInstance();
+        _cnnui._clearTRTFlags();
 
         if( args != null ) {
             _parseArgs(args);
@@ -110,7 +111,7 @@ public class Options {
                             _cnnui.setSrcPath(args[++i]);
                             _cnnui.setGenerate(true);
                         }
-                        else if(arg.equals("--block-based")||arg.equals("-bb")){
+                        else if(arg.equals("--blocks")){
                             try { _cnnui.setBlocks(Integer.parseInt(args[++i])); }
                             catch (Exception e){ System.err.println("Invalid blocks number"); }
                         }
@@ -154,18 +155,15 @@ public class Options {
                         _cnnui.setCores(Integer.parseInt(args[++i]));
                         }
 
-                        else if (arg.equals("--python")) {
-                          //  Config.getInstance().setPythonCall(args[++i]);
+                         else if (arg.equals("--cuda-path")) {
+                          _cnnui.setCUDAPath(args[++i]);
                         }
 
-                        else if (arg.equals("--darts")) {
-                          //  Config.getInstance().setDartsPath(args[++i]);
+                        else if (arg.equals("--armcl-path")) {
+                          _cnnui.setARMCLPath(args[++i]);
                         }
 
-                        else if (arg.equals("--dartswithinterface")) {
-                          //  Config.getInstance().setDartsPath(args[++i]);
-                         //   _cnnui.setExternalDartsInterface(true);
-                        }
+
                         else if (arg.equals("--batch")){
                            _cnnui.setPthreadGenerateBatch(Integer.parseInt(args[++i]));
                         }
@@ -269,12 +267,16 @@ public class Options {
             _cnnui.setDnnInitRepresentation(DNNInitRepresentation.NEURONBASED);
         }
 
-       // else if (arg.equals("--multiple-models")|| arg.equals("-m")) {
-         //   _cnnui.setMultipleModels(true);
-       // }
+        else if(arg.equals("--block-based") || arg.equals("-bb")){
+            _cnnui.setDnnInitRepresentation(DNNInitRepresentation.BLOCKBASED);
+        }
 
         else if (arg.equals("--json")) {
             _cnnui.setJson(true);
+        }
+
+        else if (arg.equals("--json-short")) {
+            _cnnui.setJsonShort(true);
         }
 
         else if (arg.equals("--json-topology")) {
@@ -348,11 +350,16 @@ public class Options {
         }
 
         else if(arg.equals("--evalCPU")){
-            _cnnui.setTRTEvalCPU(true);
+            _cnnui.setTRTEvalCPU();
         }
 
         else if(arg.equals("--evalGPU")){
-            _cnnui.setTRTEvalGPU(true);
+            _cnnui.setTRTEvalGPU();
+        }
+
+        else if(arg.equals("--per-layer")) {
+            _cnnui.evalPerLayer(true);
+
         }
 
         else if(arg.equals("--libNA")){
@@ -371,12 +378,20 @@ public class Options {
             _cnnui.setFMSizes(true);
         }
 
+        else if(arg.equals("--watt")){
+            _cnnui.set_totalEnergyWatt(true);
+        }
+
         else if(arg.equals("--fuse-compounds")){
             _cnnui.setFuseCompounds(true);
         }
 
         else if(arg.equals("--pipeline")){
             _cnnui.setPipelineMapping();
+        }
+
+        else if(arg.equals("--roofline")){
+            _cnnui.setRoofline();
         }
 
         else if( arg.equals("") ) {
@@ -469,6 +484,7 @@ public class Options {
             {"--dot             ", "none"},
             {"--dot-csdf        ", "none"},
             {"--json            ", "none"},
+            {"--json-short      ", "none"},
             {"--json-csdf       ", "none"},
             {"--xml-csdf        ", "none"},
             {"--wcet            ", "none"},
@@ -482,6 +498,7 @@ public class Options {
             {"--fm-sizes        ", "none"},
             {"--fuse-compounds  ", "none"},
             {"--tensorrt        ", "none"},
+            {"--roofline        ", "none"},
 
     };
     
@@ -512,10 +529,7 @@ public class Options {
         /** initial model representation flags*/
         {"--block-based    ", "-bb ", " <Integer>"},
         {"--split-step     ", "none", " <Integer>"},
-        {"--time-spec      ", "none", " <FilePath>"},
-        {"--energy-spec    ", "none", " <FilePath>"},
         {"--consistency    ", "-c  ", " <FilePath>"},
-        {"--na-arch        ", "none", " <FilePath>"},
         {"--opt-fi         ", "none", " <Integer>"},
         {"--cores          ", "none", " <Integer>"},
         {"--batch          ", "none", " <Integer>"},

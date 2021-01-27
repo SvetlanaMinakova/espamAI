@@ -4,7 +4,7 @@ import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
 import espam.datamodel.graph.csdf.datasctructures.MemoryUnit;
 import espam.main.UserInterface;
-import espam.operations.evaluation.CSDFGMemoryRefiner;
+import espam.operations.evaluation.MeasurementUnitsConverter;
 import espam.utils.fileworker.FileWorker;
 import espam.visitor.CSDFGraphVisitor;
 
@@ -203,7 +203,7 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
             if (dstRate.getFirst()>maxRate)
                 maxRate = dstRate.getFirst();
 
-        int token_size = CSDFGMemoryRefiner.getInstance(). typeSize(_IODatatype);
+        int token_size = MeasurementUnitsConverter.typeSizeBytes(_IODatatype);
         int size = maxRate * _fifoScale * token_size;
         return size;
      }
@@ -216,8 +216,8 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
      */
      protected Integer _getMemoryReq(CSDFNode node){
         int totalMem = 0;
-        int IOtokenSize = CSDFGMemoryRefiner.getInstance(). typeSize(_IODatatype);
-        int paramtokenSize =CSDFGMemoryRefiner.getInstance(). typeSize(_paramDataType);
+        int IOtokenSize = MeasurementUnitsConverter.typeSizeBytes(_IODatatype);
+        int paramtokenSize =MeasurementUnitsConverter.typeSizeBytes(_paramDataType);
 
         /** compute input ports*/
         for(CSDFPort inport: node.getNonOverlapHandlingInPorts()){
@@ -243,7 +243,7 @@ public class YmlSDFGVisitor extends CSDFGraphVisitor{
         /** define constant parameters, if any*/
         Vector<MemoryUnit> constParams = node.getUnitParams();
         for (MemoryUnit mu : constParams) {
-            totalMem += 1 * CSDFGMemoryRefiner.getInstance(). typeSize(mu.getTypeDesc());
+            totalMem += 1 * MeasurementUnitsConverter.typeSizeBytes(mu.getTypeDesc());
         }
 
          /** take into account additional tensor parameters (weights, biases)

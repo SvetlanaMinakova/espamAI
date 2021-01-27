@@ -17,7 +17,7 @@ import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.interfaces.python.Espam2DARTS;
-import espam.operations.evaluation.OperatorsComplexityEvaluator;
+import espam.operations.evaluation.cnn.OperatorsComplexityEvaluator;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
 
 import java.util.HashMap;
@@ -841,33 +841,6 @@ public class CNNTransformer {
     }
 
 
-
-    /**
-     * Checks, if the part of the network could be grouped to block
-     * Part of the network could be grouped into the block, if
-     * 1. Start node have 0 or 1 inputs
-     * 2. End node have 0 or 1 outputs
-     * 3. There is a connection between start and end node
-     * @param start start node
-     * @param end end node
-     * @return true, if part of the network could be grouped and false otherwise
-     */
-    public boolean isGroupable(Layer start, Layer end){
-        Vector<Connection>startInputConnections = _network.getLayerInputConnections(start);
-        if(startInputConnections.size()>1)
-            return false;
-
-        Vector<Connection>endOutputConnections = _network.getLayerOutputConnections(end);
-        if(endOutputConnections.size()>1)
-            return false;
-
-        Connection path = _network.findConnection(start.getId(),end.getId());
-        if(path==null)
-            return false;
-
-        return true;
-    }
-
         /**
      * Checks, if the part of the network could be grouped to block
      * Part of the network could be grouped into the block, if
@@ -882,29 +855,21 @@ public class CNNTransformer {
         if(layers.size()<2)
             return false;
 
-        Vector<Connection>startInputConnections = _network.getLayerInputConnections(layers.firstElement());
-        if(startInputConnections.size()>1)
-            return false;
+
+        Vector<Connection>startInputConnections = layers.firstElement().getInputConnections();
+        //if(startInputConnections.size()>1) {
+          //  return false;
+        //}
 
         /** TODO: check*/
-        Vector<Connection>endOutputConnections = _network.getLayerOutputConnections(layers.lastElement());
-        if(endOutputConnections.size()>1)
-            return false;
+        //Vector<Connection>endOutputConnections = layers.lastElement().getOutputConnections();
+        //if(endOutputConnections.size()>1)
+          //  return false;
 
         return true;
     }
 
-       /**
-     * Checks, if the part of the network could be ungrouped from a block
-     * Only a grouped('packed' in a GenericNeuron) part of the network can be ungrouped
-     * @return true, if part of the network could be ungrouped and false otherwise
-     */
-    public boolean isUngroupable(Layer layer){
-        if(layer.getNeuron() instanceof GenericNeuron)
-            return true;
 
-        return false;
-    }
 
     /**
      * Split input custom connection
@@ -947,46 +912,6 @@ public class CNNTransformer {
         cc.setAutoChannelsNum();
     }
 
-    /**
-     * Test function for grouping 2 layers
-     * @param layer1 first layer to be grouped
-     * @param layer2 second layer to be grouped
-
-    public void groupLayers(Layer layer1, Layer layer2) throws Exception{
-        if(!isGroupable(layer1,layer2)) {
-            System.err.println("Ungroupable layers: " + layer1.getName() + " " + layer2.getName());
-            return;
-        }
-
-        Network subNetwork = new Network(layer1.getName()+layer2.getName());
-
-        subNetwork.addLayer(layer1.getName(),Neuron.copyNeuron(layer1.getNeuron()),layer1.getNeuronsNum(),layer1.getPads());
-        subNetwork.stackLayer(layer2.getName(),Neuron.copyNeuron(layer2.getNeuron()),layer2.getNeuronsNum(),layer2.getPads());
-
-        subNetwork.setInputLayer(subNetwork.getLayer(layer1.getName()));
-        subNetwork.setOutputLayer(subNetwork.getLayer(layer2.getName()));
-
-        GenericNeuron generic = new GenericNeuron(subNetwork.getName(),subNetwork);
-        /** add generic layer to dnn
-        _network.addLayer(subNetwork.getName(),generic,1);
-        Layer genericLayer = _network.getLayer(subNetwork.getName());
-
-        /**transfer connections
-        Vector<Connection> inputConnections = _network.getLayerInputConnections(layer1);
-        for(Connection inpCon: inputConnections){
-            _network.addConnection(inpCon.getSrc().getName(),genericLayer.getName());
-        }
-
-        Vector<Connection> outputConnections = _network.getLayerOutputConnections(layer2);
-        for(Connection outpCon: outputConnections) {
-            _network.addConnection(genericLayer.getName(),outpCon.getDest().getName());
-        }
-
-        /** remove original layers from neural network
-        _network.removeLayer(layer1);
-        _network.removeLayer(layer2);
-    }
-    */
 
      /**
      * Test function for grouping 2 layers
@@ -1011,9 +936,8 @@ public class CNNTransformer {
      * @param chain linear-connected chain
      * @throws Exception if an error occurs
      */
-     public void groupLayers(Vector<Layer> chain) throws Exception {
-        groupLayers(chain,false);
-
+     public GenericNeuron groupLayers(Vector<Layer> chain) throws Exception {
+        return groupLayers(chain,false);
      }
 
     /**
@@ -1023,7 +947,7 @@ public class CNNTransformer {
      * @param fuse if the grouped layer is fusion
      * @throws Exception if an error occurs
      */
-    public void groupLayers(Vector<Layer> chain, boolean fuse) throws Exception {
+    public GenericNeuron groupLayers(Vector<Layer> chain, boolean fuse) throws Exception {
 
         if (!isGroupable(chain)) {
             System.err.print("Ungroupable layers chain: ");
@@ -1031,12 +955,12 @@ public class CNNTransformer {
                 System.err.print(l.getName() + "->");
 
             System.err.println();
-            return;
+            return null;
         }
 
         if (chain.size() < 2){
             System.err.println("Ungroupable layers chain: chain len < 2");
-            return;
+            return null;
         }
 
         Layer start = chain.firstElement();
@@ -1084,10 +1008,59 @@ public class CNNTransformer {
             //_network.addConnection(genericLayer.getName(),outpCon.getDest().getName());
         }
 
+        /** reset I/O*/
+        if (chain.contains(_network.getInputLayer())) {
+            _network.setInputLayer(generic.getParent());
+        }
+
+        if(chain.contains(_network.getOutputLayer())){
+            _network.setOutputLayer(generic.getParent());
+        }
+
         /** remove original layers from neural network*/
         for(Layer layer: chain) {
             _network.removeLayer(layer);
         }
+
+        return generic;
+    }
+
+
+    /**
+     * Split layer with multiple inputs and multiple outputs into
+     * a layer with multiple inputs and one output, connected to a layer
+     * with one input and multiple outputs
+     * @param layerName multi-in, multi-out layer name
+     */
+    public Layer splitMultiInMultiOut(String layerName) throws Exception{
+         Layer layer = _network.getLayer(layerName);
+         if (layer == null)
+             throw  new Exception("layer " + layerName + "not found in dnn");
+
+
+        Neuron neuronCopy = Neuron.copyNeuron(layer.getNeuron());
+        //Layer layerCopy = new Layer(layer.getName() + "copy", neuronCopy, layer.getNeuronsNum());
+
+        String layerCopyName = layerName + "copy";
+        _network.addLayer(layerCopyName, neuronCopy, layer.getNeuronsNum());
+        Layer layerCopy = _network.getLayer(layerCopyName);
+
+        /** neuron copy does not inherit input connections of the old layer*/
+        if (neuronCopy instanceof MultipleInputsProcessor){
+            for (Layer inpOwner : ((MultipleInputsProcessor) layer.getNeuron()).getInputOwners())
+                ((MultipleInputsProcessor) neuronCopy).removeInput(layerCopy,inpOwner);
+        }
+
+        /** all output connections of the old layer go to the copy*/
+        for (Connection outputCon: layer.getOutputConnections()){
+            outputCon.changeSrc(layerCopy);
+            layerCopy.getOutputConnections().add(outputCon);
+        }
+        layer.setOutputConnections(new Vector<>());
+
+        /**connect original layer and layer copy*/
+        _network.addConnection(layer.getName(), layerCopy.getName());
+        return layerCopy;
     }
 
     /**TODO finish implementation
@@ -1290,8 +1263,8 @@ public class CNNTransformer {
 
         //CSDFTimingRefiner.getInstance().visitComponent(csdf);
 
-        String bottleneckActor = _edInterface.getBottleneckActor(csdf);
-        Layer bottleneck = _network.getLayer(bottleneckActor);
+        //String bottleneckActor = _edInterface.getBottleneckActor(csdf);
+        Layer bottleneck = _network.getDivisibleTimeComplexityBottleneck();
         if(bottleneck==null)
             throw new Exception("bottleneck layer search error!");
 
@@ -1440,10 +1413,10 @@ public class CNNTransformer {
         if(bottleneck==null)
             throw new Exception("bottleneck connection dependent layer search error!");
 
-        Integer bottleneckComplexity = bottleneck.getNeuron().getOperator().getTimeComplexity();
+        Long bottleneckComplexity = bottleneck.getNeuron().getOperator().getTimeComplexity();
         Long averageComplexity = OperatorsComplexityEvaluator.getAverageComplexity(_network);
 
-        Integer childrenNum = bottleneckComplexity/averageComplexity.intValue();
+        Integer childrenNum = (bottleneckComplexity.intValue()/averageComplexity.intValue());
 
         int neurons = bottleneck.getOutputChannels();
         if(bottleneck.getNeuron() instanceof DenseBlock)
@@ -1791,6 +1764,7 @@ public class CNNTransformer {
         return groupComplexity;
     }
 
+
     /**
      * Evaluate DNN neuron operator time complexity as a long number
      * @param neuron DNN neuron
@@ -1980,6 +1954,8 @@ public class CNNTransformer {
             chainsToMerge.add(newChain);
 
     }
+
+
 
 
 

@@ -59,18 +59,20 @@ void dnnFunc::conv (std::map<std::string,int>* int_params_ptr, std::map<std::str
 	
         return;
  }
-	int w_pad = int_params_ptr->at("pad_w0");
-	int h_pad = int_params_ptr->at("pad_h0");
-	int e_i_h = input_h + h_pad * 2;
-	int e_i_w = input_w + w_pad * 2;
 
-	float inp_envided[channels * e_i_h * e_i_w] = {0};
-        dnnFunc::envide_input(input,&inp_envided[0],channels,input_h,input_w,h_pad,w_pad);
+       int h_pad = int_params_ptr->at("pad_h0");
+       int w_pad = int_params_ptr->at("pad_w0");
+        
+       int e_i_h = input_h + h_pad * 2;
+       int e_i_w = input_w + w_pad * 2;
+       
+       float *envided = tensor_params_ptr->at("envided");
+       dnnFunc::envide_input(input,envided,channels,input_h,input_w,h_pad,w_pad);
 	
         //TODO: USE CONV_GPU instead!
-        if (use_gpu) dnnFunc::convolution_3d_inp_cpu(&inp_envided[0], weights, output, bias, channels,e_i_h, e_i_w, output_d, output_h, output_w, k_h, k_w, stride);
+        if (use_gpu) dnnFunc::convolution_3d_inp_cpu(envided, weights, output, bias, channels,e_i_h, e_i_w, output_d, output_h, output_w, k_h, k_w, stride);
         
-        else dnnFunc::convolution_3d_inp_cpu(&inp_envided[0], weights, output, bias, channels,e_i_h, e_i_w, output_d, output_h, output_w, k_h, k_w, stride);
+        else dnnFunc::convolution_3d_inp_cpu(envided, weights, output, bias, channels,e_i_h, e_i_w, output_d, output_h, output_w, k_h, k_w, stride);
 }
 
 /** convolution for CPU function*/
@@ -454,7 +456,7 @@ void dnnFunc::div_const(std::map<std::string,int>* int_params_ptr, std::map<std:
     float *output = tensor_params_ptr->at("output");
     float constval = (float)int_params_ptr->at("constval") / (float)int_params_ptr->at("constval_scale");
     if (constval==0){
-    std::cout<<"div null is not possible! check div nodes!";
+    std::cout<<"div const err: div null is not possible! check div nodes!";
 	return;
     }
     int i;
@@ -466,17 +468,111 @@ void dnnFunc::div_const(std::map<std::string,int>* int_params_ptr, std::map<std:
 void dnnFunc::mul_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr)
 {
     int outputs = int_params_ptr->at("output_len");
+    int neurons = int_params_ptr->at("neurons");
     float *input = tensor_params_ptr->at("input");
     float *output = tensor_params_ptr->at("output");
+    float *bias = tensor_params_ptr->at("bias");
+    int len_per_neuron = outputs/neurons;
+    int n,i;
+    // bias-multiplication
+    if(bias!=nullptr && len_per_neuron>0){
+      float cur_bias;
+    
+      for(n = 0; n < neurons; ++n){
+           cur_bias = bias[n];
+           for(i = 0; i < len_per_neuron; ++i){
+    	       output[i] = input[i] * cur_bias;
+        }
+    
+      }
+    }
+    
+    //broadcast multiplication
+    else{
     float constval = (float)int_params_ptr->at("constval") / (float)int_params_ptr->at("constval_scale");
     if (constval==0){
-    std::cout<<"div null is not possible! check div nodes!";
+        std::cout<<"err: div null! check mulconst nodes!";
+    }
+    else {
+       for(i = 0; i < outputs; ++i)
+    	   output[i] = input[i] * constval;
+    }
+  }
+}
+
+void dnnFunc::add_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr)
+{
+    int outputs = int_params_ptr->at("output_len");
+    int neurons = int_params_ptr->at("neurons");
+    float *input = tensor_params_ptr->at("input");
+    float *output = tensor_params_ptr->at("output");
+    float *bias = tensor_params_ptr->at("bias");
+    int len_per_neuron = outputs/neurons;
+    int n,i;
+    // bias-addition
+    if(bias!=nullptr && len_per_neuron>0){
+      float cur_bias;
+    
+      for(n = 0; n < neurons; ++n){
+           cur_bias = bias[n];
+           for(i = 0; i < len_per_neuron; ++i){
+    	       output[i] = input[i] + cur_bias;
+        }
+    
+      }
+    }
+    
+    //broadcast addition
+    else{
+    float constval = (float)int_params_ptr->at("constval") / (float)int_params_ptr->at("constval_scale");
+    if (constval==0){
+        std::cout<<"err: div null! check addconst nodes!";
+    }
+    else {
+       for(i = 0; i < outputs; ++i)
+    	   output[i] = input[i] + constval;
+    }
+  }
+}
+
+void dnnFunc::add(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr)
+{
+    int outputs = int_params_ptr->at("output_len");
+    float *input0 = tensor_params_ptr->at("input0");
+    float *input1 = tensor_params_ptr->at("input1");
+    float *output = tensor_params_ptr->at("output");
+    int i;
+
+    if(input0 == nullptr && input1 == nullptr){
+    	std::cout<<" Error: Both add node inputs are null!"<<std::endl;
+    	return;
+    }
+
+    if(input0 == nullptr){
+       for(i = 0; i < outputs; ++i){
+    	   output[i] = input1[i];
+    	}
 	return;
     }
-    int i;
-    for(i = 0; i < outputs; ++i){
-    	output[i] = input[i] * constval;
+
+    if(input1 == nullptr){
+       for(i = 0; i < outputs; ++i){
+    	   output[i] = input0[i];
+    	}
+	return;
     }
+    
+    
+    for(i = 0; i < outputs; ++i){
+    	output[i] = input0[i] + input1[i];
+    }
+	
+}
+
+/** TODO:implement!*/
+void dnnFunc::mul(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr)
+{
+   
 }
 
 /////////////////////////////////
@@ -525,7 +621,7 @@ dnnFunc::ACTIVATION dnnFunc::get_activation(std::string function)
     if (function.find("lhtan") != std::string::npos) return LHTAN;
     if (function.find("linear") != std::string::npos) return LINEAR;
     if (function.find("ramp") != std::string::npos) return RAMP;
-    if (function.find("leaky") != std::string::npos) return LEAKY;
+    if (function.find("leaky") != std::string::npos || function.find("Leaky")!= std::string::npos) return LEAKY;
     if (function.find("tanh") != std::string::npos || function.find("THN") != std::string::npos) return TANH;
     if (function.find("stair")!= std::string::npos) return STAIR;
     //fprintf(stderr, "Couldn't find activation function %s, going with ReLU\n", function);
@@ -551,6 +647,7 @@ void dnnFunc::activate_array(float *x, const int n, dnnFunc::ACTIVATION a)
     for(i = 0; i < n; ++i){
     	x[i] = dnnFunc::activate(x[i], a);
     }
+
 }
 
 float dnnFunc::activate(float x, ACTIVATION a)
@@ -575,9 +672,10 @@ float dnnFunc::activate(float x, ACTIVATION a)
         /**case RELIE:
             return relie_activate(x);
         case RAMP:
-            return ramp_activate(x);
-        case LEAKY:
-            return leaky_activate(x);*/
+            return ramp_activate(x);*/
+        case LEAKY:{
+            return (x>0) ? x : 0.1*x;
+	}
         case TANH:
         	return (exp(2*x)-1)/(exp(2*x)+1);
 
@@ -589,9 +687,9 @@ float dnnFunc::activate(float x, ACTIVATION a)
             return hardtan_activate(x);
         case LHTAN:
             return lhtan_activate(x);*/
-        default: return 0;
+        default: return x*(x>0);;
     }
-    return 0;
+    return x*(x>0);;
 }
 
 void dnnFunc::init_zeros(float *matrix, int h, int w){
@@ -688,6 +786,13 @@ void dnnFunc::envide_input(float *input, float* envided, int inp_d, int inp_h, i
 	   }
 }
 
+/** image preprocessing*/
+void dnnFunc::scale_im (std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr){
+    mul_const(int_params_ptr,tensor_params_ptr);
+    /** TODO: add bias and bias processing!*/
+    //float *bias = tensor_params_ptr->at("bias");
+}
+
 //CPU functions
 
 void dnnFunc::scal_cpu(int N, float ALPHA, float *X, int INCX)
@@ -756,4 +861,5 @@ void dnnFunc::scale_bias(float *output, float *scales, int batch, int n, int siz
         }
     }
 }
+
 

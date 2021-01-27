@@ -1,33 +1,28 @@
 package espam.main.cnnUI;
 
-import espam.datamodel.graph.cnn.Layer;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import espam.datamodel.graph.cnn.Network;
-import espam.datamodel.graph.cnn.NetworkTopology;
-import espam.datamodel.graph.cnn.Neuron;
-import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalError;
 import espam.datamodel.graph.csdf.datasctructures.CSDFEvalResult;
 import espam.datamodel.mapping.DNNMapping.DNN_MAPPING_TYPE;
 import espam.datamodel.mapping.DNNMapping.MappingGenerator;
-import espam.datamodel.mapping.MProcess;
-import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.Platform;
-import espam.datamodel.platform.processors.ARM;
-import espam.datamodel.platform.processors.GPU;
-import espam.datamodel.platform.processors.HWCE;
-import espam.datamodel.platform.processors.Processor;
 import espam.interfaces.python.Espam2DARTS;
 import espam.main.Config;
-import espam.operations.evaluation.*;
+import espam.operations.evaluation.cnn.*;
+import espam.operations.evaluation.csdf.CSDFGMemoryRefiner;
+import espam.operations.evaluation.csdf.CSDFTimingRefiner;
+import espam.operations.evaluation.csdf.EnergyEvaluator;
+import espam.operations.evaluation.platformDescription.PlatformDescription;
 import espam.operations.scheduler.dnnScheduler.dnnScheduler;
 import espam.operations.scheduler.dnnScheduler.layerFiring;
 import espam.operations.transformations.CNN2CSDFGraphConverter;
 import espam.operations.transformations.cnn_model_transformations.CNNTransformer;
 import espam.operations.transformations.cnn_model_transformations.DNNPartition;
-import espam.operations.transformations.cnn_model_transformations.DNNPartitioner;
 import espam.operations.transformations.csdf_model_transformations.CSDFTransformer;
 import espam.parser.json.JSONParser;
 import espam.parser.json.platform.NeurAghePlatformParser;
@@ -46,7 +41,8 @@ import espam.visitor.json.refinement.EnergyRefinerVisitor;
 import espam.visitor.json.refinement.TimingRefinerVisitor;
 import espam.visitor.pthread.PthreadSDFGVisitor;
 import espam.visitor.sesame.SesameSDFGVisitor;
-import espam.visitor.tensorrt.TensorrtSDFGVisitor;
+import espam.visitor.tensorrt.TRTCodegenFlag;
+import espam.visitor.tensorrt.TensorrtDNNVisitor;
 import espam.visitor.txt.CNNEvaluationTxtVisitor;
 import espam.visitor.xml.csdf.CSDFGraphXMLVisitor;
 import espam.visitor.xml.csdf.MappingXMLVisitor;
@@ -164,17 +160,51 @@ public class UI {
           * terms of power and performance
           * @throws Exception if an error occurs
           */
+         public CSDFEvalResult evaluate(String pathToDnn, String platformFile, EvaluatorAlg evaluatorAlg) {
+             _evaluatorAlg = evaluatorAlg;
+             CSDFEvalResult result = evaluate(pathToDnn, platformFile);
+             return result;
+         }
+
+         /**
+          * Evaluate layer-based deep neural network in terms
+          * of power and performance
+          * @param pathToDnn path to .onnx/.json file with deep neural
+          * network to be evaluated
+          * @param platformFile target architecture description in
+          * ESPAM.xml or neuraghe.json format
+          * @return evaluation of the deep neural network in
+          * terms of power and performance
+          * @throws Exception if an error occurs
+          */
          public CSDFEvalResult evaluate(String pathToDnn, String platformFile) {
              try {
                  Network dnn = readDNN(pathToDnn, _optimizeForInference, _outputModelName);
                  return evaluate(dnn, platformFile);
-
              }
              catch(Exception e){
                  return  new CSDFEvalError("Evaluation error: DNN model reading error: " + e.getMessage());
              }
-
          }
+
+         /**
+          * Evaluate layer-based deep neural network in terms
+          * of power and performance
+          * @param dnn deep neural network to be evaluated
+          * @param platformFile target architecture description in *
+          * @param evaluatorAlg algorithm, used for evaluation
+          * ESPAM.xml or neuraghe.json format
+          * @return evaluation of the deep neural network in
+          * terms of power and performance
+          * @throws Exception if an error occurs
+          */
+         public CSDFEvalResult evaluate(Network dnn, String platformFile, EvaluatorAlg evaluatorAlg) {
+             _evaluatorAlg = evaluatorAlg;
+             CSDFEvalResult result = evaluate(dnn, platformFile);
+             return result;
+         }
+
+
 
     /**
      * Evaluate layer-based deep neural network in terms
@@ -208,6 +238,77 @@ public class UI {
             return  new CSDFEvalError("Evaluation error: " + e.getMessage());
         }
     }
+
+         /**
+          * Evaluate layer-based deep neural network in terms
+          * of power and performance
+          * @param dnn deep neural network to be evaluated
+          * @param platform target architecture description
+          * @return evaluation of the deep neural network in
+          * terms of power and performance
+          * @throws Exception if an error occurs
+          */
+         public CSDFEvalResult evaluate(Network dnn, Platform platform,
+                                        PlatformDescription platformDescription, EvaluatorAlg evaluatorAlg) {
+             if(platform==null || platformDescription==null)
+                 return  new CSDFEvalError("Evaluation error: empty platform!");
+
+             _platform = platform;
+             _platformDescription = platformDescription;
+             _evaluatorAlg = evaluatorAlg;
+
+             if(!_checkEvalParams(dnn, _platform))
+                 return  new CSDFEvalError("Evaluation error: incorrect evaluation parameters!");
+
+             dnn.initOperators();
+             _processMapping(dnn, null);
+             _processScheduling(dnn);
+
+             try {
+                 CSDFEvalResult result = _evaluate(dnn);
+                 return result;
+             }
+             catch (Exception e) {
+                 return  new CSDFEvalError("Evaluation error: " + e.getMessage());
+             }
+         }
+
+         /**
+          * Evaluate layer-based deep neural network in terms
+          * of power and performance
+          * @param dnn deep neural network to be evaluated
+          * @param platformFile target architecture description in
+          * ESPAM.xml or neuraghe.json format
+          * @return evaluation of the deep neural network in
+          * terms of power and performance
+          * @throws Exception if an error occurs
+          */
+         public CSDFEvalResult evaluatePerLayer(Network dnn, String platformFile, boolean printToJson) {
+             _evalPerLayer = true;
+             if(platformFile==null)
+                 return  new CSDFEvalError("Evaluation error: empty platform file!");
+
+             _platformFile = platformFile;
+             parsePlatform();
+
+             if(!_checkEvalParams(dnn, _platform))
+                 return  new CSDFEvalError("Evaluation error: incorrect evaluation parameters!");
+
+             dnn.initOperators();
+             _processMapping(dnn, null);
+             _processScheduling(dnn);
+
+             try {
+                 CSDFEvalResult result = _evaluate(dnn);
+                 if(printToJson)
+                     CNNEvaluationCompactJsonVisitor.callVisitor(dnn, _dstPath);
+
+                 return result;
+             }
+             catch (Exception e) {
+                 return  new CSDFEvalError("Evaluation error: " + e.getMessage());
+             }
+         }
 
 
        /**
@@ -249,9 +350,11 @@ public class UI {
         return false;
     }
 
-    public Network readDNN(String networkPath) throws Exception {
+
+
+    public Network readDNN(String networkPath) {
         try {
-            return readDNN(networkPath, 2, null);
+            return readDNN(networkPath, 3, null);
         }
         catch (Exception e)
         {
@@ -260,9 +363,9 @@ public class UI {
         }
     }
 
-    public Network readDNN(String networkPath,String outName){
+    public Network readDNN(String networkPath, String outName){
      try {
-         return readDNN(networkPath, 2, outName);
+         return readDNN(networkPath, 3, outName);
      }
          catch (Exception e)
         {
@@ -314,7 +417,24 @@ public class UI {
 
     /*****************************************************************/
     /****************    Files generation       *********************/
-    /** TODO is there a need in files-generation internal api?     */
+    /**
+    * Generate tensorrt/ARM-CL code for a CNN, mapped on a platform
+    */
+    public void generateTRT (Network network, String platformFile, Vector<TRTCodegenFlag> flags) throws Exception {
+
+             _platformFile = platformFile;
+             _trtFlags = flags;
+
+             if(_platformFile!=null)
+                 parsePlatform();
+
+             _processMapping(network, null);
+
+             if(_partitioningFile!=null)
+                 _processPartitioning();
+
+             _generateTensorrt(network, null);
+         }
 
     ///////////////////////////////////////////////////////////////////
     ////   External jar UI (calling of cnnespam from the console)  ///
@@ -358,6 +478,7 @@ public class UI {
 
             if(_FMSizes)
                 network.printFMSizes();
+            csdfg = _convertDNN2SDFG(network);
         }
 
         if(_inCSDF) {
@@ -366,8 +487,6 @@ public class UI {
         }
 
         if(_sesame || _pthread) {
-            if(_inDnn)
-                csdfg = _convertDNN2SDFG(network);
             _setRepetitionVectorOneRunPerActor(csdfg);
             // _setRepetitionVector(csdfg);
             if(_isCSDFGTransformationRequired())
@@ -692,7 +811,7 @@ public class UI {
                 System.out.println("[done]");
         }
         else {
-            if(_platformFile!=null) {
+            if(_platformFile!=null || _platform!=null) {
                 _curPhase = "Auto mapping generation";
                 if (_verbose)
                     System.out.println(_curPhase + "...");
@@ -720,7 +839,7 @@ public class UI {
         _curPhase = "Auto schedule generation";
         if (_verbose)
             System.out.println(_curPhase + "...");
-        _dnnSchedule = dnnScheduler.generateDNNSchedule(dnn, _mapping, _dnnMappingType, _platformEval);
+        _dnnSchedule = dnnScheduler.generateDNNSchedule(dnn, _mapping, _dnnMappingType, _platformDescription);
         if (_verbose)
             System.out.println("[done]");
     }
@@ -731,15 +850,25 @@ public class UI {
             if (_verbose)
                 System.out.println(_curPhase + "...");
             try {
+                _partitioning = new Vector<DNNPartition>();
+
+
                 String partitioningJSON = FileWorker.read(_partitioningFile);
-                _partitioning = (Vector<DNNPartition>)JSONParser.getInstance().fromJson(partitioningJSON,_partitioning.getClass());
+                JsonArray dpArr = JSONParser.getInstance().getGson().fromJson(partitioningJSON, JsonArray.class);
+
+
+                //System.out.println(dpArr);
+                for (JsonElement jElem: dpArr){
+                    DNNPartition dp = (DNNPartition) JSONParser.getInstance().fromJson(jElem.toString(),DNNPartition.class);
+                    _partitioning.add(dp);
+                }
 
             if (_verbose)
                 System.out.println("[done]");
              }
 
             catch (Exception e){
-                System.out.println("Partitioning file parsing ERROR: " + e.getMessage());
+                System.err.println("Partitioning file parsing ERROR: " + e.getMessage());
             }
 
     }
@@ -787,7 +916,7 @@ public class UI {
             System.out.println(_curPhase + "...");
 
         if(_inDnn) {
-                trtvisitor.callVisitor(network, _dstPath + csdfg.getName() + "/tensorrt/", _partitioning, _trtGPUEval, _armCLCPUEval);
+                trtvisitor.callVisitor(network, _dstPath + network.getName() + "/tensorrt/", _partitioning, _trtFlags, _dnnInitRepresentation);
         }
 
         else {
@@ -811,12 +940,14 @@ public class UI {
              _dstPath += dnn.getName();
              if (_json)
                 _generateDNNJSON(dnn);
+             if (_jsonShort)
+                _generateDNNJSONShort(dnn);
             if (_dot)
                _generateDotDNN(dnn);
             if(_jsonDNNTopology)
                 CNNTopologyJSONVisitor.callVisitor(dnn, _dstPath);
             if(_jsonDNNEval)
-                CNNEvaluationJSONVisitor.callVisitor(dnn, _dstPath);
+                CNNEvaluationCompactJsonVisitor.callVisitor(dnn, _dstPath);
             if(_txtDNNEval)
                 CNNEvaluationTxtVisitor.callVisitor(dnn, _dstPath);
             /** generate energy template once*/
@@ -864,6 +995,17 @@ public class UI {
             if(_verbose)
                 System.out.println(_curPhase + "...");
             CNNJSONVisitor.callVisitor(network,_dstPath +"/json/");
+    }
+
+    /**
+     * Generate JSON description for DNN model
+     * @throws Exception if an error occurs
+     */
+    private void _generateDNNJSONShort(Network network) throws Exception{
+        _curPhase = network.getName() + " DNN json model generation";
+        if(_verbose)
+            System.out.println(_curPhase + "...");
+        CNNJSONVisitorShort.callVisitor(network,_dstPath +"/json/");
     }
 
     /**
@@ -925,7 +1067,6 @@ public class UI {
     }
 
      /**
-      * TODO: EVAL Energy
      * Evaluate DNN
      * @param dnn Neural network
      * @throws Exception if an error occurs
@@ -948,25 +1089,22 @@ public class UI {
                System.out.println(_curPhase + "...");
 
             /**time evaluation*/
-             DNNTimeEvaluator.getInstance().evaluateTime(dnn,result,_platformEval,_dnnSchedule);
+             DNNTimeEvaluator.getInstance().evaluateTime(dnn,result, _platformDescription,_dnnSchedule, _mapping, _evaluatorAlg);
 
             _curPhase = "  -  Energy evaluation ";
             if(_verbose)
                 System.out.println(_curPhase + "...");
 
             /** evaluate energy*/
-            DNNEnergyEvaluator.evaluateEnergy(dnn, result, _platformEval, _dnnSchedule);
+            DNNEnergyEvaluator.getInstance().evaluateEnergy(dnn, result, _platformDescription, _dnnSchedule, _mapping, _totalEnergyWatt, _evaluatorAlg);
+            //DNNEnergyEvaluator.evaluateEnergy(dnn, result, _platformEval, _dnnSchedule);
 
             _curPhase = "  -  Processors number evaluation ";
             if(_verbose)
                 System.out.println(_curPhase + "...");
 
-            /** evaluate prcoessors number*/
-            DNNEnergyEvaluator.evaluateProcNum(result, _dnnSchedule);
-
-            if(_verbose)
-                System.out.println("[done]");
-
+            /** evaluate processors number*/
+            ProcNumEvaluator.getInstance().evaluateProcNum(dnn, result, _platformDescription, _dnnSchedule, _mapping);
             return result;
     }
 
@@ -976,28 +1114,26 @@ public class UI {
      * @throws Exception if an error occurs
      */
     private CSDFEvalResult _evaluate(CSDFGraph sdfg) throws Exception{
-            _curPhase = "Model evaluation: DARTS interface call ";
+            boolean toMB = true;
+            _curPhase = "CSDF Model evaluation";
             if(_verbose)
                 System.out.println(_curPhase + "...");
 
-            CSDFEvalResult result = _edInterface.evaluateCSDFGraph(sdfg);
+            CSDFEvalResult result = new CSDFEvalResult();
 
-            if(result instanceof CSDFEvalError) {
-                throw new Exception(((CSDFEvalError) result).getErrorMessage());
-            }
-             _curPhase = "Model evaluation: Memory refinement ";
+             _curPhase = "Model evaluation: Memory evalution ";
             if(_verbose)
                 System.out.println(_curPhase + "...");
             /**refine memory evaluation*/
-            CSDFGMemoryRefiner.getInstance().refineMemoryEval(sdfg,result);
+            CSDFGMemoryRefiner.getInstance().evaluateMemory(sdfg,result, toMB);
 
-            /**refine time evaluation*/
-            if(_execTimeScale!=1.0)
-                CSDFTimingRefiner.getInstance().refineTimingEval(result,_execTimeScale);
+            /**evaluate time*/
+           // if(_execTimeScale!=1.0)
+            //    CSDFTimingRefiner.getInstance().refineTimingEval(result,_execTimeScale);
 
             /** evaluate energy*/
-            Double refinedEnergy = _getEnergy(sdfg);
-            result.setEnergy(refinedEnergy);
+            //Double refinedEnergy = _getEnergy(sdfg);
+            //result.setEnergy(refinedEnergy);
 
 
             if(_verbose)
@@ -1005,6 +1141,42 @@ public class UI {
 
             return result;
     }
+
+         /**
+          * Evaluate SDF graph
+          * @param sdfg SDF graph
+          * @throws Exception if an error occurs
+          */
+         private CSDFEvalResult _evaluateDARTs(CSDFGraph sdfg) throws Exception{
+             _curPhase = "Model evaluation: DARTS interface call ";
+             if(_verbose)
+                 System.out.println(_curPhase + "...");
+
+             CSDFEvalResult result = _edInterface.evaluateCSDFGraph(sdfg);
+
+             if(result instanceof CSDFEvalError) {
+                 throw new Exception(((CSDFEvalError) result).getErrorMessage());
+             }
+             _curPhase = "Model evaluation: Memory refinement ";
+             if(_verbose)
+                 System.out.println(_curPhase + "...");
+             /**refine memory evaluation*/
+             CSDFGMemoryRefiner.getInstance().refineMemoryEval(sdfg,result);
+
+             /**refine time evaluation*/
+             if(_execTimeScale!=1.0)
+                 CSDFTimingRefiner.getInstance().refineTimingEval(result,_execTimeScale);
+
+             /** evaluate energy*/
+             Double refinedEnergy = _getEnergy(sdfg);
+             result.setEnergy(refinedEnergy);
+
+
+             if(_verbose)
+                 System.out.println("Evaluation finished");
+
+             return result;
+         }
 
     /**
      * Get refined energy evaluation for csdf graph
@@ -1172,15 +1344,8 @@ public class UI {
      * Parse NeurAghe platform specification
      */
     private void parseNeuraghePlatform(){
-        _platformEval = NeurAghePlatformParser.parsePlatformEval(_platformFile);
+        _platformDescription = NeurAghePlatformParser.parsePlatformEval(_platformFile);
         _platform = NeurAghePlatformParser.parsePlatform(_platformFile);
-        /**TODO: replace by platform eval*/
-
-        /** setNEURAgheExecTimesSpec(_platformFile);
-        HashMap<String, Double> procEnergy = NeurAghePlatformParser.getWCEnergy(_platformFile);
-        EnergyEvaluator.getInstance().setProcEnergy(procEnergy);
-        EnergyEvaluator.getInstance().setAutoMaxProcEnergy();*/
-
     }
 
     /** Parse mapping file */
@@ -1202,7 +1367,7 @@ public class UI {
           * @param dnn dnn graph
           */
     public void generateAutoMapping(Platform platform, Network dnn){
-        MappingGenerator mg = new MappingGenerator(platform, dnn, _platformEval, _dnnMappingType);
+        MappingGenerator mg = new MappingGenerator(platform, dnn, _platformDescription, _dnnMappingType);
         _mapping = mg.generateAutoMapping();
     }
 
@@ -1213,7 +1378,7 @@ public class UI {
     * @param csdfg csdf graph
     */
     public void generateAutoMapping(Platform platform, CSDFGraph csdfg){
-        MappingGenerator mg = new MappingGenerator(platform, csdfg, _platformEval);
+        MappingGenerator mg = new MappingGenerator(platform, csdfg, _platformDescription);
         _mapping = mg.generateAutoMapping();
     }
 
@@ -1263,9 +1428,10 @@ public class UI {
      * @param result single evaluation result
      */
     private void printResult(CSDFEvalResult result){
-        if(result instanceof CSDFEvalError)
+            if (result instanceof CSDFEvalError)
                 System.out.println(((CSDFEvalError) result).getErrorMessage());
-        System.out.println(result.toJSON());
+            else
+                System.out.println(result.toJSON());
     }
 
     /**
@@ -1351,6 +1517,11 @@ public class UI {
         this._json = json;
     }
 
+    /** set dnn-json output flag*/
+    public void setJsonShort(boolean json) {
+        this._jsonShort = json;
+    }
+
     /** get dnn-dot output flag*/
     public boolean isdot() { return _dot; }
 
@@ -1409,7 +1580,7 @@ public class UI {
      */
     public void setBlocks(Integer blocks) { this._blocks = blocks; }
 
-    /**
+         /**
      * Set maximum split transformations safe-counter
      * @param safeCounter max split transformations safe-counter
      */
@@ -1732,6 +1903,24 @@ public class UI {
             System.err.println("Incorrect number of cores: "+ cores);
     }
 
+     /**
+     * Set path to CUDA - flag is important for arm-cl/tensorrt code generation
+     * @param cudaPath path to CUDA
+     */
+
+    public void setCUDAPath(String cudaPath){
+        trtvisitor.set_pathToCUDA(cudaPath);
+    }
+
+     /**
+     * Set path to ARM compute library - flag is important for arm-cl/tensorrt code generation
+     * @param armclPath path to ARM compute library
+     */
+
+    public void setARMCLPath(String armclPath){
+        trtvisitor.set_pathToARMCL(armclPath);
+    }
+
     /**
      * Set generated pthread code in silent mode
      * in silent mode no debug information is given on output
@@ -1757,21 +1946,31 @@ public class UI {
         PthreadSDFGVisitor.setGenerateDNNFuncGPU(dNNFuncGPU);
     }
 
-     /**
-     * Set flag,  if tensorrt GPUEval network should be generated
-     * @param evalCPU flag, if tensorrt GPUEval network should be generated
-     */
-    public void setTRTEvalCPU(boolean evalCPU) {
-        _armCLCPUEval = evalCPU;
+    public void _clearTRTFlags(){
+        _trtFlags = new Vector<>();
     }
 
-       /**
-     * Set flag,  if tensorrt GPUEval network should be generated
-     * @param evalGPU  flag, if the internal library (dnnFunc) for GPU generation is needed
+     /**
+     * Set tensorRT CPU eval network generation flag
      */
-    public void setTRTEvalGPU(boolean evalGPU) {
-        _trtGPUEval = evalGPU;
+    public void setTRTEvalCPU() {
+        _trtFlags.add(TRTCodegenFlag.CPUEVAL);
     }
+
+    /**
+     * Set tensorRT GPUEval network generation flag
+     */
+    public void setTRTEvalGPU() {
+        _trtFlags.add(TRTCodegenFlag.GPUEVAL);
+    }
+
+         /**
+          * Set flag,  if per-layer power/perf/memory evaluation should be performed
+          * @param evalPerLayer  flag, if per-layer power/perf/memory evaluation should be performed
+          */
+         public void evalPerLayer(boolean evalPerLayer) {
+             _evalPerLayer = evalPerLayer;
+         }
 
     /**
      * Set flag, if the pthread application uses neuraghe functions
@@ -1861,7 +2060,11 @@ public class UI {
              this._partitioningFile = partitioningFile;
     }
 
-         ///////////////////////////////////////////////////////////////////
+    /** use roofline model to perform platform-aware dnn evaluation*/
+    public void setRoofline(){
+        _evaluatorAlg = EvaluatorAlg.ROOFLINE;
+    }
+    ///////////////////////////////////////////////////////////////////
     ////                      private methods                      ///
 
     /**
@@ -1937,6 +2140,9 @@ public class UI {
         _dnnMappingType = DNN_MAPPING_TYPE.PIPELINE;
     }
 
+    /** set total energy evaluation measurement unit to Watt*/
+    public void set_totalEnergyWatt (boolean totalEnergyWatt) { _totalEnergyWatt = totalEnergyWatt; }
+
     /**
      * Clear internal user interface flags
      */
@@ -1967,7 +2173,7 @@ public class UI {
         _consistencyCheckout = false;
         _optimizeForInference = 3;
         _extractONNXWeights = false;
-
+        _clearTRTFlags();
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -1983,6 +2189,9 @@ public class UI {
     /** if source model should be evaluated*/
     private boolean _eval = false;
 
+    /** if per-layer CNN model evaluation should be provided*/
+    private boolean _evalPerLayer = false;
+
         /** if source model should be evaluated*/
     private boolean _eval_csdf = false;
 
@@ -1997,6 +2206,9 @@ public class UI {
 
     /** dnn-json output flag*/
     private boolean _json;
+
+    /** dnn-json output flag*/
+    private boolean _jsonShort;
 
     /** dnn-dot output flag*/
     private boolean _dot;
@@ -2031,7 +2243,7 @@ public class UI {
     /** CNN-2-SDFG converter*/
     private CNN2CSDFGraphConverter _cnn2CSDFGraphConverter = new CNN2CSDFGraphConverter();
 
-    TensorrtSDFGVisitor trtvisitor = new TensorrtSDFGVisitor();
+    TensorrtDNNVisitor trtvisitor = new TensorrtDNNVisitor();
 
     /** espam - to DARTS interface*/
     private Espam2DARTS _edInterface = new Espam2DARTS();
@@ -2115,16 +2327,15 @@ public class UI {
     /** DNN partitioning*/
     Vector<DNNPartition> _partitioning;
 
-    /** DNN direct mapping*/
+    /** DNN partitioning file*/
     String _partitioningFile;
-
 
     /** platform*/
     Platform _platform;
 
     /** evaluation of platform characteristics
          (i.e., energy, supported operators per core, operators exec. times, etc.)*/
-    PlatformEval _platformEval;
+    PlatformDescription _platformDescription;
 
     /** type of the platform specification*/
     Platformtype _platformType = Platformtype.ESPAM;
@@ -2140,11 +2351,8 @@ public class UI {
     /** TODO: implement!*/
     Integer _cpuStreams = 1;
 
-    /** Generate ARMCL evaluation network*/
-    boolean _armCLCPUEval = false;
-
-    /** Generate tensort evaluation network*/
-    boolean _trtGPUEval = false;
+    /** tensorrt generation flags*/
+    Vector<TRTCodegenFlag> _trtFlags = new Vector<>();
 
     /** print dnn topology in simple and short json encoding*/
     boolean _jsonDNNTopology;
@@ -2162,6 +2370,12 @@ public class UI {
      * For more details see DNN_MAPPING_TYPE definition*/
     DNN_MAPPING_TYPE _dnnMappingType = DNN_MAPPING_TYPE.SEQUENTIAL;
 
+    /** implement CSDF with minimum buffer sizes*/
+    boolean _minimizeBUFFERSizes = false;
 
+    /** if DNN energy evaluation has to be provided in Watt*/
+    private boolean _totalEnergyWatt = false;
 
+    /** algorithm/model for DNN platform-aware evaluation*/
+    private EvaluatorAlg _evaluatorAlg = EvaluatorAlg.BENCHMARK;
 }

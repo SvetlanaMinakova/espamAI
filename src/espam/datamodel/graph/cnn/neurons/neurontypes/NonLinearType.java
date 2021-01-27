@@ -4,5 +4,5 @@ package espam.datamodel.graph.cnn.neurons.neurontypes;
  */
 public enum NonLinearType {
     ReLU, LeakyReLu, SELU, SIGM, SOFTMAX, SOFTPLUS, THN, DROPOUT, LRN, BN,
-    ImageScaler, AddConst, NONE, PAD, DIVConst, MULconst, SUBConst
+    ImageScaler, AddConst, NONE, PAD, DIVConst, MULconst, SUBConst, CLIP
 }

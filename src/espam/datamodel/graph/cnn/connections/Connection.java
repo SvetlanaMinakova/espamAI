@@ -361,6 +361,8 @@ public abstract class Connection implements Cloneable{
 
     public void set_energyEval(double _energyEval) { this._energyEval = _energyEval; }
 
+    public void set_energyEvalJoules(double _energyEvalJoules) { this._energyEvalJoules = _energyEvalJoules; }
+
     public double get_timeEval() {
         return _timeEval;
     }
@@ -368,6 +370,8 @@ public abstract class Connection implements Cloneable{
     public double get_memEval() { return _memEval; }
 
     public double get_energyEval() { return _energyEval; }
+
+    public double get_energyEvalJoules() { return _energyEvalJoules; }
 
     ///////////////////////////////////////////////////////////////////////
     ////                         private variables                    ////
@@ -411,4 +415,7 @@ public abstract class Connection implements Cloneable{
 
     /** energy evaluation*/
     @SerializedName("energy_eval")private double _energyEval = 0.0;
+
+    /** energy evaluation*/
+    @SerializedName("energy_eval_joules")private double _energyEvalJoules = 0.0;
 }

@@ -25,7 +25,7 @@ public class NetworkTopology {
             dnn.sortLayersInTraverseOrder();
 
             Integer taskId = 0;
-            Integer taskComplexity;
+            long taskComplexity;
             Long totalComplexity = 0L;
             /** fill in task ids, names and complexities*/
             for(Layer l: dnn.getLayers()) {
@@ -125,7 +125,7 @@ public class NetworkTopology {
      * Get task complexities
      * @return task complexities
      */
-    public Vector<Integer> getTaskComplexities() {
+    public Vector<Long> getTaskComplexities() {
         return _taskComplexities;
     }
 
@@ -175,7 +175,7 @@ public class NetworkTopology {
     @SerializedName("task_ids")private Vector<Integer> _taskIds = new Vector<>();
 
     /** evaluated task complexities */
-    @SerializedName("task_complexities")private Vector<Integer> _taskComplexities = new Vector<>();
+    @SerializedName("task_complexities")private Vector<Long> _taskComplexities = new Vector<>();
 
     /** relative task complexities percentage*/
     @SerializedName("task_complexities_share")private Vector<Float> _taskComplexitiesShare = new Vector<>();

@@ -125,9 +125,22 @@ public class Operator{
         this._basic = basic;
     }
 
-    public Integer getTimeComplexity() { return _timeComplexity; }
+    public Long getTimeComplexity() { return _timeComplexity; }
 
-    public void setTimeComplexity(Integer timeComplexity) {
+    /** operator memory complexity*/
+    /** TODO: update eval*/
+    public Long getMemoryComplexity() {
+        Long totalComplexity =0l;
+        if(this.hasTensorParams()){
+            for(Tensor tensorParam: _tensorParams.values()){
+                totalComplexity += tensorParam.getElementsNumber();
+            }
+        }
+
+        return totalComplexity;
+    }
+
+    public void setTimeComplexity(Long timeComplexity) {
         this._timeComplexity = timeComplexity;
     }
 
@@ -246,7 +259,7 @@ public class Operator{
     @SerializedName("floatParams")  private TreeMap<String, Float> _floatParams = null;
     @SerializedName("stringParams")  private TreeMap<String, String> _stringParams = new TreeMap<>();
     @SerializedName("basic")  private String _basic;
-    @SerializedName("timeComplexity")  private Integer _timeComplexity = 1;
+    @SerializedName("timeComplexity")  private Long _timeComplexity = 1l;
     @SerializedName("concat")  private boolean _concat = false;
     /** non-trivial tensor references*/
     @SerializedName("tensorRefs")  private TreeMap<String, String> _tensorRefs = null;

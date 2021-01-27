@@ -74,6 +74,7 @@ public class NetworkTraverser {
         _layersTraverseOrder = new Vector<Integer>();
         int startLayerTraverseId = getTraverseLayerId(startLayerId);
         modifiedBFS(startLayerTraverseId);
+        //System.out.println("Modified bfs executed with start layer id: " + startLayerId);
         mapLayersTraverseOrderOntoRealIds();
         return _layersTraverseOrder;
     }

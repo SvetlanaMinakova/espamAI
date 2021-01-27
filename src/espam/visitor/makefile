@@ -24,7 +24,8 @@ SUBPACKAGES = \
 	onnx \
 	sesame \
 	pthread \
-	tensorrt
+	tensorrt \
+	kerasAPI
 
 # Java files in this directory
 JSRCS = \

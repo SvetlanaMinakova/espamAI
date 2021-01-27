@@ -381,6 +381,12 @@ public abstract class Neuron implements Cloneable{
     protected abstract void setOperatorTimeComplexity(int inputChannels, int outputChannels);
 
 
+    /** update weights format for neurons with weights*/
+    public void updateWeights(int inputChannels, int outputChannels){
+
+    }
+
+
     /** TODO: refactoring*/
     /** Store an operator float parameter as two integer parameters*/
     protected  void _addFloatParamAsScaledIntParam(Float par, String name){
@@ -615,6 +621,7 @@ public abstract class Neuron implements Cloneable{
     public void setParameter(String name, String valueDescription){
         if(_parameters==null)
               _parameters = new HashMap<>();
+        // System.out.println("added parameter: " + name +" : " + valueDescription);
         _parameters.put(name,valueDescription);
     }
 
@@ -777,6 +784,10 @@ public abstract class Neuron implements Cloneable{
      */
     public void setParent(Layer parent) {
         _parent = parent;
+    }
+
+    public boolean hasNonLin(){
+        return _nonlin!=null;
     }
 
     /////////////////////////////////////////////////////////////////////

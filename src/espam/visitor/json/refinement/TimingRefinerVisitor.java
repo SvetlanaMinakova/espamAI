@@ -3,7 +3,7 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
-import espam.operations.evaluation.CSDFTimingRefiner;
+import espam.operations.evaluation.csdf.CSDFTimingRefiner;
 import espam.parser.json.JSONParser;
 import espam.utils.fileworker.FileWorker;
 

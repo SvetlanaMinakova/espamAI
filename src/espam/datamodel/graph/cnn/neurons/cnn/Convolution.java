@@ -46,6 +46,27 @@ public class Convolution extends CNNNeuron {
     /**
      * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
      */
+    public Convolution(int kernelH, int kernelW, BoundaryMode boundaryMode) {
+        super(NeuronType.CONV.toString(), kernelH, 1);
+        setKernelW(kernelW);
+        setNeuronType(NeuronType.CONV);
+        setBoundaryMode(boundaryMode);
+    }
+
+
+    /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
+    public Convolution(int kernelH, int kernelW, BoundaryMode boundaryMode, int stride) {
+        super(NeuronType.CONV.toString(), kernelH, stride);
+        setKernelW(kernelW);
+        setNeuronType(NeuronType.CONV);
+        setBoundaryMode(boundaryMode);
+    }
+
+    /**
+     * Constructor to create a Convolution with a kernel size, boundaryMode and  stride
+     */
     public Convolution(int kernelSize, BoundaryMode boundaryMode, int stride, boolean transpose) {
         super(NeuronType.CONV.toString(), kernelSize, stride);
         setNeuronType(NeuronType.CONV);
@@ -69,7 +90,6 @@ public class Convolution extends CNNNeuron {
         Convolution newObj = (Convolution) super.clone();
         return newObj;
     }
-
 
 
     /**

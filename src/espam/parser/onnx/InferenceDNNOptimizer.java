@@ -105,8 +105,8 @@ public static InferenceDNNOptimizer getInstance(){
         neuron = layer.getNeuron();
         if(neuron.getNeuronType().equals(NeuronType.RESHAPE)) {
             Reshape rn = (Reshape)neuron;
-            if(!rn.isSlice())
-            toRemove.add(layer);
+            if(!rn.isSlice() && !rn.isShapeExplicitlySpecified())
+                toRemove.add(layer);
         }
     }
 
@@ -192,55 +192,24 @@ public static InferenceDNNOptimizer getInstance(){
            srcNeuron.getOperator().addStringParam("add_ref", layer.getName());
         }
 
-
-        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
-
-
-        /**connect single input and outputs directly*/
-        Layer newSrc = singleInput.getSrc();
-        for(Connection outp: layerOutputs){
-            outp.changeSrc(newSrc);
-        }
-
-        Connection conToRemove = null;
-        for(Connection con: newSrc.getOutputConnections()){
-            if(con.getDest().equals(layer))
-                conToRemove = con;
-        }
-
-        if(conToRemove!=null)
-            newSrc.getOutputConnections().removeElement(conToRemove);
-
-        dnn.removeLayer(layer);
+       _removeLayer(dnn, layer);
 
        // TreeMap<String,Tensor> tensorParams = newSrc.getNeuron().getOperator().getTensorParams();
        // System.out.println("bias_par of shape "+tensorParams.get("bias_par")+" added to layer " + newSrc.getName()+"!");
 }
 
    /**
-     * Incapsulate biases, defined as AddConst nodes into
-     * predcessing nodes, e.g. Conv(node)--> AddConst(node) will be replaced by Conv_bias(node)
-     * TODO: to be incapsulated, a layer should have a single input connection.
-     * @param dnn dnn with a layer to be incapsulated
-     * @param layer layer to be incapsulated
+     * Incapsulate pads, defined as layers, into their output layers
+     * e.g. Pad(layer)--> Conv(layer) will be replaced by Conv(layer) + pads (Conv layer property)
+     * @param dnn dnn with a pads layer to be incapsulated
+     * @param layer pads layer to be incapsulated
      */
     private void _incapsulatePad(Network dnn, Layer layer){
-        Vector<Connection> lInputs = dnn.getLayerInputConnections(layer);
-        if(lInputs.size()!=1)
-            return;
-        Connection singleInput = lInputs.firstElement();
-        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
-
-        /**connect single input and outputs directly*/
-        Layer newSrc = singleInput.getSrc();
-        for(Connection outp: layerOutputs){
-            outp.changeSrc(newSrc);
-
-            /**transfer pads to output layers*/
+        //transfer pads to output layers
+        for(Connection outp: dnn.getLayerOutputConnections(layer))
             outp.getDest().setPads(layer.getPads());
-        }
-
-        dnn.removeLayer(layer);
+        //remove pads layer
+        _removeLayer(dnn, layer);
 }
 
      /**
@@ -260,17 +229,8 @@ public static InferenceDNNOptimizer getInstance(){
         Neuron nonlinNeuron = layer.getNeuron();
 
         srcNeuron.setNonlin(nonlinNeuron.getName());
-
-        //srcNeuron.setName(srcNeuron.getName() + "_" + nonlinNeuron.getName());
-
-        Vector<Connection> layerOutputs = dnn.getLayerOutputConnections(layer);
-        /**connect single input and dropout outputs directly*/
-        Layer newSrc = singleInput.getSrc();
-        for(Connection outp: layerOutputs){
-            outp.changeSrc(newSrc);
-        }
-        dnn.removeLayer(layer);
-}
+        _removeLayer(dnn, layer);
+   }
 
     /**
      * Remove nodes of specific type

@@ -2,8 +2,8 @@ package espam.datamodel.mapping.DNNMapping;
 
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
 import espam.datamodel.graph.cnn.neurons.simple.Data;
-import espam.datamodel.graph.cnn.neurons.transformation.Concat;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.CSDFGraph;
 import espam.datamodel.graph.csdf.CSDFNode;
@@ -14,9 +14,10 @@ import espam.datamodel.mapping.Mapping;
 import espam.datamodel.platform.Platform;
 import espam.datamodel.platform.processors.GPU;
 import espam.datamodel.platform.processors.Processor;
-import espam.operations.evaluation.CoreTypeEval;
-import espam.operations.evaluation.OpTimeEval;
-import espam.operations.evaluation.PlatformEval;
+import espam.operations.evaluation.cnn.benchmarkbased.BenchmarkHelper;
+import espam.operations.evaluation.platformDescription.ProcTypeDescription;
+import espam.operations.evaluation.platformDescription.OpBenchmark;
+import espam.operations.evaluation.platformDescription.PlatformDescription;
 
 import java.util.*;
 
@@ -29,15 +30,15 @@ import java.util.*;
 public class MappingGenerator {
 
     /** Init mapping generator for DNN*/
-    public  MappingGenerator(Platform platform, Network dnn, PlatformEval plaEval, DNN_MAPPING_TYPE mapping_type) {
+    public  MappingGenerator(Platform platform, Network dnn, PlatformDescription plaEval, DNN_MAPPING_TYPE mapping_type) {
         _platform = platform;
         _dnn = dnn;
-        _platformEval = plaEval;
+        _platformDescription = plaEval;
 
     }
 
     /** Init mapping generator for CSDFG*/
-    public MappingGenerator(Platform platform, CSDFGraph csdfg, PlatformEval _platformEval) {
+    public MappingGenerator(Platform platform, CSDFGraph csdfg, PlatformDescription _platformDescription) {
        _platform = platform;
        _csdfg = csdfg;
     }
@@ -183,15 +184,12 @@ public class MappingGenerator {
 
         int curCPUId = 0;
         MProcessor curCPU = cpuList.firstElement();
-        MProcessor curGPU = gpuList.firstElement();
-
-        int curGPUId = 0;
+        MProcessor curGPU;
 
         Vector processes;
 
         for (Layer node : dnn.getLayers()) {
             MProcess mp = new MProcess(node.getName());
-
 
             /**try to map node on GPU/FPGA*/
             Integer acceleratorId = getNextAcceleratorId(gpuList,node);
@@ -200,11 +198,9 @@ public class MappingGenerator {
                 curGPU = gpuList.elementAt(acceleratorId);
                 processes = curGPU.getProcessList();
                 processes.add(mp);
-
             }
 
             else {
-
                 /** assign process to CPU*/
                 processes = curCPU.getProcessList();
                 processes.add(mp);
@@ -217,7 +213,7 @@ public class MappingGenerator {
     }
 
     /**Get next accelerator Id*/
-    private Integer getNextAcceleratorId( Vector<MProcessor> accelerators, Layer layer){
+    private Integer getNextAcceleratorId(Vector<MProcessor> accelerators, Layer layer){
         if(accelerators.size()==0) //no accelerators found in the platform
             return -1;
 
@@ -264,29 +260,34 @@ public class MappingGenerator {
         }
     }
 
-    /** check if layer can be mapped on processor
+    /**TODO: this chek is omitted now. To map an operator
+     * TODO: on a specific processor, use custom mapping!
+     * check if layer can be mapped on processor
      * @param layer DNN layer
      * @param proc processor
      * @return true, if layer can be mapped on processor and false otherwise
      */
     private boolean _isMappable(Layer layer, MProcessor proc){
-        /** no cheks for missing platform evaluation*/
-        if(_platformEval==null)
+
+        /**
+        /** no cheks for missing platform evaluation
+        if(_platformDescription ==null)
             return true;
 
-        if(layer.getNeuron() instanceof Data || layer.getNeuron() instanceof Concat)
+        if(layer.getNeuron() instanceof Data || layer.getNeuron() instanceof MultipleInputsProcessor)
             return true;
 
-        /**chek up*/
-        CoreTypeEval coreTypeEval = _platformEval.getCoreTypeEval(proc.getName());
-        if(coreTypeEval==null)
+        /**chek up
+        ProcTypeDescription procTypeDescription = _platformDescription.getCoreTypeEval(proc.getName());
+        if(procTypeDescription ==null)
             return false;
 
-        OpTimeEval eval = coreTypeEval.findOpEvalRecord(layer.getNeuron().getOperator().getName());
+        String opname = layer.getNeuron().getOperator().getName();
+        OpBenchmark eval = BenchmarkHelper.findOpEvalRecord(opname, procTypeDescription.getOpBenchmarks());
         if(eval==null) {
            // System.out.println("Eval record for "+ layer.getName() + " not found");
             return false;
-        }
+        }*/
 
         return true;
     }
@@ -923,7 +924,7 @@ public void accelerateConvs() {
          Long originalComplexity = Long.parseLong(node.getOperator().getTimeComplexity().toString());
          Long acceleratedCompelxity = originalComplexity/accelerationFactor;
          acceleratedCompelxity = Math.max(acceleratedCompelxity,1);
-         node.getOperator().setTimeComplexity(acceleratedCompelxity.intValue());
+         node.getOperator().setTimeComplexity(acceleratedCompelxity);
     }
 
     ///////////////////
@@ -1124,7 +1125,7 @@ public void accelerateConvs() {
     /** TODO: update for other types of nodes if needed*/
     private Vector<CSDFNode> _convNodes;
     private Integer _awgWCEtperCPU = 0;
-    private PlatformEval _platformEval;
+    private PlatformDescription _platformDescription;
     private  DNN_MAPPING_TYPE _dnn_mapping_type = DNN_MAPPING_TYPE.SEQUENTIAL;
 
 }

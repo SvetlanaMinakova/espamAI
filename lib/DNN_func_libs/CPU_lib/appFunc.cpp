@@ -38,6 +38,12 @@ appFunc::~appFunc() {}
         dnnFunc::activation(function, int_params_ptr, tensor_params_ptr);
         op_done=true;
       }
+
+      if (function.find("ImageScale") != std::string::npos) {
+        dnnFunc::scale_im(int_params_ptr,tensor_params_ptr);
+        op_done=true;
+      }
+
       if (function.find("CONV") != std::string::npos) {
         dnnFunc::conv(int_params_ptr,tensor_params_ptr);
         op_done=true;
@@ -72,6 +78,16 @@ appFunc::~appFunc() {}
       }
       if (function.find("MULconst") != std::string::npos) {
         dnnFunc::mul_const(int_params_ptr,tensor_params_ptr);
+        op_done=true;
+      }
+
+      if (function.find("AddConst") != std::string::npos) {
+        dnnFunc::add_const(int_params_ptr,tensor_params_ptr);
+        op_done=true;
+      }
+
+      if (function.find("ADD") != std::string::npos) {
+        dnnFunc::add(int_params_ptr,tensor_params_ptr);
         op_done=true;
       }
 

@@ -9,6 +9,7 @@ import espam.datamodel.graph.cnn.neurons.neurontypes.NonLinearType;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
+import java.util.TreeMap;
 import java.util.Vector;
 
 /**
@@ -26,9 +27,9 @@ public class DenseBlock extends Neuron {
      * @param neuronsNum number of the hidden neurons inside the Dense block
      */
     public DenseBlock(int neuronsNum) {
-        super(NonLinearType.NONE.toString());
+        super(DenseType.GEMM.toString());
         setNeuronType(NeuronType.DENSEBLOCK);
-        setRefinedType(DenseType.DENSEBLOCK);
+        setRefinedType(DenseType.GEMM);
         setNeuronsNum(neuronsNum);
     }
 
@@ -42,7 +43,7 @@ public class DenseBlock extends Neuron {
     public DenseBlock (NonLinearType name, int neuronsNum) {
         super(name.toString());
         setNeuronType(NeuronType.DENSEBLOCK);
-        setRefinedType(DenseType.DENSEBLOCK);
+        setRefinedType(DenseType.GEMM);
         setNeuronsNum(neuronsNum);
     }
 
@@ -262,6 +263,15 @@ public class DenseBlock extends Neuron {
     public void initOperator(int inputChannels, int outputChannels) {
 
         _operator.addIntParam("partitions",_neuronsNum);
+        updateWeights(inputChannels, outputChannels);
+
+    }
+
+    @Override
+    public void updateWeights(int inputChannels, int outputChannels) {
+        if (_operator == null) return;
+        if (!_operator.hasTensorParams()) _operator.initTensorParams();
+        TreeMap<String, Tensor> tensorParams = _operator.getTensorParams();
 
         if (getBiasName() != null)
         {
@@ -272,39 +282,49 @@ public class DenseBlock extends Neuron {
 
             Integer size = _neuronsNum;
             Tensor bias = new Tensor(size);
+            if (_operator.getTensorParams().containsKey("bias"))
+                _operator.getTensorParams().remove("bias");
+
             _operator.getTensorParams().put("bias",bias);
         }
 
         Tensor input = getInputDataFormat();
-        if(!Tensor.isNullOrEmpty(input)) {
+        if(!Tensor.isNullOrEmpty(input) && !Tensor.isNullOrEmpty(getParent().getInputFormat())) {
 
             Tensor weights = new Tensor();
             int blockNeuronsNum = _neuronsNum;
-            int lin_input = input.getElementsNumber();
-            /** TODO: refactoring! does not work with Concat inp!*/
-            if(inputChannels>1)
-                lin_input*=inputChannels;
+            int linInput = getParent().getInputFormat().getElementsNumber();
 
             weights.addDimension(blockNeuronsNum);
-            weights.addDimension(lin_input);
+            weights.addDimension(linInput);
+
+            if (_operator.getTensorParams().containsKey("weights"))
+                _operator.getTensorParams().remove("weights");
 
             _operator.getTensorParams().put("weights",weights);
+            ///System.out.println("weights" + weights + " put in " + this.getParent().getName() + " tensor params");
         }
         else {System.out.println("Dense weights construction error: null or empty input data format!");}
-
     }
 
-        /**
+    /**
      * Init operator: Description of DNN neuron functionality
      * Should be performed after all DNN model parameters are established
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         if(!(getInputDataFormat()==null)){
             timeComplexity = getInputDataFormat().getElementsNumber() *
                     Math.max(inputChannels,1) * _neuronsNum;
         }
+
+        /** bias here **/
+        /**if(_operator.getTensorParams().containsKey("bias")){
+            if(_operator.getTensorParams().get("bias")!=null){
+                timeComplexity += outputChannels * getOutputHeight() * getOutputWidth();
+            }
+        }*/
 
         //if(_refinedType.equals(DenseType.GEMM))
         //    timeComplexity+= _neuronsNum;
@@ -318,5 +338,5 @@ public class DenseBlock extends Neuron {
     @SerializedName("neuronsNum")private int _neuronsNum;
 
     /** refined type of Matrix multiplication, implemented inside of the Dense Layer*/
-    @SerializedName("refinedType")private DenseType _refinedType;
+    @SerializedName("refinedType")private DenseType _refinedType = DenseType.GEMM;
 }

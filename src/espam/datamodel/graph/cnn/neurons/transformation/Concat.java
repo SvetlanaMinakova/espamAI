@@ -7,6 +7,7 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.Neuron;
 import espam.datamodel.graph.cnn.connections.Connection;
 import espam.datamodel.graph.cnn.neurons.MultipleInputsProcessor;
+import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
 import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
@@ -126,36 +127,17 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
      */
     public Tensor calculateOutputDataFormat(Tensor inputDataFormat) {
         try {
-            if(_inputOwners == null)
-                return null;
 
-            /** update inputs for dynamic inputs*/
-            Vector<Tensor> _inputs = new Vector<>();
-
-            for(Layer inputOwner: _inputOwners) {
-                if(inputOwner!=null) {
-                    if(inputOwner.getOutputFormat().getDimensionality()==inputOwner.getNeuron().getOutputDataFormat().getDimensionality() &&
-                            _inputOwners.size()>1 && !(inputOwner.getNeuron() instanceof MultipleInputsProcessor)) {
-                        Tensor inp = new Tensor(inputOwner.getOutputFormat());
-                        /** TODO: refactoring*/
-                        //if(!(inputOwner.getNeuron() instanceof DenseBlock))
-                        if(!(inp.getDimensionality()==1))
-                            inp.addDimension(1);
-                        _inputs.add(inp);
-                    }
-                    else _inputs.add(inputOwner.getOutputFormat());
-                }
-            }
-
-            Tensor mergedInput = Tensor.mergeToSequence(_inputs);
-            return mergedInput;
+           setDataFromMultipleInputs(getParent());
+           Tensor outputDataFormat = getOutputDataFormat();
+           return outputDataFormat;
         }
         catch (Exception e){
-            System.err.println("Concat data formats calculation error for data formats ");
+            System.err.println(getParent().getName() + " Concat data formats calculation error for data formats ");
             for(Layer inputOwner: _inputOwners){
                  System.err.print(inputOwner.getOutputFormat() + " , ");
             }
-            System.err.println("");
+            System.err.println(". Reason: "+ e.getMessage());
             return inputDataFormat;
         }
     }
@@ -267,24 +249,32 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
      * @throws Exception if an error occurs
      */
     public void setDataFromMultipleInputs(Layer neuronOwner) throws Exception{
+
         if(_inputOwners==null)
             throw new Exception("Concat data formats calculation: no inputs found");
 
            Vector<Tensor> _inputs = new Vector<>();
-            for(Layer inputOwner: _inputOwners){
-                if(inputOwner.getNeuron() instanceof MultipleInputsProcessor)
-                   _inputs.add(inputOwner.getOutputFormat());
-                else {
+            for(Layer inputOwner: _inputOwners) {
+                if (inputOwner != null) {
+                    if (!Tensor.isNullOrEmpty(inputOwner.getOutputFormat())) {
+                        if (inputOwner.getNeuron() instanceof MultipleInputsProcessor) {
+                            Tensor inp = new Tensor(inputOwner.getOutputFormat());
+                            _inputs.add(inp);
+                        }
+                        else {
 
-                    if (inputOwner.getOutputFormat().getDimensionality() == inputOwner.getNeuron().getOutputDataFormat().getDimensionality() && _inputOwners.size() > 1) {
-                        Tensor inp = new Tensor(inputOwner.getOutputFormat());
-                        inp.addDimension(1);
-                        _inputs.add(inp);
-                    } else _inputs.add(inputOwner.getOutputFormat());
+                            //if (inputOwner.getOutputFormat().getDimensionality() == inputOwner.getNeuron().getOutputDataFormat().getDimensionality() && _inputOwners.size() > 1) {
+                                Tensor inp = new Tensor(inputOwner.getOutputFormat());
+                                //inp.addDimension(1);
+                                _inputs.add(inp);
+                           // } else _inputs.add(inputOwner.getOutputFormat());
+                        }
+                    }
                 }
             }
 
-        Tensor mergedInput = Tensor.mergeToSequence(_inputs);
+         //Tensor mergedInput = _inputs.firstElement();
+         Tensor mergedInput = Tensor.mergeToSequence(_inputs);
 
         setInputDataFormat(mergedInput);
         setOutputDataFormat(mergedInput);
@@ -322,7 +312,7 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
      * @param inputOwner layer, owns the input
      */
     public void addInput(Layer inputOwner){
-        if(!_inputOwners.contains(inputOwner))
+        if(!_containsInput(inputOwner))
             _inputOwners.add(inputOwner);
     }
 
@@ -333,6 +323,18 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
         if(getInputsNumber()>0) {
             _inputOwners.remove(inputOwner);
         }
+    }
+
+    private boolean _containsInput(Layer inputOwner){
+        if (_inputOwners == null)
+            return false;
+        for (Layer inp: _inputOwners){
+            if (inp.getName() == inputOwner.getName()) {
+                //System.out.println(inp.getOutputFormat() + ", " + inputOwner.getOutputFormat());
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -382,7 +384,7 @@ public class Concat extends Neuron implements MultipleInputsProcessor {
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         _operator.setTimeComplexity(timeComplexity);
     }
 

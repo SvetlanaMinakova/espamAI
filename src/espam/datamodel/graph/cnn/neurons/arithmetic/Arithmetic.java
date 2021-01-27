@@ -77,8 +77,14 @@ public class Arithmetic extends Neuron implements MultipleInputsProcessor, Conne
      */
     public void setInputDataFormat(Vector<Tensor> inputDataFormats) {
        try {
-           Tensor mergedInput = Tensor.mergeToSequence(inputDataFormats);
+
+           Tensor mergedInput;
+           if (inputDataFormats.size() == 1)
+               mergedInput = inputDataFormats.firstElement();
+           else
+               mergedInput = Tensor.mergeToSequence(inputDataFormats);
            setInputDataFormat(mergedInput);
+
            setOutputDataFormat(inputDataFormats.elementAt(0));
            setSampleDim(inputDataFormats.elementAt(0).getDimensionality());
        }
@@ -189,6 +195,8 @@ public class Arithmetic extends Neuron implements MultipleInputsProcessor, Conne
 
         neuronOwner.setInputFormat(common);
         neuronOwner.setOutputFormat(common);
+
+        setSampleDim(common.getDimensionality());
 
     }
 
@@ -365,13 +373,10 @@ public class Arithmetic extends Neuron implements MultipleInputsProcessor, Conne
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+       Long timeComplexity = 1l;
 
-       if(!(getInputDataFormat()==null)) {
-            timeComplexity = getInputDataFormat().getElementsNumber();
-        }
-
-
+       if(!(getInputDataFormat()==null))
+            timeComplexity = (long) getInputDataFormat().getElementsNumber();
 
         _operator.setTimeComplexity(timeComplexity);
     }

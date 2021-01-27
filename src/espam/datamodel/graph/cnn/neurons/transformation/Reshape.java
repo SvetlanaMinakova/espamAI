@@ -12,6 +12,7 @@ import espam.datamodel.graph.cnn.neurons.neurontypes.NeuronType;
 import espam.datamodel.graph.csdf.datasctructures.Tensor;
 import espam.visitor.CNNGraphVisitor;
 
+import javax.xml.stream.FactoryConfigurationError;
 import java.util.Vector;
 
 /**
@@ -249,6 +250,19 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
     /////////////////////////////////////////////////////////////////////
     ////                         multiple inputs resolving           ////
 
+
+    /**
+     * Checks if shape is explicitly specified
+     * @return true, if shape is explicitly specified and false otherwise
+     */
+    public boolean isShapeExplicitlySpecified(){
+        if (_shape == null)
+            return false;
+        if (_shape.size() == 0)
+            return false;
+        return true;
+    }
+
     /**
      * Set data formats from multiple inputs
      *
@@ -262,12 +276,18 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
             _inputs.add(inputOwner.getOutputFormat());
         }
 
-
         switch (_inputs.size()) {
             /** constant-data reshape node*/
             case 0: {
-                neuronOwner.setInputFormat(getInputDataFormat());
-                neuronOwner.setOutputFormat(getOutputDataFormat());
+                if (isShapeExplicitlySpecified()){
+                    Tensor ioDataFormat = new Tensor(_shape);
+                    neuronOwner.setInputFormat(ioDataFormat);
+                    neuronOwner.setOutputFormat(ioDataFormat);
+                }
+                else {
+                    neuronOwner.setInputFormat(getInputDataFormat());
+                    neuronOwner.setOutputFormat(getOutputDataFormat());
+                }
                 break;
                    // System.err.println("Parameters update failed: Reshape layer " + neuronOwner.getName() + " have no inputs ");
                    // throw new Exception("Parameters update exception.");
@@ -277,13 +297,19 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
             case 1: {
                 Tensor singleInput = _inputs.firstElement();
                 Tensor inputDataFormat = new Tensor(singleInput);
-                setDataFormats(inputDataFormat, inputDataFormat);
                 setInputDataFormat(inputDataFormat);
                 neuronOwner.setInputFormat(singleInput);
 
-                if(_shape==null)
-                    neuronOwner.setOutputFormat(inputDataFormat);
-                else neuronOwner.setOutputFormat(new Tensor(_shape));
+                Tensor outputDataFormat;
+
+                if(isShapeExplicitlySpecified())
+                    outputDataFormat = new Tensor(_shape);
+                else
+                    outputDataFormat = new Tensor(inputDataFormat);
+
+                setOutputDataFormat(outputDataFormat);
+                neuronOwner.setOutputFormat(outputDataFormat);
+                //setDataFormats(inputDataFormat, outputDataFormat);
 
                 break;
             }
@@ -303,6 +329,8 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
                 break;
             }
         }
+
+        //System.out.println(getParent().getName() + " input data format: " + getInputDataFormat().toString() + ", output data format: " + getOutputDataFormat());
     }
 
     /** set Tensor output with shape*/
@@ -342,6 +370,13 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
      * @return true, if input node is acceptable and false otherwise
      */
     public boolean isAcceptableInput(Tensor inputDataFormat) {
+        if (_shape !=null){
+            Tensor shapeTensor = new Tensor(_shape);
+            if (Tensor.isHaveSameElementsNumber(inputDataFormat, shapeTensor))
+                return true;
+            return false;
+        }
+
         if (Tensor.isHaveSameElementsNumber(inputDataFormat, getInputDataFormat()))
             return true;
         return false;
@@ -499,7 +534,7 @@ public class Reshape extends Neuron implements MultipleInputsProcessor,DataConta
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         _operator.setTimeComplexity(timeComplexity);
     }
 

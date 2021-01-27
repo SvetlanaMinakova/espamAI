@@ -13,6 +13,7 @@ SUBPACKAGES = \
 # Java files in this directory
 JSRCS = \
     CNNJSONVisitor.java \
+    CNNJSONVisitorShort.java \
     CSDFGraphJSONVisitor.java \
     CNNTopologyJSONVisitor.java \
     CSDFGraphShortJSONVisitor.java \

@@ -364,12 +364,12 @@ public class GenericNeuron extends Neuron implements ReferenceResolvable{
 
         /** fusion*/
         if(_fusedCompound) {
-            int timeComplexity = ((ComplexOperator)(_operator)).getSubOperators().firstElement().getTimeComplexity();
+            long timeComplexity = ((ComplexOperator)(_operator)).getSubOperators().firstElement().getTimeComplexity();
             _operator.setTimeComplexity(timeComplexity);
             return;
         }
 
-        int timeComplexity = 0;
+        long timeComplexity = 0;
         Vector<Operator> subOperators = ((ComplexOperator)(_operator)).getSubOperators();
 
         for (Operator op : subOperators)

@@ -195,6 +195,29 @@ public class Mapping implements Cloneable {
     public String toString() {
         return "Mapping: " + _name;
     }
+
+    /**
+     * Print processors and processes, mapped on them
+     */
+    public void print(){
+        MProcessor mp;
+        if (_processorList==null) {
+            System.out.println("no processors found in mapping");
+            return;
+        }
+
+        for(Object pObj: _processorList){
+            mp = (MProcessor)pObj;
+            System.out.print(mp.getName() +": [ ");
+            Vector<MProcess> processes = mp.getProcessList();
+            if(processes!=null){
+                for(MProcess p: processes)
+                    System.out.print(p.getName() + ", ");
+            }
+
+            System.out.println( " ]");
+        }
+    }
     
     /**
      *  Return a processor which has a specific name. Return null if
@@ -311,6 +334,18 @@ public class Mapping implements Cloneable {
      * @return core id, found in the provided mapping
      */
     public MProcessor findProcessorForTask(String taskName){
+        MProcessor proc = tryFindProcessorForTask(taskName);
+        if(proc==null)
+            System.err.println("Processor not found for the task " + taskName + ". NULL returned");
+
+        return proc;
+    }
+
+    /**
+     * Find core id in the provided mapping
+     * @return core id, found in the provided mapping
+     */
+    public MProcessor tryFindProcessorForTask(String taskName){
         Vector processorList = getProcessorList();
         for(Object mp: getProcessorList()) {
             Vector processes = ((MProcessor)mp).getProcessList();
@@ -324,8 +359,6 @@ public class Mapping implements Cloneable {
                 }
             }
         }
-
-        System.err.println("Processor not found for the task " + taskName + ". NULL returned");
         return null;
     }
 

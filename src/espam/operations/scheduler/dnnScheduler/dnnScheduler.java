@@ -5,20 +5,17 @@ import espam.datamodel.graph.cnn.Network;
 import espam.datamodel.graph.cnn.neurons.simple.DenseBlock;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.mapping.DNNMapping.DNN_MAPPING_TYPE;
-import espam.datamodel.mapping.DNNMapping.MappingGenerator;
 import espam.datamodel.mapping.MProcessor;
 import espam.datamodel.mapping.Mapping;
-import espam.datamodel.platform.Platform;
-import espam.datamodel.platform.processors.Processor;
-import espam.operations.evaluation.CoreTypeEval;
-import espam.operations.evaluation.PlatformEval;
+import espam.operations.evaluation.cnn.DNNComponentsTimeEvaluator;
+import espam.operations.evaluation.platformDescription.ProcTypeDescription;
+import espam.operations.evaluation.platformDescription.PlatformDescription;
 
-import java.util.HashMap;
 import java.util.Vector;
 
 public class dnnScheduler {
 
-    public static  Vector<Vector<layerFiring>> generateDNNSchedule(Network dnn, Mapping mapping, DNN_MAPPING_TYPE mappingType, PlatformEval plaEval) {
+    public static  Vector<Vector<layerFiring>> generateDNNSchedule(Network dnn, Mapping mapping, DNN_MAPPING_TYPE mappingType, PlatformDescription plaEval) {
         Vector<Vector<layerFiring>> schedule = new Vector<>();
 
         if (dnn == null) {
@@ -46,7 +43,7 @@ public class dnnScheduler {
     }
 
     /** generate sequential schedule, where every layer is executed sequentially, but can be distributed on several processors*/
-    private static Vector<Vector<layerFiring>> _generateSequentialSchedule(Network dnn, Mapping mapping, PlatformEval plaEval){
+    private static Vector<Vector<layerFiring>> _generateSequentialSchedule(Network dnn, Mapping mapping, PlatformDescription plaEval){
 
         Vector<Vector<layerFiring>> schedule = new Vector<>();
         try {
@@ -135,7 +132,7 @@ public class dnnScheduler {
      * @param originalProcessor a single processor to execute layer, if
      * @return firing, describing execution of layer on a processor
      */
-    private static layerFiring _getlayerFiringShared(Layer layer, PlatformEval plaEval, MProcessor originalProcessor, Vector<MProcessor> toShareWorkload, Integer totalNeurons){
+    private static layerFiring _getlayerFiringShared(Layer layer, PlatformDescription plaEval, MProcessor originalProcessor, Vector<MProcessor> toShareWorkload, Integer totalNeurons){
 
         /** workload cannot be shared among less then 2 neurons*/
         if(totalNeurons < 2)
@@ -147,10 +144,10 @@ public class dnnScheduler {
 
 
         Vector<Integer> neuronShares = new Vector<>();
-        Vector<Double> timeEvals = new Vector<>();
-        Vector<Double> workloadSharesPreliminaty = new Vector<>();//WCET-based preliminary evaluation
-        Double time;
-        Double totalTime = 0.0;
+        Vector<Double> workloadSharesPreliminary = new Vector<>();//WCET-based preliminary evaluation
+        Vector<Double> procPerformances = new Vector<>();
+        Double procMaxPerformance ;
+        Double totalDevicePerformance = 0.0;
         Double share;
         Integer neuronsNumShare;
         Double neuronsNumDShare;
@@ -158,17 +155,18 @@ public class dnnScheduler {
 
 
         for(MProcessor mproc: toShareWorkload){
-            time = _evaluateTime(layer,mproc,plaEval);
-            timeEvals.add(time);
-            totalTime+=time;
+            ProcTypeDescription procTypeDescription = plaEval.getProcTypeDescription(mproc.getName());
+            procMaxPerformance = procTypeDescription.getMaxPerformance();
+            procPerformances.add(procMaxPerformance);
+            totalDevicePerformance += procMaxPerformance;
         }
 
-        for(Double timeEval:timeEvals){
-            share = timeEval/totalTime;
-            workloadSharesPreliminaty.add(share);
+        for(Double procPerformance: procPerformances){
+            share = procPerformance/totalDevicePerformance;
+            workloadSharesPreliminary.add(share);
         }
 
-        for(Double neuronShare:workloadSharesPreliminaty){
+        for(Double neuronShare:workloadSharesPreliminary){
             neuronsNumDShare = neuronShare * (double)totalNeurons;
             neuronsNumShare = neuronsNumDShare.intValue();
             neuronShares.add(neuronsNumShare);
@@ -193,7 +191,6 @@ public class dnnScheduler {
                 firing.addWorkloadPercentage(share);
             }
             procId++;
-
         }
 
         return firing;
@@ -211,22 +208,6 @@ public class dnnScheduler {
             }
             curId++;
         }
-
         return maxShareId;
-
-    }
-
-    /**Evaluate DNN layer execution time*/
-    private static  Double _evaluateTime(Layer layer, MProcessor processor, PlatformEval plaEval){
-        Double time = 0.0;
-        String procName = processor.getName();
-        CoreTypeEval coreTypeEval = plaEval.getCoreTypeEval(procName);
-
-        Operator op = layer.getNeuron().getOperator();
-        if(op==null)
-            layer.initOperator();
-        time =  coreTypeEval.getOperatorTimeEval(op);
-        //System.out.println("time of "+layer.getName() + " on "+ procName + " = " + time);
-        return time;
     }
 }

@@ -69,6 +69,11 @@ public:
 	static void sub_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
 	static void div_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
 	static void mul_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+        static void add_const(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+        static void mul(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+	static void add(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
+//scale image
+        static void scale_im(std::map<std::string,int>* int_params_ptr, std::map<std::string,float*>* tensor_params_ptr);
 
 //const cpu funcs
 	static void fill_cpu(int N, float ALPHA, float *X, int INCX);

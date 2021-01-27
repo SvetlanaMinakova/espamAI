@@ -12,7 +12,8 @@ SUBPACKAGES = \
 	cnn \
 	csdf \
 	pyplot \
-	refinement
+	refinement \
+	evaluation
 
 # Java files in this directory
 JSRCS = \

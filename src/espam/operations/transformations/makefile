@@ -15,7 +15,8 @@ JSRCS = \
 	Polytope2Expression.java \
 	Polytope2IndexBoundVector.java \
 	CNN2CSDFGraphConverter.java  \
-    CSDFIOMemoryGenerator.java
+    CSDFIOMemoryGenerator.java \
+    CNNsToSBRSMoCConverter \
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -256,7 +256,7 @@ public class Data extends Neuron implements DataContainer, ConnectionDependent{
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
 
         if(_name.equals(DataType.INPUT)) {
             if(!(getOutputDataFormat()==null))

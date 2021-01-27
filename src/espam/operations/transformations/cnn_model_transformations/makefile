@@ -8,7 +8,8 @@ ROOT  = ../../../..
 JSRCS = \
 	CNNTransformer.java \
 	DNNPartition.java \
-	DNNPartitioner.java
+	DNNPartitioner.java \
+	DNNBlockGrouper.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

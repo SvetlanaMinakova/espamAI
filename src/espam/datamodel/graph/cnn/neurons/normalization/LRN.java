@@ -318,7 +318,7 @@ public class LRN extends Neuron implements ConnectionDependent, CustomConnection
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         if(!(getInputDataFormat()==null)){
             timeComplexity = getSize() * getInputHeight() * getInputWidth();
         }

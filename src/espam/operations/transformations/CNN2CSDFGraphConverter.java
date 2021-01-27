@@ -778,12 +778,15 @@ public class CNN2CSDFGraphConverter {
         return selfLoopRate;
     }
 
-    /** get graph*/
+    /** get CSDF graph*/
     public CSDFGraph getCSDFG() {
         return _CSDFG;
     }
 
-
+    /** get DNN with minimized dataflow*/
+    public Network getMinimizedDFDNN() {
+        return _minimizedDFDNN;
+    }
 
     ///////////////////////////////////////////////////////////////////
     ////           GENERIC NODES PROCESSING                        ///

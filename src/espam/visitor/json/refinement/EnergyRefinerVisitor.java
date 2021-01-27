@@ -1,7 +1,6 @@
 package espam.visitor.json.refinement;
 
-import espam.operations.evaluation.EnergyEvaluator;
-import espam.parser.json.JSONParser;
+import espam.operations.evaluation.csdf.EnergyEvaluator;
 import espam.utils.fileworker.FileWorker;
 
 import java.io.PrintStream;

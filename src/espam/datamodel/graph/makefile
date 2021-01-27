@@ -11,7 +11,8 @@ ROOT  = ../../..
 SUBPACKAGES = \
 	adg \
 	csdf \
-	cnn
+	cnn \
+	sbrs
 
 # Java files in this directory
 JSRCS = \

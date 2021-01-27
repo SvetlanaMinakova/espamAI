@@ -8,7 +8,7 @@ import espam.datamodel.graph.NPort;
 import espam.datamodel.graph.cnn.operators.Operator;
 import espam.datamodel.graph.csdf.*;
 import espam.datamodel.graph.csdf.datasctructures.IndexPair;
-import espam.operations.evaluation.CSDFTimingRefiner;
+import espam.operations.evaluation.csdf.CSDFTimingRefiner;
 import espam.parser.json.csdf.*;
 import espam.utils.fileworker.JSONFileWorker;
 import espam.visitor.CSDFGraphVisitor;

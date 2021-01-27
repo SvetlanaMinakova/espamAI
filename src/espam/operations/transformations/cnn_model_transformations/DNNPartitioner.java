@@ -2,150 +2,11 @@ package espam.operations.transformations.cnn_model_transformations;
 
 import espam.datamodel.graph.cnn.Layer;
 import espam.datamodel.graph.cnn.Network;
+import espam.datamodel.graph.cnn.neurons.generic.GenericNeuron;
+
 import java.util.Vector;
 
 public class DNNPartitioner {
-
-
-
-
-
-    /** TODO: REMOVE After testing*/
-    public void partitionDNNAlexNet(Network dnn){
-
-         DNNPartitioner partitioner = new DNNPartitioner();
-         Vector<Vector<Integer>> partitions = new Vector<>();
-
-         Vector<Integer> p1 = new Vector<>();
-         p1.add(dnn.getLayer("node_Conv0").getId());
-         p1.add(dnn.getLayer("node_Conv2").getId());
-         p1.add(dnn.getLayer("node_MaxPool4").getId());
-         p1.add(dnn.getLayer("node_Conv5").getId());
-         p1.add(dnn.getLayer("node_Conv7").getId());
-         p1.add(dnn.getLayer("node_MaxPool9").getId());
-         p1.add(dnn.getLayer("node_Conv10").getId());
-         p1.add(dnn.getLayer("node_Conv12").getId());
-         p1.add(dnn.getLayer("node_Conv14").getId());
-         p1.add(dnn.getLayer("node_Conv16").getId());
-
-         partitions.add(p1);
-
-         //'node_Conv19 - CPU1'
-
-         //['node_Conv21', 'node_Conv23', 'node_Conv25', 'node_MaxPool27', 'node_Conv28', 'node_Conv30']
-         Vector<Integer> p2 = new Vector<>();
-         p2.add(dnn.getLayer("node_Conv21").getId());
-         p2.add(dnn.getLayer("node_Conv23").getId());
-         p2.add(dnn.getLayer("node_Conv25").getId());
-         p2.add(dnn.getLayer("node_MaxPool27").getId());
-         p2.add(dnn.getLayer("node_Conv28").getId());
-         p2.add(dnn.getLayer("node_Conv30").getId());
-
-         partitions.add(p2);
-
-         //'node_Conv32 - CPU4'
-
-         //['node_Conv34', 'node_MaxPool36'] - GPU
-         Vector<Integer> p3 = new Vector<>();
-         p3.add(dnn.getLayer("node_Conv34").getId());
-         p3.add(dnn.getLayer("node_MaxPool36").getId());
-
-         partitions.add(p3);
-         Vector<Integer> p4 = new Vector<>();
-         p4.add(dnn.getLayer("node_Gemm43").getId());
-         p4.add(dnn.getLayer("node_Softmax44").getId());
-         partitions.add(p4);
-
-
-        // partitioner.partitionDNN(dnn, partitions);
-
-         dnn.sortLayersInTraverseOrder();
-    }
-
-
-    /** TODO: REMOVE After testing*/
-    public void partitionDNNVGG(Network dnn){
-
-
-          //callVisitorForPartitions(dnn, useGPU, dir);
-         // CNNTopologyJSONVisitor.callVisitor(dnn, dir);
-
-         /***
-          *
-          *
-          * CPU0 {
-          ['node_Gemm37']
-               }
-CPU1 {
-['node_Conv19']
-}
-CPU2 {
-['node_Gemm43', 'node_Softmax44']
-}
-CPU3 {
-['node_MaxPool18']
-['node_Gemm40']
-}
-CPU4 {
-['node_Conv32']
-}
-GPU {
-['node_Conv0', 'node_Conv2', 'node_MaxPool4', 'node_Conv5', 'node_Conv7', 'node_MaxPool9', 'node_Conv10', 'node_Conv12', 'node_Conv14', 'node_Conv16']
-['node_Conv21', 'node_Conv23', 'node_Conv25', 'node_MaxPool27', 'node_Conv28', 'node_Conv30']
-['node_Conv34', 'node_MaxPool36']
-}
-          *
-          *
-          */
-
-         Vector<Boolean> useGPU = new Vector<>();
-         DNNPartitioner partitioner = new DNNPartitioner();
-         Vector<Vector<Integer>> partitions = new Vector<>();
-
-         Vector<Integer> p1 = new Vector<>();
-         p1.add(dnn.getLayer("node_Conv0").getId());
-         p1.add(dnn.getLayer("node_Conv2").getId());
-         p1.add(dnn.getLayer("node_MaxPool4").getId());
-         p1.add(dnn.getLayer("node_Conv5").getId());
-         p1.add(dnn.getLayer("node_Conv7").getId());
-         p1.add(dnn.getLayer("node_MaxPool9").getId());
-         p1.add(dnn.getLayer("node_Conv10").getId());
-         p1.add(dnn.getLayer("node_Conv12").getId());
-         p1.add(dnn.getLayer("node_Conv14").getId());
-         p1.add(dnn.getLayer("node_Conv16").getId());
-
-         partitions.add(p1);
-
-         //'node_Conv19 - CPU1'
-
-         //['node_Conv21', 'node_Conv23', 'node_Conv25', 'node_MaxPool27', 'node_Conv28', 'node_Conv30']
-         Vector<Integer> p2 = new Vector<>();
-         p2.add(dnn.getLayer("node_Conv21").getId());
-         p2.add(dnn.getLayer("node_Conv23").getId());
-         p2.add(dnn.getLayer("node_Conv25").getId());
-         p2.add(dnn.getLayer("node_MaxPool27").getId());
-         p2.add(dnn.getLayer("node_Conv28").getId());
-         p2.add(dnn.getLayer("node_Conv30").getId());
-
-         partitions.add(p2);
-
-         //'node_Conv32 - CPU4'
-
-         //['node_Conv34', 'node_MaxPool36'] - GPU
-         Vector<Integer> p3 = new Vector<>();
-         p3.add(dnn.getLayer("node_Conv34").getId());
-         p3.add(dnn.getLayer("node_MaxPool36").getId());
-
-         partitions.add(p3);
-         Vector<Integer> p4 = new Vector<>();
-         p4.add(dnn.getLayer("node_Gemm43").getId());
-         p4.add(dnn.getLayer("node_Softmax44").getId());
-         partitions.add(p4);
-
-
-       //  partitioner.partitionDNN(dnn, partitions);
-    }
-
 
     /**
      * Transform DNN to partitioned DNN
@@ -154,30 +15,130 @@ GPU {
      */
     public void partitionDNN(Network dnn, Vector<DNNPartition> partitioning){
 
+        dnn.sortLayersInTraverseOrder();
+        dnn.updateDataFormats();
+
+        Vector<Vector<Layer>> partitions = _createPartitions(dnn, partitioning);
+        CNNTransformer transformer = new CNNTransformer(dnn);
+        partitions = _getDuplicateResolvedPartitions(transformer, partitions);
+
+        dnn.sortLayersInTraverseOrder();
+
+        int pId = 0;
+        Vector<Layer> prevPartition = null;
+        DuplicateLayersResolveCase drc;
+
+        for(Vector<Layer> p: partitions) {
+            if (p.size() > 1) {//group chains with >=2 layers
+             _groupLayersIntoPartition(transformer, p, pId);
+            }
+            pId++;
+        }
+
+        System.out.println("Partitioning finished successfully");
+
+    }
+
+
+    private Vector<Vector<Layer>> _getDuplicateResolvedPartitions(CNNTransformer transformer, Vector<Vector<Layer>> partitions){
+        Vector<Vector<Layer>>  resolvedPartitons = partitions;
+        int pId = 0;
+        Vector<Layer> prevPartition = null;
+        DuplicateLayersResolveCase drc;
+
+        for(Vector<Layer> p: partitions) {
+            drc = _getDuplicateLayersResolveCase(p, prevPartition);
+            if (drc.equals(DuplicateLayersResolveCase.REMOVE_FROM_PREV))
+                prevPartition.removeElementAt(prevPartition.size()-1);
+
+            if (drc.equals(DuplicateLayersResolveCase.REMOVE_FROM_NEXT))
+                p.removeElementAt(0);
+
+            if (drc.equals(DuplicateLayersResolveCase.DUPLICATE)){
+                try {
+                    Layer duplicateDst = transformer.splitMultiInMultiOut(p.firstElement().getName());
+                    p.removeElementAt(0);
+                    p.insertElementAt(duplicateDst, 0);
+                }
+                catch (Exception e){
+                    System.err.println("Partitioning creation error. Layer "+prevPartition.lastElement().getName() +
+                            " duplication resolve error: " + e.getMessage());
+                }
+
+            }
+
+            prevPartition = p;
+        }
+      return resolvedPartitons;
+    }
+
+    /**
+     * Get answer on how to resolve case, when a CNN layer is in two partitions simultaneously
+     */
+    private DuplicateLayersResolveCase _getDuplicateLayersResolveCase(Vector<Layer> partition, Vector<Layer> prevPartition){
+        /**no preious layer*/
+        if (prevPartition == null)
+            return DuplicateLayersResolveCase.DO_NOTHING;
+
+        /**no duplicates found*/
+        if(prevPartition.lastElement().getName() != partition.firstElement().getName())
+            return DuplicateLayersResolveCase.DO_NOTHING;
+
+        Layer duplicate = prevPartition.lastElement();
+        Integer duplicateOutputsNum = duplicate.getOutputConnections().size();
+        Integer duplicateInputsNum = duplicate.getInputConnections().size();
+
+        /** single-input duplicate goes to the next (output) partition */
+        if (duplicateInputsNum < 2)
+            return DuplicateLayersResolveCase.REMOVE_FROM_PREV;
+
+        /**single-output duplicate goes to the prev (input) partition */
+        if (duplicateOutputsNum < 2)
+            return DuplicateLayersResolveCase.REMOVE_FROM_NEXT;
+
+        /**multi-input and multi-output duplicate should be duplicated in the target DNN*/
+        return DuplicateLayersResolveCase.DUPLICATE;
+    }
+
+    /**
+     * Create dnn partitions (groups of layers) using given dnn partitioning
+     * @param dnn dnn
+     * @param partitioning dnn partitioning
+     * @return partitions (groups of layers) using given dnn partitioning
+     */
+    private Vector<Vector<Layer>> _createPartitions(Network dnn, Vector<DNNPartition> partitioning){
         Vector<Vector<Layer>> partitions = new Vector<>();
         Vector<Layer> partition;
 
-        for(DNNPartition p: partitioning ){
+        for(DNNPartition p: partitioning ) {
             partition = new Vector<>();
-            for(String name: p.getLayers()){
-                Layer l = dnn.getLayer(name);
-                partition.add(l);
+            for (Layer l : dnn.getLayers()){
+
+                if (p.getLayers().contains(l.getName())){
+                    partition.add(l);
+                }
             }
             partitions.add(partition);
         }
+        return partitions;
+    }
 
-        CNNTransformer transformer = new CNNTransformer(dnn);
-        int pId = 0;
-        for(Vector<Layer> p: partitions) {
-            try {
-                transformer.groupLayers(p);
-                dnn.setDataFormats(dnn.getInputLayer().getOutputFormat());
-            }
+    /**
+     * Group DNN layers into partition
+     * @param transformer CNN transformer that performs grouping
+     */
+    private void _groupLayersIntoPartition(CNNTransformer transformer, Vector<Layer> partition, Integer partitionId){
+        Network partitionDNN;
+        try {
+            //System.out.println("Pid "+ pId + " grouped ");
+            partitionDNN = transformer.groupLayers(partition).getInternalStructure();
+            partitionDNN.updateDataFormats();
 
-            catch (Exception e) {
-                System.out.println("Partitioning error on partition "+ pId + ", reason: "+e.getMessage());
-            }
-            pId++;
+            //System.out.println(partitionDNN.getName() + " successfully created");
+            //dnn.sortLayersInTraverseOrder();
+            //dnn.updateDataFormats();
+        } catch (Exception e) {
+            System.out.println("Partitioning error on partition " + partitionId + ", reason: " + e.getMessage());
         }
 
     }
@@ -216,5 +177,9 @@ GPU {
             pId++;
         }
 
+    }
+
+    public enum DuplicateLayersResolveCase {
+        REMOVE_FROM_PREV, REMOVE_FROM_NEXT, DUPLICATE, DO_NOTHING
     }
 }

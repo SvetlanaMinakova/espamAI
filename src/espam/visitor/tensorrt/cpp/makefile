@@ -8,8 +8,8 @@ SUBPACKAGES = \
 
 # Java files in this directory
 JSRCS = \
-    CPPSDFGVisitorTensorrt.java \
-    CPPSDFGVisitorARMCL.java
+    CPPDNNVisitorTensorrt.java \
+    CPPDNNVisitorARMCL.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -15,7 +15,8 @@ SUBPACKAGES = \
 
 # Java files in this directory
 JSRCS = \
-	TensorrtSDFGVisitor.java
+	TensorrtDNNVisitor.java\
+	TRTCodegenFlag.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -147,7 +147,7 @@ public class Transpose extends Neuron implements ConnectionDependent {
      * and DNN data formats are calculated
      */
     protected void setOperatorTimeComplexity(int inputChannels, int outputChannels){
-        int timeComplexity = 1;
+        long timeComplexity = 1;
         if(!(getOutputDataFormat()==null)){
             timeComplexity = getOutputH() * getOutputWidth() * outputChannels;
         }
@@ -166,8 +166,10 @@ public class Transpose extends Neuron implements ConnectionDependent {
     public Tensor calculateOutputDataFormat(Tensor inputDataFormat) {
         if (Tensor.isNullOrEmpty(inputDataFormat))
             return inputDataFormat;
-        if(_perm==null) _initPermDefault(inputDataFormat);
 
+       // System.out.println("Transpose " + getParent().getName() + " . Input data: " + inputDataFormat.toString() + ", permutation: " + _perm.toString());
+
+        if(_perm==null) _initPermDefault(inputDataFormat);
         Tensor output = new Tensor();
         for(Integer curPerm: _perm){
             try{
@@ -175,8 +177,8 @@ public class Transpose extends Neuron implements ConnectionDependent {
                 output.addDimension(odim);
             }
             catch (Exception e){
-                System.err.println("Transpose error: input dim ["+ curPerm + "] not found!");
-                return null;
+                System.err.println("Transpose " + getParent().getName() + ": input dim ["+ curPerm + "] not found! Dimensions permutation ignored.");
+                //return null;
             }
         }
 

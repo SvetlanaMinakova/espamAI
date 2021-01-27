@@ -5,6 +5,7 @@ import com.google.gson.annotations.Since;
 import espam.datamodel.EspamException;
 import espam.visitor.CNNGraphVisitor;
 
+import javax.xml.stream.FactoryConfigurationError;
 import java.util.Arrays;
 import java.util.Arrays.*;
 
@@ -219,6 +220,10 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      */
     @Override
     public String toString() {
+        if (Tensor.isNullOrEmpty(this)){
+            return "[]";
+        }
+
         StringBuilder result = new StringBuilder("[");
         for (Integer dimSize:_shape) {
             result.append(dimSize);
@@ -296,29 +301,119 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
            return mergeVectors(tensors);
 
         if(Tensor.isMergeable(tensors,dim)){
-               Tensor merged = new Tensor(Tensor.getMaxDimTensor(tensors));
-
-            int mergedDimSize = 0;
-
-            for(Tensor tensor:tensors){
-                int dimSize = tensor.getDimSize(dim);
-                /** align tensors by adding dummy 1-valued dimension*/
-                if(dimSize==0)
-                    mergedDimSize+=1;
-                else
-                    mergedDimSize+=dimSize;
-            }
-
-            merged.setDimSize(dim,mergedDimSize);
+            Tensor merged = _mergeWithDimSizeAlignment(tensors, dim);
             return merged;
         }
 
-        System.err.println("Tensors merge error. ");
+        if(_isReverseMergeable(tensors)){
+            //System.out.println("Tensors are reverse mergeable");
+            Tensor merged = _mergeWithDimsReverse(tensors, dim);
+            //System.out.println("reverse merged tensor: " + merged.toString());
+            return merged;
+        }
+
+        String exceptionTxt = "Tensors merge error. ";
         for(Tensor tensor: tensors)
-            System.err.print(tensor+" ");
-        System.err.println(" could not be merged ");
-        throw new EspamException("Tensors merge error. ");
+            exceptionTxt = exceptionTxt + tensor + " ";
+        exceptionTxt = exceptionTxt + " could not be merged by dim " + dim;
+        System.err.println(exceptionTxt);
+        throw new EspamException(exceptionTxt);
     }
+
+    /** Try merge tensors with smart dims reverse*/
+    private static Tensor _mergeWithDimsReverse(Vector<Tensor> tensors, int dim){
+        Vector<Integer> whdimset = _findWHDimSet(tensors);
+        Vector<Tensor> tensorsWithDimsReverse = new Vector();
+        Integer tensorId = 0;
+        Integer whdim;
+        for (Tensor t : tensors){
+            whdim = whdimset.elementAt(tensorId);
+            if (whdim>1){ //reverse tensor
+                Tensor tReversed = Tensor.reverse(t);
+                //System.out.println("tReversed: " + tReversed.toString());
+                tensorsWithDimsReverse.add(tReversed);
+            }
+            else {
+                tensorsWithDimsReverse.add(t);
+                //System.out.println("tUnReversed: " + t.toString());
+            }
+            tensorId++;
+        }
+
+        Tensor merged = _mergeWithDimSizeAlignment(tensorsWithDimsReverse, 2);
+        return merged;
+    }
+
+    /**
+     * Checks if tensors can be merged after dimensions of one of the tensors are permuted.
+     * NOTE: works only for tensors with number of dimensions > 2
+     * @param tensors list of tensors
+     * @return true, if tensors can be merged after dimensions of one of the tensors are permuted
+     */
+    private static boolean _isReverseMergeable(Vector<Tensor> tensors){
+        Integer dimensionality = tensors.firstElement().getDimensionality();
+        for (Tensor t : tensors){
+            if (t.getDimensionality()!=dimensionality)
+                return false;
+        }
+
+        Vector<Integer> whdimset = _findWHDimSet(tensors);
+        for (Integer whdim: whdimset){
+            if (whdim == -1)
+                return false;
+        }
+        return true;
+    }
+
+    /** Try to figure out wh dimensions for every tensor in a set*/
+    private static Vector<Integer> _findWHDimSet(Vector<Tensor> tensors){
+        Vector<Integer> whdims = new Vector<>();
+        for (Tensor tensor: tensors){
+            Integer  whdim = _findWHDim(tensor);
+            whdims.add(whdim);
+        }
+        return whdims;
+    }
+
+    /** Try to figure out, which dim of a tensor is a wh dim*/
+    private static Integer _findWHDim(Tensor tensor){
+        Integer dimId = 0;
+        for (Integer possible_wh_dim: tensor.getShape()){
+            Integer dime = dimEntries(tensor, possible_wh_dim);
+            if (dime > 1)
+                return dimId;
+            dimId++;
+        }
+        return -1;
+    }
+
+    private static Integer dimEntries(Tensor t, Integer dim){
+        Integer dimEntries = 0;
+        for (Integer tdim: t.getShape()){
+            if (tdim==dim)
+                dimEntries++;
+        }
+        return dimEntries;
+    }
+
+    private static Tensor _mergeWithDimSizeAlignment(Vector<Tensor> tensors, int dim){
+        Tensor merged = new Tensor(Tensor.getMaxDimTensor(tensors));
+
+        int mergedDimSize = 0;
+
+        for(Tensor tensor:tensors){
+            int dimSize = tensor.getDimSize(dim);
+            /** align tensors by adding dummy 1-valued dimension*/
+            if(dimSize==0)
+                mergedDimSize+=1;
+            else
+                mergedDimSize+=dimSize;
+        }
+
+        merged.setDimSize(dim,mergedDimSize);
+        return merged;
+    }
+
 
     public static boolean isVectors(Vector<Tensor> tensors){
          for(Tensor tensor:tensors) {
@@ -424,7 +519,7 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      * and false otherwise
      */
     public static boolean isHaveSameElementsNumber(Tensor t1, Tensor t2) {
-        if(t1==null || t2 == null)
+        if(t1 == null || t2 == null)
             return false;
         return t1.getElementsNumber()==t2.getElementsNumber();
     }
@@ -452,6 +547,38 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
             setDimSize(dimensionality - 2, mergedElemSize);
             removeDimension();
         }
+    }
+
+
+
+    /** Remove last dimension from all tensors if for every tensor last dimension = 1
+     * An ugly fix for partitioned DNNs concat
+     * */
+    public static Vector<Tensor> cleanLastDimIfOne(Vector<Tensor> tensors){
+        if (tensors.size()<1)
+            return tensors;
+
+        if (isHaveSameDimensionality(tensors)==false)
+            return tensors;
+
+        int last_dim = tensors.firstElement().getDimensionality() - 1;
+        if (last_dim < 1 )
+            return tensors;
+
+        for (Tensor t: tensors) {
+            if (t.getDimSize(last_dim)!=1)
+                return tensors;
+        }
+
+        Vector<Tensor> reducedTensors = new Vector<>();
+        Tensor reduced;
+        for (Tensor t: tensors) {
+            reduced = new Tensor(t);
+            reduced.removeDimension();
+            reducedTensors.add(reduced);
+        }
+
+        return reducedTensors;
     }
 
     /**
@@ -502,18 +629,23 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      * @throws EspamException if tensors could not be merged
      */
     public static Tensor mergeToSequence(Vector<Tensor> tensors) throws EspamException {
-        if(tensors.size()==0)
-             return new Tensor();
+
+        if(tensors.size()==0) {
+            return new Tensor();
+        }
 
         if(tensors.size()==1)
            return tensors.elementAt(0);
 
-        int dim = getMaxDimTensor(tensors).getDimensionality()-1;
+        int dim = getMaxDimTensor(tensors).getDimensionality() - 1;
 
-        if(isHaveSameDimensionality(tensors))
-           return merge(tensors,dim);
+        if(isHaveSameDimensionality(tensors)) {
+            return merge(tensors, dim);
+        }
 
         Vector<Tensor> alignedTensors = align(tensors);
+        alignedTensors = cleanLastDimIfOne(alignedTensors);
+        dim = getMaxDimTensor(alignedTensors).getDimensionality() - 1;
         return merge(alignedTensors,dim);
     }
 
@@ -822,6 +954,20 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
         tensor.setDimSize(1, newHeight);
     }
 
+
+
+    /**
+     * Get height of specified Tensor
+     * @param tensor tensor
+     * @return tensor's height
+     * @throws NullPointerException if the height could not be get
+     */
+    public static int getWidth(Tensor tensor) throws NullPointerException{
+        if (tensor.getDimensionality() < 1)
+            return 1;
+        return tensor.getDimSize(0);
+    }
+
   /**
      * Get height of specified Tensor
      * @param tensor tensor
@@ -829,8 +975,23 @@ public class Tensor implements Cloneable, Comparable<Tensor> {
      * @throws NullPointerException if the height could not be get
      */
      public static int getHeight(Tensor tensor) throws NullPointerException{
+       if (tensor.getDimensionality() < 2)
+           return 1;
        return tensor.getDimSize(1);
   }
+
+
+    /**
+     * Get height of specified Tensor
+     * @param tensor tensor
+     * @return tensor's height
+     * @throws NullPointerException if the height could not be get
+     */
+    public static int getChannels(Tensor tensor) throws NullPointerException{
+        if (tensor.getDimensionality() < 3)
+            return 1;
+        return tensor.getDimSize(2);
+    }
 
    /**
      * Checks, if neuron input DataFormat have height

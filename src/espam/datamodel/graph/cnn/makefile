@@ -19,7 +19,8 @@ JSRCS = \
 	Layer.java \
 	Neuron.java \
 	BoundaryMode.java \
-	Filtreable.java
+	Filtreable.java \
+	SupportedOpsList.java
 
 # Include the shared compilation rules
 include $(ROOT)/vars.mk

@@ -1,6 +1,7 @@
 package espam.visitor;
 import espam.datamodel.graph.cnn.*;
 import espam.datamodel.graph.cnn.connections.*;
+import espam.datamodel.graph.cnn.neurons.arithmetic.Add;
 import espam.datamodel.graph.cnn.neurons.arithmetic.Arithmetic;
 import espam.datamodel.graph.cnn.neurons.cnn.CNNNeuron;
 import espam.datamodel.graph.cnn.neurons.cnn.Convolution;
